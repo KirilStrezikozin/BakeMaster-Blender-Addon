@@ -1,0 +1,25 @@
+{
+    "files.autoSave": "afterDelay",
+    "workbench.colorTheme": "Monokai Alt",
+    "files.exclude": {
+        "**/.git": true,
+        "**/__pycache__": true
+    },
+    "git.decorations.enabled": true,
+    "explorer.sortOrder": "type",
+    "grammarly.selectors": [
+        {
+            "language": "markdown",
+            "scheme": "file",
+            // "pattern": "*.{md,txt,rst}"
+        },
+        {
+            "language": "restructuredtext",
+            "scheme": "file"
+        }
+    ],
+    "markdown.preview.breaks": true,
+    "markdown.preview.typographer": true,
+    "esbonio.sphinx.confDir": "",
+    "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools"
+}
