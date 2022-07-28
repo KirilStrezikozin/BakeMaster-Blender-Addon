@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/teasers/bakemaster-addon-teaser-primary.png?token=GHSAT0AAAAAABWZMLPCQ7DFFA6F6IPKEZZMYW6PSFQ" alt="bakemaster-addon-teaser-primary" width="1280px"/>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/teasers/bakemaster-addon-teaser-primary.png" alt="bakemaster-addon-teaser-primary" width="1280px"/>
 
 <!--- Heading -->
 <h1 id="page-top">
@@ -21,7 +21,7 @@ BakeMaster is an add-on specified for baking various texture maps <br/>and creat
 </h2>
 
 - [Introduction](#intro)
-- [Features](#features)
+- [Key Features](#features)
 - [Even more features](#more-features)
 - [Installation](#installation)
 - [Basic usage](#basic-usage)
@@ -53,9 +53,9 @@ We gave our best shot to make you love the setup in BakeMaster, which takes only
 An unlimited number of objects and custom maps, each driven by unique settings - all can be configured and baked with BakeMaster!
 
 <p align="left">
-    <img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-view-image-editor-baked.gif?token=GHSAT0AAAAAABWZMLPCEVGK75IPNAHTH7BCYW6OCOA" alt="bakemaster-addon-view-image-editor-baked"/>
+    <img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-view-image-editor-baked.gif" alt="bakemaster-addon-view-image-editor-baked"/>
 &nbsp;
-    <img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-map-preview-1.gif?token=GHSAT0AAAAAABWZMLPCX43UBGMJ5YMM2TDWYW6N72Q" alt="bakemaster-addon-item-map-preview-1"/>
+    <img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-map-preview-1.gif" alt="bakemaster-addon-item-map-preview-1"/>
 </p>
 
 <a href="">Read more 📖</a>
@@ -65,7 +65,7 @@ An unlimited number of objects and custom maps, each driven by unique settings -
 <!-- Add-on main Features -->
 <h2 id="features">
     <a href="#contents">
-        Features
+        Key Features
     </a>
 </h2>
 
@@ -140,7 +140,7 @@ To view all features and learn the ropes of BakeMaster, visit <a href="">Documen
 BakeMaster add-on works in Blender, so if you haven't got it on your device just yet, <a href="">go ahead</a>! <br /> Make sure the Blender version you are using is <a href="">compatible with BakeMaster</a>.
 
 <a href="https://www.blender.org/">
-    <img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/resources/blender-icon-official.png?token=GHSAT0AAAAAABWZMLPDDK2DLXVPRWQATB72YW6PSVA" alt="blender-icon-official"/>
+    <img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/resources/blender-icon-official.png" alt="blender-icon-official"/>
 </a>
 
 ### Uninstall previous versions
@@ -153,7 +153,7 @@ If you have a previous version of BakeMaster installed, follow the steps to unin
 > 4. Expand the add-on panel and click "Remove"
 > 5. Save Blender Preferences
 
-<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-removal.gif?token=GHSAT0AAAAAABWZMLPCYBWF57G3FUQC7S62YW6OCGQ" alt="bakemaster-addon-removal"/>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-removal.gif" alt="bakemaster-addon-removal"/>
 
 It would be good to restart Blender after.
 
@@ -161,7 +161,7 @@ It would be good to restart Blender after.
 
 Download the latest BakeMaster add-on version from the <a href="">Blender Market</a> or <a href="">Gumroad</a>.
 
-A demo version can be also installed from the <a href="">GitHub repo</a>: <br /> Go to the <a href="">/install/</a> and download a zip folder.
+A demo version can be also installed from the <a href="">GitHub repo</a>: <br /> Go to the <a href="">install/</a> and download a zip folder.
 
 See <a href="">BakeMaster Versions</a> for details.
 
@@ -173,14 +173,14 @@ See <a href="">BakeMaster Versions</a> for details.
 > 4. Specify the path to the download zipped add-on
 > 5. Enable the addon
 
-<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-installing.gif?token=GHSAT0AAAAAABWZMLPCZ7SNEU7A5YLSUANUYW6N57A" alt="bakemaster-addon-installing"/>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-installing.gif" alt="bakemaster-addon-installing"/>
 
 
 ### Access BakeMaster in Blender
 
 BakeMaster add-on can be accessed in the Viewport. <br /> Hit the "N" key on your keyboard and you will see the add-on pop up on the right. <br /> Head over to the add-on panel and you are good to go.
 
-<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-accessing.gif?token=GHSAT0AAAAAABWZMLPD2DY73OOUB2HTUGFAYW6N5KA" alt="bakemaster-addon-accessing"/>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-accessing.gif" alt="bakemaster-addon-accessing"/>
 
 ### Update BakeMaster
 
@@ -218,7 +218,7 @@ First of all, you need to choose the objects you want to perform bake for:
 
 As long as objects are added to the list, you can configure their settings.
 
-<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-list-adding-objects.gif?token=GHSAT0AAAAAABWZMLPCC2SCKXXJTHNCWO6YYW6P46Q" alt="bakemaster-addon-list-adding-objects"/>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-list-adding-objects.gif" alt="bakemaster-addon-list-adding-objects"/>
 
 Tip: to quickly find the object you have added to the list in the outliner, just simply click it in the List of Objects, and it will be selected in the scene.
 
@@ -236,7 +236,7 @@ If you want to bake high-poly model details onto a low-poly model, <br /> use So
 
 Extrusion, Max Ray Distance and Cage object can be configured inside the Source to Target panel as well.
 
-<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-set-source.gif?token=GHSAT0AAAAAABWZMLPCZ4BYMEPNOLTH6OSMYW6OBCQ" alt="bakemaster-addon-item-set-source"/>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-set-source.gif" alt="bakemaster-addon-item-set-source"/>
 
 <a href="">Read more about Source-target Settings 📖</a>
 
@@ -267,7 +267,7 @@ Add maps you would like to be baked in the Map Settings panel:
 > 3. Click the "+" button to add a map pass
 > 4. Click on the map pass to set its type
 
-<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-add-maps.gif?token=GHSAT0AAAAAABWZMLPCY2J5MQIXLRTRCFRGYW6N6JA" alt="bakemaster-addon-item-add-maps"/>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-add-maps.gif" alt="bakemaster-addon-item-add-maps"/>
 
 If you have prepared some maps for the future and you don't want to bake them alongside others, <br /> click the "📷" button near the map pass to toggle its "bake visibility".
 
@@ -293,7 +293,7 @@ Map pass output settings include:
 > - Affect by Source (apply Source to Target settings for this map pass)
 > - Other settings that depend on Blender version
 
-<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-map-settings.gif?token=GHSAT0AAAAAABWZMLPCYDATVS3O5VSTLM32YW6OAXA" alt="bakemaster-addon-item-map-settings"/>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-map-settings.gif" alt="bakemaster-addon-item-map-settings"/>
 
 Some map passes like AO, Thickness, Displacement and <a href="">others</a> can have custom settings. <br /> They can be also set inside the Map Pass Settings panel.
 
@@ -308,9 +308,9 @@ For example, Curvature Map has the following custom properties <br /> (These set
 <a href="">Special maps</a> have a "Preview" toggle to turn on real-time map preview in the Viewport.
 
 <p align="left">
-    <img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-map-preview-3.gif?token=GHSAT0AAAAAABWZMLPCIMJPP2W2WTRGFFKIYW6OAPA" alt="bakemaster-addon-item-map-preview-3"/>
+    <img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-map-preview-3.gif" alt="bakemaster-addon-item-map-preview-3"/>
 &nbsp;
-    <img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-map-preview-2.gif?token=GHSAT0AAAAAABWZMLPCGJSELN7ZPQWPDA7QYW6OAGQ" alt="bakemaster-addon-item-map-preview-2"/>
+    <img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-map-preview-2.gif" alt="bakemaster-addon-item-map-preview-2"/>
 </p>
 
 <a href="">Read more about Map Settings 📖</a>
@@ -333,7 +333,7 @@ Each object in the List of Objects can have custom Bake Settings, including:
 > - Adaptive sampling, sampling
 > - And more
 
-<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-bake-settings.gif?token=GHSAT0AAAAAABWZMLPDUDQACHLVDSSAJ75UYW6N6UA" alt="bakemaster-addon-item-bake-settings"/>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-bake-settings.gif" alt="bakemaster-addon-item-bake-settings"/>
 
 Inside the same Bake Settings panel, there are several important controls to know about:
 
@@ -347,7 +347,7 @@ There is also an embossed field called "Bake Instruction". <br /> When you hover
 
 ### 7. Baking process
 
-<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-baking-progress.gif?token=GHSAT0AAAAAABWZMLPCUPEYVU63O2K25FWIYW6N7SQ" alt="bakemaster-addon-item-baking-progress"/>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-baking-progress.gif" alt="bakemaster-addon-item-baking-progress"/>
 
 The baking process can be controlled from your keyboard or Blender Console. <br /> All keybindings are presented under the "Bake Instruction" field inside the Bake Settings panel.
 
@@ -372,7 +372,7 @@ If you want to undo the bake result, press `Ctrl + Z` just after it has been fin
 
 BakeMaster process flow is described below:
 
-<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/flows/bakemaster-addon-process-flow-full-diagram.png?token=GHSAT0AAAAAABWZMLPDDFKIRP5MBB4ENQNCYW6PUGA" alt="bakemaster-addon-process-flow-full-diagram" width="900px"/>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/flows/bakemaster-addon-process-flow-full-diagram.png" alt="bakemaster-addon-process-flow-full-diagram" width="900px"/>
 
 BakeMaster keeps track of all added maps and objects in a stack-like order:
 
@@ -389,7 +389,7 @@ The order of classes can be changed using the <a href="">order controls</a>. <br
 
 BakeMaster picks an Object added to the <a href="">List of Objects</a> and bakes maps added to it one by one. <br /> This process can be shown in the following diagram:
 
-<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/flows/bakemaster-addon-process-flow-baking-order-diagram.png?token=GHSAT0AAAAAABWZMLPDLOQCMKARKZLWL4NKYW6PUNA" alt="bakemaster-addon-process-flow-baking-order-diagram" width="900px"/>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/flows/bakemaster-addon-process-flow-baking-order-diagram.png" alt="bakemaster-addon-process-flow-baking-order-diagram" width="900px"/>
 
 BakeMaster shows baking progress in the bottom info bar, in the style:
 
@@ -397,7 +397,7 @@ BakeMaster shows baking progress in the bottom info bar, in the style:
     Baking [Object Name]: [Map Name], map [Current Map Index] of [Length of Maps] ... [Map Baking Progress]
 ```
 
-<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-baking-progress-bar.png?token=GHSAT0AAAAAABWZMLPCIV3WUDRO6X7GAGWQYW6N63Q" alt="bakemaster-addon-item-baking-progress-bar" width="900px"/>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-baking-progress-bar.png" alt="bakemaster-addon-item-baking-progress-bar" width="900px"/>
 
 <a href="">Read more 📖</a>
 
@@ -459,9 +459,7 @@ See <a href="">BakeMaster Versions</a> for details.
 
 ---
 
-<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/teasers/bakemaster-addon-teaser-secondary.png?token=GHSAT0AAAAAABWZMLPDWKOFZ57INQSWSQUMYW6PUVQ" alt="bakemaster-addon-teaser-secondary" width="1280px"/>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/teasers/bakemaster-addon-teaser-secondary.png" alt="bakemaster-addon-teaser-secondary" width="1280px"/>
 
-##### BakeMaster <br /> The Freedom to Bake. 
-
-last edit date - 23.07.2022 <br /> author - kirilstrezikozin@gmail.com <br /> download link - <a href="">bakemaster-blender-market-link</a> <br /> download link - <a href="">bakemaster-gumroad-link</a> <br /> source code - https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon
+##### BakeMaster <br /> The Freedom to Bake. <br /> <br /> last edit date - 23.07.2022 <br /> author - kirilstrezikozin@gmail.com <br /> download link - <a href="">bakemaster-blender-market-link</a> <br /> download link - <a href="">bakemaster-gumroad-link</a> <br /> source code - https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon
 <!-- End of the README -->

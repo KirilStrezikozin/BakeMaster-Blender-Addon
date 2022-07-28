@@ -7,12 +7,16 @@
 BakeMaster 1.0 Documentation
 ============================
 
-Welcome to the documentation for BakeMaster, a powerful and fully-featured Blender baking add-on.
+Welcome to the BakeMaster Documentation.
+
+.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/teasers/bakemaster-addon-teaser-primary.png
+   :alt: bakemaster-addon-teaser-primary
+   :width: 1280 px
 
 Quickstart
 ==========
 
-* :doc:`/start/about`
+* :doc:`/start/about/index`
 * :doc:`/start/install`
 * :doc:`/start/basic_usage`
 * :doc:`/start/help`
@@ -22,7 +26,7 @@ Quickstart
    :caption: Quickstart
    :maxdepth: 1
 
-   start/about.rst
+   start/about/index.rst
    start/install.rst
    start/basic_usage.rst
    start/help.rst
@@ -68,6 +72,7 @@ Component API-Access Modules
 Versions
 ========
 
+* :doc:`/versions/index`
 * :doc:`/versions/1_0_0`
 
 .. toctree::
@@ -75,12 +80,14 @@ Versions
    :caption: Versions
    :maxdepth: 1
 
+   versions/index.rst
    versions/1_0_0.rst
 
 Get Involved
 ============
 
 * :doc:`/contribute/index`
+* :doc:`/community/index`
 
 .. toctree::
    :hidden:
@@ -88,6 +95,7 @@ Get Involved
    :maxdepth: 1
 
    contribute/index.rst
+   community/index.rst
 
 Indices
 =======

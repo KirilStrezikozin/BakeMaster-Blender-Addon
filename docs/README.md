@@ -26,7 +26,7 @@ A local HTML version can be created using the commands:
 - `python -m pip install sphinx` - Sphinx installation
 - In the `docs/` directory, use `make html`
 
-HTML pages will be in `docs/_build/html`.
+HTML pages will sit in `docs/_build/html`.
 
 ### Contribute
 
