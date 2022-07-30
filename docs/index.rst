@@ -17,8 +17,8 @@ Quickstart
 ==========
 
 * :doc:`/start/about/index`
-* :doc:`/start/install`
-* :doc:`/start/basic_usage`
+* :doc:`/start/install/index`
+* :doc:`/start/basic_usage/index`
 * :doc:`/start/help`
 
 .. toctree::
@@ -27,8 +27,8 @@ Quickstart
    :maxdepth: 1
 
    start/about/index.rst
-   start/install.rst
-   start/basic_usage.rst
+   start/install/index.rst
+   start/basic_usage/index.rst
    start/help.rst
 
 User's Workflow

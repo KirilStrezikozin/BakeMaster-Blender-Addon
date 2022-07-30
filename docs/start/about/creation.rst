@@ -10,8 +10,8 @@ BakeMaster is built on Blender Python API. It uses a native Blender baking opera
 History
 =======
 
-First steps long along
-----------------------
+First steps along
+-----------------
 
 In August of 2021, the first idea about creating a baking add-on appeared. We wanted to improve standalone Blender's baking workflow and adjust it to be comfortable, convenient and easy to use for any user on any level. It all started with a simple structure concept:
 

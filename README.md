@@ -184,7 +184,7 @@ BakeMaster add-on can be accessed in the Viewport. <br /> Hit the "N" key on you
 
 ### Update BakeMaster
 
-Once a newer version of BakeMaster becomes available uninstall all the previous versions. <br /> Download the newer one. Follow the steps in the sections above to install it into Blender. <br /> A new version will be announced in the <a href="">Announcements</a>.
+Once a newer version of BakeMaster becomes available, uninstall all the previous versions. <br /> Download the newer one. Follow the steps in the sections above to install it into Blender. <br /> A new version will be announced in the <a href="">Announcements</a>.
 
 <a href="">Read more 📖</a>
 
