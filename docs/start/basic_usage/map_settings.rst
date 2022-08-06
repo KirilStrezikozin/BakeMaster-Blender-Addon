@@ -1,3 +1,6 @@
+.. |map_settings| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/basic_usage/map_settings_page/map_settings_350x320.gif
+    :alt: map_settings
+
 ============
 Map Settings
 ============
@@ -15,8 +18,7 @@ The following settings can be controlled (detailed information about Map Setting
 - Map Output Settings
 - Special Map Settings
 
-.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-map-settings.gif
-    :alt: bakemaster-addon-item-map-settings
+|map_settings|
 
 .. seealso::
     Map Workflow

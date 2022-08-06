@@ -1,3 +1,9 @@
+.. |tooltips| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/help_page/tooltips_509x246.png
+    :alt: tooltips
+
+.. |context_menu| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/help_page/context_menu_302x420.png
+    :alt: context_menu
+
 ===========
 Help System
 ===========
@@ -7,7 +13,7 @@ BakeMaster provides wide support for its users. It includes built-in User Interf
 UI Tooltips
 ===========
 
-.. image
+|tooltips|
 
 To view the tooltip of a UI layout element, hover the mouse cursor over it. The tooltip will appear in a second and usually for Operator or Property structure classes. If you don't see a tooltip, enable Tooltips in the Blender Preferences.
 
@@ -30,7 +36,7 @@ UI Context Menu
 
 When clicking with the right mouse click on the UI Property, the context menu appears:
 
-.. image
+|context_menu|
 
 Below are some of the controls that the menu has:
 

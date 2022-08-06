@@ -1,12 +1,27 @@
+.. |gradient_map_preview| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/about/introduction_page/gradient_map_preview_350x320.gif
+    :width: 320 px
+    :alt: gradient_map_preview
+
+.. |image_editor| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/about/introduction_page/image_editor_350x320.gif
+    :width: 320 px
+    :alt: image_editor
+    
+.. |teaser_secondary| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/about/introduction_page/teaser_secondary_1920x1080.png
+    :width: 1280 px
+    :alt: teaser_secondary
+
+.. |list_of_maps| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/about/introduction_page/list_of_maps_255x432.png
+    :class: float-right
+    :height: 350 px
+    :alt: list_of_maps
+
 ============
 Introduction
 ============
 
 Welcome to BakeMaster, a powerful and fully-featured Blender baking add-on.
 
-.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/teasers/bakemaster-addon-teaser-secondary.png
-    :width: 1280 px
-    :alt: bakemaster-addon-teaser-secondary
+|teaser_secondary|
 
 BakeMaster is an add-on specified for baking various texture maps and created for Blender - open-source 3D Computer graphics software. Along with its intuitive and convenient workflow baking process becomes a pleasure. Created from scratch for users who can't stand wasting time, and yearn for most functionality and cutting-edge features.
 
@@ -21,6 +36,17 @@ We gave our best shot to make you love the setup in BakeMaster, which takes only
 
 An unlimited number of objects and custom maps, each driven by unique settings - all can be configured and baked with BakeMaster!
 
+Why Artists choose BakeMaster
+=============================
+
+|list_of_maps|
+
+Baking standard Cycles maps is straightforward, but what about baking dozens of them, or PBR-based that are highly relevant in physically accurate texturing? This can easily lead to losing valuable time. Having taken advantage of Blender's node-based material system, we decided to create a fast, responsive, and comfortable baking solution alongside the native baking operator.
+
+BakeMaster makes the whole process easy to tweak and delivers more functionalities.
+
+Never worry about the nodes again: just toggle a couple of settings and BakeMaster will configure it all for you. Cycles maps are gone? Not just yet - simpler UI and manageable settings make it feel like a new book.
+
 For whom is BakeMaster?
 =======================
 
@@ -31,15 +57,7 @@ Baking is yours. BakeMaster is yours.
 
 Whether you fall into baking rarely, or it is your regular workflow, BakeMaster will cover you. It is vital to have comfortable creation tools to save yourself time, and with which your artistic thoughts will never jump out of the boat.
 
-.. |image-0| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-map-preview-2.gif
-    :width: 320 px
-    :alt: bakemaster-addon-item-map-preview-2
-
-.. |image-1| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-view-image-editor-baked.gif
-    :width: 320 px
-    :alt: bakemaster-addon-view-image-editor-baked
-
-|image-0| |image-1|
+|gradient_map_preview| |image_editor|
 
 Key Features
 ============

@@ -1,11 +1,27 @@
+.. |settings_panel| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/workflow/interface/object_settings_panel_page/object_settings_panel_230x138.png
+    :alt: settings_panel
+
+.. |output_panel| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/workflow/interface/object_settings_panel_page/output_panel_238x245.png
+    :alt: output_panel
+
+.. |source_target_panel| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/workflow/interface/object_settings_panel_page/source_to_target_panel_258x301.png
+    :alt: source_target_panel
+
+.. |uv_panel| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/workflow/interface/object_settings_panel_page/uv_panel_233x183.png
+    :alt: uv_panel
+
 =====================
 Object Settings Panel
 =====================
+
+|settings_panel|
 
 Each object has its prebake settings that are configured in the Object Settings Panel.
 
 Source to Target Panel
 ======================
+
+|source_target_panel|
 
 Source to Target Panel has settings and preferences related to Source to Target bake. It contains the following controls:
 
@@ -27,6 +43,8 @@ Source to Target Panel has settings and preferences related to Source to Target 
 
 UV Maps Panel
 =============
+
+|uv_panel|
 
 UV Settings are configured in the UV Maps Panel. There are the following properties:
 
@@ -73,12 +91,14 @@ UV Packing settings can be controlled after enabling "Include in UV Pack":
 Output Panel
 ============
 
+|output_panel|
+
 Currently, the Object's Output Panel has Overwrite Maps Settings only.
 
 Overwrite Maps Settings panel
 -----------------------------
 
-Enable Overwrite Maps Settings for automatic maps output settings configuration. Contorls:
+Enable Overwrite Maps Settings for automatic maps output settings configuration. Controls:
 
 **Target**
     Bake target in Image Textures or Vertex Colors. Currently, only Image Textures bake target is available.

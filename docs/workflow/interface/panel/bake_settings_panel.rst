@@ -1,3 +1,12 @@
+.. |item_bake_settings| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/basic_usage/bake_settings_page/bake_settings_350x320.gif
+    :alt: item_bake_settings
+
+.. |bake_controls| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/workflow/interface/bake_settings_panel_page/bake_controls_227x438.png
+    :alt: bake_controls
+
+.. |bake_settings| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/workflow/interface/bake_settings_panel_page/bake_settings_227x438.png
+    :alt: bake_settings
+
 ===================
 Bake Settings Panel
 ===================
@@ -5,7 +14,9 @@ Bake Settings Panel
 Object Bake Settings Panel
 ==========================
 
-Each object in the List of Objects can have the following unique Bake Settings that impact duration of baking and its quality, as well as directory and files arrangement:
+|bake_settings|
+
+Each object in the List of Objects can have the following unique Bake Settings that impact the duration of baking and its quality, as well as directory and files arrangement:
 
 **Create Material**
     Automatic Material creation for the object with all baked maps.
@@ -26,14 +37,15 @@ Each object in the List of Objects can have the following unique Bake Settings t
     | Output samples count.
     | Adaptive sampling is supported too.
 
-.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-bake-settings.gif
-    :alt: bakemaster-addon-item-bake-settings
+|item_bake_settings|
 
 Bake Controls
 =============
 
 Bake Controls
 =============
+
+|bake_controls|
 
 Inside the Bake Settings panel, there are the following Bake Control Buttons:
 

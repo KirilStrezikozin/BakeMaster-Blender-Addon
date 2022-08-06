@@ -1,3 +1,6 @@
+.. |set_source| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/basic_usage/source_target_page/set_source_350x320.gif
+    :alt: set_source
+
 ======================
 Source-target Settings
 ======================
@@ -15,8 +18,7 @@ To choose a source object, it should be added to the List of Objects. Follow the
 4. Expand the Source to Target panel
 5. Check "Target"; set "Source" to be the high-poly.
 
-.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-set-source.gif
-    :alt: bakemaster-addon-item-set-source
+|set_source|
 
 Ray Casting Settings
 ====================

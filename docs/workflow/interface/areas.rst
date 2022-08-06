@@ -1,3 +1,17 @@
+.. |accessing| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/install/install_page/accessing_350x320.gif
+    :alt: accessing
+
+.. |image_editor| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/about/introduction_page/image_editor_350x320.gif
+    :width: 320 px
+    :alt: image_editor
+
+.. |baking_progress| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/basic_usage/bake_process_page/baking_progress_350x320.gif
+    :alt: baking_progress
+
+.. |static_baking_progress| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/workflow/areas_page/static_progress_bar_1049x49.png
+    :width: 900 px
+    :alt: static_baking_progress
+
 =====
 Areas
 =====
@@ -12,8 +26,7 @@ BakeMaster add-on Panel (aka the add-on's UI organization unit) holds all the me
 The Panel can be accessed in the 3D Viewport Workspace.
 Hit the ``N`` key on your keyboard and the right UI sidebar will pop up. Then navigate to the BakeMaster Tab, where you will see the add-on:
 
-.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-accessing.gif 
-    :alt: bakemaster-addon-accessing
+|accessing|
 
 Editors
 =======
@@ -38,15 +51,23 @@ Below is the list of expected Interface freezes that might occur:
 UV Editor
 ---------
 
-UV Unwrapping and packing, as well as UDIM tiles and properties, will be configured in the UV Editor. If there is no UV Editor available, BakeMaster will set the current active area to be the one. 
+UV Unwrapping and packing, as well as UDIM tiles and properties, will be configured in the UV Editor. If there is no UV Editor available, BakeMaster will set the current active area to be one. 
+
+Image Editor
+------------
+
+Before bake, BakeMaster creates image files to save the baked result. Baked image textures can be viewed in the Image Editor.
+
+|image_editor|
 
 Status Bar
 ==========
 
 Baking progress, info messages, warnings, and errors will be displayed in the bottom status bar of your Blender file.
 
-.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-baking-progress.gif
-    :alt: bakemaster-addon-item-baking-progress
+|baking_progress|
+
+|static_baking_progress|
 
 .. note:: 
     While baking, the BakeMaster Status bar message updates every 2 seconds.

@@ -1,5 +1,0 @@
-====
-Maps
-====
-
-Info about Maps.

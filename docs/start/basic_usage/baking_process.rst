@@ -1,3 +1,6 @@
+.. |baking_progress| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/basic_usage/bake_process_page/baking_progress_350x320.gif
+    :alt: baking_progress
+
 ==============
 Baking Process
 ==============
@@ -7,8 +10,7 @@ Starting the Bake
 
 You can start the bake by pressing Bake All or Bake This Buttons. Baking progress will be shown in the bottom info bar of your Blender file:
 
-.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-baking-progress.gif
-    :alt: bakemaster-addon-item-baking-progress
+|baking_progress|
 
 After a bake has finished, a message in the info bar will appear showing the amount of time the bake took. 
 
@@ -29,7 +31,7 @@ The baking process can be controlled from your keyboard or Blender Console. All 
 - Press `ESC` to cancel baking current map
 - Press `BACKSPACE + ESC` to cancel baking
 
-It is also recommended to have the Blender Console opened before baking (how to open it), so if there is a long unexpected freeze, you can easily abort the bake by pressing ``Ctrl + C`` in the console window.
+It is also recommended to have the Blender Console opened before baking (how to open it), so if there is a long unexpected freeze, you can easily abort the bake by pressing ``Ctrl + C`` or ``⌘ Cmd + C`` (Mac) in the console window.
 
 Below is the list of expected freezes that might occur:
 
@@ -43,7 +45,7 @@ Below is the list of expected freezes that might occur:
 Undo the Bake Result
 --------------------
 
-Just after the bake has finished or canceled, you can undo its result by pressing ``Ctrl + Z`` on your keyboard.
+Just after the bake has finished or canceled, you can undo its result by pressing ``Ctrl + Z`` or ``⌘ Cmd + Z`` (Mac) on your keyboard.
 
 .. seealso::
     Bake Workflow

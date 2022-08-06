@@ -7,11 +7,11 @@
 BakeMaster 1.0 Documentation
 ============================
 
-Welcome to the BakeMaster Documentation.
-
-.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/teasers/bakemaster-addon-teaser-primary.png
-   :alt: bakemaster-addon-teaser-primary
+.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/index_page/teaser_social_1200x600.png
+   :alt: teaser_social
    :width: 1280 px
+
+Welcome to the Documentation of BakeMaster - the Blender Baking Add-on to catch with and dive into your ultimate baking workflow that will be like never before - a pleasure!
 
 Quickstart
 ==========
@@ -35,8 +35,8 @@ User's Workflow
 ===============
 
 * :doc:`/workflow/interface/index`
-* :doc:`/workflow/objects/index`
-* :doc:`/workflow/maps/index`
+* :doc:`/workflow/object/index`
+* :doc:`/workflow/map/index`
 * :doc:`/workflow/bake/index`
 * :doc:`/workflow/errors/index`
 
@@ -46,48 +46,29 @@ User's Workflow
    :maxdepth: 1
 
    workflow/interface/index.rst
-   workflow/objects/index.rst
-   workflow/maps/index.rst
+   workflow/object/index.rst
+   workflow/map/index.rst
    workflow/bake/index.rst
    workflow/errors/index.rst
-
-Component API-Access Modules
-============================
-
-* :doc:`/access_modules/context`
-* :doc:`/access_modules/data`
-* :doc:`/access_modules/operators`
-* :doc:`/access_modules/properties`
-
-.. toctree::
-   :hidden:
-   :caption: Component API-Access Modules
-   :maxdepth: 1
-
-   access_modules/context.rst
-   access_modules/data.rst
-   access_modules/operators.rst
-   access_modules/properties.rst
-
+   
 Versions
 ========
 
-* :doc:`/versions/index`
-* :doc:`/versions/1_0_0`
+* :doc:`/versions/versions`
+* :doc:`/versions/releases`
 
 .. toctree::
    :hidden:
    :caption: Versions
    :maxdepth: 1
 
-   versions/index.rst
-   versions/1_0_0.rst
+   versions/versions.rst
+   versions/releases.rst
 
 Get Involved
 ============
 
 * :doc:`/contribute/index`
-* :doc:`/community/index`
 
 .. toctree::
    :hidden:
@@ -95,11 +76,11 @@ Get Involved
    :maxdepth: 1
 
    contribute/index.rst
-   community/index.rst
 
 Indices
 =======
 
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+
+.. * :ref:`modindex`
+  * :ref:`search`

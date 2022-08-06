@@ -1,3 +1,6 @@
+.. |bake_settings| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/basic_usage/bake_settings_page/bake_settings_350x320.gif
+    :alt: bake_settings
+
 ==========================
 Bake Settings and Controls
 ==========================
@@ -22,8 +25,7 @@ Each object in the List of Objects can have the following unique Bake Settings:
 
 Detailed information can be read on the Bake Settings Panel Page.
 
-.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-bake-settings.gif
-    :alt: bakemaster-addon-item-bake-settings
+|bake_settings|
 
 Bake Controls
 =============

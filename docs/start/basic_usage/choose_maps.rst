@@ -1,3 +1,9 @@
+.. |add_maps| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/basic_usage/choose_maps_page/add_maps_350x320.gif 
+    :alt: add_maps
+
+.. |map_visibility| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/basic_usage/choose_maps_page/map_visibility_350x320.gif
+    :alt: map_visibility
+
 ===========
 Choose Maps
 ===========
@@ -13,8 +19,7 @@ At first, the List of Maps will be empty. To add maps you would like to be baked
 2. Expand Map Settings panel
 3. Click the "+" button to add a map pass
 
-.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-item-add-maps.gif 
-    :alt: bakemaster-addon-item-add-maps
+|add_maps|
 
 Each added map can be selected by clicking it and configured with unique settings.
 
@@ -22,27 +27,6 @@ List of Maps table Controls
 ---------------------------
 
 The List of Maps table has several important controls that can be viewed here.
-
-The List of Maps table has the following controls:
-
-* Add Button
-* Remove Button
-* Trash Button
-
-Add Button
-**********
-
-To add a new map pass to the List of Maps, click the "Add" Button on the right of the List of Maps table.
-
-Remove Button
-*************
-
-A map pass can be removed from the List of Maps by pressing the "Remove" Button. The active map pass in the list will be removed from the table.
-
-Trash Bin Button
-****************
-
-To remove all map passes from the List of Maps table, press the "🗑️ Trash Bin" Button. All maps within the list will be removed and their setting will be reset.
 
 Additional Tips
 ===============
@@ -62,6 +46,8 @@ Bake visibility
 ---------------
 
 If you have prepared some maps for the future and you don't want to bake them alongside others, click the "📷 Camera" button near the map pass to toggle its "bake visibility". You can then get back to those maps and bake them too.
+
+|map_visibility|
 
 .. seealso::
     Map Workflow

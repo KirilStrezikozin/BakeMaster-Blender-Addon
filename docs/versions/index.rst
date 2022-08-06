@@ -1,5 +1,0 @@
-===================
-BakeMaster Versions
-===================
-
-Versions info.

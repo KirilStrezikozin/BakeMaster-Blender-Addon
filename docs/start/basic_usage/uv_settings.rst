@@ -1,3 +1,6 @@
+.. |uv_settings| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/basic_usage/uv_settings_page/uv_settings_350x320.gif
+    :alt: uv_settings
+
 ===========
 UV Settings
 ===========
@@ -15,6 +18,8 @@ The following settings can be controlled (detailed information about UV Settings
 - UV Type
 - Active UV Layer
 - UV Packing and its settings
+
+|uv_settings|
 
 .. seealso::
     Object Workflow

@@ -1,5 +1,0 @@
-=======
-Objects
-=======
-
-Info about Objects.

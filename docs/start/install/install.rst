@@ -1,3 +1,17 @@
+.. |blender_icon_official| image:: https://download.blender.org/branding/blender_logo.png
+    :target: https://www.blender.org/
+    :width: 200 px
+    :alt: blender_icon_official
+
+.. |removing| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/install/install_page/removing_350x320.gif
+    :alt: removing
+
+.. |installing| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/install/install_page/installing_350x320.gif
+    :alt: installing
+
+.. |accessing| image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/install/install_page/accessing_350x320.gif
+    :alt: accessing
+
 ==================
 Installation Guide
 ==================
@@ -5,9 +19,7 @@ Installation Guide
 BakeMaster add-on works in Blender, so if you haven't got it on your device just yet, go ahead!
 Make sure the Blender version you are using is compatible with BakeMaster.
 
-.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/resources/blender-icon-official.png
-    :target: https://www.blender.org/
-    :alt: blender-icon-official
+|blender_icon_official|
 
 Uninstall previous versions
 ===========================
@@ -22,8 +34,7 @@ so follow the steps to uninstall it first:
 4. Expand the add-on panel and click "Remove"
 5. Save Blender Preferences
 
-.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-removal.gif
-    :alt: bakemaster-addon-removal
+|removing|
 
 It would be good to restart Blender after for changes to take into effect.
 
@@ -51,8 +62,7 @@ For the add-on to work, you need to install in into Blender:
 4. Specify the path to the download zipped add-on
 5. Enable the addon
 
-.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-installing.gif
-    :alt: bakemaster-addon-installing
+|installing|
 
 Access BakeMaster in Blender
 ============================
@@ -61,8 +71,7 @@ BakeMaster add-on can be accessed in the 3D Viewport Workspace.
 Hit the ``N`` key on your keyboard and you will see the add-on pop up on the right.
 Head over to the add-on panel and you are good to go and start baking!
 
-.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/docs/bakemaster-addon-accessing.gif 
-    :alt: bakemaster-addon-accessing
+|accessing|
 
 Update BakeMaster
 =================
