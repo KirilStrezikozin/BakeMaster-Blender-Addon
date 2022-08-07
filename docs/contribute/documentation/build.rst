@@ -2,7 +2,7 @@
 Building the Documentation
 ==========================
 
-The Documentation is written in .reStructuredText text files and built using Sphinx.
+The Documentation is written in .reStructuredText text files and built using `Sphinx <https://www.sphinx-doc.org/en/master/>`__.
 
 1. To install Sphinx, run the following command::
 

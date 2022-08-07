@@ -12,13 +12,10 @@ Each map is controlled by its unique map settings that can be accessed by follow
 3. Choose an active map pass
 4. Expand the Map Pass Settings panel
 
-The following settings can be controlled (detailed information about Map Settings properties is on the Map Settings Panel Page):
+The following settings can be controlled (detailed information about Map Settings properties is on the `Map Settings Panel Page <https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/interface/panel/map_settings_panel.html#particular-map-settings-panel>`__):
 
 - Map Pass Type
 - Map Output Settings
 - Special Map Settings
 
 |map_settings|
-
-.. seealso::
-    Map Workflow

@@ -20,4 +20,4 @@ Except the BakeMaster documentation itself is available under the `Creative Comm
 
 Please attribute the ``BakeMaster Blender Add-on by kemplerart`` and include a URL link to the source of used content. For attribution details, view `Creative Commons Best practices for attribution <https://wiki.creativecommons.org/wiki/Marking/Users>`_.
 
-If you have any questions raised regarding the license or its presentation, feel free to `contact the author <gg>`_.
+If you have any questions raised regarding the license or its presentation, feel free to `contact the author <https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html#contacts>`_.

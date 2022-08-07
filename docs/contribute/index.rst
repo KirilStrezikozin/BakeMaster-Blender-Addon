@@ -50,20 +50,17 @@ Follow the guide below to contribute to the BakeMaster script files:
 Contribute
 ==========
 
-**Pull Request** on the BakeMaster GitHub page if you are contributing to the documentation or BakeMaster Demo version. Otherwise, **email the author** and attach your project files as a zip folder to an email.
+`Pull Request <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/pulls>`__ on the BakeMaster GitHub page if you are contributing to the documentation or BakeMaster Demo version. Otherwise, `contact the author <https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html#contacts>`__ and attach your project files as a zip folder to an email.
 
 Contacts
 ========
 
-GitHub Page
+`GitHub Page <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon>`__
     | BakeMaster Demo version repository, as well as a place to submit issues, or have a devtalk.
     | Project milestones are also sitting there.
 
 BakeMaster Chat
     The Discord chat for discussions, announcements and more.
-
-Email Page
-    Send an email to kemplerart - the add-on author.
 
 kemplerart's contacts
     | email: kirilstrezikozin@gmail.com

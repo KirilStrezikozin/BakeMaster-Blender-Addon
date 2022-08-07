@@ -26,7 +26,7 @@ Each added map can be selected by clicking it and configured with unique setting
 List of Maps table Controls
 ---------------------------
 
-The List of Maps table has several important controls that can be viewed here.
+The List of Maps table has several important controls that can be viewed `here <https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/interface/panel/map_settings_panel.html#list-of-maps-table>`__.
 
 Additional Tips
 ===============
@@ -34,7 +34,7 @@ Additional Tips
 About map types
 ---------------
 
-Map Pass type can be set by clicking the name of the map in the List of Maps table. You can choose a map pass type within the 25 types available. 
+Map Pass type can be set by clicking the name of the map in the List of Maps table. You can choose a map pass type within the `25 types available <https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/map/map.html#map-type>`__. 
 
 .. note:: 
     An object in the List of Objects can have an unlimited number of maps added.
@@ -48,6 +48,3 @@ Bake visibility
 If you have prepared some maps for the future and you don't want to bake them alongside others, click the "📷 Camera" button near the map pass to toggle its "bake visibility". You can then get back to those maps and bake them too.
 
 |map_visibility|
-
-.. seealso::
-    Map Workflow

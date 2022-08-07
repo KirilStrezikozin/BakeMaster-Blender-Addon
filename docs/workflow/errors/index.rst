@@ -211,7 +211,7 @@ We make our best to test and establish the add-on's stability, but there is litt
 .. admonition:: Tip №1
     :class: tip
 
-    If you are using the BakeMaster add-on in the Blender version it is **not** meant to be **compatible** with, wait for the developers to upgrade BakeMaster to meet its requirements.
+    If you are using the BakeMaster add-on in the Blender version it is **not** meant to be `compatible <https://bakemaster-blender-addon.readthedocs.io/en/latest/start/install/compatibility.html?#which-blender-versions>`__ with, wait for the developers to upgrade BakeMaster to meet its requirements.
 
 .. admonition:: Tip №2
     :class: tip

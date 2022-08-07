@@ -97,7 +97,7 @@ Map Pass Type is a type of the map to be baked. There are 3 categories:
 * Default Cycles maps
 * Special mask maps
   
-There are 25 map types available in total. Each map pass type bake result is different, as well as its settings. You can read and view all the information about each map pass type and map passes in the Maps Workflow.
+There are 25 map types available in total. Each map pass type bake result is different, as well as its settings. You can read and view all the information about each map pass type and map passes in the `Maps Workflow <https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/map/map.html#map-type>`__.
 
 Map Pass Type can be set by clicking the name of the map in the List of Maps table.
 
@@ -123,7 +123,7 @@ Map Output Settings include:
 * Affect by Source (apply Source to Target settings for this map pass)
 * Other settings that depend on the Blender version you are using
 
-Detailed information about each map output setting can be viewed here.
+Detailed information about each map output setting can be viewed `here <https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/map/map.html#map-output-related-properties>`__.
 
 .. note:: 
     If you want all maps to have identical Output Settings, set up Overwrite Maps Output Settings.
@@ -180,8 +180,6 @@ To toggle Special Settings customization, uncheck "Default" in the map settings 
 +----------------------+
 | - Use only Local     |
 +----------------------+
-
-Each settings hyperlink goes to detailed information and how it applies in the usage.
 
 Real-time Map Preview
 *********************

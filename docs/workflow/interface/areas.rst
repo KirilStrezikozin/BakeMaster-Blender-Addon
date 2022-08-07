@@ -16,7 +16,7 @@
 Areas
 =====
 
-The Blender Windows is divided into areas. Read more about areas in the Blender Manual.
+The Blender Windows is divided into areas. Read more about areas in the `Blender Manual <https://docs.blender.org/manual/en/latest/interface/index.html#window-system>`__.
 
 UI Panel
 ========

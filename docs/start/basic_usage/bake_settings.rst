@@ -23,7 +23,7 @@ Each object in the List of Objects can have the following unique Bake Settings:
 - Bake device (CPU, GPU - depends on the system)
 - Adaptive sampling, sampling
 
-Detailed information can be read on the Bake Settings Panel Page.
+Detailed information can be read on the `Bake Settings Panel Page <https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/interface/panel/bake_settings_panel.html#bake-settings-panel>`__.
 
 |bake_settings|
 
@@ -36,9 +36,5 @@ Inside the Bake Settings panel, there are the following Bake Controls:
 - Bake This Button (bake maps only for the current item in the List)
 - Bake All Button (bake maps for all items)
 
-There is also an embossed field called "Bake Instruction". When you hover over it, you will see Baking process information and keyboard controls.
-
-Full and detailed information regarding each control can be viewed by following its hyperlink.
-
-.. seealso::
-    Bake Workflow
+.. hint::
+    There is also an embossed field called "Bake Instruction". When you hover over it, you will see Baking process information and keyboard controls.

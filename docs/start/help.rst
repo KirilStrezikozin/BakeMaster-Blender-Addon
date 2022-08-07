@@ -8,7 +8,7 @@
 Help System
 ===========
 
-BakeMaster provides wide support for its users. It includes built-in User Interface Tooltips, Online web Documentation, and Community connection and support.
+BakeMaster provides wide support for its users. It includes built-in User Interface Tooltips, `Online web Documentation <https://bakemaster-blender-addon.readthedocs.io/en/latest/>`__, and `Community connection with support <https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html#contacts>`__.
 
 UI Tooltips
 ===========
@@ -52,11 +52,11 @@ Web Links
 
 You can find hyperlinks to related BakeMaster Documentation sections across Documentation website pages, README files, or other publicly available BakeMaster content. They provide a wide and expanded explanation with a description. Below are the most frequent and relevant website links for you to put an eye on:
 
-**README**
+`**README** <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/blob/master/README.md>`__
     Basic Introduction to the BakeMaster Blender Add-on with a quick Basic Usage tutorial and other useful information for new users. You receive official README.md and README.html files with the downloaded zipped add-on folder.
 
-**Documentation**
+`**Documentation** <https://bakemaster-blender-addon.readthedocs.io/en/latest/>`__
     Official and full BakeMaster documentation providing a complete overview of the add-on. You are reading it at the moment.
 
-**GitHub Repository**
+`**GitHub Repository** <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon>`__
     GitHub repository that contains all media and content project files, and BakeMaster Demo Add-on version. You can view add-on version history, all releases and content. Community Discussions and Announcements are also available there.

@@ -45,7 +45,7 @@ Baking standard Cycles maps is straightforward, but what about baking dozens of 
 
 BakeMaster makes the whole process easy to tweak and delivers more functionalities.
 
-Never worry about the nodes again: just toggle a couple of settings and BakeMaster will configure it all for you. Cycles maps are gone? Not just yet - simpler UI and manageable settings make it feel like a new book.
+Never worry about the nodes again: just toggle a couple of settings and BakeMaster will configure it all for you. Cycles maps are gone? Not just yet - simpler UI and manageable settings make it feel cool.
 
 For whom is BakeMaster?
 =======================
@@ -62,7 +62,7 @@ Whether you fall into baking rarely, or it is your regular workflow, BakeMaster 
 Key Features
 ============
 
-The main features that make BakeMaster rock.
+The main features that make BakeMaster rock:
 
 * Bake an **unlimited** number of objects and maps, each with **unique** settings
 * 25 different map types available:
@@ -85,6 +85,3 @@ The main features that make BakeMaster rock.
 * Vast Blender versions **compatibility**
 * **Enhanced Bake Control**
 * **Responsive UI**
-
-.. tip::
-    Click on hyperlinks to view detailed information about each feature.

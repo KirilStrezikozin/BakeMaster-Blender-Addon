@@ -56,4 +56,4 @@ Even now, though BakeMaster Blender Add-on has been officially released, it is s
 Tools and Sources
 =================
 
-If you would like to know which tools or sources we used to create BakeMaster, feel free to contact the author.
+If you would like to know which tools or sources we used to create BakeMaster, feel free to `contact the author <https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html#contacts>`__.

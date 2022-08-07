@@ -44,7 +44,7 @@ Now, objects in the List of Objects can be configured with unique bake settings 
 List of Objects table Controls
 ------------------------------
 
-The List of Objects table has several important controls that can be viewed here.
+The List of Objects table has several important controls that can be viewed `here <https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/interface/panel/list_of_objects_table.html>`__.
 
 Which objects can be added?
 ===========================
@@ -88,6 +88,3 @@ If you have a complex scene setup, it might be hard to find the object you have 
     Click on the object in the list and it will be selected in your current scene.
 
 |selecting_objects|
-
-.. seealso::
-    Object Workflow

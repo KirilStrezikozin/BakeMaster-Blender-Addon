@@ -62,7 +62,7 @@ UV Type is an option to set a correct UV Type for maps to be baked. You can choo
 * Single (Single tile - baking to a single image)
 * Tiles (UDIM tiles - baking to UDIMs)
 
-More information about UV Maps and UDIM tiles can be found in the Blender Manual.
+More information about UV Maps and UDIM tiles can be found in the `Blender Manual <https://docs.blender.org/manual/en/latest/modeling/meshes/uv/index.html>`__.
 
 Active UV Layer
 ---------------
@@ -83,7 +83,7 @@ To bake multiple items onto one image texture, toggle the "Include in UV Pack". 
 .. note:: 
     If the object has no UV Layers, it will be unwrapped automatically before the UV Packing.
 
-UV Packing settings can be controlled after enabling "Include in UV Pack":
+UV Packing settings can be controlled after enabling `Include in UV Pack <https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/object/object.html#use-uv-islands-packing>`__:
 
 * Rotate UV islands for best fit
 * Packing margin (space between packed islands)

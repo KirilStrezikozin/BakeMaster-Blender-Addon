@@ -42,20 +42,18 @@ Each object in the List of Objects can have the following unique Bake Settings t
 Bake Controls
 =============
 
-Bake Controls
-=============
-
 |bake_controls|
 
 Inside the Bake Settings panel, there are the following Bake Control Buttons:
 
-**Reset BakeMaster option**
+`**Reset BakeMaster option** <https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/object/object.html#use-bakemaster-reset>`__
     Reset BakeMaster after the bake.
-**Bake This Button**
+`**Bake This Button** <https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/bake/bake.html#bake-this>`__
     Bake maps only for the current item in the List.
-**Bake All Button**
+`**Bake All Button** <https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/bake/bake.html#bake-all>`__
     Bake maps for all items.
+`**Bake Instruction** <https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/object/object.html#bake-instruction>`__
+    Baking process information and keyboard controls.
 
-There is also an embossed field called "Bake Instruction". When you hover over it, you will see Baking process information and keyboard controls.
-
-Full and detailed information regarding each control can be viewed by following its hyperlink.
+.. hint::
+    Full and detailed information regarding each control can be viewed by following its hyperlink.

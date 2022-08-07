@@ -17,7 +17,7 @@ BakeMaster is compatible with the following Blender versions:
 * Blender 3.2
 * Blender 3.3
 
-If you face errors connected with Blender version compatibility, please submit your issue or contact the author.
+If you face errors connected with Blender version compatibility, please **submit your issue** or `contact the author <https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html#contacts>`__.
 
 Functionality differences
 =========================
@@ -36,7 +36,7 @@ Newer Blender versions have more functionalities or improved ones, meaning some 
 || All compatible versions || Adaptive displacement with           |
 ||                         || automatic modifiers                  |
 +--------------------------+---------------------------------------+
-| All compatible versions  | Real-time map preveiw                 |
+| All compatible versions  | Real-time map preview                 |
 +--------------------------+---------------------------------------+
 | All compatible versions  | Packing many items onto one map       |
 +--------------------------+---------------------------------------+

@@ -25,7 +25,7 @@ Controlling the bake
 While Baking
 ------------
 
-The baking process can be controlled from your keyboard or Blender Console. All keybindings are presented below and under the "Bake Instruction" field inside the Bake Settings panel:
+The baking process can be controlled from your keyboard or Blender Console. All keybindings are presented below and under the `Bake Instruction <https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/object/object.html#bake-instruction>`__ field inside the Bake Settings panel:
 
 - Press `BACKSPACE` to cancel baking all next maps
 - Press `ESC` to cancel baking current map
@@ -46,6 +46,3 @@ Undo the Bake Result
 --------------------
 
 Just after the bake has finished or canceled, you can undo its result by pressing ``Ctrl + Z`` or ``⌘ Cmd + Z`` (Mac) on your keyboard.
-
-.. seealso::
-    Bake Workflow

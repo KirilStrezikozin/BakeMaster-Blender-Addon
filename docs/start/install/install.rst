@@ -17,7 +17,7 @@ Installation Guide
 ==================
 
 BakeMaster add-on works in Blender, so if you haven't got it on your device just yet, go ahead!
-Make sure the Blender version you are using is compatible with BakeMaster.
+Make sure the Blender version you are using is `compatible with BakeMaster <https://bakemaster-blender-addon.readthedocs.io/en/latest/start/install/compatibility.html?#which-blender-versions>`__.
 
 |blender_icon_official|
 
@@ -41,20 +41,20 @@ It would be good to restart Blender after for changes to take into effect.
 Download the latest version
 ===========================
 
-Download the latest BakeMaster add-on version from the Blender Market or Gumroad.
+Download the latest BakeMaster add-on version from the **Blender Market** or **Gumroad**.
 We recommend installing the latest one, as we deliver stability and functionality improvements with each new version.
 
-A demo version can be also installed from the GitHub repo:
+A demo version can be also installed from the `GitHub repo <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon>`__:
 Go to the ``install/`` directory and download a zip folder.
-See BakeMaster Versions for the difference between the Demo and the Full version.
+See `BakeMaster Versions <https://bakemaster-blender-addon.readthedocs.io/en/latest/versions/versions.html>`__ for the difference between the Demo and the Full version.
 
 After downloading a zipped add-on folder, **do not unzip** it.
-Go to your Blender Preferences and install it. The add-on folder can be then accessed withing Blender's ``scripts/addons/`` directory after.
+Go to your Blender Preferences and install it. The add-on folder can be then accessed within Blender's ``scripts/addons/`` directory after.
 
 Install BakeMaster into Blender
 ===============================
 
-For the add-on to work, you need to install in into Blender:
+For the add-on to work, you need to install it into Blender:
 
 1. Open Blender
 2. Go to Edit > Preferences > Add-ons
@@ -78,6 +78,6 @@ Update BakeMaster
 
 Once a newer version of BakeMaster becomes available, uninstall all the previous versions.
 Download the newer one. Follow the steps in the sections above to install it into Blender.
-A new version will be announced in the Announcements.
+A new version will be announced in the **Announcements**.
 
-If you have issues with installing the add-on, feel free to reach out for help or contact the author directly.
+If you have issues with installing the add-on, feel free to **reach out for help** or `contact the author <https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html#contacts>`__ directly.

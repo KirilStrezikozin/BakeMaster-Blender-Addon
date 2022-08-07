@@ -34,4 +34,4 @@ Make sure you updated the version key in the ``bl_info`` dictionary in the :file
     ...
 
 .. attention:: 
-    Remember to follow the **Style Conventions**.
+    Remember to follow the `Style Conventions <https://docs.blender.org/api/current/info_best_practice.html#style-conventions>`__

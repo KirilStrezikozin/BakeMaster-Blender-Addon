@@ -7,8 +7,8 @@ Installing Dependencies
 
 To build the Documentation locally on your computer, you will need to have installed the following software:
 
-1. Python
-2. Git
+1. `Python <https://www.python.org/>`__
+2. `Git <https://git-scm.com/>`__
    
 .. note:: 
     The installation process may be different on each operating system, the guides can be found online.
