@@ -7,6 +7,10 @@ assignees: KirilStrezikozin
 
 ---
 
+**This bug report is:**
+
+- [ ] not a duplicate
+
 **Describe the bug**
 A clear and concise description of what the bug is.
 
