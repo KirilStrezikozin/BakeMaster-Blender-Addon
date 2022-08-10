@@ -206,7 +206,7 @@ Apart from the reports to the Blender Status bar, BakeMaster also prints message
 Unexpected BakeMaster Errors
 ============================
 
-We make our best to test and establish the add-on's stability, but there is little possibility to catch an unexpected error message. Those messages are highly likely to be connected with a source script error, and if you face one, we extremely encourage you to **Report an Unexpected Issue**. The tips below will help you before the error you have reported will have been fixed:
+We make our best to test and establish the add-on's stability, but there is little possibility to catch an unexpected error message. Those messages are highly likely to be connected with a source script error, and if you face one, we extremely encourage you to `Report an Unexpected Issue <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/new/choose>`__. The tips below will help you before the error you have reported will have been fixed:
 
 .. admonition:: Tip №1
     :class: tip

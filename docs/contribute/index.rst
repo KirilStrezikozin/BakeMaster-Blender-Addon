@@ -15,12 +15,12 @@ Useful Links
 .. admonition:: Submit an Issue
     :class: note
 
-    **Submit an issue** that you found in the BakeMaster add-on or the documentation.
+    `Submit an issue <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/new/choose>`__ that you found in the BakeMaster add-on or the documentation.
 
 .. admonition:: Announcements Channel
     :class: attention
 
-    BakeMaster news is announced in the **BakeMaster Chat** and the **Announcements on GitHub**.
+    BakeMaster news is announced in the `BakeMaster Chat <https://discord.gg/q9TsKJYPTD>`__ and the `Announcements on GitHub <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/discussions/categories/announcements>`__.
 
 Documentation
 =============
@@ -59,7 +59,7 @@ Contacts
     | BakeMaster Demo version repository, as well as a place to submit issues, or have a devtalk.
     | Project milestones are also sitting there.
 
-BakeMaster Chat
+`BakeMaster Chat <https://discord.gg/q9TsKJYPTD>`__
     The Discord chat for discussions, announcements and more.
 
 kemplerart's contacts
