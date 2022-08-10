@@ -12,7 +12,7 @@
 BakeMaster is an add-on specified for baking various texture maps <br/>and created for Blender - open-source 3D Computer graphics software. <br/>Along with its intuitive and convenient workflow baking process becomes a pleasure. <br/>Created from scratch for users who can't stand wasting time, <br />and yearn for most functionality and cutting-edge features.
 
 > <span style="color:red">BakeMaster Blender Add-on is under active development.
-> Stay tuned for Announcments ✅</span>
+> Stay tuned for Announcements ✅</span>
 
 ---
 
@@ -204,7 +204,7 @@ BakeMaster add-on can be accessed in the Viewport. <br /> Hit the "N" key on you
 
 ### Update BakeMaster
 
-Once a newer version of BakeMaster becomes available, uninstall all the previous versions. <br /> Download the newer one. Follow the steps in the sections above to install it into Blender. <br /> A new version will be announced in the <a href=""><span style="color:red">Announcements</span></a>.
+Once a newer version of BakeMaster becomes available, uninstall all the previous versions. <br /> Download the newer one. Follow the steps in the sections above to install it into Blender. <br /> A new version will be announced in the <a href="https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/discussions/categories/announcements">Announcements</a>.
 
 <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/start/install/index.html">Read more 📖</a>
 
@@ -453,7 +453,7 @@ Enjoying the BakeMaster add-on? Submit a review at <a href=""><span style="color
 
 Found a bug or issue? Would like to improve something? <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html#contacts">Contact us</a>!
 
-Have a question or just want to talk? <a href=""><span style="color:red">Start conversation</span></a>!
+Have a question or just want to talk? <a href="https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/discussions/categories/q-a">Start conversation</a>!
 
 Want to contribute? Visit <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html">this page</a> to become a contributor!
 

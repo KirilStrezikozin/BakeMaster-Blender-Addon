@@ -1,0 +1,708 @@
+<!DOCTYPE html><html><head>
+      <title>README</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      <link rel="stylesheet" href="file:///c:\Users\kempl\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.6.3\node_modules\@shd101wyy\mume\dependencies\katex\katex.min.css">
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <style>
+      /**
+ * prism.js Github theme based on GitHub's theme.
+ * @author Sam Clarke
+ */
+code[class*="language-"],
+pre[class*="language-"] {
+  color: #333;
+  background: none;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  word-wrap: normal;
+  line-height: 1.4;
+
+  -moz-tab-size: 8;
+  -o-tab-size: 8;
+  tab-size: 8;
+
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+  padding: .8em;
+  overflow: auto;
+  /* border: 1px solid #ddd; */
+  border-radius: 3px;
+  /* background: #fff; */
+  background: #f5f5f5;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+  padding: .1em;
+  border-radius: .3em;
+  white-space: normal;
+  background: #f5f5f5;
+}
+
+.token.comment,
+.token.blockquote {
+  color: #969896;
+}
+
+.token.cdata {
+  color: #183691;
+}
+
+.token.doctype,
+.token.punctuation,
+.token.variable,
+.token.macro.property {
+  color: #333;
+}
+
+.token.operator,
+.token.important,
+.token.keyword,
+.token.rule,
+.token.builtin {
+  color: #a71d5d;
+}
+
+.token.string,
+.token.url,
+.token.regex,
+.token.attr-value {
+  color: #183691;
+}
+
+.token.property,
+.token.number,
+.token.boolean,
+.token.entity,
+.token.atrule,
+.token.constant,
+.token.symbol,
+.token.command,
+.token.code {
+  color: #0086b3;
+}
+
+.token.tag,
+.token.selector,
+.token.prolog {
+  color: #63a35c;
+}
+
+.token.function,
+.token.namespace,
+.token.pseudo-element,
+.token.class,
+.token.class-name,
+.token.pseudo-class,
+.token.id,
+.token.url-reference .token.variable,
+.token.attr-name {
+  color: #795da3;
+}
+
+.token.entity {
+  cursor: help;
+}
+
+.token.title,
+.token.title .token.punctuation {
+  font-weight: bold;
+  color: #1d3e81;
+}
+
+.token.list {
+  color: #ed6a43;
+}
+
+.token.inserted {
+  background-color: #eaffea;
+  color: #55a532;
+}
+
+.token.deleted {
+  background-color: #ffecec;
+  color: #bd2c00;
+}
+
+.token.bold {
+  font-weight: bold;
+}
+
+.token.italic {
+  font-style: italic;
+}
+
+
+/* JSON */
+.language-json .token.property {
+  color: #183691;
+}
+
+.language-markup .token.tag .token.punctuation {
+  color: #333;
+}
+
+/* CSS */
+code.language-css,
+.language-css .token.function {
+  color: #0086b3;
+}
+
+/* YAML */
+.language-yaml .token.atrule {
+  color: #63a35c;
+}
+
+code.language-yaml {
+  color: #183691;
+}
+
+/* Ruby */
+.language-ruby .token.function {
+  color: #333;
+}
+
+/* Markdown */
+.language-markdown .token.url {
+  color: #795da3;
+}
+
+/* Makefile */
+.language-makefile .token.symbol {
+  color: #795da3;
+}
+
+.language-makefile .token.variable {
+  color: #183691;
+}
+
+.language-makefile .token.builtin {
+  color: #0086b3;
+}
+
+/* Bash */
+.language-bash .token.keyword {
+  color: #0086b3;
+}
+
+/* highlight */
+pre[data-line] {
+  position: relative;
+  padding: 1em 0 1em 3em;
+}
+pre[data-line] .line-highlight-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: transparent;
+  display: block;
+  width: 100%;
+}
+
+pre[data-line] .line-highlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  padding: inherit 0;
+  margin-top: 1em;
+  background: hsla(24, 20%, 50%,.08);
+  background: linear-gradient(to right, hsla(24, 20%, 50%,.1) 70%, hsla(24, 20%, 50%,0));
+  pointer-events: none;
+  line-height: inherit;
+  white-space: pre;
+}
+
+pre[data-line] .line-highlight:before, 
+pre[data-line] .line-highlight[data-end]:after {
+  content: attr(data-start);
+  position: absolute;
+  top: .4em;
+  left: .6em;
+  min-width: 1em;
+  padding: 0 .5em;
+  background-color: hsla(24, 20%, 50%,.4);
+  color: hsl(24, 20%, 95%);
+  font: bold 65%/1.5 sans-serif;
+  text-align: center;
+  vertical-align: .3em;
+  border-radius: 999px;
+  text-shadow: none;
+  box-shadow: 0 1px white;
+}
+
+pre[data-line] .line-highlight[data-end]:after {
+  content: attr(data-end);
+  top: auto;
+  bottom: .4em;
+}html body{font-family:"Helvetica Neue",Helvetica,"Segoe UI",Arial,freesans,sans-serif;font-size:16px;line-height:1.6;color:#333;background-color:#fff;overflow:initial;box-sizing:border-box;word-wrap:break-word}html body>:first-child{margin-top:0}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{line-height:1.2;margin-top:1em;margin-bottom:16px;color:#000}html body h1{font-size:2.25em;font-weight:300;padding-bottom:.3em}html body h2{font-size:1.75em;font-weight:400;padding-bottom:.3em}html body h3{font-size:1.5em;font-weight:500}html body h4{font-size:1.25em;font-weight:600}html body h5{font-size:1.1em;font-weight:600}html body h6{font-size:1em;font-weight:600}html body h1,html body h2,html body h3,html body h4,html body h5{font-weight:600}html body h5{font-size:1em}html body h6{color:#5c5c5c}html body strong{color:#000}html body del{color:#5c5c5c}html body a:not([href]){color:inherit;text-decoration:none}html body a{color:#08c;text-decoration:none}html body a:hover{color:#00a3f5;text-decoration:none}html body img{max-width:100%}html body>p{margin-top:0;margin-bottom:16px;word-wrap:break-word}html body>ul,html body>ol{margin-bottom:16px}html body ul,html body ol{padding-left:2em}html body ul.no-list,html body ol.no-list{padding:0;list-style-type:none}html body ul ul,html body ul ol,html body ol ol,html body ol ul{margin-top:0;margin-bottom:0}html body li{margin-bottom:0}html body li.task-list-item{list-style:none}html body li>p{margin-top:0;margin-bottom:0}html body .task-list-item-checkbox{margin:0 .2em .25em -1.8em;vertical-align:middle}html body .task-list-item-checkbox:hover{cursor:pointer}html body blockquote{margin:16px 0;font-size:inherit;padding:0 15px;color:#5c5c5c;background-color:#f0f0f0;border-left:4px solid #d6d6d6}html body blockquote>:first-child{margin-top:0}html body blockquote>:last-child{margin-bottom:0}html body hr{height:4px;margin:32px 0;background-color:#d6d6d6;border:0 none}html body table{margin:10px 0 15px 0;border-collapse:collapse;border-spacing:0;display:block;width:100%;overflow:auto;word-break:normal;word-break:keep-all}html body table th{font-weight:bold;color:#000}html body table td,html body table th{border:1px solid #d6d6d6;padding:6px 13px}html body dl{padding:0}html body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:bold}html body dl dd{padding:0 16px;margin-bottom:16px}html body code{font-family:Menlo,Monaco,Consolas,'Courier New',monospace;font-size:.85em !important;color:#000;background-color:#f0f0f0;border-radius:3px;padding:.2em 0}html body code::before,html body code::after{letter-spacing:-0.2em;content:"\00a0"}html body pre>code{padding:0;margin:0;font-size:.85em !important;word-break:normal;white-space:pre;background:transparent;border:0}html body .highlight{margin-bottom:16px}html body .highlight pre,html body pre{padding:1em;overflow:auto;font-size:.85em !important;line-height:1.45;border:#d6d6d6;border-radius:3px}html body .highlight pre{margin-bottom:0;word-break:normal}html body pre code,html body pre tt{display:inline;max-width:initial;padding:0;margin:0;overflow:initial;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}html body pre code:before,html body pre tt:before,html body pre code:after,html body pre tt:after{content:normal}html body p,html body blockquote,html body ul,html body ol,html body dl,html body pre{margin-top:0;margin-bottom:16px}html body kbd{color:#000;border:1px solid #d6d6d6;border-bottom:2px solid #c7c7c7;padding:2px 4px;background-color:#f0f0f0;border-radius:3px}@media print{html body{background-color:#fff}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{color:#000;page-break-after:avoid}html body blockquote{color:#5c5c5c}html body pre{page-break-inside:avoid}html body table{display:table}html body img{display:block;max-width:100%;max-height:100%}html body pre,html body code{word-wrap:break-word;white-space:pre}}.markdown-preview{width:100%;height:100%;box-sizing:border-box}.markdown-preview .pagebreak,.markdown-preview .newpage{page-break-before:always}.markdown-preview pre.line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}.markdown-preview pre.line-numbers>code{position:relative}.markdown-preview pre.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:1em;font-size:100%;left:0;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.markdown-preview pre.line-numbers .line-numbers-rows>span{pointer-events:none;display:block;counter-increment:linenumber}.markdown-preview pre.line-numbers .line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}.markdown-preview .mathjax-exps .MathJax_Display{text-align:center !important}.markdown-preview:not([for="preview"]) .code-chunk .btn-group{display:none}.markdown-preview:not([for="preview"]) .code-chunk .status{display:none}.markdown-preview:not([for="preview"]) .code-chunk .output-div{margin-bottom:16px}.scrollbar-style::-webkit-scrollbar{width:8px}.scrollbar-style::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}.scrollbar-style::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,0.66);border:4px solid rgba(150,150,150,0.66);background-clip:content-box}html body[for="html-export"]:not([data-presentation-mode]){position:relative;width:100%;height:100%;top:0;left:0;margin:0;padding:0;overflow:auto}html body[for="html-export"]:not([data-presentation-mode]) .markdown-preview{position:relative;top:0}@media screen and (min-width:914px){html body[for="html-export"]:not([data-presentation-mode]) .markdown-preview{padding:2em calc(50% - 457px + 2em)}}@media screen and (max-width:914px){html body[for="html-export"]:not([data-presentation-mode]) .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for="html-export"]:not([data-presentation-mode]) .markdown-preview{font-size:14px !important;padding:1em}}@media print{html body[for="html-export"]:not([data-presentation-mode]) #sidebar-toc-btn{display:none}}html body[for="html-export"]:not([data-presentation-mode]) #sidebar-toc-btn{position:fixed;bottom:8px;left:8px;font-size:28px;cursor:pointer;color:inherit;z-index:99;width:32px;text-align:center;opacity:.4}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] #sidebar-toc-btn{opacity:1}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc{position:fixed;top:0;left:0;width:300px;height:100%;padding:32px 0 48px 0;font-size:14px;box-shadow:0 0 4px rgba(150,150,150,0.33);box-sizing:border-box;overflow:auto;background-color:inherit}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar{width:8px}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,0.66);border:4px solid rgba(150,150,150,0.66);background-clip:content-box}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc a{text-decoration:none}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc ul{padding:0 1.6em;margin-top:.8em}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc li{margin-bottom:.8em}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc ul{list-style-type:none}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{left:300px;width:calc(100% -  300px);padding:2em calc(50% - 457px -  150px);margin:0;box-sizing:border-box}@media screen and (max-width:1274px){html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{width:100%}}html body[for="html-export"]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .markdown-preview{left:50%;transform:translateX(-50%)}html body[for="html-export"]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .md-sidebar-toc{display:none}
+/* Please visit the URL below for more information: */
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
+
+      </style>
+    </head>
+    <body for="html-export">
+      <div class="mume markdown-preview  ">
+      <img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/teasers/bakemaster-addon-teaser-primary.png" alt="bakemaster-addon-teaser-primary" width="1280px">
+<h1 id="page-top">
+    <a href="#page-top">
+        Welcome to <br>
+        BakeMaster Blender Add-on
+    </a>
+</h1>
+<p>BakeMaster is an add-on specified for baking various texture maps <br>and created for Blender - open-source 3D Computer graphics software. <br>Along with its intuitive and convenient workflow baking process becomes a pleasure. <br>Created from scratch for users who can&apos;t stand wasting time, <br>and yearn for most functionality and cutting-edge features.</p>
+<blockquote>
+<p><span style="color:red">BakeMaster Blender Add-on is under active development.<br>
+Stay tuned for Announcements &#x2705;</span></p>
+</blockquote>
+<hr>
+<h2 id="contents">
+    List of contents:
+</h2>
+<ul>
+<li><a href="#intro">Introduction</a></li>
+<li><a href="#why">Why Artists choose BakeMaster</a></li>
+<li><a href="#features">Key Features</a></li>
+<li><a href="#more-features">Even more features</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#basic-usage">Basic usage</a></li>
+<li><a href="#process-flow">Process Flow</a></li>
+<li><a href="#releases">Releases</a></li>
+<li><a href="#community">Community</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<hr>
+<h2 id="intro">
+    <a href="#contents">
+        Introduction
+    </a>
+</h2>
+<p>BakeMaster is a Blender add-on that is built on Blender Python API. It uses a native Blender baking operator for baking PBR-based maps, default Blender Cycles maps, and special mask maps.</p>
+<p>The add-on emits and advances Blender&apos;s baking process, making it a powerful, fully-featured and one-place solution for any scene setup.</p>
+<p>Created by artists, BakeMaster is simple, straightforward and convenient for comfortable use, yet lands with numerous tweaks and toggles to fully meet your ultimate texture baking preferences.</p>
+<p>We gave our best shot to make you love the setup in BakeMaster, which takes only 3 steps:</p>
+<ul>
+<li>add meshes</li>
+<li>add maps</li>
+<li>set and hit Bake!</li>
+</ul>
+<p>An unlimited number of objects and custom maps, each driven by unique settings - all can be configured and baked with BakeMaster!</p>
+<p align="left">
+    <img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/about/introduction_page/image_editor_350x320.gif" alt="image_editor">
+&#xA0;
+    <img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/about/creation_page/curvature_map_preview_350x320.gif" alt="cavity_map_preview">
+</p>
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/start/about/introduction.html#introduction">Read more &#x1F4D6;</a></p>
+<hr>
+<h2 id="why">
+    <a href="#contents">
+        Why Artists choose BakeMaster
+    </a>
+</h2>
+<p>Baking standard Cycles maps is straightforward, but what about baking dozens of them, or PBR-based that are highly relevant in physically accurate texturing? This can easily lead to losing valuable time. Having taken advantage of Blender&apos;s node-based material system, we decided to create a fast, responsive, and comfortable baking solution alongside the native baking operator.</p>
+<p>BakeMaster makes the whole process easy to tweak and delivers more functionalities.</p>
+<p>Never worry about the nodes again: just toggle a couple of settings and BakeMaster will configure it all for you. Cycles maps are gone? Not just yet - simpler UI and manageable settings make it feel like a new book.</p>
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/start/about/introduction.html#why-artists-choose-bakemaster">Read more &#x1F4D6;</a></p>
+<hr>
+<h2 id="features">
+    <a href="#contents">
+        Key Features
+    </a>
+</h2>
+<p>Take a look at the main features of BakeMaster that make it stand out:</p>
+<ul>
+<li>Bake an <strong>unlimited</strong> number of objects and maps, each with <strong>unique</strong> settings</li>
+<li>25 different map types available:
+<ul>
+<li><strong>PBR-based</strong> maps</li>
+<li>Default <strong>Cycles</strong> maps</li>
+<li><strong>Special</strong> masks</li>
+</ul>
+</li>
+<li>Bake <strong>adaptive Displacement</strong> with automatic modifiers</li>
+<li><strong>Real-time map preview</strong> in the viewport</li>
+<li><strong>Packing</strong> many items onto one map</li>
+<li><strong>Fully customizable</strong> map bakes</li>
+<li><strong>Denoise</strong> baked maps</li>
+<li>Bake to <strong>UDIM tiles</strong></li>
+</ul>
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/start/about/introduction.html#key-features">Read more &#x1F4D6;</a></p>
+<hr>
+<h2 id="more-features">
+    <a href="#contents">
+        Even more features
+    </a>
+</h2>
+<p>Expand your view onto features that make BakeMaster rock:</p>
+<ul>
+<li>
+<p><strong>Unique Bake settings:</strong> <br> Choose a different bake device for each object. <br> Set bake samples, adaptive sampling, noise threshold and more.<br></p>
+</li>
+<li>
+<p><strong>Outstanding Output settings:</strong> <br> Automatic material creation with all baked maps. <br> Automatic image color profile configuration. <br> Custom file formats, resolution, alpha and 32bit float use.</p>
+</li>
+<li>
+<p><strong>Internal &amp; External Bake:</strong> <br> Manage maps output directory. <br> Manage Subfolder creation. <br> Pack your maps into a .blend file.</p>
+</li>
+<li>
+<p><strong>Fully control Map Settings:</strong> <br> Control Contrast, Brightness, Opacity. <br> Control Samples, Saturation, Distance, Coverage and much more. <br> Invert map colors on the fly.</p>
+</li>
+<li>
+<p><strong>Real-time Map Preview:</strong> <br> No need to guess what each map setting refers to, <br> toggle map preview and instantly see how the output will look like.</p>
+</li>
+<li>
+<p><strong>Denoising:</strong> <br> BakeMaster will denoise any baked map in seconds.</p>
+</li>
+<li>
+<p><strong>UV Organization:</strong> <br> Auto unwrap models. <br> Pack UVs of multiple objects. <br> Choose UV to use for bake if an object has many.</p>
+</li>
+<li>
+<p><strong>Baking to UDIMs:</strong> <br> Choose object UV type in Single or Tiled (UDIMs). <br> Specify custom UDIM tiles baking range for each map.</p>
+</li>
+<li>
+<p><strong>Source to Target Bake:</strong> <br> Choose a source object for your target object.</p>
+</li>
+<li>
+<p><strong>Keyword batch naming:</strong> <br> Custom map name keywords to be filled with all necessary information.</p>
+</li>
+<li>
+<p><strong>Tips and Documentation:</strong> <br> Every property, button or field is documented with a description or instruction. <br> Add-on <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/">Documentation</a> will help you find everything regarding usage and explanation.</p>
+</li>
+<li>
+<p><strong>Blender versions compatibility:</strong><br> The add-on is fully compatible with the following Blender versions: <br> 2.83, 2.90, 2.91, 2.92, 2.93, 3.0, 3.1, 3.2, 3.3 Alpha.</p>
+</li>
+<li>
+<p><strong>Enhanced Bake Control:</strong> <br> There is not a single keybinding that you can use to control the baking process.</p>
+</li>
+<li>
+<p><strong>Responsive UI:</strong> <br> As you tweak the preferences either of map or object, <br> the interface will change to fully mirror and appropriate your actions.</p>
+</li>
+</ul>
+<p>To view all features and learn the ropes of BakeMaster, visit <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/">Documentation</a>.</p>
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/start/about/index.html">Read more &#x1F4D6;</a></p>
+<hr>
+<h2 id="installation">
+    <a href="#contents">
+        Installation
+    </a>
+</h2>
+<p>BakeMaster add-on works in Blender, so if you haven&apos;t got it on your device just yet, go ahead! <br> Make sure the Blender version you are using is <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/start/install/compatibility.html?#which-blender-versions
+">compatible with BakeMaster</a>.</p>
+<a href="https://www.blender.org/">
+    <img src="https://download.blender.org/branding/blender_logo.png" alt="blender-icon-official" width="200px">
+</a>
+<h3 class="mume-header" id="uninstall-previous-versions">Uninstall previous versions</h3>
+
+<p>If you have a previous version of BakeMaster installed, follow the steps to uninstall it:</p>
+<blockquote>
+<ol>
+<li>Open Blender</li>
+<li>Go to Edit &gt; Preferences &gt; Add-ons</li>
+<li>Type &quot;BakeMaster&quot; into the search bar</li>
+<li>Expand the add-on panel and click &quot;Remove&quot;</li>
+<li>Save Blender Preferences</li>
+</ol>
+</blockquote>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/install/install_page/removing_350x320.gif" alt="removing">
+<p>It would be good to restart Blender after.</p>
+<h3 class="mume-header" id="download-the-latest-version">Download the latest version</h3>
+
+<p>Download the latest BakeMaster add-on version from the <a href><span style="color:red">Blender Market</span></a> or <a href><span style="color:red">Gumroad</span></a>.</p>
+<p>A demo version can be also installed from the <a href="https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon">GitHub repo</a>: <br> Go to the <code>install/</code> and download a zip folder.</p>
+<p>See <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/versions/versions.html">BakeMaster Versions</a> for details.</p>
+<h3 class="mume-header" id="install-bakemaster-into-blender">Install BakeMaster into Blender</h3>
+
+<blockquote>
+<ol>
+<li>Open Blender</li>
+<li>Go to Edit &gt; Preferences &gt; Add-ons</li>
+<li>Click &quot;Install&quot;</li>
+<li>Specify the path to the download zipped add-on</li>
+<li>Enable the addon</li>
+</ol>
+</blockquote>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/install/install_page/installing_350x320.gif" alt="installing">
+<h3 class="mume-header" id="access-bakemaster-in-blender">Access BakeMaster in Blender</h3>
+
+<p>BakeMaster add-on can be accessed in the Viewport. <br> Hit the &quot;N&quot; key on your keyboard and you will see the add-on pop up on the right. <br> Head over to the add-on panel and you are good to go.</p>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/install/install_page/accessing_350x320.gif" alt="=accessing">
+<h3 class="mume-header" id="update-bakemaster">Update BakeMaster</h3>
+
+<p>Once a newer version of BakeMaster becomes available, uninstall all the previous versions. <br> Download the newer one. Follow the steps in the sections above to install it into Blender. <br> A new version will be announced in the <a href="https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/discussions/categories/announcements">Announcements</a>.</p>
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/start/install/index.html">Read more &#x1F4D6;</a></p>
+<hr>
+<h2 id="basic-usage">
+    <a href="#contents">
+        Basic Usage
+    </a>
+</h2>
+<p>Below are the basic steps about how to quickly set up and get the hang of BakeMaster. <br> If you want to dive into every setting or toggle and become a complete BakeMaster master, <br> you can visit <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/">Documentation</a>.</p>
+<p>List of actions:</p>
+<ol>
+<li><a href="#1-choose-objects">Choose objects</a></li>
+<li><a href="#2-source-target-settings">Source-target Settings</a></li>
+<li><a href="#3-uv-settings">UV Settings</a></li>
+<li><a href="#4-choose-maps">Choose maps</a></li>
+<li><a href="#5-map-settings">Map Settings</a></li>
+<li><a href="#6-bake-settings">Bake Settings</a></li>
+<li><a href="#7-baking-process">Baking process</a></li>
+</ol>
+<h3 class="mume-header" id="1-choose-objects">1. Choose objects</h3>
+
+<p>First of all, you need to choose the objects you want to perform bake for:</p>
+<blockquote>
+<ol>
+<li>Select objects in the scene</li>
+<li>Press the &quot;Add&quot; button on the BakeMaster panel</li>
+</ol>
+</blockquote>
+<p>As long as objects are added to the list, you can configure their settings.</p>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/basic_usage/choose_objects_page/adding_objects_350x320.gif" alt="bakemaster-addon-list-adding-objects">
+<p>Tip: to quickly find the object you have added to the list in the outliner, just simply click it in the List of Objects, and it will be selected in the scene.</p>
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/start/basic_usage/choose_objects.html">Read more about List of Objects &#x1F4D6;</a></p>
+<h3 class="mume-header" id="2-source-target-settings">2. Source-target Settings</h3>
+
+<p>If you want to bake high-poly model details onto a low-poly model, <br> use Source to Target settings:</p>
+<blockquote>
+<ol>
+<li>Add both low and high-poly models to the List of Objects</li>
+<li>Select the low-poly in the List</li>
+<li>Expand Item Settings panel</li>
+<li>Expand Source to Target panel</li>
+<li>Check &quot;Target&quot;; set &quot;Source&quot; to be the high-poly.</li>
+</ol>
+</blockquote>
+<p>Extrusion, Max Ray Distance and Cage object can be configured inside the Source to Target panel as well.</p>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/basic_usage/source_target_page/set_source_350x320.gif" alt="bakemaster-addon-item-set-source">
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/start/basic_usage/source_target_settings.html">Read more about Source-target Settings &#x1F4D6;</a></p>
+<h3 class="mume-header" id="3-uv-settings">3. UV Settings</h3>
+
+<p>If you want to bake to UDIM tiles, or include an object in UV Pack, <br> the UV Maps panel is essential:</p>
+<blockquote>
+<ol>
+<li>Select the object in the List of Objects</li>
+<li>Expand Item Settings panel</li>
+<li>Expand UV Maps panel</li>
+</ol>
+</blockquote>
+<p>Inside the panel, you can choose:</p>
+<blockquote>
+<ul>
+<li>Active UV layer</li>
+<li>UV type (Single tile or UDIMs)</li>
+<li>UV Packing settings</li>
+</ul>
+</blockquote>
+<p>If your object has no UVs, BakeMaster will auto-unwrap the mesh for you before baking.</p>
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/start/basic_usage/uv_settings.html">Read more about UV Settings &#x1F4D6;</a></p>
+<h3 class="mume-header" id="4-choose-maps">4. Choose maps</h3>
+
+<p>Add maps you would like to be baked in the Map Settings panel:</p>
+<blockquote>
+<ol>
+<li>Select the object in the List of Objects</li>
+<li>Expand Map Settings panel</li>
+<li>Click the &quot;+&quot; button to add a map pass</li>
+<li>Click on the map pass to set its type</li>
+</ol>
+</blockquote>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/basic_usage/choose_maps_page/add_maps_350x320.gif" alt="bakemaster-addon-item-add-maps">
+<p>If you have prepared some maps for the future and you don&apos;t want to bake them alongside others, <br> click the &quot;&#x1F4F7;&quot; button near the map pass to toggle its &quot;bake visibility&quot;.</p>
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/start/basic_usage/choose_maps.html">Read more about Maps &#x1F4D6;</a></p>
+<h3 class="mume-header" id="5-map-settings">5. Map Settings</h3>
+
+<p>Every map pass can have unique output settings. <br> All of them can be configured inside the Map Pass Settings panel:</p>
+<blockquote>
+<ol>
+<li>Select the object in the List of Objects</li>
+<li>Expand Map Settings panel</li>
+<li>Choose an active map pass</li>
+<li>Expand the Map Pass Settings panel</li>
+</ol>
+</blockquote>
+<p>Map pass output settings include:</p>
+<blockquote>
+<ul>
+<li>File format</li>
+<li>Resolution</li>
+<li>Margin</li>
+<li>Use 32bit float bit depth</li>
+<li>Use Alpha Channel</li>
+<li>Map Denoising</li>
+<li>Affect by Source (apply Source to Target settings for this map pass)</li>
+<li>Other settings that depend on Blender version</li>
+</ul>
+</blockquote>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/basic_usage/map_settings_page/map_settings_350x320.gif" alt="bakemaster-addon-item-map-settings">
+<p>Some map passes like AO, Thickness, Displacement and <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/map/map.html#map-type">others</a> can have custom settings. <br> They can be also set inside the Map Pass Settings panel.</p>
+<p>For example, Curvature Map has the following custom properties <br> (These settings can be toggled by unchecking &quot;Default&quot; inside the Map Pass Settings panel):</p>
+<blockquote>
+<ul>
+<li>Samples count (quality)</li>
+<li>Radius (edge radius)</li>
+<li>Edge contrast</li>
+<li>Body contrast</li>
+<li>Invert option</li>
+</ul>
+</blockquote>
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/map/map.html#special-masks">Special maps</a> have a &quot;Preview&quot; toggle to turn on real-time map preview in the Viewport.</p>
+<p align="left">
+    <img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/workflow/interface/map_settings_panel_page/cavity_preview_350x320.gif" alt="curvature_map_preview">
+&#xA0;
+    <img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/about/introduction_page/gradient_map_preview_350x320.gif" alt="gradient_map_preview">
+</p>
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/start/basic_usage/map_settings.html">Read more about Map Settings &#x1F4D6;</a></p>
+<h3 class="mume-header" id="6-bake-settings">6. Bake Settings</h3>
+
+<p>Last but not least is the Item Bake Settings panel:</p>
+<blockquote>
+<ol>
+<li>Select the object in the List of Objects</li>
+<li>Expand Bake Settings panel</li>
+<li>Expand Item Bake Settings panel</li>
+</ol>
+</blockquote>
+<p>Each object in the List of Objects can have custom Bake Settings, including:</p>
+<blockquote>
+<ul>
+<li>Material creation (create a material with all baked maps)</li>
+<li>Internal/External output</li>
+<li>Output directory and subfolder creation options for External save</li>
+<li>Maps Batch naming (map naming keywords)</li>
+<li>Bake device (CPU, GPU - depends on the system)</li>
+<li>Adaptive sampling, sampling</li>
+<li>And more</li>
+</ul>
+</blockquote>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/basic_usage/bake_settings_page/bake_settings_350x320.gif" alt="bakemaster-addon-item-bake-settings">
+<p>Inside the same Bake Settings panel, there are several important controls to know about:</p>
+<blockquote>
+<ul>
+<li>Reset BakeMaster option (reset BakeMaster after bake)</li>
+<li>Bake This Button (bake maps only for the current item in the List)</li>
+<li>Bake All Button (bake maps for all items)</li>
+</ul>
+</blockquote>
+<p>There is also an embossed field called &quot;Bake Instruction&quot;. <br> When you hover over it, you will see Baking process information and controls.</p>
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/start/basic_usage/bake_settings.html">Read more about Bake Settings &#x1F4D6;</a></p>
+<h3 class="mume-header" id="7-baking-process">7. Baking process</h3>
+
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/start/basic_usage/bake_process_page/baking_progress_350x320.gif" alt="bakemaster-addon-item-baking-progress">
+<p>The baking process can be controlled from your keyboard or Blender Console. <br> All keybindings are presented under the &quot;Bake Instruction&quot; field inside the Bake Settings panel.</p>
+<blockquote>
+<ul>
+<li>Press <code>BACKSPACE</code> to cancel baking all next maps</li>
+<li>Press <code>ESC</code> to cancel baking current map</li>
+<li>Press <code>BACKSPACE + ESC</code> to cancel baking</li>
+</ul>
+</blockquote>
+<p>If you want to undo the bake result, press <code>Ctrl + Z</code> just after it has been finished or canceled.</p>
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/start/basic_usage/baking_process.html">Read more about the Baking process &#x1F4D6;</a></p>
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/start/basic_usage/index.html">Read more &#x1F4D6;</a></p>
+<hr>
+<h2 id="process-flow">
+    <a href="#contents">
+        Process Flow
+    </a>
+</h2>
+<p>BakeMaster process flow is described below:</p>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/flows/bakemaster-addon-process-flow-full-diagram.png" alt="bakemaster-addon-process-flow-full-diagram" width="900px">
+<p>BakeMaster keeps track of all added maps and objects in a stack-like order:</p>
+<blockquote>
+<ul>
+<li>Item0
+<ul>
+<li>Map0</li>
+<li>Map1</li>
+</ul>
+</li>
+<li>Item3
+<ul>
+<li>Map0</li>
+</ul>
+</li>
+<li>Item2
+<ul>
+<li>Map0</li>
+<li>Map1</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<p>The order of classes can be changed using the <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/interface/panel/list_of_objects_table.html#baking-order-buttons">order controls</a>. <br>Each class has its unique settings.</p>
+<p>BakeMaster picks an Object added to the <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/workflow/object/object.html#list-of-objects">List of Objects</a> and bakes maps added to it one by one. <br> This process can be shown in the following diagram:</p>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/flows/bakemaster-addon-process-flow-baking-order-diagram.png" alt="bakemaster-addon-process-flow-baking-order-diagram" width="900px">
+<p>BakeMaster shows baking progress in the bottom info bar, in the style:</p>
+<pre data-role="codeBlock" data-info class="language-"><code>    Baking [Object Name]: [Map Name], map [Current Map Index] of [Length of Maps] ... [Map Baking Progress]
+</code></pre><img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/workflow/areas_page/static_progress_bar_1049x49.png" alt="bakemaster-addon-item-baking-progress-bar" width="900px">
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/index.html#user-s-workflow">Read more &#x1F4D6;</a></p>
+<hr>
+<h2 id="releases">
+    <a href="#contents">
+        Releases
+    </a>
+</h2>
+<p>The latest stable release of BakeMaster is the <code>release-bakemaster-1.0</code> <br> Older versions or development versions are available in the <a href="https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon">GitHub repo</a>. <br> <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/versions/releases.html">BakeMaster Changelog</a>.</p>
+<h3 class="mume-header" id="10">1.0</h3>
+
+<p>Initial release.</p>
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/versions/releases.html">Read more &#x1F4D6;</a></p>
+<hr>
+<h2 id="community">
+    <a href="#contents">
+        Community
+    </a>
+</h2>
+<p>We highly engage users to help BakeMaster grow. <br> If you have a desire to say, suggest or shout out - we will appreciate it!</p>
+<p>Enjoying the BakeMaster add-on? Submit a review at <a href><span style="color:red">Blender Market</span></a> or <a href><span style="color:red">Gumroad</span></a>!</p>
+<p>Found a bug or issue? Would like to improve something? <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html#contacts">Contact us</a>!</p>
+<p>Have a question or just want to talk? <a href="https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/discussions/categories/q-a">Start conversation</a>!</p>
+<p>Want to contribute? Visit <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html">this page</a> to become a contributor!</p>
+<p><a href><span style="color:red">Support the BakeMaster</span></a> project to lift our spirits and souls!</p>
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html">Read more &#x1F4D6;</a></p>
+<hr>
+<h2 id="license">
+    <a href="#contents">
+        License
+    </a>
+</h2>
+<p>Purchase the license from <a href><span style="color:red">Blender Market</span></a> or <a href><span style="color:red">Gumroad</span></a>.</p>
+<p>BakeMaster Demo version is under the <a href="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/LICENSE">GNU General Public License</a>. <br>You receive it by downloading the Demo version.</p>
+<p>See <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/versions/versions.html">BakeMaster Versions</a> for details.</p>
+<p><a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/license.html">Read more &#x1F4D6;</a></p>
+<hr>
+<img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/teasers/bakemaster-addon-teaser-secondary.png" alt="bakemaster-addon-teaser-secondary" width="1280px">
+<h5 class="mume-header" id="bakemaster-br-the-freedom-to-bake-br-br-last-edit-date-08072022-br-author-kirilstrezikozingmailcom-br-download-link-a-hrefbakemaster-blender-market-linka-br-download-link-a-hrefbakemaster-gumroad-linka-br-content-httpsgithubcomkirilstrezikozinbakemaster-blender-addon">BakeMaster <br> The Freedom to Bake. <br> <br> last edit date - 08.07.2022 <br> author - <a href="mailto:kirilstrezikozin@gmail.com">kirilstrezikozin@gmail.com</a> <br> download link - <a href>bakemaster-blender-market-link</a> <br> download link - <a href>bakemaster-gumroad-link</a> <br> content - <a href="https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon">https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon</a></h5>
+
+
+      </div>
+      
+      
+    
+    
+    
+    
+    
+    
+    
+    
+  
+    </body></html>
