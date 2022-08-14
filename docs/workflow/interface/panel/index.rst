@@ -25,6 +25,6 @@ The BakeMaster Panel page describes UI properties and controls in each panel or 
     bake_settings_panel.rst
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     help_panel.rst
