@@ -16,6 +16,7 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
+import webbrowser
 from .utils import BM_ITEM_OverwriteUpdate, BM_ITEM_RemoveLocalPreviews
 from .labels import BM_Labels
 
@@ -199,5 +200,15 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
             new_pass.map_type = 'ALBEDO'
             item.maps_active_index = len(item.maps) - 1
             BM_ITEM_OverwriteUpdate(item, context)
+
+        return {'FINISHED'}
+
+class BM_OT_Help(bpy.types.Operator):
+    bl_label = "BakeMaster Help"
+    bl_idname = "bakemaster.help"
+    bl_description = BM_Labels.OPERATOR_HELP_DESCRIPTION
+    
+    def execute(self, context):
+        webbrowser.open(BM_Labels.URL_HELP_BASE)
 
         return {'FINISHED'}

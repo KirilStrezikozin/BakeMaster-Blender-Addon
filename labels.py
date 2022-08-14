@@ -32,6 +32,7 @@ class BM_Labels:
     OPERATOR_ITEM_MAPS_DESCRIPTION = "Add/Remove map passes from the list"
     OPERATOR_ITEM_BAKE_DESCRIPTION = "Bake image textures.\nBake This: bake maps only for current item.\nBake All: bake maps for all items in the list"
     OPERATOR_ITEM_BAKE_FULL_DESCRIPTION = "Press `BACKSPACE` to cancel baking all next maps.\nPress `ESC` key to cancel baking current map.\nPress `BACKSPACE + ESC` to cancel baking.\nIf you want to undo the bake, press `Ctrl + Z` just after it finished or canceled.\n\nOpen Blender Console to, if you face unexpected Blender freeze, press `Ctrl + C` to abort the bake.\nNote that there are expectable Blender freezes when baking Displacement, Denoising baked result, baking item with no UV Map or UV Packing items that have no UV Maps"
+    OPERATOR_HELP_DESCRIPTION = "BakeMaster online documentation for help"
     
     #Property Labels:
     PROP_AOL_ACTIVEINDEX_NAME = "Object of type 'MESH' to be included in the bake"
@@ -96,3 +97,6 @@ class BM_Labels:
     PROP_ITEM_USESAVELOG_DESCRIPTION = "Save item, map, bake time preferences into a separate .txt file"
     PROP_ITEM_USEBGBAKE_DESCRIPTION = "Proceed the bake in the background not freezing Blender"
     PROP_ITEM_USERESETAFTERBAKE_DESCRIPTION = "Remove item(s) from the items list after maps finsihed baking.\nIf item(s) use source object, it will be removed as well"
+
+    #URls
+    URL_HELP_BASE = "https://bakemaster-blender-addon.readthedocs.io/en/latest/"

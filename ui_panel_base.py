@@ -643,3 +643,18 @@ class BM_PT_Item_MainBakeSettingsBase(bpy.types.Panel):
         col = layout.column()
         col.prop(context.scene.bm_props, "bake_instruction", text="", icon='INFO')
         col.enabled = False
+
+class BM_PT_Main_HelpBase(bpy.types.Panel):
+    bl_label = " "
+    bl_idname = 'BM_PT_Main_HelpBase'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw_header(self, context):
+        self.layout.label(text="Help", icon='HELP')
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        layout.operator(BM_OT_Help.bl_idname, text="Documentation", icon='HELP')

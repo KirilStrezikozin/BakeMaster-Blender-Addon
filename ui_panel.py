@@ -80,3 +80,9 @@ class BM_PT_Item_MainBakeSettings(BM_PT_Item_MainBakeSettingsBase):
     bl_region_type = bm_region_type
     bl_category = bm_category
     bl_parent_id = BM_PT_Item_MainBake.bl_idname
+
+class BM_PT_Main_Help(BM_PT_Main_HelpBase):
+    bl_space_type = bm_space_type
+    bl_region_type = bm_region_type
+    bl_category = bm_category
+    bl_parent_id = BM_PT_Main.bl_idname

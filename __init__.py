@@ -70,6 +70,8 @@ classes = (
     BM_PT_Item_Bake,
     BM_PT_Item_MainBakeSettings,
 
+    BM_PT_Main_Help,
+
     BM_OT_AOL,
     BM_OT_AOL_Add,
     BM_OT_AOL_Remove,
@@ -77,6 +79,7 @@ classes = (
     BM_OT_AOL_Trash,
     BM_OT_ITEM_Maps,
     BM_OT_ITEM_Bake,
+    BM_OT_Help,
 
     BM_Item_Map,
     BM_Item,
