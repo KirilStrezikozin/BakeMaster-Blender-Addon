@@ -4,18 +4,24 @@ The documentation uses plain text files in reStructuredText format and the Sphin
 
 ### Documentation structure:
 ```
-C:.
-├───access_modules
+docs:.
 ├───contribute
+│   ├───documentation
+│   └───scripts
 ├───start
+│   ├───about
+│   ├───basic_usage
+│   └───install
 ├───versions
 ├───workflow
 │   ├───bake
 │   ├───errors
 │   ├───interface
-│   ├───maps
-│   └───objects
+│   │   └───panel
+│   ├───map
+│   └───object
 ├───_static
+│   └───css
 └───_templates
 ```
 
@@ -36,4 +42,4 @@ You can edit documentation by:
 - Make changes
 - Open Pull Request
 
-More information regarding Contributions can be viewed in <a href="">Contributing Guidelines</a>.
+More information regarding Contributions can be viewed in <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html">Contributing Guidelines</a>.
