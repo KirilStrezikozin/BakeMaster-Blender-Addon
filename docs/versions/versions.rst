@@ -12,12 +12,12 @@ BakeMaster Full version is the BakeMaster Baking Add-on itself including all fea
 .. admonition:: It's time to download
     :class: tip
 
-    BakeMaster can be downloaded from the `Blender Market https://blendermarket.com/products/bakemaster`.
+    BakeMaster can be downloaded from the `Blender Market <https://blendermarket.com/products/bakemaster>`_.
 
 .. admonition:: Lift our Spirits
     :class: tip
 
-    If you are enjoying the product, how about `supporting its further development https://paypal.me/kemplerart`?
+    If you are enjoying the product, how about `supporting its further development <https://paypal.me/kemplerart>`_?
 
 .. _demo_version:
 

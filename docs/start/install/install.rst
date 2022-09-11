@@ -41,7 +41,7 @@ It would be good to restart Blender after for changes to take into effect.
 Download the latest version
 ===========================
 
-Download the latest BakeMaster add-on version from the `Blender Market https://blendermarket.com/products/bakemaster`.
+Download the latest BakeMaster add-on version from the `Blender Market <https://blendermarket.com/products/bakemaster>`__.
 We recommend installing the latest one, as we deliver stability and functionality improvements with each new version.
 
 A demo version can be also installed from the `GitHub repo <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon>`__:
