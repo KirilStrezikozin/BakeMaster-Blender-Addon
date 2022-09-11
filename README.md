@@ -15,7 +15,6 @@ BakeMaster is an add-on specified for baking various texture maps <br/>and creat
     <img src='https://readthedocs.org/projects/bakemaster-blender-addon/badge/?version=latest' alt='Documentation Status' />
 </a>
 
-> <span style="color:red">BakeMaster Blender Add-on is under active development.
 > Stay tuned for Announcements ✅</span>
 
 ---
@@ -183,7 +182,7 @@ It would be good to restart Blender after.
 
 ### Download the latest version
 
-Download the latest BakeMaster add-on version from the <a href=""><span style="color:red">Blender Market</span></a> or <a href=""><span style="color:red">Gumroad</span></a>.
+Download the latest BakeMaster add-on version from the <a href="https://blendermarket.com/products/bakemaster">Blender Market</a>.
 
 A demo version can be also installed from the <a href="https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon">GitHub repo</a>: <br /> Go to the `install/` and download a zip folder.
 
@@ -453,7 +452,7 @@ Initial release.
 
 We highly engage users to help BakeMaster grow. <br /> If you have a desire to say, suggest or shout out - we will appreciate it!
 
-Enjoying the BakeMaster add-on? Submit a review at <a href=""><span style="color:red">Blender Market</span></a> or <a href=""><span style="color:red">Gumroad</span></a>!
+Enjoying the BakeMaster add-on? Submit a review at <a href="https://blendermarket.com/products/bakemaster">Blender Market</a>!
 
 Found a bug or issue? Would like to improve something? <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html#contacts">Contact us</a>!
 
@@ -461,7 +460,7 @@ Have a question or just want to talk? <a href="https://github.com/KirilStrezikoz
 
 Want to contribute? Visit <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html">this page</a> to become a contributor!
 
-<a href=""><span style="color:red">Support the BakeMaster</span></a> project to lift our spirits and souls!
+<a href="https://paypal.me/kemplerart">Support the BakeMaster</a> project to lift our spirits and souls!
 
 <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html">Read more 📖</a>
 
@@ -473,7 +472,7 @@ Want to contribute? Visit <a href="https://bakemaster-blender-addon.readthedocs.
     </a>
 </h2>
 
-Purchase the license from <a href=""><span style="color:red">Blender Market</span></a> or <a href=""><span style="color:red">Gumroad</span></a>.
+Purchase the license from <a href="https://blendermarket.com/products/bakemaster">Blender Market</a>.
 
 BakeMaster Demo version is under the <a href="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/LICENSE">GNU General Public License</a>. <br />You receive it by downloading the Demo version.
 
@@ -485,5 +484,5 @@ See <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/versions/
 
 <img src="https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/teasers/bakemaster-addon-teaser-secondary.png" alt="bakemaster-addon-teaser-secondary" width="1280px"/>
 
-##### BakeMaster <br /> The Freedom to Bake. <br /> <br /> last edit date - 08.07.2022 <br /> author - kirilstrezikozin@gmail.com <br /> download link - <a href="">bakemaster-blender-market-link</a> <br /> download link - <a href="">bakemaster-gumroad-link</a> <br /> content - https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon
+##### BakeMaster <br /> The Freedom to Bake. <br /> <br /> last edit date - 09.11.2022 <br /> author - kirilstrezikozin@gmail.com <br /> download link - <a href="https://blendermarket.com/products/bakemaster">bakemaster-blender-market-link</a> <br /> content - https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon
 <!-- End of the README -->
