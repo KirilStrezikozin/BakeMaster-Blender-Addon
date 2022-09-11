@@ -10,7 +10,7 @@ Useful Links
 .. admonition:: Submit a Review
     :class: hint
 
-    Rate BakeMaster on **Blender Market** or **Gumroad**.
+    Rate BakeMaster on `Blender Market https://blendermarket.com/products/bakemaster`.
 
 .. admonition:: Submit an Issue
     :class: note
