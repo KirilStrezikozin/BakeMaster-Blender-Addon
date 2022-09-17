@@ -15,6 +15,8 @@ BakeMaster is an add-on specified for baking various texture maps <br/>and creat
     <img src='https://readthedocs.org/projects/bakemaster-blender-addon/badge/?version=latest' alt='Documentation Status' />
 </a>
 
+<a href="https://kemplerart.gumroad.com/l/bakemaster">Get on Gumroad</a>
+
 > Stay tuned for Announcements ✅</span>
 
 ---
