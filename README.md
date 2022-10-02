@@ -18,6 +18,17 @@ BakeMaster is an add-on specified for baking various texture maps <br/>and creat
 <a href="https://kemplerart.gumroad.com/l/bakemaster">Get on Gumroad</a>
 <a href="https://blendermarket.com/products/bakemaster">Get on BlenderMarket</a>
 
+> This is a dev branch for BakeMaster v1.5 development
+>
+> Milestones for v1.5:
+> 🎯 - Map Preview feature for all 25 maps - 🎯
+> 🎯 - Presets for settings panels - 🎯
+> 🎯 - New map: ColorID - 🎯
+> 🎯 - New map: Vector Displacement - 🎯
+>
+> Currently in progress: Presets - 0%
+> Milestone: [Presets](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/milestone/1)
+>
 > Stay tuned for Announcements ✅</span>
 
 ---
