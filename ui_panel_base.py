@@ -19,6 +19,7 @@ import bpy
 from .operators import *
 from .operator_bake import BM_OT_ITEM_Bake
 from .utils import BM_ITEM_Get
+from .presets import *
 
 class BM_UL_AOL_Item(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
@@ -533,10 +534,18 @@ class BM_PT_Item_MainBakeBase(bpy.types.Panel):
     bl_label = " "
     bl_idname = "BM_PT_Item_MainBakeBase"
     bl_options = {'DEFAULT_CLOSED'}
+
+    _preset_class = None
     
     @classmethod
     def poll(cls, context):
         return len(context.scene.bm_aol)
+
+    def draw_header_preset(self, context):
+        BM_PT_BakeSettings_Presets.draw_panel_header(self.layout)
+
+        if BM_PT_Item_MainBakeBase._preset_class is None:
+            BM_PT_Item_MainBakeBase._preset_class = bpy.types.BM_MT_BakeSettings_Presets
 
     def draw_header(self, context):
         self.layout.label(text="Bake Settings", icon='RENDER_STILL')

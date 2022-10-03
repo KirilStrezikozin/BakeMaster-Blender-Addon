@@ -33,23 +33,27 @@ if "bpy" in locals():
     from .operators import *
     from .properties import *
     from .operator_bake import *
+    from .presets import *
 
     from . import ui_panel
     from . import operators
-    from . import operator_bake
     from . import properties
+    from . import operator_bake
+    from . import presets
 
     import importlib
     importlib.reload(ui_panel)
     importlib.reload(operators)
-    importlib.reload(operator_bake)
     importlib.reload(properties)
+    importlib.reload(operator_bake)
+    importlib.reload(presets)
 
 else:
     from .ui_panel import *
     from .operators import *
     from .properties import *
     from .operator_bake import *
+    from .presets import *
     
 import bpy
 
@@ -72,6 +76,10 @@ classes = (
 
     BM_PT_Main_Help,
 
+    BM_PT_BakeSettings_Presets,
+    
+    BM_MT_BakeSettings_Presets,
+
     BM_OT_AOL,
     BM_OT_AOL_Add,
     BM_OT_AOL_Remove,
@@ -80,6 +88,8 @@ classes = (
     BM_OT_ITEM_Maps,
     BM_OT_ITEM_Bake,
     BM_OT_Help,
+
+    BM_OT_BakeSettings_Preset_Add,
 
     BM_Item_Map,
     BM_Item,
@@ -91,6 +101,8 @@ def register():
     
     bpy.types.Scene.bm_aol = bpy.props.CollectionProperty(type = BM_Item)
     bpy.types.Scene.bm_props = bpy.props.PointerProperty(type = BM_SceneProps)
+
+    BM_Presets_FolderSetup()
 
 def unregister():
     for cls in reversed(classes):
