@@ -23,7 +23,7 @@ BakeMaster is an add-on specified for baking various texture maps <br/>and creat
 > 🎯 - New map: ColorID - 🎯<br>
 > 🎯 - New map: Vector Displacement - 🎯<br>
 >
-> Currently in progress: Presets - 1/8 tasks done%<br>
+> Currently in progress: Presets - 99%<br>
 > Milestone: [Presets](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/milestone/1)
 >
 > Stay tuned for Announcements ✅</span>

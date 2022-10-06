@@ -79,13 +79,13 @@ class BM_PT_MainBase(bpy.types.Panel):
         row.scale_y = 1.15
 
         refresh = False
-        min_rows = 3
+        min_rows = 4
         for index, item in enumerate(scene.bm_aol):
             try:
                 scene.objects[item.object_pointer.name]
             except KeyError:
                 refresh = True
-                min_rows = 4
+                min_rows = 5
                 break
 
         if len(scene.bm_aol) > min_rows:
@@ -103,6 +103,11 @@ class BM_PT_MainBase(bpy.types.Panel):
         if refresh:
             col.operator(BM_OT_AOL_Refresh.bl_idname, text="", icon='FILE_REFRESH')
         col.separator()
+        if len(scene.bm_aol):
+            item = BM_ITEM_Get(context)
+            if item[1] is True and item[0].use_source is False:
+                BM_PT_ObjectConfigurator_Presets.draw_panel_header(col)
+                col.separator()
         col.operator(BM_OT_AOL_Trash.bl_idname, text="", icon='TRASH')
 
 class BM_PT_ItemBase(bpy.types.Panel):
@@ -122,6 +127,11 @@ class BM_PT_ItemBase(bpy.types.Panel):
         else:
             self.layout.label(text="Item not found", icon='GHOST_DISABLED')
 
+    def draw_header_preset(self, context):
+        item = BM_ITEM_Get(context)
+        if item[1] is True and item[0].use_source is False:
+            BM_PT_ObjectSettings_Presets.draw_panel_header(self.layout)
+
     def draw(self, context):
         pass
 
@@ -136,6 +146,11 @@ class BM_PT_Item_STTBase(bpy.types.Panel):
     
     def draw_header(self, context):
         self.layout.label(text="Source to Target")#, icon='FILE_TICK')
+
+    def draw_header_preset(self, context):
+        item = BM_ITEM_Get(context)
+        if item[1] is True and item[0].use_source is False:
+            BM_PT_STTSettings_Presets.draw_panel_header(self.layout)
 
     def draw(self, context):
         layout = self.layout
@@ -178,6 +193,9 @@ class BM_PT_Item_UVMapBase(bpy.types.Panel):
     def draw_header(self, context):
         self.layout.label(text="UV Maps")#, icon='GROUP_UVS')
 
+    def draw_header_preset(self, context):
+        BM_PT_UVSettings_Presets.draw_panel_header(self.layout)
+
     def draw(self, context):
         layout = self.layout
         layout.use_property_split = True
@@ -217,6 +235,9 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
     
     def draw_header(self, context):
         self.layout.label(text="Output")#, icon='OUTPUT')
+
+    def draw_header_preset(self, context):
+        BM_PT_OutputSettings_Presets.draw_panel_header(self.layout)       
 
     def draw(self, context):
         layout = self.layout
@@ -285,15 +306,17 @@ class BM_PT_Item_MapListBase(bpy.types.Panel):
         box = layout.box()
         row = box.row()
 
-        if len(item.maps) > 3:
+        if len(item.maps) > 4:
             rows = len(item.maps)
         else:
-            rows = 3
+            rows = 4
         
         row.template_list('BM_UL_ITEM_Maps', "", item, 'maps', item, 'maps_active_index', rows = rows)
         col = row.column(align=True)
         col.operator(BM_OT_ITEM_Maps.bl_idname, text="", icon='ADD').control = 'ADD'
         col.operator(BM_OT_ITEM_Maps.bl_idname, text="", icon='REMOVE').control = 'REMOVE'
+        col.separator(factor=1.0)
+        BM_PT_MapsConfigurator_Presets.draw_panel_header(col)
         col.separator(factor=1.0)
         col.operator(BM_OT_ITEM_Maps.bl_idname, text="", icon='TRASH').control = 'TRASH'
 
@@ -316,6 +339,9 @@ class BM_PT_Item_MapBase(bpy.types.Panel):
         if label.find('_c_') != -1:
             label = "Cycles " + label[3:]
         self.layout.label(text=f"{label} settings")#, icon='IMAGE_DATA')
+        
+    def draw_header_preset(self, context):
+        BM_PT_MapSettings_Presets.draw_panel_header(self.layout)
 
     def draw(self, context):
         layout = self.layout
@@ -535,17 +561,14 @@ class BM_PT_Item_MainBakeBase(bpy.types.Panel):
     bl_idname = "BM_PT_Item_MainBakeBase"
     bl_options = {'DEFAULT_CLOSED'}
 
-    _preset_class = None
-    
     @classmethod
     def poll(cls, context):
         return len(context.scene.bm_aol)
 
     def draw_header_preset(self, context):
-        BM_PT_BakeSettings_Presets.draw_panel_header(self.layout)
-
-        if BM_PT_Item_MainBakeBase._preset_class is None:
-            BM_PT_Item_MainBakeBase._preset_class = bpy.types.BM_MT_BakeSettings_Presets
+        item = BM_ITEM_Get(context)
+        if item[1] is True and item[0].use_source is False:
+            BM_PT_BakeSettings_Presets.draw_panel_header(self.layout)
 
     def draw_header(self, context):
         self.layout.label(text="Bake Settings", icon='RENDER_STILL')

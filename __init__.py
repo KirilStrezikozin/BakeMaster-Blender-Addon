@@ -76,8 +76,21 @@ classes = (
 
     BM_PT_Main_Help,
 
+    BM_PT_ObjectConfigurator_Presets,
+    BM_MT_ObjectConfigurator_Presets,
+    BM_PT_ObjectSettings_Presets,
+    BM_MT_ObjectSettings_Presets,
+    BM_PT_STTSettings_Presets,
+    BM_MT_STTSettings_Presets,
+    BM_PT_UVSettings_Presets,
+    BM_MT_UVSettings_Presets,
+    BM_PT_OutputSettings_Presets,
+    BM_MT_OutputSettings_Presets,
+    BM_PT_MapsConfigurator_Presets,
+    BM_MT_MapsConfigurator_Presets,
+    BM_PT_MapSettings_Presets,
+    BM_MT_MapSettings_Presets,
     BM_PT_BakeSettings_Presets,
-    
     BM_MT_BakeSettings_Presets,
 
     BM_OT_AOL,
@@ -89,7 +102,15 @@ classes = (
     BM_OT_ITEM_Bake,
     BM_OT_Help,
 
+    BM_OT_ObjectConfigutator_Preset_Add,
+    BM_OT_ObjectSettings_Preset_Add,
+    BM_OT_STTSettings_Preset_Add,
+    BM_OT_UVSettings_Preset_Add,
+    BM_OT_OutputSettings_Preset_Add,
+    BM_OT_MapsConfigutator_Preset_Add,
+    BM_OT_MapSettings_Preset_Add,
     BM_OT_BakeSettings_Preset_Add,
+    BM_OT_ExecutePreset,
 
     BM_Item_Map,
     BM_Item,
