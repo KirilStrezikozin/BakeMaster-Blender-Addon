@@ -744,30 +744,33 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
             # map settings body
             if (object.hl_use_unique_per_map is False and len(object.hl_highpoly_table) > 0) or (object.hl_use_unique_per_map and len(map.hl_highpoly_table)):
                 map_settings_column.prop(map, 'global_affect_by_hl', text="Affect by Highpoly")
-            map_types_settings = [
-                'NORMAL',
-                'DISPLACEMENT',
-                'VECTOR_DISPLACEMENT',
-                'AO',
-                'CAVITY',
-                'CURVATURE',
-                'THICKNESS',
-                'ID',
-                'MASK',
-                'XYZMASK',
-                'GRADIENT',
-                'EDGE',
-                'WIREFRAME',
-                'PASS',
-                'C_COMBINED',
-                'C_NORMAL',
-                'C_DIFFUSE',
-                'C_GLOSSY',
-                'C_TRANSMISSION']
-            if map.global_map_type in map_types_settings:
-                map_settings_column = maps_table_box.column()#align=True)
-                map_settings_column.use_property_split = True
-                map_settings_column.use_property_decorate = False
+            
+            map_settings_column.prop(map, 'map_%s_prefix' % map.global_map_type)
+
+            # map_types_settings = [
+            #     'NORMAL',
+            #     'DISPLACEMENT',
+            #     'VECTOR_DISPLACEMENT',
+            #     'AO',
+            #     'CAVITY',
+            #     'CURVATURE',
+            #     'THICKNESS',
+            #     'ID',
+            #     'MASK',
+            #     'XYZMASK',
+            #     'GRADIENT',
+            #     'EDGE',
+            #     'WIREFRAME',
+            #     'PASS',
+            #     'C_COMBINED',
+            #     'C_NORMAL',
+            #     'C_DIFFUSE',
+            #     'C_GLOSSY',
+            #     'C_TRANSMISSION']
+            # if map.global_map_type in map_types_settings:
+            #     map_settings_column = maps_table_box.column()#align=True)
+            #     map_settings_column.use_property_split = True
+            #     map_settings_column.use_property_decorate = False
 
             # Pass and Cycles Maps
             if map.global_map_type == 'PASS':
