@@ -426,7 +426,11 @@ class BM_PT_ItemBase(bpy.types.Panel):
     def draw(self, context):
         object = BM_Object_Get(context)
         if context.scene.bm_props.global_use_name_matching and object[0].nm_is_universal_container:
-            return
+            if object[0].nm_uni_container_is_global:
+                return
+            label = "Universal Container"
+            icon = 'TRIA_RIGHT'
+            self.layout.label(text=label, icon=icon)
         elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_local_container:
             label = "Local Container"
             icon = 'TRIA_RIGHT'
@@ -456,7 +460,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
     def poll(cls, context):
         object = BM_Object_Get(context)
         if object[0].nm_is_universal_container:
-            return True
+            return object[0].nm_uni_container_is_global
         elif object[0].nm_is_local_container:
             return False
         elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_detached is False:
@@ -626,7 +630,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
     def poll(cls, context):
         object = BM_Object_Get(context)
         if object[0].nm_is_universal_container:
-            return True
+            return object[0].nm_uni_container_is_global
         elif object[0].nm_is_local_container:
             return False
         elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_detached is False:
@@ -1057,7 +1061,7 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
     def poll(cls, context):
         object = BM_Object_Get(context)
         if object[0].nm_is_universal_container:
-            return True
+            return object[0].nm_uni_container_is_global
         elif object[0].nm_is_local_container:
             return False
         elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_detached is False:
