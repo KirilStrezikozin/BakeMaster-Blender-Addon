@@ -1050,54 +1050,54 @@ class BM_OT_SCENE_TextureSets_Objects_Table_InvertSubItems(bpy.types.Operator):
             subitem.global_object_include_in_texset = False if subitem.global_object_include_in_texset else True
         return {'FINISHED'}
 
-class BM_OT_ITEM_BatchNamingTable_Add(bpy.types.Operator):
-    bl_idname = 'bakemaster.item_batchnamingtable_add'
-    bl_label = ""
-    bl_description = "Add keyword to the Batch Naming convention"
-    bl_options = {'INTERNAL', 'UNDO'}
+# class BM_OT_ITEM_BatchNamingTable_Add(bpy.types.Operator):
+#     bl_idname = 'bakemaster.item_batchnamingtable_add'
+#     bl_label = ""
+#     bl_description = "Add keyword to the Batch Naming convention"
+#     bl_options = {'INTERNAL', 'UNDO'}
 
-    def execute(self, context):
-        object = BM_Object_Get(context)[0]
-        new_item = object.bake_batch_name_table.add()
-        new_item.global_keyword_index = len(object.bake_batch_name_table) - 1
-        new_item.global_keyword_old = new_item.global_keyword
-        BM_BATCHNAMINGKEY_PROPS_global_keyword_UpdateOrder(context)
-        object.bake_batch_name_table_active_index = len(object.bake_batch_name_table) - 1
-        return {'FINISHED'}
+#     def execute(self, context):
+#         object = BM_Object_Get(context)[0]
+#         new_item = object.bake_batch_name_table.add()
+#         new_item.global_keyword_index = len(object.bake_batch_name_table) - 1
+#         new_item.global_keyword_old = new_item.global_keyword
+#         BM_BATCHNAMINGKEY_PROPS_global_keyword_UpdateOrder(context)
+#         object.bake_batch_name_table_active_index = len(object.bake_batch_name_table) - 1
+#         return {'FINISHED'}
 
-class BM_OT_ITEM_BatchNamingTable_Remove(bpy.types.Operator):
-    bl_idname = 'bakemaster.item_batchnamingtable_remove'
-    bl_label = ""
-    bl_description = "Remove keyword from the Batch Naming convention"
-    bl_options = {'INTERNAL', 'UNDO'}
+# class BM_OT_ITEM_BatchNamingTable_Remove(bpy.types.Operator):
+#     bl_idname = 'bakemaster.item_batchnamingtable_remove'
+#     bl_label = ""
+#     bl_description = "Remove keyword from the Batch Naming convention"
+#     bl_options = {'INTERNAL', 'UNDO'}
 
-    def execute(self, context):
-        object = BM_Object_Get(context)[0]
-        keyword = object.bake_batch_name_table[object.bake_batch_name_table_active_index]
-        for keyword1 in object.bake_batch_name_table:
-            if keyword1.global_keyword_index > keyword.global_keyword_index:
-                keyword1.global_keyword_index -= 1
-        object.bake_batch_name_table.remove(object.bake_batch_name_table_active_index)
-        BM_BATCHNAMINGKEY_PROPS_global_keyword_UpdateOrder(context)
-        if object.bake_batch_name_table_active_index > 0:
-            object.bake_batch_name_table_active_index -= 1
-        return {'FINISHED'}
+#     def execute(self, context):
+#         object = BM_Object_Get(context)[0]
+#         keyword = object.bake_batch_name_table[object.bake_batch_name_table_active_index]
+#         for keyword1 in object.bake_batch_name_table:
+#             if keyword1.global_keyword_index > keyword.global_keyword_index:
+#                 keyword1.global_keyword_index -= 1
+#         object.bake_batch_name_table.remove(object.bake_batch_name_table_active_index)
+#         BM_BATCHNAMINGKEY_PROPS_global_keyword_UpdateOrder(context)
+#         if object.bake_batch_name_table_active_index > 0:
+#             object.bake_batch_name_table_active_index -= 1
+#         return {'FINISHED'}
 
-class BM_OT_ITEM_BatchNamingTable_Trash(bpy.types.Operator):
-    bl_idname = 'bakemaster.item_batchnamingtable_trash'
-    bl_label = ""
-    bl_description = "Remove all keywords from the Batch Naming convention"
-    bl_options = {'INTERNAL', 'UNDO'}
+# class BM_OT_ITEM_BatchNamingTable_Trash(bpy.types.Operator):
+#     bl_idname = 'bakemaster.item_batchnamingtable_trash'
+#     bl_label = ""
+#     bl_description = "Remove all keywords from the Batch Naming convention"
+#     bl_options = {'INTERNAL', 'UNDO'}
 
-    def execute(self, context):
-        object = BM_Object_Get(context)[0]
-        to_remove = []
-        for index, keyword in enumerate(object.bake_batch_name_table):
-            to_remove.append(index)
-        for index in sorted(to_remove, reverse=True):
-            object.bake_batch_name_table.remove(index)
-        object.bake_batch_name_table_active_index = 0
-        return {'FINISHED'}
+#     def execute(self, context):
+#         object = BM_Object_Get(context)[0]
+#         to_remove = []
+#         for index, keyword in enumerate(object.bake_batch_name_table):
+#             to_remove.append(index)
+#         for index in sorted(to_remove, reverse=True):
+#             object.bake_batch_name_table.remove(index)
+#         object.bake_batch_name_table_active_index = 0
+#         return {'FINISHED'}
 
 class BM_OT_ITEM_Maps(bpy.types.Operator):
     bl_idname = 'bakemaster.item_maps_table'
