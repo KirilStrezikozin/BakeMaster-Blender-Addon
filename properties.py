@@ -515,59 +515,53 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="ALBEDO")
 
-# Albedo Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+# Metalness Map Props
+    map_METALNESS_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="METAL")
 
-# Albedo Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+# Roughness Map Props
+    map_ROUGHNESS_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="ROUGH")
 
-# Albedo Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+# Diffuse Map Props
+    map_DIFFUSE_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="DIFFUSE")
 
-# Albedo Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+# Specular Map Props
+    map_SPECULAR_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="SPECULAR")
 
-# Albedo Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+# Glossyness Map Props
+    map_GLOSSYNESS_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="GLOSS")
 
-# Albedo Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+# Opacity Map Props
+    map_OPACITY_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="OPACITY")
 
-# Albedo Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+# Emission Map Props
+    map_EMISSION_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
-
-# Albedo Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
-        name="Prefix",
-        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="EMISSION")
 
 # Pass Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+    map_PASS_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="BSDFPASS")
 
     map_pass_type : bpy.props.EnumProperty(
         name="Pass",
@@ -588,10 +582,10 @@ class BM_Map(bpy.types.PropertyGroup):
                ('NORMAL', "Normal", "")])
 
 # Vertex Color Layer Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+    map_VERTEX_COLOR_LAYER_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="VERTEXCOLOR")
 
     map_vertexcolor_layer : bpy.props.EnumProperty(
         name="Layer",
@@ -599,71 +593,60 @@ class BM_Map(bpy.types.PropertyGroup):
         items=BM_MAP_PROPS_map_vertexcolor_layer_Items)
     
 # Cycles Map Props 
-# Vertex Color Layer Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+    map_C_COMBINED_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="COMBINED")
 
-# Vertex Color Layer Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+    map_C_AO_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="AO")
 
-# Vertex Color Layer Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+    map_C_SHADOW_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="SHADOW")
 
-# Vertex Color Layer Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+    map_C_NORMAL_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="NORMAL")
 
-# Vertex Color Layer Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+    map_C_UV_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="UV")
 
-# Vertex Color Layer Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+    map_C_ROUGHNESS_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="ROUGH")
 
-# Vertex Color Layer Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+    map_C_EMIT_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="EMIT")
 
-# Vertex Color Layer Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+    map_C_ENVIRONMENT_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="ENV")
 
-# Vertex Color Layer Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+    map_C_DIFFUSE_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="DIFFUSE")
 
-# Vertex Color Layer Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+    map_C_GLOSSY_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="GLOSS")
 
-# Vertex Color Layer Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+    map_C_TRANSMISSION_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="TRANS")
 
     map_cycles_use_pass_direct : bpy.props.BoolProperty(
         name = "Direct",
@@ -706,10 +689,10 @@ class BM_Map(bpy.types.PropertyGroup):
         default = True)
 
 # Normal Map Props
-    map_ALBEDO_prefix : bpy.props.StringProperty(
+    map_NORMAL_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="NORMAL")
 
     map_normal_space : bpy.props.EnumProperty(
         name = "Normal Space",
@@ -782,6 +765,11 @@ class BM_Map(bpy.types.PropertyGroup):
                  ('NEG_Z', "-Z", "")])
 
 # Displacement Map Props
+    map_DISPLACEMENT_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="DISP")
+
     map_displacement_data : bpy.props.EnumProperty(
         name="Data",
         description="Data for Displacement map",
@@ -802,6 +790,11 @@ class BM_Map(bpy.types.PropertyGroup):
         max=10)
     
 # Vector Displacement Map Props
+    map_VECTOR_DISPLACEMENT_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="VD")
+
     map_vector_displacement_use_default : bpy.props.BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
@@ -826,7 +819,18 @@ class BM_Map(bpy.types.PropertyGroup):
         min=1,
         max=10)
 
+# Position Map Props
+    map_POSITION_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="POS")
+
 # AO Map Props
+    map_AO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="AO")
+
     map_ao_use_preview : bpy.props.BoolProperty(
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
@@ -909,6 +913,11 @@ class BM_Map(bpy.types.PropertyGroup):
         update=BM_MAP_AO_MaterialUpdate)
 
 # Cavity Map Props
+    map_CAVITY_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="CAV")
+
     map_cavity_use_preview : bpy.props.BoolProperty(
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
@@ -955,6 +964,11 @@ class BM_Map(bpy.types.PropertyGroup):
         update=BM_MAP_Cavity_MaterialUpdate)
 
 # Curvature Map Props
+    map_CURVATURE_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="CURV")
+
     map_curv_use_preview : bpy.props.BoolProperty(
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
@@ -1027,6 +1041,11 @@ class BM_Map(bpy.types.PropertyGroup):
         update=BM_MAP_Curvature_MaterialUpdate)
 
 # Thickness Map Props
+    map_THICKNESS_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="THICK")
+
     map_thick_use_preview : bpy.props.BoolProperty(
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
@@ -1092,6 +1111,11 @@ class BM_Map(bpy.types.PropertyGroup):
         update=BM_MAP_Thickness_MaterialUpdate)
 
 # Material ID Map Props
+    map_ID_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ID")
+
     map_matid_data : bpy.props.EnumProperty(
         name="Data",
         description="Data type for detecting color groups",
@@ -1114,6 +1138,11 @@ class BM_Map(bpy.types.PropertyGroup):
                ('GRAYSCALE', "Grayscale", "Color each group by unique Grayscale Color")])
 
 # Mask Map Props
+    map_MASK_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="MASK")
+
     map_mask_data : bpy.props.EnumProperty(
         name="Data",
         description="Data type for detecting mask black and white parts",
@@ -1153,6 +1182,11 @@ class BM_Map(bpy.types.PropertyGroup):
         subtype='COLOR')
         
 # XYZMask Map Props
+    map_XYZMASK_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="XYZ")
+
     map_xyzmask_use_preview : bpy.props.BoolProperty(
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
@@ -1213,6 +1247,11 @@ class BM_Map(bpy.types.PropertyGroup):
         update=BM_MAP_XYZMask_MaterialUpdate)
 
 # GradientMask Map Props
+    map_GRADIENT_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="GRADIENT")
+
     map_gmask_use_preview : bpy.props.BoolProperty(
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
@@ -1340,6 +1379,11 @@ class BM_Map(bpy.types.PropertyGroup):
         update=BM_MAP_GradientMask_MaterialUpdate)
 
 # Edge Map Props
+    map_EDGE_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="EDGE")
+
     map_edgemask_use_preview : bpy.props.BoolProperty(
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
@@ -1389,6 +1433,11 @@ class BM_Map(bpy.types.PropertyGroup):
         update = BM_MAP_Curvature_MaterialUpdate)
 
 # WireframeMask Map Props
+    map_WIREFRAME_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="WIRE")
+
     map_wireframemask_line_thickness : bpy.props.FloatProperty(
         name="Thickness",
         description="Thickness of uv edge",
