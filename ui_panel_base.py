@@ -598,15 +598,24 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                     csh_box_column.prop(object, 'csh_lowpoly_smoothing_groups_angle')
                 if object.csh_lowpoly_smoothing_groups_enum == 'VERTEX_GROUPS':
                     csh_box_column.prop(object, 'csh_lowpoly_smoothing_groups_name_contains')
-            csh_box_column = csh_box.column()
-            csh_box_column.prop(object, 'csh_use_highpoly_reset_normals')
-            csh_box_column.prop(object, 'csh_highpoly_use_smooth')
-            if object.csh_highpoly_use_smooth:
-                csh_box_column.prop(object, 'csh_highpoly_smoothing_groups_enum', text="Type")
-                if object.csh_highpoly_smoothing_groups_enum == 'AUTO':
-                    csh_box_column.prop(object, 'csh_highpoly_smoothing_groups_angle')
-                if object.csh_highpoly_smoothing_groups_enum == 'VERTEX_GROUPS':
-                    csh_box_column.prop(object, 'csh_highpoly_smoothing_groups_name_contains')
+            # highpoly shading
+            len_of_highs = 0
+            if object.hl_use_unique_per_map is False:
+                len_of_highs = len(object.hl_highpoly_table)
+            else:
+                for map in object.global_maps:
+                    len_of_highs += len(map.hl_highpoly_table)
+            if len_of_highs > 0:
+                label = "Highpoly" if len_of_highs == 1 else "Highpolies"
+                csh_box_column = csh_box.column()
+                csh_box_column.prop(object, 'csh_use_highpoly_reset_normals', text="Reset %s Normals" % label)
+                csh_box_column.prop(object, 'csh_highpoly_use_smooth', text="Smooth %s" % label)
+                if object.csh_highpoly_use_smooth:
+                    csh_box_column.prop(object, 'csh_highpoly_smoothing_groups_enum', text="Type")
+                    if object.csh_highpoly_smoothing_groups_enum == 'AUTO':
+                        csh_box_column.prop(object, 'csh_highpoly_smoothing_groups_angle')
+                    if object.csh_highpoly_smoothing_groups_enum == 'VERTEX_GROUPS':
+                        csh_box_column.prop(object, 'csh_highpoly_smoothing_groups_name_contains')
 
 class BM_PT_Item_MapsBase(bpy.types.Panel):
     bl_label = " "
