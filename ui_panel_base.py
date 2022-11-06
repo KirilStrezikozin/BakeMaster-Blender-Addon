@@ -421,7 +421,7 @@ class BM_PT_ItemBase(bpy.types.Panel):
         row = self.layout.row(align=True)
         row.label(text="{} {}".format(label, label_end), icon=icon)
         if draw_unique_per_object:
-            row.prop(object[0], 'nm_uni_container_use_unique_per_object', text="", icon='NETWORK_DRIVE')
+            row.prop(object[0], 'nm_uni_container_is_global', text="", icon='NETWORK_DRIVE')
 
     def draw(self, context):
         object = BM_Object_Get(context)
@@ -435,6 +435,17 @@ class BM_PT_ItemBase(bpy.types.Panel):
             label = "Object cannot be found"
             icon = 'GHOST_DISABLED'
             self.layout.label(text=label, icon=icon)
+        elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_detached is False:
+            container_name = ""
+            draw_label = False
+            for object1 in context.scene.bm_table_of_objects:
+                if object1.nm_is_universal_container and object1.nm_master_index == object[0].nm_item_uni_container_master_index:
+                    container_name = object1.nm_container_name
+                    draw_label = object1.nm_uni_container_is_global
+                    break
+            if draw_label:
+                label = "Configured by %s" % container_name
+                self.layout.label(text=label)
 
 class BM_PT_Item_ObjectBase(bpy.types.Panel):
     bl_label = " "
@@ -448,6 +459,10 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
             return True
         elif object[0].nm_is_local_container:
             return False
+        elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_detached is False:
+            for object1 in context.scene.bm_table_of_objects:
+                if object1.nm_is_universal_container and object1.nm_master_index == object[0].nm_item_uni_container_master_index:
+                    return not object1.nm_uni_container_is_global
         return object[1]
 
     def draw_header(self, context):
@@ -603,6 +618,10 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
             return True
         elif object[0].nm_is_local_container:
             return False
+        elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_detached is False:
+            for object1 in context.scene.bm_table_of_objects:
+                if object1.nm_is_universal_container and object1.nm_master_index == object[0].nm_item_uni_container_master_index:
+                    return not object1.nm_uni_container_is_global
         return object[1]
 
     def draw_header(self, context):
@@ -1028,6 +1047,10 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
             return True
         elif object[0].nm_is_local_container:
             return False
+        elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_detached is False:
+            for object1 in context.scene.bm_table_of_objects:
+                if object1.nm_is_universal_container and object1.nm_master_index == object[0].nm_item_uni_container_master_index:
+                    return not object1.nm_uni_container_is_global
         return object[1]
 
     def draw_header(self, context):
