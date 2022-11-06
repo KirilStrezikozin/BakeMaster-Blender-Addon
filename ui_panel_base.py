@@ -420,11 +420,13 @@ class BM_PT_ItemBase(bpy.types.Panel):
 
     def draw(self, context):
         object = BM_Object_Get(context)
-        if any([object[0].nm_is_universal_container, object[0].nm_is_local_container]):
+        if context.scene.bm_props.global_use_name_matching and object[0].nm_is_universal_container:
             return
-        try:
-            context.scene.objects[object[0].global_object_name]
-        except (KeyError, AttributeError):
+        elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_local_container:
+            label = "Local Container"
+            icon = 'TRIA_RIGHT'
+            self.layout.label(text=label, icon=icon)
+        elif object[1] is False:
             label = "Object cannot be found"
             icon = 'GHOST_DISABLED'
             self.layout.label(text=label, icon=icon)
@@ -437,14 +439,11 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         object = BM_Object_Get(context)
-        if any([object[0].nm_is_universal_container, object[0].nm_is_local_container]):
+        if object[0].nm_is_universal_container:
             return True
-        try:
-            context.scene.objects[object[0].global_object_name]
-        except (KeyError, AttributeError):
+        elif object[0].nm_is_local_container:
             return False
-        else:
-            return True
+        return object[1]
 
     def draw_header(self, context):
         object = BM_Object_Get(context)[0]
@@ -593,14 +592,11 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         object = BM_Object_Get(context)
-        if any([object[0].nm_is_universal_container, object[0].nm_is_local_container]):
+        if object[0].nm_is_universal_container:
             return True
-        try:
-            context.scene.objects[object[0].global_object_name]
-        except (KeyError, AttributeError):
+        elif object[0].nm_is_local_container:
             return False
-        else:
-            return True
+        return object[1]
 
     def draw_header(self, context):
         label = "Maps"
@@ -1021,14 +1017,11 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         object = BM_Object_Get(context)
-        if any([object[0].nm_is_universal_container, object[0].nm_is_local_container]):
+        if object[0].nm_is_universal_container:
             return True
-        try:
-            context.scene.objects[object[0].global_object_name]
-        except (KeyError, AttributeError):
+        elif object[0].nm_is_local_container:
             return False
-        else:
-            return True
+        return object[1]
 
     def draw_header(self, context):
         label = "Output"
