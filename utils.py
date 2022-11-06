@@ -22,6 +22,21 @@ import bpy
 from .labels import BM_Labels
 
 ###############################################################
+### BM Gets Funcs ###
+###############################################################
+def BM_Object_Get(context):
+    object = [context.scene.bm_table_of_objects[context.scene.bm_props.global_active_index], True] 
+    try:
+        context.scene.objects[object[0].global_object_name]
+    except (KeyError, AttributeError, UnboundLocalError):
+        object[1] = False
+    return object
+
+def BM_Map_Get(object):
+    map = object.global_maps[object.global_maps_active_index]
+    return map
+
+###############################################################
 ### Name Matching Funcs ###
 ###############################################################
 def BM_Table_of_Objects_NameMatching_GetAllObjectNames(context):
@@ -719,56 +734,39 @@ def BM_ITEM_PROPS_bake_batchname_use_caps_Update(self, context):
     # upper-case batch name if true else lower-case
     self.bake_batchname = self.bake_batchname.upper() if self.bake_batchname_use_caps else self.bake_batchname.lower()
 
-
-def BM_ITEM_PROPS_HighLowSettings_Update(self, context):
-    pass
-
-def BM_ITEM_PROPS_UVSettings_Update(self, context):
-    pass
-
-def BM_ITEM_PROPS_OutputSettings_Update(self, context):
-    pass
-
+###############################################################
+### BM Table of Objects Funcs ###
+###############################################################
 def BM_ActiveIndexUpdate(self, context):
     if len(context.scene.bm_table_of_objects):
-        object = context.scene.bm_table_of_objects[context.scene.bm_props.global_active_index]
-        try:
-            context.scene.objects[object.global_object_name]
-        except (KeyError, AttributeError, UnboundLocalError):
-            pass
-        else:
-            object = context.scene.objects[object.global_object_name]
+        source_object = BM_Object_Get(context)
+        if source_object[1]:
+            source_object = context.scene.objects[source_object[0].global_object_name]
             
-            if not object.visible_get():
+            if not source_object.visible_get():
                 return
 
             for ob in context.scene.objects:
                 ob.select_set(False)
 
-            object.select_set(True)
-            context.view_layer.objects.active = object
+            source_object.select_set(True)
+            context.view_layer.objects.active = source_object
 
-def BM_Object_Get(context):
-    object = [context.scene.bm_table_of_objects[context.scene.bm_props.global_active_index], True] 
-    try:
-        context.scene.objects[object[0].global_object_name]
-    except (KeyError, AttributeError, UnboundLocalError):
-        object[1] = False
-    return object
-
-def BM_Map_Get(object):
-    map = object.global_maps[object.global_maps_active_index]
-    return map
-
-def BM_ITEM_PROPS_uv_active_uv_Items(self, context):
-    item = context.scene.bm_aol[context.scene.bm_props.global_active_index].object_pointer.data
+###############################################################
+### uv Props Funcs ###
+###############################################################
+def BM_ITEM_PROPS_uv_active_layer_Items(self, context):
+    object = BM_Object_Get(context)
+    if object[1] is False:
+        return [('NONE', "None", "Current Object doesn't support UV Layers")]
+    source_object = context.scene.objects[BM_Object_Get(context)[0].global_object_name].data
     uv_layers = []
 
-    if len(item.uv_layers):
-        for uv_layer in item.uv_layers:
-            uv_layers.append((str(uv_layer.name), uv_layer.name, ""))
+    if len(source_object.uv_layers):
+        for uv_layer in source_object.uv_layers:
+            uv_layers.append((str(uv_layer.name), uv_layer.name, "UV Layer to use for baking current Object's maps"))
     else:
-        uv_layers.append(('NONE_AUTO_CREATE', "Auto Unwrap", ""))
+        uv_layers.append(('NONE_AUTO_CREATE', "Auto Unwrap", "Object has got no UV Layers, Auto UV Unwrap will be proceeded"))
     return uv_layers
 
 def BM_ITEM_PROPS_uv_type_Items(self, context):
@@ -780,7 +778,7 @@ def BM_ITEM_PROPS_uv_type_Items(self, context):
     
     return items
 
-def BM_ITEM_PROPS_out_bake_target_Items(self, context):
+def BM_ITEM_PROPS_uv_bake_target_Items(self, context):
     if bpy.app.version >= (2, 92, 0):
         items = [('IMAGE_TEXTURES', "Image Textures", "Bake to image texture files (image files)"),
                 ('VERTEX_COLORS', "Vertex Colors", "Bake to vertex color layers (color attributes, no need for UVs")]
@@ -788,6 +786,15 @@ def BM_ITEM_PROPS_out_bake_target_Items(self, context):
         items = [('IMAGE_TEXTURES', "Image Textures", "Bake to image texture files (image files)")]
     
     return items
+
+def BM_ITEM_PROPS_UVSettings_Update(self, context):
+    pass
+
+def BM_ITEM_PROPS_HighLowSettings_Update(self, context):
+    pass
+
+def BM_ITEM_PROPS_OutputSettings_Update(self, context):
+    pass
 
 def BM_MAP_PROPS_map_type_Items(self, context):
     items = [
