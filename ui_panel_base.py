@@ -406,17 +406,22 @@ class BM_PT_ItemBase(bpy.types.Panel):
         label = object[0].global_object_name
         label_end = ""
         icon = 'PROPERTIES'
+        draw_unique_per_object = False
         if context.scene.bm_props.global_use_name_matching and any([object[0].nm_is_universal_container, object[0].nm_is_local_container]):
             label_end = "Container"
             if object[0].nm_is_universal_container:
                 label = object[0].nm_container_name
+                draw_unique_per_object = True
             else:
                 for object1 in context.scene.bm_table_of_objects:
                     if object1.nm_is_universal_container and object1.nm_master_index == object[0].nm_item_uni_container_master_index:
                         label = object1.nm_container_name
                         label_end = "{} Container".format(object[0].nm_container_name)
                         break
-        self.layout.label(text="{} {}".format(label, label_end), icon=icon)
+        row = self.layout.row(align=True)
+        row.label(text="{} {}".format(label, label_end), icon=icon)
+        if draw_unique_per_object:
+            row.prop(object[0], 'nm_uni_container_use_unique_per_object', text="", icon='NETWORK_DRIVE')
 
     def draw(self, context):
         object = BM_Object_Get(context)
@@ -451,8 +456,10 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
             label = "Container"
         else:
             label = "Object"
-        self.layout.label(text=label)
-        BM_PT_MapsConfigurator_Presets.draw_panel_header(self.layout)
+        row = self.layout.row(align=True)
+        row.use_property_split = False
+        row.label(text=label)
+        BM_PT_MapsConfigurator_Presets.draw_panel_header(row)
 
     def draw(self, context):
         layout = self.layout
