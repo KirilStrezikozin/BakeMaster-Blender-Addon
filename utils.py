@@ -759,7 +759,7 @@ def BM_ITEM_PROPS_uv_active_layer_Items(self, context):
     object = BM_Object_Get(context)
     if object[1] is False:
         return [('NONE', "None", "Current Object doesn't support UV Layers")]
-    source_object = context.scene.objects[BM_Object_Get(context)[0].global_object_name].data
+    source_object = context.scene.objects[object[0].global_object_name].data
     uv_layers = []
 
     if len(source_object.uv_layers):
@@ -797,6 +797,9 @@ def BM_ITEM_PROPS_OutputSettings_Update(self, context):
     pass
 
 def BM_MAP_PROPS_map_type_Items(self, context):
+    if self.uv_bake_data == 'VERTEX_COLORS':
+        return [('VERTEX_COLOR_LAYER', "VertexColor Layer", "Bake VertexColor Layer")]
+
     items = [
         ('', "PBR-Metallic", "PBR maps to bake from existing object materials data"),
         ('ALBEDO', "Albedo", "PBR-Metallic. Color image texture containing color without shadows and highlights"),
@@ -827,8 +830,9 @@ def BM_MAP_PROPS_map_type_Items(self, context):
         ('EDGE', "Edge Mask", "Image texture for masking out mesh edges"),
         ('WIREFRAME', "Wireframe Mask", "Black and white mesh wireframe mask"),
 
-        ('', "Passes and Cycles Default", "Bake Cycles default maps and object materials passes"),
+        ('', "Passes and Cycles Default", "Bake Cycles default maps and object data and materials passes"),
         ('PASS', "BSDF Pass", "Choose and bake BSDF pass to image texture"),
+        ('VERTEX_COLOR_LAYER', "VertexColor Layer", "Bake VertexColor Layer"),
         ('C_COMBINED', "Combined", "Bakes all materials, textures, and lighting contribution except specularity"),
         ('C_AO', "Ambient Occlusion", "Ambient Occlusion map contains lightning data"),
         ('C_SHADOW', "Shadow", "Bakes shadows and lighting"),
@@ -843,6 +847,25 @@ def BM_MAP_PROPS_map_type_Items(self, context):
     ]
 
     return items
+
+def BM_MAP_PROPS_map_vertexcolor_layer_Items(self, context):
+    def object_get_vertexcolor_layers(data):
+        items = []
+        if len(data):
+            for layer in data:
+                items.append(str(layer.name), layer.name, "VertexColor Layer to bake")
+            return items
+        else:
+            return [('NONE', "None", "No VertexColor Layers to bake")]
+
+    object = BM_Object_Get(context)
+    if object[1] is False:
+        return [('NONE', "None", "Current Object doesn't support VertexColor Layers")]
+    source_object = context.scene.objects[object[0].global_object_name].data
+    if bpy.app.version < (3, 0, 0):
+        return object_get_vertexcolor_layers(source_object.data.vertex_colors)
+    else:
+        return object_get_vertexcolor_layers(source_object.data.color_attributes)
 
 def BM_MAP_PROPS_map_displacement_data_Items(self, context):
     object = BM_Object_Get(context)[0]
