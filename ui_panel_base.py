@@ -116,34 +116,9 @@ class BM_UL_Table_of_Objects_Item(bpy.types.UIList):
         """
         # data collection class
         items = getattr(data, propname)
-        # default return values
-        ftl_flags = []
-        ftl_neworder = []
-
-        # initialize with all items visible
-        if context.scene.bm_props.global_use_name_matching is False:
-            ftl_flags = [self.bitflag_filter_item] * len(items)
-            ftl_neworder = [index for index, _ in enumerate(items)]
-            
-        # initialize with items unvisible if items' parent container nm_is_expanded is False
-        else:
-            ftl_flags = [self.bitflag_filter_item] * len(items)
-            for global_index, global_object in enumerate(items):
-                # visible universal container, all its items unvisible
-                if global_object.nm_is_universal_container and global_object.nm_is_expanded is False:
-                    ftl_neworder.append(global_index)
-                    for local_index, local_object in enumerate(items):
-                        if local_object.nm_item_uni_container_master_index == global_object.nm_master_index:
-                            ftl_flags[local_index] &= ~self.bitflag_filter_item
-                # visible local container, all its items unvisible
-                elif global_object.nm_is_local_container and global_object.nm_is_expanded is False:
-                    ftl_neworder.append(global_index)
-                    for local_index, local_object in enumerate(items):
-                        if local_object.nm_item_uni_container_master_index == global_object.nm_item_uni_container_master_index and local_object.nm_item_local_container_master_index == global_object.nm_master_index:
-                            ftl_flags[local_index] &= ~self.bitflag_filter_item
-            ftl_neworder = sorted([index for index, item in enumerate(items) if ftl_flags[index] == ~self.bitflag_filter_item])
-
-        return ftl_flags, ftl_neworder
+        
+        # get filtered items
+        return BM_Table_of_Objects_GetFTL(context, items, self.bitflag_filter_item)
 
     def invoke(self, context, event):
         pass
