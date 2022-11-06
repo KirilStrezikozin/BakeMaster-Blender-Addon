@@ -535,52 +535,52 @@ def BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index):
 ###############################################################
 ### Batch Naming Funcs ###
 ###############################################################
-def BM_BATCHNAMINGKEY_PROPS_global_keyword_Items(self, context):
-    gen_items = {
-        "OBJECT_INDEX" : ('OBJECT_INDEX', "_objectindex_", "Write Object index in the Table of Objects"),
-        "OBJECT_NAME" : ('OBJECT_NAME', "_objectname_", "Write Object name"),
-        "CONTAINER_NAME" : ('CONTAINER_NAME', "_containername_", "Write Container name"),
-        "PACK_NAME" : ('PACK_NAME', "_packname_", "Write Channel Pack name if map is present in Channel Pack. If not then do not write anything"),
-        "TEXSET_NAME" : ('TEXSET_NAME', "_texsetname_", "Write Texture Set chosen name convention if Object is present in Texture Set. If not then do not write anything"),
-        "MAP_INDEX" : ('MAP_INDEX', "_mapindex_", "Write map index in the Object's Table of Maps"),
-        "MAP_NAME" : ('MAP_NAME', "_mapname_", "Write map name"),
-        "MAP_RES" : ('MAP_RES', "_mapres_", "Write map Resolution in chosen format"),
-        "MAP_BIT" : ('MAP_BIT', "_mapbit_", "Write _32bit_ if map uses 32bit Float, otherwise write _8bit_"),
-        "MAP_TRANS" : ('MAP_TRANS', "_maptrans_", "Write _trans_ or custom if map uses transparent background. If doesn't use then do not write anything"),
-        "MAP_SSAA" : ('MAP_SSAA', "_mapssaa_", "Write SSAA value (e.g. 4x4) used for the map. If no SSAA used then do not write anything"),
-        "MAP_SAMPLES" : ('MAP_SAMPLES', "_mapsamples_", "Write number of map bake samples. If map uses Adaptive Sampling, write max samples value"),
-        "MAP_DENOISE" : ('MAP_DENOISE', "_mapdenoise_", "Write _denoised_ or custom if map was denoised. If wasn't denoised then do not write anything"),
-        "MAP_NORMAL" : ('MAP_NORMAL', "_mapnormal_", "For Normal map, write preset type. For example, _blender_, _unity_, _directX_, _custom_"),
-        "MAP_UV" : ('MAP_UV', "_mapuv_", "Write UV Layer name used for baking map"),
-        "ENGINE" : ('ENGINE', "_engine_", "Write Bake Engine used for baking. _CPU_ or _GPU"),
-        "AUTO_UV" : ('AUTO_UV', "_autouv_", "Write _autouv_ or custom if object was auto uv unwrapped. If not then do not write anything"),
-    }
-    new_items = []
-    used_items = []
+# def BM_BATCHNAMINGKEY_PROPS_global_keyword_Items(self, context):
+#     gen_items = {
+#         "OBJECT_INDEX" : ('OBJECT_INDEX', "_objectindex_", "Write Object index in the Table of Objects"),
+#         "OBJECT_NAME" : ('OBJECT_NAME', "_objectname_", "Write Object name"),
+#         "CONTAINER_NAME" : ('CONTAINER_NAME', "_containername_", "Write Container name"),
+#         "PACK_NAME" : ('PACK_NAME', "_packname_", "Write Channel Pack name if map is present in Channel Pack. If not then do not write anything"),
+#         "TEXSET_NAME" : ('TEXSET_NAME', "_texsetname_", "Write Texture Set chosen name convention if Object is present in Texture Set. If not then do not write anything"),
+#         "MAP_INDEX" : ('MAP_INDEX', "_mapindex_", "Write map index in the Object's Table of Maps"),
+#         "MAP_NAME" : ('MAP_NAME', "_mapname_", "Write map name"),
+#         "MAP_RES" : ('MAP_RES', "_mapres_", "Write map Resolution in chosen format"),
+#         "MAP_BIT" : ('MAP_BIT', "_mapbit_", "Write _32bit_ if map uses 32bit Float, otherwise write _8bit_"),
+#         "MAP_TRANS" : ('MAP_TRANS', "_maptrans_", "Write _trans_ or custom if map uses transparent background. If doesn't use then do not write anything"),
+#         "MAP_SSAA" : ('MAP_SSAA', "_mapssaa_", "Write SSAA value (e.g. 4x4) used for the map. If no SSAA used then do not write anything"),
+#         "MAP_SAMPLES" : ('MAP_SAMPLES', "_mapsamples_", "Write number of map bake samples. If map uses Adaptive Sampling, write max samples value"),
+#         "MAP_DENOISE" : ('MAP_DENOISE', "_mapdenoise_", "Write _denoised_ or custom if map was denoised. If wasn't denoised then do not write anything"),
+#         "MAP_NORMAL" : ('MAP_NORMAL', "_mapnormal_", "For Normal map, write preset type. For example, _blender_, _unity_, _directX_, _custom_"),
+#         "MAP_UV" : ('MAP_UV', "_mapuv_", "Write UV Layer name used for baking map"),
+#         "ENGINE" : ('ENGINE', "_engine_", "Write Bake Engine used for baking. _CPU_ or _GPU"),
+#         "AUTO_UV" : ('AUTO_UV', "_autouv_", "Write _autouv_ or custom if object was auto uv unwrapped. If not then do not write anything"),
+#     }
+#     new_items = []
+#     used_items = []
 
-    object = BM_Object_Get(context)[0]
-    for index, keyword in enumerate(object.bake_batch_name_table):
-        if index != self.global_keyword_index:
-            used_items.append(keyword.global_keyword_old)
+#     object = BM_Object_Get(context)[0]
+#     for index, keyword in enumerate(object.bake_batch_name_table):
+#         if index != self.global_keyword_index:
+#             used_items.append(keyword.global_keyword_old)
 
-    for keyword in gen_items:
-        if keyword not in used_items:
-            new_items.append(gen_items.get(keyword))
+#     for keyword in gen_items:
+#         if keyword not in used_items:
+#             new_items.append(gen_items.get(keyword))
 
-    # if len(new_items) == 0:
-    #     new_items.append(('NONE', "None", "All objects are added to Texture Sets"))
-    return new_items
+#     # if len(new_items) == 0:
+#     #     new_items.append(('NONE', "None", "All objects are added to Texture Sets"))
+#     return new_items
 
-def BM_BATCHNAMINGKEY_PROPS_global_keyword_Update(self, context):
-    self.global_keword_old = self.global_keyword
+# def BM_BATCHNAMINGKEY_PROPS_global_keyword_Update(self, context):
+#     self.global_keword_old = self.global_keyword
 
-def BM_BATCHNAMINGKEY_PROPS_global_keyword_UpdateOrder(context):
-    object = BM_Object_Get(context)[0]
-    for keyword in object.bake_batch_name_table:
-        try:
-            keyword.global_keyword = keyword.global_keyword_old
-        except (TypeError, ValueError):
-            pass
+# def BM_BATCHNAMINGKEY_PROPS_global_keyword_UpdateOrder(context):
+#     object = BM_Object_Get(context)[0]
+#     for keyword in object.bake_batch_name_table:
+#         try:
+#             keyword.global_keyword = keyword.global_keyword_old
+#         except (TypeError, ValueError):
+#             pass
 
 def BM_ITEM_PROPS_bake_batchname_Update(self, context):
     # DEMO: no refresh on add maps, maps props update, no refresh on obj add,

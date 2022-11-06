@@ -1314,41 +1314,41 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
         description="Choose a map for the Alpha Transparency channel among added to the table of maps",
         items=[('NONE', "None", "")])
 
-class BM_Object_BatchNamingKeyword(bpy.types.PropertyGroup):
-    global_keyword : bpy.props.EnumProperty(
-        name="Keyword Type",
-        description="Choose keyword type for this keyword",
-        items=BM_BATCHNAMINGKEY_PROPS_global_keyword_Items,
-        update=BM_BATCHNAMINGKEY_PROPS_global_keyword_Update)
+# class BM_Object_BatchNamingKeyword(bpy.types.PropertyGroup):
+#     global_keyword : bpy.props.EnumProperty(
+#         name="Keyword Type",
+#         description="Choose keyword type for this keyword",
+#         items=BM_BATCHNAMINGKEY_PROPS_global_keyword_Items,
+#         update=BM_BATCHNAMINGKEY_PROPS_global_keyword_Update)
 
-    global_keyword_index : bpy.props.IntProperty()
+#     global_keyword_index : bpy.props.IntProperty()
     
-    global_keyword_old : bpy.props.StringProperty(default="")
+#     global_keyword_old : bpy.props.StringProperty(default="")
     
-    global_use_caps : bpy.props.BoolProperty(
-        name="Use Caps",
-        description="Use capital letters for this keyword",
-        default=False)
+#     global_use_caps : bpy.props.BoolProperty(
+#         name="Use Caps",
+#         description="Use capital letters for this keyword",
+#         default=False)
 
-    mapres_use_k : bpy.props.BoolProperty(
-        name="K Resolution",
-        description="If possible, write resolution in K-format, if not then leave in pixels.\nIf checked, 256 -> 256, 1024 -> 1K, 4096 -> 4K, 7452 -> 7452\nIf unchecked, 256 -> 256, 1024 -> 1024, 4096 -> 4096, 7452 -> 7452",
-        default=False)
+#     mapres_use_k : bpy.props.BoolProperty(
+#         name="K Resolution",
+#         description="If possible, write resolution in K-format, if not then leave in pixels.\nIf checked, 256 -> 256, 1024 -> 1K, 4096 -> 4K, 7452 -> 7452\nIf unchecked, 256 -> 256, 1024 -> 1024, 4096 -> 4096, 7452 -> 7452",
+#         default=False)
 
-    maptrans_custom : bpy.props.StringProperty(
-        name="Write:",
-        description="What to write if map uses transparent background",
-        default="trans")
+#     maptrans_custom : bpy.props.StringProperty(
+#         name="Write:",
+#         description="What to write if map uses transparent background",
+#         default="trans")
 
-    mapdenoise_custom : bpy.props.StringProperty(
-        name="Write:",
-        description="What to write if map was denoised",
-        default="denoised")
+#     mapdenoise_custom : bpy.props.StringProperty(
+#         name="Write:",
+#         description="What to write if map was denoised",
+#         default="denoised")
     
-    autouv_custom : bpy.props.StringProperty(
-        name="Write:",
-        description="What to write if object was auto uv unwrapped",
-        default="autouv")
+#     autouv_custom : bpy.props.StringProperty(
+#         name="Write:",
+#         description="What to write if object was auto uv unwrapped",
+#         default="autouv")
     
 class BM_Object(bpy.types.PropertyGroup):
     global_object_name : bpy.props.StringProperty()

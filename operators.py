@@ -298,7 +298,7 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                         if object not in objects and object.data not in objects_data:
                             new_item = scene.bm_table_of_objects.add()
                             new_item.global_object_name = object.name
-                            new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
+                            # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
                             scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
                         else:
                             exists = True
@@ -415,13 +415,13 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             new_container.nm_is_local_container = True
                             new_container.nm_is_expanded = True
                             setattr(new_container, container_props[shell[3]], True)
-                            new_container.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_container.bake_batchname)
+                            # new_container.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_container.bake_batchname)
                             new_item = scene.bm_table_of_objects.add()
                             new_item.global_object_name = shell[0]
                             new_item.nm_this_indent = 2
                             new_item.nm_is_expanded = True
                             setattr(new_item, shell[4], True)
-                            new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
+                            # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
                             # move item to the right place
                             scene.bm_table_of_objects.move(len(scene.bm_table_of_objects) - 2, container_insert_index + 1)
                             scene.bm_table_of_objects.move(len(scene.bm_table_of_objects) - 1, container_insert_index + 2)
@@ -438,7 +438,7 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                         new_item.nm_this_indent = 2
                         new_item.nm_is_expanded = True
                         setattr(new_item, shell[4], True)
-                        new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
+                        # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
                         # move item to the right place
                         scene.bm_table_of_objects.move(len(scene.bm_table_of_objects) - 1, insert_index + 1)
                         # update master indexes
@@ -470,7 +470,7 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                     universal_container.nm_this_indent = 0
                     universal_container.nm_is_universal_container = True
                     universal_container.nm_is_expanded = True
-                    universal_container.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, universal_container.bake_batchname)
+                    # universal_container.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, universal_container.bake_batchname)
 
                     # objs[] : 0 - lowpolies, 1 - highpolies, 2 - cages
                     object_names = [[], [], []]
@@ -513,7 +513,7 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             local_container.nm_is_local_container = True
                             local_container.nm_is_expanded = True
                             setattr(local_container, container_types_props[local_index], True)
-                            local_container.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, local_container.bake_batchname)
+                            # local_container.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, local_container.bake_batchname)
 
                             for obj_index, object_name in enumerate(local_names):
                                 # do not add detached names
@@ -524,14 +524,14 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                                 new_item.nm_this_indent = 2
                                 new_item.nm_is_expanded = True
                                 setattr(new_item, prefix_props[local_index], True)
-                                new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
+                                # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
                 # adding detached as regular items
                 for object_name in detached:
                     new_item = context.scene.bm_table_of_objects.add()
                     new_item.global_object_name = object_name
                     new_item.nm_is_detached = True
                     new_item.nm_is_expanded = True
-                    new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
+                    # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
 
                 # update master indexes
                 BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)

@@ -149,7 +149,7 @@ classes = (
     BM_Map,
     BM_Object_Highpoly,
     BM_Object_ChannelPack,
-    BM_Object_BatchNamingKeyword,
+    # BM_Object_BatchNamingKeyword,
     BM_Object,
     BM_SceneProps_TextureSet_Object_SubObject,
     BM_SceneProps_TextureSet_Object,
