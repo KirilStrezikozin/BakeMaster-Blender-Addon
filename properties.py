@@ -199,9 +199,6 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Use High to Lowpoly Settigns for baking this map. If checked, bake will be performed from highpoly to lowpoly, otherwise just bake lowpoly",
         default=True)
     
-    # DEMO
-    global_map_prefix : bpy.props.StringProperty(default="AO")
-
 # Map High to Lowpoly props:
     hl_highpoly_table : bpy.props.CollectionProperty(type=BM_Map_Highpoly)
 
@@ -512,7 +509,66 @@ class BM_Map(bpy.types.PropertyGroup):
         max=4096,
         update=BM_ITEM_PROPS_OutputSettings_Update)
 
+# Albedo Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Albedo Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Albedo Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Albedo Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Albedo Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Albedo Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Albedo Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Albedo Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Albedo Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
 # Pass Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
     map_pass_type : bpy.props.EnumProperty(
         name="Pass",
         description="Choose BSDF node pass to bake to image texture",
@@ -532,12 +588,83 @@ class BM_Map(bpy.types.PropertyGroup):
                ('NORMAL', "Normal", "")])
 
 # Vertex Color Layer Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
     map_vertexcolor_layer : bpy.props.EnumProperty(
         name="Layer",
         description="Vertex Color Layer to bake",
         items=BM_MAP_PROPS_map_vertexcolor_layer_Items)
     
 # Cycles Map Props 
+# Vertex Color Layer Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Vertex Color Layer Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Vertex Color Layer Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Vertex Color Layer Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Vertex Color Layer Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Vertex Color Layer Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Vertex Color Layer Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Vertex Color Layer Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Vertex Color Layer Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Vertex Color Layer Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
+# Vertex Color Layer Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
     map_cycles_use_pass_direct : bpy.props.BoolProperty(
         name = "Direct",
         description = "Add direct lighting contribution",
@@ -579,6 +706,11 @@ class BM_Map(bpy.types.PropertyGroup):
         default = True)
 
 # Normal Map Props
+    map_ALBEDO_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="ALBEDO")
+
     map_normal_space : bpy.props.EnumProperty(
         name = "Normal Space",
         description = "Choose normal space for baking",
