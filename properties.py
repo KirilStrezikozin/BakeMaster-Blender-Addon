@@ -267,13 +267,13 @@ class BM_Map(bpy.types.PropertyGroup):
     uv_bake_target : bpy.props.EnumProperty(
         name = "Bake Target",
         description = "Choose Baked Maps output target",
-        items = BM_ITEM_PROPS_out_bake_target_Items,
+        items = BM_ITEM_PROPS_uv_bake_target_Items,
         update = BM_ITEM_PROPS_UVSettings_Update)
 
     uv_active_layer : bpy.props.EnumProperty(
         name = "Active UV Map",
         description = "Choose active UVMap layer to use in the bake.\nIf mesh has got no UV layers and at least one map to be baked to image texture, auto UV unwrap will be proceeded",
-        items = BM_ITEM_PROPS_uv_active_uv_Items,
+        items = BM_ITEM_PROPS_uv_active_layer_Items,
         update=BM_ITEM_PROPS_UVSettings_Update)
 
     uv_type : bpy.props.EnumProperty(
@@ -1455,13 +1455,13 @@ class BM_Object(bpy.types.PropertyGroup):
     uv_bake_target : bpy.props.EnumProperty(
         name = "Bake Target",
         description = "Choose Baked Maps output target",
-        items = BM_ITEM_PROPS_out_bake_target_Items,
+        items = BM_ITEM_PROPS_uv_bake_target_Items,
         update = BM_ITEM_PROPS_UVSettings_Update)
 
     uv_active_layer : bpy.props.EnumProperty(
         name = "Active UV Map",
         description = "Choose active UVMap layer to use in the bake.\nIf mesh has got no UV layers and at least one map to be baked to image texture, auto UV unwrap will be proceeded",
-        items = BM_ITEM_PROPS_uv_active_uv_Items,
+        items = BM_ITEM_PROPS_uv_active_layer_Items,
         update=BM_ITEM_PROPS_UVSettings_Update)
 
     uv_type : bpy.props.EnumProperty(
