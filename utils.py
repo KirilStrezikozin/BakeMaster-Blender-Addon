@@ -1,5 +1,8 @@
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
+# "BakeMaster" Add-on
+# Copyright (C) 2022 Kiril Strezikozin aka kemplerart
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
@@ -15,8 +18,6 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-import enum
-from pkgutil import iter_modules
 import bpy
 from .labels import BM_Labels
 
