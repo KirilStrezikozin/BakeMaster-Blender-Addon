@@ -645,71 +645,72 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
         if len(object.global_maps):
             map = BM_Map_Get(object)
             # format 
-            format_box = layout.box()
-            format_box.use_property_split = True
-            format_box.use_property_decorate = False
+            if (object.uv_use_unique_per_map is False and object.uv_bake_target != 'VERTEX_COLORS') or (object.uv_use_unique_per_map and map.uv_bake_target != 'VERTEX_COLORS'):
+                format_box = layout.box()
+                format_box.use_property_split = True
+                format_box.use_property_decorate = False
 
-            # format header
-            format_box_header = format_box.row()
-            format_box_header.use_property_split = False
-            format_box_header.emboss = 'NONE'
-            icon = 'TRIA_DOWN' if scene.bm_props.global_is_format_panel_expanded else 'TRIA_RIGHT'
-            format_box_header.prop(scene.bm_props, 'global_is_format_panel_expanded', text="", icon=icon)
-            format_box_header.emboss = 'NORMAL'
+                # format header
+                format_box_header = format_box.row()
+                format_box_header.use_property_split = False
+                format_box_header.emboss = 'NONE'
+                icon = 'TRIA_DOWN' if scene.bm_props.global_is_format_panel_expanded else 'TRIA_RIGHT'
+                format_box_header.prop(scene.bm_props, 'global_is_format_panel_expanded', text="", icon=icon)
+                format_box_header.emboss = 'NORMAL'
 
-            # draw format for all maps
-            if object.out_use_unique_per_map is False:
-                format_box_header.label(text="Format")
-                BM_PT_MapsConfigurator_Presets.draw_panel_header(format_box_header)
-                format_prop_collection = object
-            # draw format unique per map
-            else:
-                format_box_header.label(text="Map Format")
-                BM_PT_MapsConfigurator_Presets.draw_panel_header(format_box_header)
-                format_prop_collection = map
-
-            # format body
-            if scene.bm_props.global_is_format_panel_expanded:
-                format_box.prop(object, 'out_use_unique_per_map')
-                # format
-                format_box_column = format_box.column(align=True)
-                format_box_column.prop(format_prop_collection, 'out_file_format')
-                if format_prop_collection.out_file_format == 'PSD':
-                    format_box_column.prop(format_prop_collection, 'out_psd_include')
-                elif format_prop_collection.out_file_format == 'OPEN_EXR':
-                    format_box_column.prop(format_prop_collection, 'out_exr_codec')
-                elif format_prop_collection.out_file_format == 'PNG':
-                    format_box_column.prop(format_prop_collection, 'out_compression')
-                format_box_column = format_box.column(align=True)
-                format_box_column.prop(format_prop_collection, 'out_res', text="Resolution")
-                if format_prop_collection.out_res == 'CUSTOM':
-                    format_box_column.prop(format_prop_collection, 'out_res_height')
-                    format_box_column.prop(format_prop_collection, 'out_res_width')
-                elif format_prop_collection.out_res == 'TEXEL':
-                    format_box_column.prop(format_prop_collection, 'out_texel_density_value')
-                    format_box_column.prop(format_prop_collection, 'out_texel_density_match')
-                format_box_column = format_box.column(align=True)
-                if bpy.app.version >= (3, 1, 0):
-                    format_box_column.prop(format_prop_collection, 'out_margin_type')
-                format_box_column.prop(format_prop_collection, 'out_margin')
-                format_box_column = format_box.column(align=True)
-                format_box_column.prop(format_prop_collection, 'out_use_32bit')
-                format_box_column.prop(format_prop_collection, 'out_use_alpha')
-                format_box_column.prop(format_prop_collection, 'out_use_transbg')
-                if format_prop_collection.uv_type == 'TILED':
-                    format_box_column = format_box.column(align=True)
-                    format_box_column.prop(format_prop_collection, 'out_udim_start_tile', text="Start Tile")
-                    format_box_column.prop(format_prop_collection, 'out_udim_end_tile', text="End Tile")
-                format_box.prop(format_prop_collection, 'out_super_sampling_aa')
-                format_box_column = format_box.column(align=True)
-                format_box_column.prop(format_prop_collection, 'out_use_adaptive_sampling')
-                if format_prop_collection.out_use_adaptive_sampling:
-                    format_box_column.prop(format_prop_collection, 'out_adaptive_threshold')
-                    format_box_column.prop(format_prop_collection, 'out_samples', text="Bake Max Samples")
-                    format_box_column.prop(format_prop_collection, 'out_min_samples')
+                # draw format for all maps
+                if object.out_use_unique_per_map is False:
+                    format_box_header.label(text="Format")
+                    BM_PT_MapsConfigurator_Presets.draw_panel_header(format_box_header)
+                    format_prop_collection = object
+                # draw format unique per map
                 else:
-                    format_box_column.prop(format_prop_collection, 'out_samples')
-                format_box.prop(format_prop_collection, 'out_use_denoise')            
+                    format_box_header.label(text="Map Format")
+                    BM_PT_MapsConfigurator_Presets.draw_panel_header(format_box_header)
+                    format_prop_collection = map
+
+                # format body
+                if scene.bm_props.global_is_format_panel_expanded:
+                    format_box.prop(object, 'out_use_unique_per_map')
+                    # format
+                    format_box_column = format_box.column(align=True)
+                    format_box_column.prop(format_prop_collection, 'out_file_format')
+                    if format_prop_collection.out_file_format == 'PSD':
+                        format_box_column.prop(format_prop_collection, 'out_psd_include')
+                    elif format_prop_collection.out_file_format == 'OPEN_EXR':
+                        format_box_column.prop(format_prop_collection, 'out_exr_codec')
+                    elif format_prop_collection.out_file_format == 'PNG':
+                        format_box_column.prop(format_prop_collection, 'out_compression')
+                    format_box_column = format_box.column(align=True)
+                    format_box_column.prop(format_prop_collection, 'out_res', text="Resolution")
+                    if format_prop_collection.out_res == 'CUSTOM':
+                        format_box_column.prop(format_prop_collection, 'out_res_height')
+                        format_box_column.prop(format_prop_collection, 'out_res_width')
+                    elif format_prop_collection.out_res == 'TEXEL':
+                        format_box_column.prop(format_prop_collection, 'out_texel_density_value')
+                        format_box_column.prop(format_prop_collection, 'out_texel_density_match')
+                    format_box_column = format_box.column(align=True)
+                    if bpy.app.version >= (3, 1, 0):
+                        format_box_column.prop(format_prop_collection, 'out_margin_type')
+                    format_box_column.prop(format_prop_collection, 'out_margin')
+                    format_box_column = format_box.column(align=True)
+                    format_box_column.prop(format_prop_collection, 'out_use_32bit')
+                    format_box_column.prop(format_prop_collection, 'out_use_alpha')
+                    format_box_column.prop(format_prop_collection, 'out_use_transbg')
+                    if format_prop_collection.uv_type == 'TILED':
+                        format_box_column = format_box.column(align=True)
+                        format_box_column.prop(format_prop_collection, 'out_udim_start_tile', text="Start Tile")
+                        format_box_column.prop(format_prop_collection, 'out_udim_end_tile', text="End Tile")
+                    format_box.prop(format_prop_collection, 'out_super_sampling_aa')
+                    format_box_column = format_box.column(align=True)
+                    format_box_column.prop(format_prop_collection, 'out_use_adaptive_sampling')
+                    if format_prop_collection.out_use_adaptive_sampling:
+                        format_box_column.prop(format_prop_collection, 'out_adaptive_threshold')
+                        format_box_column.prop(format_prop_collection, 'out_samples', text="Bake Max Samples")
+                        format_box_column.prop(format_prop_collection, 'out_min_samples')
+                    else:
+                        format_box_column.prop(format_prop_collection, 'out_samples')
+                    format_box.prop(format_prop_collection, 'out_use_denoise')            
 
             # map settings column
             map_settings_column = maps_table_box.column()
