@@ -17,189 +17,1125 @@
 
 import bpy
 import webbrowser
-from .utils import BM_ITEM_OverwriteUpdate, BM_ITEM_RemoveLocalPreviews
+from .utils import *
 from .labels import BM_Labels
 
-class BM_OT_AOL(bpy.types.Operator):
-    bl_idname = 'bakemaster.aol'
+class BM_OT_Table_of_Objects(bpy.types.Operator):
+    bl_idname = 'bakemaster.table_of_objects'
     bl_label = ""
-    bl_description = BM_Labels.OPERATOR_AOL_SELF_DESCRIPTION
+    bl_description = "Move the bake priority of object in the list up and down.\nWhen Name Matching is on, moving Containers bake priority is possible"
+    bl_options = {'INTERNAL', 'UNDO'}
 
     control : bpy.props.EnumProperty(
         items = [('UP', "Up", ""), ('DOWN', "Down", "")])
 
     def invoke(self, context, event):
         scene = context.scene
-        a_index = scene.bm_props.active_index
+        global_active_index = scene.bm_props.global_active_index
 
         try:
-            scene.bm_aol[a_index]
+            scene.bm_table_of_objects[global_active_index]
         except IndexError:
             pass
         else:
-            if self.control == 'UP' and a_index >= 1:
-                scene.bm_aol.move(a_index, a_index - 1)
-                scene.bm_props.active_index -= 1
+            item = scene.bm_table_of_objects[global_active_index]
+            if self.control == 'UP' and global_active_index > 0:
+                # default move for regular objects
+                if scene.bm_props.global_use_name_matching is False:
+                    scene.bm_table_of_objects.move(global_active_index, global_active_index - 1)
+                    # sync texset objs
+                    BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                    scene.bm_props.global_active_index -= 1
+                # move nm items
+                else:
+                    to_move = []
+                    move_to_index = -1
+                    # moving universal container
+                    if item.nm_is_universal_container:
+                        move_starter_index = -1
+                        for index, object in enumerate(scene.bm_table_of_objects):
+                            if object.nm_item_uni_container_master_index == item.nm_master_index:
+                                to_move.append(index)
+                        # finding where to move to
+                        for index, object in enumerate(scene.bm_table_of_objects):
+                            if object.nm_is_universal_container and object.nm_master_index + 1 == item.nm_master_index or object.nm_is_detached and object.nm_master_index + 1 == item.nm_master_index:
+                                move_starter_index = index
+                                move_to_index = index
+                                break
+                        to_move.append(global_active_index)
+                        if move_starter_index == -1:
+                            return {'FINISHED'}
+                        # moving each in to_move on the starter_index and index += 1 each move iteration
+                        increaser = 0
+                        for index in sorted(to_move):
+                            scene.bm_table_of_objects.move(index, move_starter_index + increaser)
+                            # sync texset objs
+                            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                            increaser += 1
+                                
+                    # moving local container (cant move out of its uni)
+                    elif item.nm_is_local_container:
+                        move_starter_index = -1
+                        for index, object in enumerate(scene.bm_table_of_objects):
+                            if object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and object.nm_item_local_container_master_index == item.nm_master_index:
+                                to_move.append(index)
+                            if object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and object.nm_is_local_container and object.nm_master_index + 1 == item.nm_master_index:
+                                if move_starter_index == -1:
+                                    move_starter_index = index
+                                    move_to_index = index
+                        to_move.append(global_active_index)
+                        if move_starter_index == -1:
+                            return {'FINISHED'}
+                        # moving all items within the same local container 
+                        increaser = 0
+                        for index in sorted(to_move):
+                            scene.bm_table_of_objects.move(index, move_starter_index + increaser)
+                            # sync texset objs
+                            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                            increaser += 1
+                    
+                    # move local item
+                    elif item.nm_is_detached is False:
+                        move_starter_index = -1
+                        len_of_local_items = 0
+                        for index, object in enumerate(scene.bm_table_of_objects):
+                            if object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and object.nm_item_local_container_master_index == item.nm_item_local_container_master_index and object.nm_master_index < item.nm_master_index:
+                                len_of_local_items += 1
+                            if object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and object.nm_item_local_container_master_index == item.nm_item_local_container_master_index and object.nm_master_index + 1 == item.nm_master_index:
+                                if move_starter_index == -1:
+                                    move_starter_index = index
+                                    move_to_index = index
+                        # if there are no other local items within the same local container, do not move the item
+                        if len_of_local_items < 1:
+                            return {'FINISHED'}
+                        else:
+                            scene.bm_table_of_objects.move(global_active_index, move_starter_index)
+                            # sync texset objs
+                            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                    
+                    # move detached
+                    else:
+                        move_starter_index = -1
+                        for index, object in enumerate(scene.bm_table_of_objects):
+                            if object.nm_is_detached and object.nm_master_index + 1 == item.nm_master_index:
+                                move_starter_index = index
+                                move_to_index = index
+                                break
+                            elif object.nm_is_universal_container and object.nm_master_index + 1 == item.nm_master_index:
+                                move_starter_index = index
+                                move_to_index = index
+                                break
+                        if move_starter_index == -1:
+                            return {'FINISHED'}
+                        # moving detached on top of the previous uni_c or before the previous detached
+                        scene.bm_table_of_objects.move(global_active_index, move_starter_index)
+                        # sync texset objs
+                        BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
 
-            elif self.control == 'DOWN' and a_index < len(scene.bm_aol) - 1:
-                scene.bm_aol.move(a_index, a_index + 1)
-                scene.bm_props.active_index += 1
+                    # updating active index
+                    if move_to_index != -1:
+                        scene.bm_props.global_active_index = move_to_index
+                    # updating nm master_indexes
+                    BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)
+                # update texsets objs because object was moved
+                BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+
+            elif self.control == 'DOWN' and global_active_index < len(scene.bm_table_of_objects) - 1:
+                # default move for regular objects
+                if scene.bm_props.global_use_name_matching is False:
+                    scene.bm_table_of_objects.move(global_active_index, global_active_index + 1)
+                    # sync texset objs
+                    BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                    scene.bm_props.global_active_index += 1
+                # move nm items
+                else:
+                    to_move = []
+                    move_to_index = -1
+                    len_of_locals = 0
+                    len_of_move_to = 0
+                    # moving universal container
+                    if item.nm_is_universal_container:
+                        move_starter_index = -1
+                        for index, object in enumerate(scene.bm_table_of_objects):
+                            if object.nm_item_uni_container_master_index == item.nm_master_index:
+                                to_move.append(index)
+                                len_of_move_to += 1
+                        # finding where to move to
+                        for index, object in enumerate(scene.bm_table_of_objects):
+                            if object.nm_is_detached and object.nm_master_index - 1 == item.nm_master_index:
+                                move_starter_index = index
+                                move_to_index = index - len_of_move_to
+                                break
+                            elif object.nm_is_universal_container and object.nm_master_index - 1 == item.nm_master_index:
+                                move_starter_index = index
+                                for object1 in scene.bm_table_of_objects:
+                                    if object1.nm_item_uni_container_master_index == object.nm_master_index:
+                                        len_of_locals += 1
+                                move_to_index = global_active_index + len_of_locals + 1 
+                                break
+                        to_move.append(global_active_index)
+                        if move_starter_index == -1:
+                            return {'FINISHED'}
+                        # moving each in to_move on the starter_index and index -= 1 each move iteration
+                        for index in sorted(to_move):
+                            scene.bm_table_of_objects.move(global_active_index, move_starter_index + len_of_locals)
+                            # sync texset objs
+                            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                                
+                    # moving local container (cant move out of its uni)
+                    elif item.nm_is_local_container:
+                        move_starter_index = -1
+                        for index, object in enumerate(scene.bm_table_of_objects):
+                            if object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and object.nm_item_local_container_master_index == item.nm_master_index:
+                                to_move.append(index)
+                                len_of_move_to += 1
+                        # finding where to move to
+                        for index, object in enumerate(scene.bm_table_of_objects):
+                            if object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and object.nm_is_local_container and object.nm_master_index - 1 == item.nm_master_index:
+                                move_starter_index = index
+                                for object1 in scene.bm_table_of_objects:
+                                    if object1.nm_item_uni_container_master_index == object.nm_item_uni_container_master_index and object1.nm_item_local_container_master_index == object.nm_master_index:
+                                        len_of_locals += 1
+                                move_to_index = global_active_index + len_of_locals + 1
+                                break
+                        to_move.append(global_active_index)
+                        if move_starter_index == -1:
+                            return {'FINISHED'}
+                        # moving all items within the same local container 
+                        for index in sorted(to_move):
+                            scene.bm_table_of_objects.move(global_active_index, move_starter_index + len_of_locals)
+                            # sync texset objs
+                            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                    
+                    # move local item
+                    elif item.nm_is_detached is False:
+                        move_starter_index = -1
+                        for index, object in enumerate(scene.bm_table_of_objects):
+                            if object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and object.nm_item_local_container_master_index == item.nm_item_local_container_master_index and object.nm_master_index > item.nm_master_index:
+                                len_of_locals += 1
+                        # finding where to move to
+                        for index, object in enumerate(scene.bm_table_of_objects):
+                            if object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and object.nm_item_local_container_master_index == item.nm_item_local_container_master_index and object.nm_master_index - 1 == item.nm_master_index:
+                                move_starter_index = index
+                                move_to_index = index
+                                break
+                        # if there are no other local items within the same local container, do not move the item
+                        if len_of_locals < 1:
+                            return {'FINISHED'}
+                        else:
+                            scene.bm_table_of_objects.move(global_active_index, move_starter_index)
+                            # sync texset objs
+                            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                    
+                    # move detached
+                    else:
+                        move_starter_index = -1
+                        for index, object in enumerate(scene.bm_table_of_objects):
+                            if object.nm_is_detached and object.nm_master_index - 1 == item.nm_master_index:
+                                move_starter_index = index
+                                move_to_index = index
+                                break
+                            elif object.nm_is_universal_container and object.nm_master_index - 1 == item.nm_master_index:
+                                for object1 in scene.bm_table_of_objects:
+                                    if object1.nm_item_uni_container_master_index == object.nm_master_index:
+                                        len_of_locals += 1
+                                move_to_index = global_active_index + len_of_locals + 1
+                                move_starter_index = index + len_of_locals
+                                break
+                        if move_starter_index == -1:
+                            return {'FINISHED'}
+                        # moving detached on top of the previous uni_c or before the previous detached
+                        scene.bm_table_of_objects.move(global_active_index, move_starter_index)
+                        # sync texset objs
+                        BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+
+                    # updating active index
+                    if move_to_index != -1:
+                        scene.bm_props.global_active_index = move_to_index
+                    # updating nm master_indexes
+                    BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)
+                # update texsets objs because object was moved
+                BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
         return {'FINISHED'}
 
-class BM_OT_AOL_Add(bpy.types.Operator):
-    bl_idname = 'bakemaster.aol_add'
+class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
+    bl_idname = 'bakemaster.table_of_objects_add'
     bl_label = ""
-    bl_description = BM_Labels.OPERATOR_AOL_ADD_DESCRIPTION
+    bl_description = "Add selected mesh object(s) in the scene to the list below.\nWhen Name Matching is on, added object(s) will be automatically matched"
+    bl_options = {'INTERNAL', 'UNDO'}
 
     def execute(self, context):
         scene = context.scene
-        mesh = True
+        is_mesh = True
         exists = False
+        objects = []
+        objects_data = []
+        lowpoly_prefix_raw = "low"
+        highpoly_prefix_raw = "high"
+        cage_prefix_raw = "cage"
+        refresh_nm_config = False
 
         if context.object:
-            for ob in context.selected_objects:
-                if ob.type == 'MESH':
-                    items = []
-                    items_data = []
-
-                    for index, item in enumerate(scene.bm_aol):
-                        items.append(item.object_pointer)
-                        items_data.append(item.object_pointer.data)
-
-                    if ob not in items and ob.data not in items_data:
-                        new_item = scene.bm_aol.add()
-                        new_item.object_pointer = ob
-                        scene.bm_props.active_index = len(scene.bm_aol) - 1
-                    else:
-                        exists = True
+            for object in scene.bm_table_of_objects:
+                objects.append(object.global_object_name)
+                try:
+                    context.scene.objects[object.global_object_name]
+                except (KeyError, AttributeError, UnboundLocalError):
+                    pass
                 else:
-                    mesh = False
+                    object_pointer = context.scene.objects[object.global_object_name]
+                    objects_data.append(object_pointer.data)
+                
+        # default add
+        if scene.bm_props.global_use_name_matching is False:
+            if context.object:
+                for object in context.selected_objects:
+                    if object.type == 'MESH':
 
-            if exists:
-                self.report({'INFO'}, BM_Labels.INFO_ITEM_EXISTS)               
-            if not mesh:
-                self.report({'INFO'}, BM_Labels.INFO_ITEM_NONMESH)
-            if len(context.selected_objects) == 0:
-                self.report({'INFO'}, "")
+                        if object not in objects and object.data not in objects_data:
+                            new_item = scene.bm_table_of_objects.add()
+                            new_item.global_object_name = object.name
+                            new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
+                            scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+                        else:
+                            exists = True
+                    else:
+                        is_mesh = False
+
+        # adding with name matching
+        else:
+            if len(scene.bm_table_of_objects) == 0:
+                scene.bm_props.global_use_name_matching = False
+                refresh_nm_config = True
+
+            if context.object:
+                # new config
+                insert_data = []
+                new_data = []
+                all_objs = BM_Table_of_Objects_NameMatching_GetAllObjectNames(context)
+                # creating list of all objs to add
+                new_objs = []
+                for object in context.selected_objects:
+                    # checks
+                    if object.type != 'MESH':
+                        is_mesh = False
+                        continue
+                    if object in objects or object.data in objects_data:
+                        exists = True
+                        continue
+                    new_objs.append(object.name)
+                for object in scene.bm_table_of_objects:
+                    if object.nm_is_detached:
+                        new_objs.append(object.global_object_name)
+                
+                # try match some
+                for object_name in new_objs:
+                    object_name_chunked = BM_Table_of_Objects_NameMatching_GenerateNameChunks(object_name)
+                    root_name = BM_Table_of_Objects_NameMatching_GetNameChunks(object_name_chunked, 'ROOT')
+                    match_found = False
+                    for object in scene.bm_table_of_objects:
+                        if not any([object.nm_is_universal_container, object.nm_is_local_container, object.nm_is_detached]) and object.global_object_name != object_name:
+
+                            pair_object_name_chunked = BM_Table_of_Objects_NameMatching_GenerateNameChunks(object.global_object_name)
+                            pair_root_name = BM_Table_of_Objects_NameMatching_GetNameChunks(pair_object_name_chunked, 'ROOT')
+
+                            # check if found match
+                            if BM_Table_of_Objects_NameMatching_CombineToRaw(pair_root_name).find(BM_Table_of_Objects_NameMatching_CombineToRaw(root_name)) == 0 or BM_Table_of_Objects_NameMatching_CombineToRaw(root_name).find(BM_Table_of_Objects_NameMatching_CombineToRaw(pair_root_name)) == 0:
+                                # add nm_master_indexes to new_data to insert new obj
+                                # or a flag to add local_clowpoly
+                                # low
+                                if lowpoly_prefix_raw in object_name_chunked:
+                                    if lowpoly_prefix_raw in pair_object_name_chunked:
+                                        insert_data.append([object_name, object.nm_item_uni_container_master_index, object.nm_item_local_container_master_index, None, 'hl_is_lowpoly'])
+                                    else:
+                                        container_found = False
+                                        for object1 in scene.bm_table_of_objects:
+                                            if object1.nm_item_uni_container_master_index == object.nm_item_uni_container_master_index and object1.nm_is_local_container and object1.nm_is_lowpoly_container:
+                                                container_found = True
+                                                insert_data.append([object_name, object1.nm_item_uni_container_master_index, object1.nm_master_index, None, 'hl_is_lowpoly'])
+                                        if container_found is False:
+                                            insert_data.append([object_name, object.nm_item_uni_container_master_index, None, 0, 'hl_is_lowpoly'])
+                                    match_found = True
+                                # high
+                                if highpoly_prefix_raw in object_name_chunked:
+                                    if highpoly_prefix_raw in pair_object_name_chunked:
+                                        insert_data.append([object_name, object.nm_item_uni_container_master_index, object.nm_item_local_container_master_index, None, 'hl_is_highpoly'])
+                                    else:
+                                        container_found = False
+                                        for object1 in scene.bm_table_of_objects:
+                                            if object1.nm_item_uni_container_master_index == object.nm_item_uni_container_master_index and object1.nm_is_local_container and object1.nm_is_highpoly_container:
+                                                container_found = True
+                                                insert_data.append([object_name, object1.nm_item_uni_container_master_index, object1.nm_master_index, None, 'hl_is_highpoly'])
+                                        if container_found is False:
+                                            insert_data.append([object_name, object.nm_item_uni_container_master_index, None, 1, 'hl_is_highpoly'])
+                                    match_found = True
+                                # cage
+                                if cage_prefix_raw in object_name_chunked:
+                                    if cage_prefix_raw in pair_object_name_chunked:
+                                        insert_data.append([object_name, object.nm_item_uni_container_master_index, object.nm_item_local_container_master_index, None, 'hl_is_cage'])
+                                    else:
+                                        container_found = False
+                                        for object1 in scene.bm_table_of_objects:
+                                            if object1.nm_item_uni_container_master_index == object.nm_item_uni_container_master_index and object1.nm_is_local_container and object1.nm_is_cage_container:
+                                                container_found = True
+                                                insert_data.append([object_name, object1.nm_item_uni_container_master_index, object1.nm_master_index, None, 'hl_is_cage'])
+                                        if container_found is False:
+                                            insert_data.append([object_name, object.nm_item_uni_container_master_index, None, 2, 'hl_is_cage'])
+                                    match_found = True
+                                break
+                    # add it to construct new data if no match was found
+                    if match_found is False:
+                        new_data.append(object_name)
+
+                # insert matched data
+                container_props = ['nm_is_lowpoly_container', 'nm_is_highpoly_container', 'nm_is_cage_container']
+                container_names = ['Lowpolies', 'Highpolies', 'Cages']
+                skip_add_container = False
+                for shell in insert_data:
+                    if shell[0] in BM_Table_of_Objects_NameMatching_GetAllObjectNames(context):
+                        continue
+                    # adding containers
+                    if shell[3] is not None:
+                        container_insert_index = 0
+                        insert_index = 0
+                        for index, object in enumerate(scene.bm_table_of_objects):
+                            if object.nm_item_uni_container_master_index == shell[1]:
+                                container_insert_index = index
+                            if object.nm_item_uni_container_master_index == shell[1] and getattr(object, container_props[shell[3]]):
+                                skip_add_container = True
+                                shell[2] = object.nm_master_index
+                        if skip_add_container is False:
+                            new_container = scene.bm_table_of_objects.add()
+                            new_container.nm_container_name_old = BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, container_names[shell[3]])
+                            new_container.nm_container_name = new_container.nm_container_name_old
+                            new_container.nm_this_indent = 1
+                            new_container.nm_is_local_container = True
+                            new_container.nm_is_expanded = True
+                            setattr(new_container, container_props[shell[3]], True)
+                            new_container.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_container.bake_batchname)
+                            new_item = scene.bm_table_of_objects.add()
+                            new_item.global_object_name = shell[0]
+                            new_item.nm_this_indent = 2
+                            new_item.nm_is_expanded = True
+                            setattr(new_item, shell[4], True)
+                            new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
+                            # move item to the right place
+                            scene.bm_table_of_objects.move(len(scene.bm_table_of_objects) - 2, container_insert_index + 1)
+                            scene.bm_table_of_objects.move(len(scene.bm_table_of_objects) - 1, container_insert_index + 2)
+                            # update master indexes
+                            BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)
+                    # add to existing local_c
+                    if shell[3] is None or skip_add_container:
+                        insert_index = 0
+                        for index, object in enumerate(scene.bm_table_of_objects):
+                            if object.nm_item_uni_container_master_index == shell[1] and object.nm_item_local_container_master_index == shell[2]:
+                                insert_index = index
+                        new_item = scene.bm_table_of_objects.add()
+                        new_item.global_object_name = shell[0]
+                        new_item.nm_this_indent = 2
+                        new_item.nm_is_expanded = True
+                        setattr(new_item, shell[4], True)
+                        new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
+                        # move item to the right place
+                        scene.bm_table_of_objects.move(len(scene.bm_table_of_objects) - 1, insert_index + 1)
+                        # update master indexes
+                        BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)
+
+                # construct new universal container
+                # trash existing new_data to refresh it
+                to_remove = []
+                for index, object in enumerate(scene.bm_table_of_objects):
+                    if object.global_object_name in new_data:
+                        to_remove.append(index)
+                for index in sorted(to_remove, reverse=True):
+                    scene.bm_table_of_objects.remove(index)
+                # update table active index
+                scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+
+                # get groups, roots, detached from construct
+                NameChunks = BM_Table_of_Objects_NameMatching_GenerateNameChunks
+                CombineToRaw = BM_Table_of_Objects_NameMatching_CombineToRaw
+                groups, roots, detached = BM_Table_of_Objects_NameMatching_Construct(context, new_data)
+
+                ### constructing new Table_of_Objects items
+                for index, shell in enumerate(groups):
+                    # adding universal container to the bm_table_of_objects
+                    universal_container = context.scene.bm_table_of_objects.add()
+                    # name is set to the root_name of the first object in the shell
+                    universal_container.nm_container_name_old = BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, CombineToRaw(roots[shell[0]][0]))
+                    universal_container.nm_container_name = universal_container.nm_container_name_old
+                    universal_container.nm_this_indent = 0
+                    universal_container.nm_is_universal_container = True
+                    universal_container.nm_is_expanded = True
+                    universal_container.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, universal_container.bake_batchname)
+
+                    # objs[] : 0 - lowpolies, 1 - highpolies, 2 - cages
+                    object_names = [[], [], []]
+                    for number in shell:
+                        # adding each object_name in the root objects to matched categories
+                        # based on if their names contain low_ high_ cage_ prefixes
+                        for object_name in roots[number][1]:
+                            try:
+                                NameChunks(object_name).index(lowpoly_prefix_raw)
+                            except ValueError:
+                                pass
+                            else:
+                                object_names[0].append(object_name)
+
+                            try:
+                                NameChunks(object_name).index(highpoly_prefix_raw)
+                            except ValueError:
+                                pass
+                            else:
+                                object_names[1].append(object_name)
+
+                            try:
+                                NameChunks(object_name).index(cage_prefix_raw)
+                            except ValueError:
+                                pass
+                            else:
+                                object_names[2].append(object_name)
+                    # adding local containers to the bm_table_of_objects if needed
+                    # and adding all object_name in object_names to the bm_table_of_objects
+                    names_starters = ["Lowpolies", "Highpolies", "Cages"]
+                    prefix_props = ["hl_is_lowpoly", "hl_is_highpoly", "hl_is_cage"]
+                    container_types_props = ["nm_is_lowpoly_container", "nm_is_highpoly_container", "nm_is_cage_container"]
+                    for local_index, local_names in enumerate(object_names):
+
+                        if len(local_names):
+                            local_container = context.scene.bm_table_of_objects.add()
+                            local_container.nm_container_name_old = names_starters[local_index]
+                            local_container.nm_container_name = names_starters[local_index]
+                            local_container.nm_this_indent = 1
+                            local_container.nm_is_local_container = True
+                            local_container.nm_is_expanded = True
+                            setattr(local_container, container_types_props[local_index], True)
+                            local_container.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, local_container.bake_batchname)
+
+                            for obj_index, object_name in enumerate(local_names):
+                                # do not add detached names
+                                if object_name in detached:
+                                    continue
+                                new_item = context.scene.bm_table_of_objects.add()
+                                new_item.global_object_name = object_name
+                                new_item.nm_this_indent = 2
+                                new_item.nm_is_expanded = True
+                                setattr(new_item, prefix_props[local_index], True)
+                                new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
+                # adding detached as regular items
+                for object_name in detached:
+                    new_item = context.scene.bm_table_of_objects.add()
+                    new_item.global_object_name = object_name
+                    new_item.nm_is_detached = True
+                    new_item.nm_is_expanded = True
+                    new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
+
+                # update master indexes
+                BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)
+
+                # update table active index
+                scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+
+                # update uni containers names
+                for index, object in enumerate(context.scene.bm_table_of_objects):
+                    if object.nm_is_universal_container:
+                        object.nm_container_name = BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, object.nm_container_name, index)
+
+            # refresh nm if was added on empty table
+            if refresh_nm_config:
+                scene.bm_props.global_use_name_matching = True
+
+        # reports
+        if exists:
+            self.report({'INFO'}, "Mesh exists in the list")               
+        if not is_mesh:
+            self.report({'INFO'}, "Expected Mesh Object")
+        if len(context.selected_objects) == 0:
+            self.report({'INFO'}, "No Objects selected")
+
         return {'FINISHED'}
 
-class BM_OT_AOL_Remove(bpy.types.Operator):
-    bl_idname = 'bakemaster.aol_remove'
+class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
+    bl_idname = 'bakemaster.table_of_objects_remove'
     bl_label = ""
-    bl_description = BM_Labels.OPERATOR_AOL_REMOVE_DESCRIPTION
+    bl_description = "Remove active object from the list below.\nWhen Name Matching is on, removing Container will remove all objects underneath it as well"
+    bl_options = {'INTERNAL', 'UNDO'}
 
     def execute(self, context):
         scene = context.scene
-        a_index = scene.bm_props.active_index
+        global_active_index = scene.bm_props.global_active_index
 
-        if len(scene.bm_aol):
-            if scene.bm_props.active_index != 0:
-                scene.bm_props.active_index -= 1
+        if len(scene.bm_table_of_objects):
+            item = scene.bm_table_of_objects[global_active_index]
+            # default removal
+            if scene.bm_props.global_use_name_matching is False or item.nm_is_detached is True:
+                scene.bm_table_of_objects.remove(global_active_index)
+                # remove obj from texset if it was there
+                BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, global_active_index)
+                if global_active_index != 0:
+                    scene.bm_props.global_active_index -= 1
 
-            item = scene.bm_aol[a_index]
-            item.use_target = False
+            else:
+                to_remove = []
+                uni_removed_index = -1
+                # removing local_c and its items
+                if item.nm_is_local_container:
+                    len_of_local_items = 0
+                    to_remove.append(global_active_index)
+                    for index, object in enumerate(scene.bm_table_of_objects):
+                        if object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and object.nm_item_local_container_master_index == item.nm_master_index:
+                            to_remove.append(index)
+                        if object.nm_is_universal_container and object.nm_master_index == item.nm_item_uni_container_master_index:
+                            uni_removed_index = index
+                    
+                    # removing uni if there was only one local
+                    for index, object in enumerate(scene.bm_table_of_objects):
+                        # found local in the same uni
+                        if object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and object.nm_is_local_container is False and index not in to_remove:
+                            len_of_local_items += 1
+                    # removing uni if there was only one local
+                    if len_of_local_items == 0 and uni_removed_index != -1:
+                        to_remove.append(uni_removed_index)
+
+                    for index in sorted(dict.fromkeys(to_remove), reverse=True):
+                        scene.bm_table_of_objects.remove(index)
+                        # remove obj from texset if it was there
+                        BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
+
+                # removing uni_c and its items
+                elif item.nm_is_universal_container:
+                    to_remove.append(global_active_index)
+                    for index, object in enumerate(scene.bm_table_of_objects):
+                        if object.nm_item_uni_container_master_index == item.nm_master_index:
+                            to_remove.append(index)
+
+                    for index in sorted(to_remove, reverse=True):
+                        scene.bm_table_of_objects.remove(index)
+                        # remove obj from texset if it was there
+                        BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
+                # removing items in locals
+                else:
+                    len_of_local = 0
+                    len_of_local_items = 0
+                    uni_removed_index = -1
+                    local_removed_index = -1
+                    for index, object in enumerate(scene.bm_table_of_objects):
+                        # found item in the same local, adding item to to_remove[]
+                        if object.nm_item_local_container_master_index == item.nm_item_local_container_master_index and object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index:
+                            len_of_local += 1
+                        # found the container the item belongs to
+                        if object.nm_is_local_container and object.nm_master_index == item.nm_item_local_container_master_index and object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index:
+                            local_removed_index = index
+                        if object.nm_is_universal_container and object.nm_master_index == item.nm_item_uni_container_master_index:
+                            uni_removed_index = index
+                    # item is the only one in the local, detached its pairs and remove uni_c, local_cs, else just remove the item
+                    if len_of_local > 1:
+                        scene.bm_table_of_objects.remove(global_active_index)
+                    else:
+                        # same removal as uni_c removal
+                        # if remove local container, if only had one local container, remove the uni_container as well then
+                        if local_removed_index != -1 and uni_removed_index != -1:
+                            to_remove.append(global_active_index)
+                            to_remove.append(local_removed_index)
+                            # removing uni if there was only one local
+                            for index, object in enumerate(scene.bm_table_of_objects):
+                                # found local in the same uni
+                                if object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and object.nm_is_local_container is False and index not in to_remove:
+                                    len_of_local_items += 1
+                            # removing uni if there was only one local
+                            if len_of_local_items == 0:
+                                to_remove.append(uni_removed_index)
+
+                            for index in sorted(dict.fromkeys(to_remove), reverse=True):
+                                scene.bm_table_of_objects.remove(index)
+                                # remove obj from texset if it was there
+                                BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
+                # updating nm master_indexes
+                BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)
+                # active index update
+                if global_active_index >= len(scene.bm_table_of_objects):
+                    scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+            # update texset objs order if anything was removed
+            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+
+            # item.use_target = False
             
-            if item.use_source:
-                for index1, item1 in enumerate(scene.bm_aol):
-                        if item.source_name == item1.object_pointer.name:
-                            item1.source = 'NONE'
-                            break
+            # if item.use_source:
+            #     for index1, item1 in enumerate(scene.bm_table_of_objects):
+            #             if item.source_name == item1.object_pointer.name:
+            #                 item1.source = 'NONE'
+            #                 break
 
-            scene.bm_aol.remove(a_index)
         return {'FINISHED'}
 
-class BM_OT_AOL_Refresh(bpy.types.Operator):
-    bl_idname = 'bakemaster.aol_refresh'
+class BM_OT_Table_of_Objects_Refresh(bpy.types.Operator):
+    bl_idname = 'bakemaster.table_of_objects_refresh'
     bl_label = ""
-    bl_description = BM_Labels.OPERATOR_AOL_REFRESH_DESCRIPTION
+    bl_description = "Some objects cannot be found in the scene. Press the refresh button to remove them from the list"
+    bl_options = {'INTERNAL', 'UNDO'}
 
     def execute(self, context):
         scene = context.scene
         to_remove = []
 
-        for index, item in enumerate(scene.bm_aol):
+        # return true if item does exist in the scene
+        def exists(name: str):
             try:
-                scene.objects[item.object_pointer.name]
+                scene.objects[name]
             except (KeyError, AttributeError):
-                to_remove.append(index)
-                item.use_target = False
+                return False
+            else:
+                return True
 
-                if item.use_source:
-                    for index1, item1 in enumerate(scene.bm_aol):
-                        if item.source_name == item1.object_pointer.name:
-                            item1.source = 'NONE'
-                            break
+        for global_index, global_object in enumerate(scene.bm_table_of_objects):
+            try:
+                scene.objects[global_object.global_object_name]
+            except (KeyError, AttributeError):
+                if scene.bm_props.global_use_name_matching is False or global_object.nm_is_detached is True:
+                    to_remove.append(global_index)
+                else:
+                    if global_object.nm_is_local_container or global_object.nm_is_universal_container:
+                        continue
+                    # refreshing local items
+                    item = global_object
+                    len_of_local = 0
+                    len_of_local_items = 0
+                    uni_removed_index = -1
+                    local_removed_index = -1
+                    for index, object in enumerate(scene.bm_table_of_objects):
+                        # found item in the same local
+                        if object.nm_item_local_container_master_index == item.nm_item_local_container_master_index and object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and exists(object.global_object_name):
+                            len_of_local += 1
+                        # found the container the item belongs to
+                        if object.nm_is_local_container and object.nm_master_index == item.nm_item_local_container_master_index and object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index:
+                            local_removed_index = index
+                        if object.nm_is_universal_container and object.nm_master_index == item.nm_item_uni_container_master_index:
+                            uni_removed_index = index
+                    # item is the only one in the local, remove uni_c, local_cs, else just remove the item
+                    if len_of_local > 1:
+                        to_remove.append(global_index)
+                    else:
+                        # same removal as uni_c removal
+                        # if remove local container, if only had one local container, remove the uni_container as well then
+                        if local_removed_index != -1 and uni_removed_index != -1:
+                            to_remove.append(global_index)
+                            to_remove.append(local_removed_index)
+                            # removing uni if there was only one local
+                            for index, object in enumerate(scene.bm_table_of_objects):
+                                # found local in the same uni
+                                if object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and object.nm_is_local_container is False and exists(object.global_object_name):
+                                    len_of_local_items += 1
+                            if len_of_local_items == 0:
+                                to_remove.append(uni_removed_index)
+                    # updating nm master_indexes
+                    BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)
 
-        to_remove.sort(reverse = True)
+            else:
+                pass
+        # removing objects
+        for index in sorted(list(dict.fromkeys(to_remove)), reverse=True):
+            scene.bm_table_of_objects.remove(index)
+            # remove obj from texset if it was there
+            BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
+        # active index update
+        if scene.bm_props.global_active_index >= len(scene.bm_table_of_objects):
+            scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
 
-        for index in to_remove[::1]:
-            scene.bm_aol.remove(index)
+                # item.use_target = False
 
-        a_index = scene.bm_props.active_index
-        a_len = len(scene.bm_aol) - 1
-        scene.bm_props.active_index = a_len if a_index > a_len else a_index
+                # if item.use_source:
+                #     for index1, item1 in enumerate(scene.bm_table_of_objects):
+                #         if item.source_name == item1.object_pointer.name:
+                #             item1.source = 'NONE'
+                #             break
+
         return {'FINISHED'}
 
-class BM_OT_AOL_Trash(bpy.types.Operator):
-    bl_idname = 'bakemaster.aol_trash'
+class BM_OT_Table_of_Objects_Trash(bpy.types.Operator):
+    bl_idname = 'bakemaster.table_of_objects_trash'
     bl_label = ""
-    bl_description = BM_Labels.OPERATOR_AOL_TRASH_DESCRIPTION
+    bl_description = "Remove all objects from the list (resets BakeMaster)"
+    bl_options = {'INTERNAL', 'UNDO'}
 
     def execute(self, context):
         to_remove = []
-
-        for index, item in enumerate(context.scene.bm_aol):
+        for index, item in enumerate(context.scene.bm_table_of_objects):
             to_remove.append(index)
-
         for index in to_remove[::-1]:
-            context.scene.bm_aol.remove(index)
+            context.scene.bm_table_of_objects.remove(index)
+        # trash texsets
+        to_remove = []
+        for index, item in enumerate(context.scene.bm_props.global_texturesets_table):
+            to_remove.append(index)
+        for index in to_remove[::-1]:
+            context.scene.bm_props.global_texturesets_table.remove(index)
 
-        context.scene.bm_props.active_index = 0
+        context.scene.bm_props.global_active_index = 0
         context.scene.bm_props.bake_available = True
         return {'FINISHED'}
 
-class BM_OT_ITEM_Maps(bpy.types.Operator):
-    bl_idname = 'bakemaster.item_maps'
+###########################################################################
+
+class BM_OT_ITEM_Highpoly_Table_Add(bpy.types.Operator):
+    bl_idname = 'bakemaster.item_highpoly_table_add'
     bl_label = ""
-    bl_description = BM_Labels.OPERATOR_ITEM_MAPS_DESCRIPTION
+    bl_description = "Add new highpoly for the current object"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        object = BM_Object_Get(context)[0]
+        new_item = object.hl_highpoly_table.add()
+        new_item.global_item_index = len(object.hl_highpoly_table)
+        object.hl_highpoly_table_active_index = len(object.hl_highpoly_table) - 1
+        return {'FINISHED'}
+
+class BM_OT_ITEM_Highpoly_Table_Remove(bpy.types.Operator):
+    bl_idname = 'bakemaster.item_highpoly_table_remove'
+    bl_label = ""
+    bl_description = "Remove new highpoly for the current object"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        object = BM_Object_Get(context)[0]
+        if len(object.hl_highpoly_table):
+            for item in object.hl_highpoly_table:
+                if item.global_item_index > object.hl_highpoly_table[object.hl_highpoly_table_active_index].global_item_index:
+                    item.global_item_index -= 1
+            object.hl_highpoly_table.remove(object.hl_highpoly_table_active_index)
+            if object.hl_highpoly_table_active_index > 0:
+                object.hl_highpoly_table_active_index -= 1
+        return {'FINISHED'}
+
+class BM_OT_MAP_Highpoly_Table_Add(bpy.types.Operator):
+    bl_idname = 'bakemaster.map_highpoly_table_add'
+    bl_label = ""
+    bl_description = "Add new highpoly for the current map"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        object = BM_Object_Get(context)[0]
+        map = BM_Map_Get(object)
+        new_item = map.hl_highpoly_table.add()
+        new_item.global_item_index = len(map.hl_highpoly_table)
+        map.hl_highpoly_table_active_index = len(map.hl_highpoly_table) - 1
+        return {'FINISHED'}
+
+class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
+    bl_idname = 'bakemaster.map_highpoly_table_remove'
+    bl_label = ""
+    bl_description = "Remove highpoly for the current map"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        object = BM_Object_Get(context)[0]
+        map = BM_Map_Get(object)
+        if len(map.hl_highpoly_table):
+            for item in map.hl_highpoly_table:
+                if item.global_item_index > map.hl_highpoly_table[map.hl_highpoly_table_active_index].global_item_index:
+                    item.global_item_index -= 1
+            map.hl_highpoly_table.remove(map.hl_highpoly_table_active_index)
+            if map.hl_highpoly_table_active_index > 0:
+                map.hl_highpoly_table_active_index -= 1
+        return {'FINISHED'}
+
+class BM_OT_ITEM_ChannelPack_Table_Add(bpy.types.Operator):
+    bl_idname = 'bakemaster.item_channelpack_table_add'
+    bl_label = ""
+    bl_description = "Add new Map Channel Pack for the current object"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        object = BM_Object_Get(context)[0]
+        new_item = object.chnlp_channelpacking_table.add()
+        new_item.global_channelpack_index = len(object.chnlp_channelpacking_table)
+        new_item.global_channelpack_name = "ChannelPack{}".format(len(object.chnlp_channelpacking_table))
+        object.chnlp_channelpacking_table_active_index = len(object.chnlp_channelpacking_table) - 1
+        return {'FINISHED'}
+
+class BM_OT_ITEM_ChannelPack_Table_Remove(bpy.types.Operator):
+    bl_idname = 'bakemaster.item_channelpack_table_remove'
+    bl_label = ""
+    bl_description = "Remove Map Channel Pack for the current object"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        object = BM_Object_Get(context)[0]
+        if len(object.chnlp_channelpacking_table):
+            for item in object.chnlp_channelpacking_table:
+                if item.global_channelpack_index > object.chnlp_channelpacking_table[object.chnlp_channelpacking_table_active_index].global_channelpack_index:
+                    item.global_channelpack_index -= 1
+            object.chnlp_channelpacking_table.remove(object.chnlp_channelpacking_table_active_index)
+            if object.chnlp_channelpacking_table_active_index > 0:
+                object.chnlp_channelpacking_table_active_index -= 1
+        return {'FINISHED'}
+
+class BM_OT_ITEM_ChannelPack_Table_Trash(bpy.types.Operator):
+    bl_idname = 'bakemaster.item_channelpack_table_trash'
+    bl_label = ""
+    bl_description = "Remove all Map Channel Packs"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        object = BM_Object_Get(context)[0]
+        to_remove = []
+        for index, item in enumerate(object.chnlp_channelpacking_table):
+            to_remove.append(index)
+        for index in to_remove[::-1]:
+            object.chnlp_channelpacking_table.remove(index)
+        object.chnlp_channelpacking_table_active_index = 0
+        return {'FINISHED'}
+
+class BM_OT_SCENE_TextureSets_Table_Add(bpy.types.Operator):
+    bl_idname = 'bakemaster.scene_texturesets_table_add'
+    bl_label = ""
+    bl_description = "Add new Texture Set.\nTexture Set is a set of objects that share the same image texture file for each map"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        bm_props = context.scene.bm_props
+        new_item = bm_props.global_texturesets_table.add()
+        new_item.global_textureset_index = len(bm_props.global_texturesets_table)
+        new_item.global_textureset_name = "TextureSet{}".format(len(bm_props.global_texturesets_table))
+        bm_props.global_texturesets_active_index = len(bm_props.global_texturesets_table) - 1
+        return {'FINISHED'}
+
+class BM_OT_SCENE_TextureSets_Table_Remove(bpy.types.Operator):
+    bl_idname = 'bakemaster.scene_texturesets_table_remove'
+    bl_label = ""
+    bl_description = "Remove Texture Set"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        bm_props = context.scene.bm_props
+        if len(bm_props.global_texturesets_table):
+            for item in bm_props.global_texturesets_table:
+                if item.global_textureset_index > bm_props.global_texturesets_table[bm_props.global_texturesets_active_index].global_textureset_index:
+                    item.global_textureset_index -= 1
+                    
+            texset = bm_props.global_texturesets_table[bm_props.global_texturesets_active_index]
+            table_of_objs = texset.global_textureset_table_of_objects
+            for item1 in table_of_objs:
+                context.scene.bm_table_of_objects[item1.global_source_object_index].global_is_included_in_texset = False
+                BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+
+            bm_props.global_texturesets_table.remove(bm_props.global_texturesets_active_index)
+            if bm_props.global_texturesets_active_index > 0:
+                bm_props.global_texturesets_active_index -= 1
+        return {'FINISHED'}
+
+class BM_OT_SCENE_TextureSets_Table_Trash(bpy.types.Operator):
+    bl_idname = 'bakemaster.scene_texturesets_table_trash'
+    bl_label = ""
+    bl_description = "Remove all Texture Sets"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        bm_props = context.scene.bm_props
+        to_remove = []
+        for index, item in enumerate(bm_props.global_texturesets_table):
+
+            table_of_objs = item.global_textureset_table_of_objects
+            for item1 in table_of_objs:
+                context.scene.bm_table_of_objects[item1.global_source_object_index].global_is_included_in_texset = False
+                BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+
+            to_remove.append(index)
+        for index in to_remove[::-1]:
+            bm_props.global_texturesets_table.remove(index)
+        bm_props.global_texturesets_active_index = 0
+        return {'FINISHED'}
+
+class BM_OT_SCENE_TextureSets_Objects_Table_Add(bpy.types.Operator):
+    bl_idname = 'bakemaster.scene_texturesets_objects_table_add'
+    bl_label = ""
+    bl_description = "Add new Object to the current Texture Set"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        bm_props = context.scene.bm_props
+        table = bm_props.global_texturesets_table[bm_props.global_texturesets_active_index].global_textureset_table_of_objects
+
+        new_item = table.add()
+        new_item.global_object_index = len(table)
+        new_item.global_object_name_old = new_item.global_object_name
+        new_item.global_object_name_include = new_item.global_object_name
+        for index, object in enumerate(context.scene.bm_table_of_objects):
+            if context.scene.bm_props.global_use_name_matching and object.nm_container_name == new_item.global_object_name:
+                new_item.global_source_object_index = index
+                break
+            elif object.global_object_name == new_item.global_object_name:
+                new_item.global_source_object_index = index
+                break
+        context.scene.bm_table_of_objects[new_item.global_source_object_index].global_is_included_in_texset = True
+        BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+
+        # recreate subitems
+        item = context.scene.bm_table_of_objects[new_item.global_source_object_index]
+        if item.nm_is_universal_container and context.scene.bm_props.global_use_name_matching:
+            # trash
+            to_remove = []
+            for index, subitem in enumerate(new_item.global_object_name_subitems):
+                to_remove.append(index)
+            for index in sorted(to_remove, reverse=True):
+                new_item.global_object_name_subitems.remove(index)
+            # add
+            for index, subitem in enumerate(context.scene.bm_table_of_objects):
+                if subitem.nm_item_uni_container_master_index == item.nm_master_index and subitem.hl_is_lowpoly:
+                    new_subitem = new_item.global_object_name_subitems.add()
+                    new_subitem.global_object_name = subitem.global_object_name
+                    new_subitem.global_object_index = len(new_item.global_object_name_subitems)
+
+        bm_props.global_texturesets_table[bm_props.global_texturesets_active_index].global_textureset_table_of_objects_active_index = len(table) - 1
+        return {'FINISHED'}
+
+class BM_OT_SCENE_TextureSets_Objects_Table_Remove(bpy.types.Operator):
+    bl_idname = 'bakemaster.scene_texturesets_objects_table_remove'
+    bl_label = ""
+    bl_description = "Remove Texture Set Object"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        bm_props = context.scene.bm_props
+        active_texset = bm_props.global_texturesets_table[bm_props.global_texturesets_active_index]
+        objects = active_texset.global_textureset_table_of_objects
+        if len(objects):
+            for item in objects:
+                if item.global_object_index > objects[active_texset.global_textureset_table_of_objects_active_index].global_object_index:
+                    item.global_object_index -= 1
+
+            item = active_texset.global_textureset_table_of_objects[active_texset.global_textureset_table_of_objects_active_index]
+            context.scene.bm_table_of_objects[item.global_source_object_index].global_is_included_in_texset = False
+            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+
+            objects.remove(active_texset.global_textureset_table_of_objects_active_index)
+            if active_texset.global_textureset_table_of_objects_active_index > 0:
+                active_texset.global_textureset_table_of_objects_active_index -= 1
+        return {'FINISHED'}
+
+class BM_OT_SCENE_TextureSets_Objects_Table_Trash(bpy.types.Operator):
+    bl_idname = 'bakemaster.scene_texturesets_objects_table_trash'
+    bl_label = ""
+    bl_description = "Remove all Texture Set Objects"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        bm_props = context.scene.bm_props
+        table = bm_props.global_texturesets_table[bm_props.global_texturesets_active_index].global_textureset_table_of_objects
+        to_remove = []
+        for index, item in enumerate(table):
+
+            context.scene.bm_table_of_objects[item.global_source_object_index].global_is_included_in_texset = False
+            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+
+            to_remove.append(index)
+        for index in to_remove[::-1]:
+            table.remove(index)
+        bm_props.global_texturesets_active_index = 0
+        return {'FINISHED'}
+
+class BM_OT_SCENE_TextureSets_Objects_Table_InvertSubItems(bpy.types.Operator):
+    bl_idname = 'bakemaster.scene_texturesets_objects_table_invertsubitems'
+    bl_label = ""
+    bl_description = "Invert selection of Container's Objects"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        bm_props = context.scene.bm_props
+        texset = bm_props.global_texturesets_table[bm_props.global_texturesets_active_index]
+        table = texset.global_textureset_table_of_objects[texset.global_textureset_table_of_objects_active_index].global_object_name_subitems
+        for subitem in table:
+            subitem.global_object_include_in_texset = False if subitem.global_object_include_in_texset else True
+        return {'FINISHED'}
+
+class BM_OT_ITEM_BatchNamingTable_Add(bpy.types.Operator):
+    bl_idname = 'bakemaster.item_batchnamingtable_add'
+    bl_label = ""
+    bl_description = "Add keyword to the Batch Naming convention"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        object = BM_Object_Get(context)[0]
+        new_item = object.bake_batch_name_table.add()
+        new_item.global_keyword_index = len(object.bake_batch_name_table) - 1
+        new_item.global_keyword_old = new_item.global_keyword
+        BM_BATCHNAMINGKEY_PROPS_global_keyword_UpdateOrder(context)
+        object.bake_batch_name_table_active_index = len(object.bake_batch_name_table) - 1
+        return {'FINISHED'}
+
+class BM_OT_ITEM_BatchNamingTable_Remove(bpy.types.Operator):
+    bl_idname = 'bakemaster.item_batchnamingtable_remove'
+    bl_label = ""
+    bl_description = "Remove keyword from the Batch Naming convention"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        object = BM_Object_Get(context)[0]
+        keyword = object.bake_batch_name_table[object.bake_batch_name_table_active_index]
+        for keyword1 in object.bake_batch_name_table:
+            if keyword1.global_keyword_index > keyword.global_keyword_index:
+                keyword1.global_keyword_index -= 1
+        object.bake_batch_name_table.remove(object.bake_batch_name_table_active_index)
+        BM_BATCHNAMINGKEY_PROPS_global_keyword_UpdateOrder(context)
+        if object.bake_batch_name_table_active_index > 0:
+            object.bake_batch_name_table_active_index -= 1
+        return {'FINISHED'}
+
+class BM_OT_ITEM_BatchNamingTable_Trash(bpy.types.Operator):
+    bl_idname = 'bakemaster.item_batchnamingtable_trash'
+    bl_label = ""
+    bl_description = "Remove all keywords from the Batch Naming convention"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        object = BM_Object_Get(context)[0]
+        to_remove = []
+        for index, keyword in enumerate(object.bake_batch_name_table):
+            to_remove.append(index)
+        for index in sorted(to_remove, reverse=True):
+            object.bake_batch_name_table.remove(index)
+        object.bake_batch_name_table_active_index = 0
+        return {'FINISHED'}
+
+class BM_OT_ITEM_Maps(bpy.types.Operator):
+    bl_idname = 'bakemaster.item_maps_table'
+    bl_label = ""
+    bl_description = "Add/Remove map passes from the list"
 
     control : bpy.props.EnumProperty(
         items = [('ADD', "Add", ""), ('REMOVE', "Remove", ""), ('TRASH', "Trash", "")])
 
     def invoke(self, context, event):
-        item = context.scene.bm_aol[context.scene.bm_props.active_index]
-        a_index = item.maps_active_index
+        object = BM_Object_Get(context)[0]
+        global_active_index = object.global_maps_active_index
 
         try:
-            item.maps[a_index]
+            object.global_maps[global_active_index]
         except IndexError:
             pass
         else:
             if self.control == 'REMOVE' or self.control == 'TRASH':
-                BM_ITEM_RemoveLocalPreviews(item, context)
+                BM_ITEM_RemoveLocalPreviews(object, context)
 
             if self.control == 'REMOVE':
-                if item.maps_active_index != 0:
-                    item.maps_active_index -= 1
-
-                item.maps.remove(a_index)
+                if object.global_maps_active_index != 0:
+                    object.global_maps_active_index -= 1
+                object.global_maps.remove(global_active_index)
                 
             elif self.control == 'TRASH':
                 to_remove = []
-
-                for index, map in enumerate(item.maps):
+                for index, map in enumerate(object.global_maps):
                     to_remove.append(index)
-
                 for index in to_remove[::-1]:
-                    item.maps.remove(index)
+                    object.global_maps.remove(index)
 
-                item.maps_active_index = 0
+                object.global_maps_active_index = 0
 
         if self.control == 'ADD':
-            new_pass = item.maps.add()
-            new_pass.map_type = 'ALBEDO'
-            item.maps_active_index = len(item.maps) - 1
-            BM_ITEM_OverwriteUpdate(item, context)
+            new_pass = object.global_maps.add()
+            new_pass.global_map_type = 'ALBEDO'
+            new_pass.global_map_index = len(object.global_maps)
+            object.global_maps_active_index = len(object.global_maps) - 1
+            BM_ITEM_OverwriteUpdate(object, context)
 
         return {'FINISHED'}
 
@@ -210,5 +1146,4 @@ class BM_OT_Help(bpy.types.Operator):
     
     def execute(self, context):
         webbrowser.open(BM_Labels.URL_HELP_BASE)
-
         return {'FINISHED'}

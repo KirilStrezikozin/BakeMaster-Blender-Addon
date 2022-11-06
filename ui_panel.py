@@ -33,12 +33,37 @@ class BM_PT_Item(BM_PT_ItemBase):
     bl_category = bm_category
     bl_parent_id = BM_PT_Main.bl_idname
 
-class BM_PT_Item_STT(BM_PT_Item_STTBase):
+class BM_PT_Item_Object(BM_PT_Item_ObjectBase):
     bl_space_type = bm_space_type
     bl_region_type = bm_region_type
     bl_category = bm_category
     bl_parent_id = BM_PT_Item.bl_idname
 
+class BM_PT_Item_Maps(BM_PT_Item_MapsBase):
+    bl_space_type = bm_space_type
+    bl_region_type = bm_region_type
+    bl_category = bm_category
+    bl_parent_id = BM_PT_Item.bl_idname
+
+class BM_PT_Item_Output(BM_PT_Item_OutputBase):
+    bl_space_type = bm_space_type
+    bl_region_type = bm_region_type
+    bl_category = bm_category
+    bl_parent_id = BM_PT_Item.bl_idname
+
+class BM_PT_TextureSets(BM_PT_TextureSetsBase):
+    bl_space_type = bm_space_type
+    bl_region_type = bm_region_type
+    bl_category = bm_category
+    bl_parent_id = BM_PT_Main.bl_idname
+
+class BM_PT_Bake(BM_PT_BakeBase):
+    bl_space_type = bm_space_type
+    bl_region_type = bm_region_type
+    bl_category = bm_category
+    bl_parent_id = BM_PT_Main.bl_idname
+
+"""
 class BM_PT_Item_UVMap(BM_PT_Item_UVMapBase):
     bl_space_type = bm_space_type
     bl_region_type = bm_region_type
@@ -80,9 +105,4 @@ class BM_PT_Item_MainBakeSettings(BM_PT_Item_MainBakeSettingsBase):
     bl_region_type = bm_region_type
     bl_category = bm_category
     bl_parent_id = BM_PT_Item_MainBake.bl_idname
-
-class BM_PT_Main_Help(BM_PT_Main_HelpBase):
-    bl_space_type = bm_space_type
-    bl_region_type = bm_region_type
-    bl_category = bm_category
-    bl_parent_id = BM_PT_Main.bl_idname
+"""
