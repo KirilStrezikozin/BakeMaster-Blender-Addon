@@ -446,7 +446,6 @@ class BM_Map(bpy.types.PropertyGroup):
         default = False,
         update = BM_ITEM_PROPS_OutputSettings_Update)
 
-    # NOT IN UI
     out_use_transbg : bpy.props.BoolProperty(
         name = "Transparent BG",
         description = "Create image texture with transparent background instead of solid black",
@@ -1651,6 +1650,12 @@ class BM_Object(bpy.types.PropertyGroup):
     out_use_alpha : bpy.props.BoolProperty(
         name = "Alpha",
         description = "Create image texture with Alpha color channel",
+        default = False,
+        update = BM_ITEM_PROPS_OutputSettings_Update)
+
+    out_use_transbg : bpy.props.BoolProperty(
+        name = "Transparent BG",
+        description = "Create image texture with transparent background instead of solid black",
         default = False,
         update = BM_ITEM_PROPS_OutputSettings_Update)
     
