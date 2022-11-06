@@ -554,7 +554,9 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
 
             if object.uv_use_unique_per_map is False:
                 # uv
-                uv_box.prop(object, 'uv_bake_target')
+                uv_box_column = uv_box.column(align=True)
+                uv_box_column.prop(object, 'uv_bake_data')
+                uv_box_column.prop(object, 'uv_bake_target')
                 if object.uv_bake_target == 'IMAGE_TEXTURES':
                     uv_box_column = uv_box.column(align=True)
                     uv_box_column.prop(object, 'uv_active_layer')
@@ -1021,7 +1023,9 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
 
                 # uv body
                 if scene.bm_props.local_is_uv_panel_expanded:
-                    uv_box.prop(map, 'uv_bake_target')
+                    uv_box_column = uv_box.column(align=True)
+                    uv_box_column.prop(map, 'uv_bake_data')
+                    uv_box_column.prop(map, 'uv_bake_target')
                     if map.uv_bake_target == 'IMAGE_TEXTURES':
                         uv_box_column = uv_box.column(align=True)
                         uv_box_column.prop(map, 'uv_active_layer')
