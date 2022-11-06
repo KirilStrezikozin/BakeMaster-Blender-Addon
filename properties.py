@@ -1374,10 +1374,10 @@ class BM_Object(bpy.types.PropertyGroup):
     nm_is_highpoly_container : bpy.props.BoolProperty(default=False)
     nm_is_cage_container : bpy.props.BoolProperty(default=False)
 
-    nm_uni_container_use_unique_per_object : bpy.props.BoolProperty(
-        name="Unique per Object",
-        description="Set settings for each Container's Object separately",
-        default=False)
+    nm_uni_container_is_global : bpy.props.BoolProperty(
+        name="Is Global Container",
+        description="If checked, all Container's Objects settings will be configured by Container settings",
+        default=True)
 
 # Item High to Lowpoly props:
     hl_use_unique_per_map : bpy.props.BoolProperty(
