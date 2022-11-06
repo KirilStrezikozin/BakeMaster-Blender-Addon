@@ -720,6 +720,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 format_box_column = format_box.column(align=True)
                 format_box_column.prop(format_prop_collection, 'out_use_32bit')
                 format_box_column.prop(format_prop_collection, 'out_use_alpha')
+                format_box_column.prop(format_prop_collection, 'out_use_transbg')
                 if format_prop_collection.uv_type == 'TILED':
                     format_box_column = format_box.column(align=True)
                     format_box_column.prop(format_prop_collection, 'out_udim_start_tile', text="Start Tile")
