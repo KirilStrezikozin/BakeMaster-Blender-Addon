@@ -264,6 +264,14 @@ class BM_Map(bpy.types.PropertyGroup):
         update=BM_ITEM_PROPS_HighLowSettings_Update)
 
 # Map UV Props:
+    uv_bake_data : bpy.props.EnumProperty(
+        name = "Bake Data",
+        description = "Choose data type to use for baking",
+        default = 'OBJECT_MATERIALS',
+        items = [('OBJECT_MATERIALS', "Object/Materials", "Use Object and Materials data for baking regular maps"),
+                 ('VERTEX_COLORS', "Vertex Colors", "Bake VertexColor Layers to Image Textures")],
+        update = BM_ITEM_PROPS_UVSettings_Update)
+
     uv_bake_target : bpy.props.EnumProperty(
         name = "Bake Target",
         description = "Choose Baked Maps output target",
@@ -315,7 +323,7 @@ class BM_Map(bpy.types.PropertyGroup):
         default=True,
         update=BM_ITEM_PROPS_UVSettings_Update)
 
-# Item Output Props:
+# Map Output Props:
     out_use_denoise : bpy.props.BoolProperty(
         name = "Denoise",
         description = "Denoise and Discpeckle baked maps as a post-process filter",
@@ -523,6 +531,12 @@ class BM_Map(bpy.types.PropertyGroup):
                ('EMISSION', "Emission", ""),
                ('ALPHA', "Alpha", ""),
                ('NORMAL', "Normal", "")])
+
+# Vertex Color Layer Map Props
+    map_vertexcolor_layer : bpy.props.EnumProperty(
+        name="Layer",
+        description="Vertex Color Layer to bake",
+        items=BM_MAP_PROPS_map_vertexcolor_layer_Items)
     
 # Cycles Map Props 
     map_cycles_use_pass_direct : bpy.props.BoolProperty(
@@ -1451,6 +1465,14 @@ class BM_Object(bpy.types.PropertyGroup):
         name="Unique per map",
         description="Set unqiue UV Settings for each map",
         default=False)    
+
+    uv_bake_data : bpy.props.EnumProperty(
+        name = "Bake Data",
+        description = "Choose data type to use for baking",
+        default = 'OBJECT_MATERIALS',
+        items = [('OBJECT_MATERIALS', "Object/Materials", "Use Object and Materials data for baking regular maps"),
+                 ('VERTEX_COLORS', "Vertex Colors", "Bake VertexColor Layers to Image Textures")],
+        update = BM_ITEM_PROPS_UVSettings_Update)
 
     uv_bake_target : bpy.props.EnumProperty(
         name = "Bake Target",
