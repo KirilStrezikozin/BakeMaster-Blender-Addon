@@ -1348,7 +1348,7 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
 #     autouv_custom : bpy.props.StringProperty(
 #         name="Write:",
 #         description="What to write if object was auto uv unwrapped",
-#         default="autouv")
+        # default="autouv")
     
 class BM_Object(bpy.types.PropertyGroup):
     global_object_name : bpy.props.StringProperty()
@@ -1373,6 +1373,11 @@ class BM_Object(bpy.types.PropertyGroup):
     nm_is_lowpoly_container : bpy.props.BoolProperty(default=False)
     nm_is_highpoly_container : bpy.props.BoolProperty(default=False)
     nm_is_cage_container : bpy.props.BoolProperty(default=False)
+
+    nm_uni_container_use_unique_per_object : bpy.props.BoolProperty(
+        name="Unique per Object",
+        description="Set settings for each Container's Object separately",
+        default=False)
 
 # Item High to Lowpoly props:
     hl_use_unique_per_map : bpy.props.BoolProperty(
