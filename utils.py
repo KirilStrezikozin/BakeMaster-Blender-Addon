@@ -883,7 +883,7 @@ def BM_MAP_PROPS_map_vertexcolor_layer_Items(self, context):
         items = []
         if len(data):
             for layer in data:
-                items.append(str(layer.name), layer.name, "VertexColor Layer to bake")
+                items.append((str(layer.name), layer.name, "VertexColor Layer to bake"))
             return items
         else:
             return [('NONE', "None", "No VertexColor Layers to bake")]
