@@ -320,42 +320,22 @@ class BM_PT_MainBase(bpy.types.Panel):
         row.operator(BM_OT_Table_of_Objects_Remove.bl_idname, text="Remove", icon='REMOVE')
         row.scale_y = 1.15
 
+        full_len = len(scene.bm_table_of_objects)
+        rows = 5 if full_len > 1 else 4
         refresh = False
-        is_len = True if len(scene.bm_table_of_objects) else False
-        min_rows = 5 if is_len else 4
-        for index, object in enumerate(scene.bm_table_of_objects):
+        for object in scene.bm_table_of_objects:
             try:
                 scene.objects[object.global_object_name]
             except (KeyError, AttributeError, UnboundLocalError):
                 if scene.bm_props.global_use_name_matching and any([object.nm_is_universal_container, object.nm_is_local_container]):
                     continue
                 refresh = True
-                min_rows += 1
+                rows += 1
                 break
-        if is_len and not BM_Object_Get(context)[1]:
-            min_rows -= 1
-
-        if len(scene.bm_table_of_objects) > min_rows:
-            rows = len(scene.bm_table_of_objects)
-            # decrease number of rows for every hidden item
-            checked_unis = []
-            if scene.bm_props.global_use_name_matching:
-                for global_index, global_object in enumerate(scene.bm_table_of_objects):
-                    # visible universal container, all its items unvisible
-                    if global_object.nm_is_universal_container and global_object.nm_is_expanded is False:
-                        checked_unis.append(global_object.nm_master_index)
-                        for local_object in scene.bm_table_of_objects:
-                            if local_object.nm_item_uni_container_master_index == global_object.nm_master_index and rows > min_rows:
-                                rows -= 1
-                    # visible local container, all its items unvisible
-                    elif global_object.nm_is_local_container and global_object.nm_is_expanded is False:
-                        if global_object.nm_item_uni_container_master_index in checked_unis:
-                            continue
-                        for local_object in scene.bm_table_of_objects:
-                            if local_object.nm_item_uni_container_master_index == global_object.nm_item_uni_container_master_index and local_object.nm_item_local_container_master_index == global_object.nm_master_index and rows > min_rows:
-                                rows -= 1
-        else:
-            rows = min_rows
+        if full_len and BM_Object_Get(context)[1] is False:
+            if scene.bm_props.global_use_name_matching and any([object.nm_is_universal_container, object.nm_is_local_container]):
+                rows += 1
+            rows -= 1
         
         row = box.row()
         row.template_list('BM_UL_Table_of_Objects_Item', "", scene, 'bm_table_of_objects', scene.bm_props, 'global_active_index', rows=rows)
