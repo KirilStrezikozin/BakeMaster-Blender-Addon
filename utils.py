@@ -891,7 +891,7 @@ def BM_MAP_PROPS_map_vertexcolor_layer_Items(self, context):
     object = BM_Object_Get(context)
     if object[1] is False:
         return [('NONE', "None", "Current Object doesn't support VertexColor Layers")]
-    source_object = context.scene.objects[object[0].global_object_name].data
+    source_object = context.scene.objects[object[0].global_object_name]
     if bpy.app.version < (3, 0, 0):
         return object_get_vertexcolor_layers(source_object.data.vertex_colors)
     else:
