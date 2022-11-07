@@ -769,6 +769,9 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
             # Pass and Cycles Maps
             if map.global_map_type == 'PASS':
                 map_settings_column.prop(map, 'map_pass_type')
+
+            if map.global_map_type == 'VERTEX_COLOR_LAYER':
+                map_settings_column.prop(map, 'map_vertexcolor_layer')
             
             elif map.global_map_type == 'C_NORMAL':
                 map_settings_column.prop(map, 'map_normal_space', text="Space")
