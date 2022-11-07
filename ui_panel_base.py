@@ -149,12 +149,21 @@ class BM_UL_Table_of_Maps_Item(bpy.types.UIList):
         index_column = split.column()
         index_column.label(text=str(index_value))
         layout.emboss = 'NORMAL'
-        split.column().prop(item, 'global_map_type', text="")
-
+        props_column = split.column().row()
+        props_column.prop(item, 'global_map_type', text="")
+        props_column_use_bake = props_column.row()
+        if item.global_use_bake:
+            icon = 'RESTRICT_RENDER_OFF'
+        else:
+            icon = 'RESTRICT_RENDER_ON'
+            layout.active = False
         object = BM_Object_Get(context)[0]
         if (object.uv_use_unique_per_map is False and object.uv_bake_data == 'VERTEX_COLORS') or (object.uv_use_unique_per_map and item.uv_bake_data == 'VERTEX_COLORS'):
             if item.global_map_type != 'VERTEX_COLOR_LAYER':
                 layout.active = False
+                icon = 'RESTRICT_RENDER_ON'
+                props_column_use_bake.enabled = False
+        props_column_use_bake.prop(item, 'global_use_bake', text="", icon=icon)
 
     def draw_filter(self, context, layout):
         pass
