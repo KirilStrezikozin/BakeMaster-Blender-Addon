@@ -515,11 +515,23 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="ALBEDO")
 
+    map_ALBEDO_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
+
 # Metalness Map Props
     map_METALNESS_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="METAL")
+
+    map_METALNESS_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
 
 # Roughness Map Props
     map_ROUGHNESS_prefix : bpy.props.StringProperty(
@@ -527,11 +539,23 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="ROUGH")
 
+    map_ROUGHNESS_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
+
 # Diffuse Map Props
     map_DIFFUSE_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="DIFFUSE")
+
+    map_DIFFUSE_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
 
 # Specular Map Props
     map_SPECULAR_prefix : bpy.props.StringProperty(
@@ -539,11 +563,23 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="SPECULAR")
 
-# Glossyness Map Props
-    map_GLOSSYNESS_prefix : bpy.props.StringProperty(
+    map_SPECULAR_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
+
+# Glossiness Map Props
+    map_GLOSSINESS_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="GLOSS")
+
+    map_GLOSSINESS_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
 
 # Opacity Map Props
     map_OPACITY_prefix : bpy.props.StringProperty(
@@ -551,17 +587,35 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="OPACITY")
 
+    map_OPACITY_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
+
 # Emission Map Props
     map_EMISSION_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="EMISSION")
 
+    map_EMISSION_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
+
 # Pass Map Props
     map_PASS_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="BSDFPASS")
+
+    map_PASS_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
 
     map_pass_type : bpy.props.EnumProperty(
         name="Pass",
@@ -586,6 +640,12 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="VERTEXCOLOR")
+
+    map_VERTEX_COLOR_LAYER_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
 
     map_vertexcolor_layer : bpy.props.EnumProperty(
         name="Layer",
@@ -694,6 +754,12 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="NORMAL")
 
+    map_NORMAL_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
+
     map_normal_space : bpy.props.EnumProperty(
         name = "Normal Space",
         description = "Choose normal space for baking",
@@ -770,6 +836,12 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="DISP")
 
+    map_DISPLACEMENT_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
+
     map_displacement_data : bpy.props.EnumProperty(
         name="Data",
         description="Data for Displacement map",
@@ -794,6 +866,12 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="VD")
+
+    map_VECTOR_DISPLACEMENT_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
 
     map_vector_displacement_use_default : bpy.props.BoolProperty(
         name="Default",
@@ -825,13 +903,19 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="POS")
 
+    map_POSITION_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
+
 # AO Map Props
     map_AO_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="AO")
 
-    map_ao_use_preview : bpy.props.BoolProperty(
+    map_AO_use_preview : bpy.props.BoolProperty(
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
@@ -918,7 +1002,7 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="CAV")
 
-    map_cavity_use_preview : bpy.props.BoolProperty(
+    map_CAVITY_use_preview : bpy.props.BoolProperty(
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
@@ -969,7 +1053,7 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="CURV")
 
-    map_curv_use_preview : bpy.props.BoolProperty(
+    map_CURVATURE_use_preview : bpy.props.BoolProperty(
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
@@ -1046,7 +1130,7 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="THICK")
 
-    map_thick_use_preview : bpy.props.BoolProperty(
+    map_THICKNESS_use_preview : bpy.props.BoolProperty(
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
@@ -1116,6 +1200,12 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="ID")
 
+    map_ID_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
+
     map_matid_data : bpy.props.EnumProperty(
         name="Data",
         description="Data type for detecting color groups",
@@ -1142,6 +1232,12 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="MASK")
+
+    map_MASK_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
 
     map_mask_data : bpy.props.EnumProperty(
         name="Data",
@@ -1181,13 +1277,21 @@ class BM_Map(bpy.types.PropertyGroup):
         precision=3,
         subtype='COLOR')
         
+    map_mask_use_invert : bpy.props.FloatProperty(
+        name="Invert",
+        description="Invert colors of the map", 
+        default=1,
+        min=-1,
+        max=1,
+        precision=3)
+
 # XYZMask Map Props
     map_XYZMASK_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="XYZ")
 
-    map_xyzmask_use_preview : bpy.props.BoolProperty(
+    map_XYZMASK_use_preview : bpy.props.BoolProperty(
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
@@ -1252,7 +1356,7 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="GRADIENT")
 
-    map_gmask_use_preview : bpy.props.BoolProperty(
+    map_GRADIENT_use_preview : bpy.props.BoolProperty(
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
@@ -1384,7 +1488,7 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="EDGE")
 
-    map_edgemask_use_preview : bpy.props.BoolProperty(
+    map_EDGE_use_preview : bpy.props.BoolProperty(
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default = False,
@@ -1437,6 +1541,12 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="WIRE")
+
+    map_WIREFRAME_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
 
     map_wireframemask_line_thickness : bpy.props.FloatProperty(
         name="Thickness",
