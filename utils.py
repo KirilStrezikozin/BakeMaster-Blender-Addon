@@ -827,8 +827,8 @@ def BM_ITEM_PROPS_OutputSettings_Update(self, context):
     pass
 
 def BM_MAP_PROPS_map_type_Items(self, context):
-    if self.uv_bake_data == 'VERTEX_COLORS':
-        return [('VERTEX_COLOR_LAYER', "VertexColor Layer", "Bake VertexColor Layer")]
+    # if self.uv_bake_data == 'VERTEX_COLORS':
+    #     return [('VERTEX_COLOR_LAYER', "VertexColor Layer", "Bake VertexColor Layer")]
 
     items = [
         ('', "PBR-Metallic", "PBR maps to bake from existing object materials data"),
