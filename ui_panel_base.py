@@ -902,6 +902,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     map_settings_column.prop(map, 'map_mask_materials_name_contains')
                 map_settings_column.prop(map, 'map_mask_color1')
                 map_settings_column.prop(map, 'map_mask_color2')
+                map_settings_column.prop(map, 'map_mask_use_invert', slider=True)
 
             elif map.global_map_type == 'XYZMASK':
                 sub = map_settings_column.column(align=True)
