@@ -1044,11 +1044,11 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                         uv_box_column.prop(map, 'uv_snap_islands_to_pixels')
                         if map.uv_type == 'SINGLE':
                             uv_box_column = uv_box.column()
-                            uv_box_column.prop(map, 'uv_use_auto_unwrap')
-                            if map.uv_use_auto_unwrap:
-                                uv_box_column.prop(map, 'uv_auto_unwrap_angle_limit')
-                                uv_box_column.prop(map, 'uv_auto_unwrap_island_margin')
-                                uv_box_column.prop(map, 'uv_auto_unwrap_use_scale_to_bounds')
+                            uv_box_column.prop(object, 'uv_use_auto_unwrap')
+                            if object.uv_use_auto_unwrap:
+                                uv_box_column.prop(object, 'uv_auto_unwrap_angle_limit')
+                                uv_box_column.prop(object, 'uv_auto_unwrap_island_margin')
+                                uv_box_column.prop(object, 'uv_auto_unwrap_use_scale_to_bounds')
 
 class BM_PT_Item_OutputBase(bpy.types.Panel):
     bl_label = " "
