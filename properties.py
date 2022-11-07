@@ -292,33 +292,33 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Snap UVMap islands to pixel edges for clearer result",
         update=BM_ITEM_PROPS_UVSettings_Update)
 
-    uv_use_auto_unwrap : bpy.props.BoolProperty(
-        name="Auto Unwrap",
-        description="Auto UV Unwrap object using smart project",
-        update=BM_ITEM_PROPS_UVSettings_Update)
+    # uv_use_auto_unwrap : bpy.props.BoolProperty(
+    #     name="Auto Unwrap",
+    #     description="Auto UV Unwrap object using smart project",
+    #     update=BM_ITEM_PROPS_UVSettings_Update)
 
-    uv_auto_unwrap_angle_limit : bpy.props.IntProperty(
-        name="Angle Limit",
-        description="The angle at which to place seam on the mesh for unwrapping",
-        default=66,
-        min=0,
-        max=89,
-        subtype='ANGLE',
-        update=BM_ITEM_PROPS_UVSettings_Update)
+    # uv_auto_unwrap_angle_limit : bpy.props.IntProperty(
+    #     name="Angle Limit",
+    #     description="The angle at which to place seam on the mesh for unwrapping",
+    #     default=66,
+    #     min=0,
+    #     max=89,
+    #     subtype='ANGLE',
+    #     update=BM_ITEM_PROPS_UVSettings_Update)
 
-    uv_auto_unwrap_island_margin : bpy.props.FloatProperty(
-        name="Island Margin",
-        description="Set distance between adjacent UV islands",
-        default=0.01,
-        min=0,
-        max=1,
-        update=BM_ITEM_PROPS_UVSettings_Update)
+    # uv_auto_unwrap_island_margin : bpy.props.FloatProperty(
+    #     name="Island Margin",
+    #     description="Set distance between adjacent UV islands",
+    #     default=0.01,
+    #     min=0,
+    #     max=1,
+    #     update=BM_ITEM_PROPS_UVSettings_Update)
     
-    uv_auto_unwrap_use_scale_to_bounds : bpy.props.BoolProperty(
-        name="Scale to Bounds",
-        description="Scale UV coordinates to bounds to fill the whole UV tile area",
-        default=True,
-        update=BM_ITEM_PROPS_UVSettings_Update)
+    # uv_auto_unwrap_use_scale_to_bounds : bpy.props.BoolProperty(
+    #     name="Scale to Bounds",
+    #     description="Scale UV coordinates to bounds to fill the whole UV tile area",
+    #     default=True,
+    #     update=BM_ITEM_PROPS_UVSettings_Update)
 
 # Map Output Props:
     out_use_denoise : bpy.props.BoolProperty(
