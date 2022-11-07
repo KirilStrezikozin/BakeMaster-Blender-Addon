@@ -1280,8 +1280,8 @@ class BM_Map(bpy.types.PropertyGroup):
     map_mask_use_invert : bpy.props.FloatProperty(
         name="Invert",
         description="Invert colors of the map", 
-        default=1,
-        min=-1,
+        default=0,
+        min=0,
         max=1,
         precision=3)
 
