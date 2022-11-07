@@ -152,7 +152,7 @@ class BM_UL_Table_of_Maps_Item(bpy.types.UIList):
         split.column().prop(item, 'global_map_type', text="")
 
         object = BM_Object_Get(context)[0]
-        if (object.uv_use_unique_per_map is False and object.uv_bake_data == 'VERTEX_COLORS') or (object.uv_use_unique_per_map and map.uv_bake_data == 'VERTEX_COLORS'):
+        if (object.uv_use_unique_per_map is False and object.uv_bake_data == 'VERTEX_COLORS') or (object.uv_use_unique_per_map and item.uv_bake_data == 'VERTEX_COLORS'):
             if item.global_map_type != 'VERTEX_COLOR_LAYER':
                 layout.active = False
 
@@ -721,6 +721,10 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
             map_settings_column = maps_table_box.column()
             map_settings_column.use_property_split = True
             map_settings_column.use_property_decorate = False
+
+            if (object.uv_use_unique_per_map is False and object.uv_bake_data == 'VERTEX_COLORS') or (object.uv_use_unique_per_map and map.uv_bake_data == 'VERTEX_COLORS'):
+                if map.global_map_type != 'VERTEX_COLOR_LAYER':
+                    map_settings_column.enabled = False
 
             # map settings body
             if (object.hl_use_unique_per_map is False and len(object.hl_highpoly_table) > 0) or (object.hl_use_unique_per_map and len(map.hl_highpoly_table)):
