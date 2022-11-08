@@ -572,6 +572,8 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
             item = scene.bm_table_of_objects[global_active_index]
             # default removal
             if scene.bm_props.global_use_name_matching is False or item.nm_is_detached is True:
+                # update use_cage
+                BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, global_active_index)
                 scene.bm_table_of_objects.remove(global_active_index)
                 # remove obj from texset if it was there
                 BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, global_active_index)
@@ -601,6 +603,8 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                         to_remove.append(uni_removed_index)
 
                     for index in sorted(dict.fromkeys(to_remove), reverse=True):
+                        # update use_cage
+                        BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index)
                         scene.bm_table_of_objects.remove(index)
                         # remove obj from texset if it was there
                         BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
@@ -613,6 +617,8 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                             to_remove.append(index)
 
                     for index in sorted(to_remove, reverse=True):
+                        # update use_cage
+                        BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index)
                         scene.bm_table_of_objects.remove(index)
                         # remove obj from texset if it was there
                         BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
@@ -633,7 +639,11 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                             uni_removed_index = index
                     # item is the only one in the local, detached its pairs and remove uni_c, local_cs, else just remove the item
                     if len_of_local > 1:
+                        # update use_cage
+                        BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, global_active_index)
                         scene.bm_table_of_objects.remove(global_active_index)
+                        # remove obj from texset if it was there
+                        BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, global_active_index)
                     else:
                         # same removal as uni_c removal
                         # if remove local container, if only had one local container, remove the uni_container as well then
@@ -650,6 +660,8 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                                 to_remove.append(uni_removed_index)
 
                             for index in sorted(dict.fromkeys(to_remove), reverse=True):
+                                # update use_cage
+                                BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index)
                                 scene.bm_table_of_objects.remove(index)
                                 # remove obj from texset if it was there
                                 BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
@@ -737,6 +749,8 @@ class BM_OT_Table_of_Objects_Refresh(bpy.types.Operator):
                 pass
         # removing objects
         for index in sorted(list(dict.fromkeys(to_remove)), reverse=True):
+            # update use_cage
+            BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index)
             scene.bm_table_of_objects.remove(index)
             # remove obj from texset if it was there
             BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)

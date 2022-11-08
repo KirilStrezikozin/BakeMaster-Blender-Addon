@@ -790,10 +790,19 @@ def BM_ITEM_PROPS_hl_cage_Items(self, context):
     active_object = BM_Object_Get(context)[0]
     use_nm = context.scene.bm_props.global_use_name_matching
     cage_container_master_index = -1
+    include = []
+    if active_object.hl_use_unique_per_map:
+        for map in active_object.global_maps:
+            if map.hl_use_cage and map.hl_cage_object_index != -1:
+                include.append(map.hl_cage)
+    added = []
+
     for index, object in enumerate(context.scene.bm_table_of_objects):
         # add current chosen cage
-        if index == self.hl_cage_object_index:
+        if index == self.hl_cage_object_index or object.global_object_name in include and object.global_object_name not in added:
             items.append((str(object.global_object_name), object.global_object_name, "Object to use as Cage"))
+            added.append(object.global_object_name)
+            continue
         # skip the item itself and all cages, lows, high already
         if any([object.hl_is_cage, object.hl_is_lowpoly, object.hl_is_highpoly]) or object.global_object_name == active_object.global_object_name:
             continue
@@ -801,13 +810,16 @@ def BM_ITEM_PROPS_hl_cage_Items(self, context):
             if active_object.nm_is_detached:
                 if object.nm_is_detached:
                     items.append((str(object.global_object_name), object.global_object_name, "Object to use as Cage"))
+                    added.append(object.global_object_name)
             else:
                 if all([object.nm_is_local_container, object.nm_is_cage_container, object.nm_item_uni_container_master_index == active_object.nm_item_uni_container_master_index, cage_container_master_index == -1]):
                     cage_container_master_index = object.nm_master_index
                 if cage_container_master_index != -1 and object.nm_item_local_container_master_index == cage_container_master_index and object.nm_item_uni_container_master_index == active_object.nm_item_uni_container_master_index:
                     items.append((str(object.global_object_name), object.global_object_name, "Object to use as Cage"))
+                    added.append(object.global_object_name)
         else:
             items.append((str(object.global_object_name), object.global_object_name, "Object to use as Cage"))
+            added.append(object.global_object_name)
 
     if len(items) == 0:
         items.append(('NONE', "None", "No cage available within the Table of Objects"))
@@ -823,7 +835,6 @@ def BM_ITEM_PROPS_hl_cage_Update(self, context):
         for index, object in enumerate(context.scene.bm_table_of_objects):
             if object.global_object_name == self.hl_cage_name_old and not any([object.nm_is_local_container, object.nm_is_universal_container]):
                 self.hl_cage_object_index = index
-                print(self.hl_cage_name_old, index)
                 break
         context.scene.bm_table_of_objects[self.hl_cage_object_index].hl_is_cage = True
 
@@ -846,6 +857,16 @@ def BM_ITEM_PROPS_hl_use_cage_Update(self, context):
         except IndexError:
             pass
         self.hl_cage_object_index = -1
+
+def BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index):
+    object = context.scene.bm_table_of_objects[index]
+    print(index, object.hl_use_cage, object.hl_is_cage)
+    if object.hl_use_cage:
+        object.hl_use_cage = False
+    elif object.hl_is_cage:
+        for object1 in context.scene.bm_table_of_objects:
+            if object1.hl_cage_object_index == index:
+                object1.hl_use_cage = False
 
 ###############################################################
 ### uv Props Funcs ###
