@@ -296,6 +296,8 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                     if object.type == 'MESH':
 
                         if object not in objects and object.data not in objects_data:
+                            # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
+                            BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                             new_item = scene.bm_table_of_objects.add()
                             new_item.global_object_name = object.name
                             # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
@@ -408,6 +410,8 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                                 skip_add_container = True
                                 shell[2] = object.nm_master_index
                         if skip_add_container is False:
+                            # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
+                            BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                             new_container = scene.bm_table_of_objects.add()
                             new_container.nm_container_name_old = BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, container_names[shell[3]])
                             new_container.nm_container_name = new_container.nm_container_name_old
@@ -416,6 +420,8 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             new_container.nm_is_expanded = True
                             setattr(new_container, container_props[shell[3]], True)
                             # new_container.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_container.bake_batchname)
+                            # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
+                            BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                             new_item = scene.bm_table_of_objects.add()
                             new_item.global_object_name = shell[0]
                             new_item.nm_this_indent = 2
@@ -433,6 +439,8 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                         for index, object in enumerate(scene.bm_table_of_objects):
                             if object.nm_item_uni_container_master_index == shell[1] and object.nm_item_local_container_master_index == shell[2]:
                                 insert_index = index
+                        # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
+                        BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                         new_item = scene.bm_table_of_objects.add()
                         new_item.global_object_name = shell[0]
                         new_item.nm_this_indent = 2
@@ -463,6 +471,8 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                 ### constructing new Table_of_Objects items
                 for index, shell in enumerate(groups):
                     # adding universal container to the bm_table_of_objects
+                    # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
+                    BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                     universal_container = context.scene.bm_table_of_objects.add()
                     # name is set to the root_name of the first object in the shell
                     universal_container.nm_container_name_old = BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, CombineToRaw(roots[shell[0]][0]))
@@ -506,6 +516,8 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                     for local_index, local_names in enumerate(object_names):
 
                         if len(local_names):
+                            # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
+                            BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                             local_container = context.scene.bm_table_of_objects.add()
                             local_container.nm_container_name_old = names_starters[local_index]
                             local_container.nm_container_name = names_starters[local_index]
@@ -519,6 +531,8 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                                 # do not add detached names
                                 if object_name in detached:
                                     continue
+                                # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
+                                BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                                 new_item = context.scene.bm_table_of_objects.add()
                                 new_item.global_object_name = object_name
                                 new_item.nm_this_indent = 2
@@ -527,6 +541,8 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                                 # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
                 # adding detached as regular items
                 for object_name in detached:
+                    # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
+                    BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                     new_item = context.scene.bm_table_of_objects.add()
                     new_item.global_object_name = object_name
                     new_item.nm_is_detached = True
