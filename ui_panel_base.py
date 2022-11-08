@@ -491,20 +491,21 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                 hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
                 # cage
                 hl_box_cage = hl_box.column(align=True)
-                hl_box_cage.prop(object, 'hl_use_cage')
-                if object.hl_use_cage:
-                    hl_box_cage.prop(object, 'hl_cage_type')
-                    if object.hl_cage_type == 'STANDARD':
-                        if object.hl_cage == 'NONE':
-                            label = "Extrusion"
-                        else:
-                            label = "Cage Extrusion"
+                hl_box_cage.prop(object, 'hl_cage_type')
+                if object.hl_cage_type == 'STANDARD':
+                    if object.hl_use_cage is False:
+                        label = "Extrusion"
                         hl_box_cage.prop(object, 'hl_cage_extrusion', text=label)
                         if bpy.app.version >= (2, 90, 0):
                             hl_box_cage.prop(object, 'hl_max_ray_distance')
-                        hl_box_cage.prop(object, 'hl_cage')
+                        hl_box_cage.prop(object, 'hl_use_cage')
                     else:
-                        hl_box_cage.prop(object, 'hl_cage_extrusion', text="Extrusion")
+                        label = "Cage Extrusion"
+                        hl_box_cage.prop(object, 'hl_cage_extrusion', text=label)
+                        hl_box_cage.prop(object, 'hl_use_cage')
+                        hl_box_cage.prop(object, 'hl_cage')
+                else:
+                    hl_box_cage.prop(object, 'hl_cage_extrusion', text="Extrusion")
         
         # uv
         uv_box = layout.box()
@@ -993,20 +994,21 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     hl_highpoly_table_column.operator(BM_OT_MAP_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
                     # cage
                     hl_box_cage = hl_box.column(align=True)
-                    hl_box_cage.prop(map, 'hl_use_cage')
-                    if map.hl_use_cage:
-                        hl_box_cage.prop(map, 'hl_cage_type')
-                        if map.hl_cage_type == 'STANDARD':
-                            if map.hl_cage == 'NONE':
-                                label = "Extrusion"
-                            else:
-                                label = "Cage Extrusion"
+                    hl_box_cage.prop(map, 'hl_cage_type')
+                    if map.hl_cage_type == 'STANDARD':
+                        if map.hl_use_cage is False:
+                            label = "Extrusion"
                             hl_box_cage.prop(map, 'hl_cage_extrusion', text=label)
                             if bpy.app.version >= (2, 90, 0):
                                 hl_box_cage.prop(map, 'hl_max_ray_distance')
-                            hl_box_cage.prop(map, 'hl_cage')
+                            hl_box_cage.prop(map, 'hl_use_cage')
                         else:
-                            hl_box_cage.prop(map, 'hl_cage_extrusion', text="Extrusion")
+                            label = "Cage Extrusion"
+                            hl_box_cage.prop(map, 'hl_cage_extrusion', text=label)
+                            hl_box_cage.prop(map, 'hl_use_cage')
+                            hl_box_cage.prop(map, 'hl_cage')
+                    else:
+                        hl_box_cage.prop(map, 'hl_cage_extrusion', text="Extrusion")
         
             # uv
             if object.uv_use_unique_per_map:
