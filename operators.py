@@ -573,7 +573,7 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
             # default removal
             if scene.bm_props.global_use_name_matching is False or item.nm_is_detached is True:
                 # update use_cage
-                BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, global_active_index)
+                BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, global_active_index, 'OBJECT')
                 scene.bm_table_of_objects.remove(global_active_index)
                 # remove obj from texset if it was there
                 BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, global_active_index)
@@ -604,7 +604,7 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
 
                     for index in sorted(dict.fromkeys(to_remove), reverse=True):
                         # update use_cage
-                        BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index)
+                        BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, 'OBJECT')
                         scene.bm_table_of_objects.remove(index)
                         # remove obj from texset if it was there
                         BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
@@ -618,7 +618,7 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
 
                     for index in sorted(to_remove, reverse=True):
                         # update use_cage
-                        BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index)
+                        BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, 'OBJECT')
                         scene.bm_table_of_objects.remove(index)
                         # remove obj from texset if it was there
                         BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
@@ -640,7 +640,7 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                     # item is the only one in the local, detached its pairs and remove uni_c, local_cs, else just remove the item
                     if len_of_local > 1:
                         # update use_cage
-                        BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, global_active_index)
+                        BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, global_active_index, 'OBJECT')
                         scene.bm_table_of_objects.remove(global_active_index)
                         # remove obj from texset if it was there
                         BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, global_active_index)
@@ -661,7 +661,7 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
 
                             for index in sorted(dict.fromkeys(to_remove), reverse=True):
                                 # update use_cage
-                                BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index)
+                                BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, 'OBJECT')
                                 scene.bm_table_of_objects.remove(index)
                                 # remove obj from texset if it was there
                                 BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
@@ -750,7 +750,7 @@ class BM_OT_Table_of_Objects_Refresh(bpy.types.Operator):
         # removing objects
         for index in sorted(list(dict.fromkeys(to_remove)), reverse=True):
             # update use_cage
-            BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index)
+            BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, 'OBJECT')
             scene.bm_table_of_objects.remove(index)
             # remove obj from texset if it was there
             BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
@@ -1136,6 +1136,8 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
             if self.control == 'REMOVE':
                 if object.global_maps_active_index != 0:
                     object.global_maps_active_index -= 1
+                # update use_cage
+                BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, global_active_index, 'MAP')
                 object.global_maps.remove(global_active_index)
                 
             elif self.control == 'TRASH':
@@ -1143,6 +1145,8 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
                 for index, map in enumerate(object.global_maps):
                     to_remove.append(index)
                 for index in to_remove[::-1]:
+                    # update use_cage
+                    BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, 'MAP')
                     object.global_maps.remove(index)
 
                 object.global_maps_active_index = 0
