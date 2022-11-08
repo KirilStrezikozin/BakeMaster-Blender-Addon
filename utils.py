@@ -395,7 +395,7 @@ def BM_SCENE_PROPS_global_use_name_matching_Update(self, context):
                         new_item.nm_item_uni_container_master_index = index
                         new_item.nm_item_local_container_master_index = local_index
                         new_item.nm_is_expanded = True
-                        setattr(new_item, prefix_props[local_index], True)
+                        # setattr(new_item, prefix_props[local_index], True)
         # adding detached as regular items
         last_uni_c_index += 1
         for index, object_name in enumerate(detached):
@@ -781,6 +781,37 @@ def BM_Table_of_Objects_GetFTL(context, items, bitflag_filter_item):
             ftl_neworder = sorted([index for index, item in enumerate(items) if ftl_flags[index] == ~bitflag_filter_item])
 
         return ftl_flags, ftl_neworder
+
+###############################################################
+### hl Props Funcs ###
+###############################################################
+def BM_ITEM_PROPS_hl_cage_Items(self, context):
+    items = []
+    active_object = BM_Object_Get(context)[0]
+    use_nm = context.scene.bm_props.global_use_name_matching
+    cage_container_master_index = -1
+    for index, object in enumerate(context.scene.bm_table_of_objects):
+        # if object.global_object_name == active_object.hl_cage_name and active_object.hl_cage_name not in ["", "NONE"]:
+        #     items.append((str(object.global_object_name), object.global_object_name, "Object to use as Cage"))
+        if use_nm:
+            if active_object.nm_is_detached:
+                if object.nm_is_detached and not any([object.hl_is_cage, object.hl_is_lowpoly, object.hl_is_highpoly, object.global_object_name == active_object.global_object_name]):
+                    items.append((str(object.global_object_name), object.global_object_name, "Object to use as Cage"))
+            else:
+                if all([object.nm_is_local_container, object.nm_is_cage_container, object.nm_item_uni_container_master_index == active_object.nm_item_uni_container_master_index, cage_container_master_index == -1]):
+                    cage_container_master_index = object.nm_master_index
+                    print(cage_container_master_index, index)
+                if cage_container_master_index != -1 and object.nm_item_local_container_master_index == cage_container_master_index and not any([object.hl_is_cage, object.hl_is_lowpoly, object.hl_is_highpoly, object.global_object_name == active_object.global_object_name]) and object.nm_item_uni_container_master_index == active_object.nm_item_uni_container_master_index:
+                    items.append((str(object.global_object_name), object.global_object_name, "Object to use as Cage"))
+        else:
+            if not any([object.hl_is_cage, object.hl_is_lowpoly, object.hl_is_highpoly, object.global_object_name == active_object.global_object_name]):
+                items.append((str(object.global_object_name), object.global_object_name, "Object to use as Cage"))
+
+    if len(items) == 0:
+        items.append(('NONE', "None", "No cage available within the Table of Objects"))
+    return items
+
+
 
 ###############################################################
 ### uv Props Funcs ###
