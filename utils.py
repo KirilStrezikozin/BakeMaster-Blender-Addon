@@ -840,6 +840,17 @@ def BM_ITEM_PROPS_hl_cage_Update(self, context):
                 self.hl_cage_object_index = index
                 break
         context.scene.bm_table_of_objects[self.hl_cage_object_index].hl_is_cage = True
+        try:
+            self.global_map_type
+        except AttributeError:
+            return
+        else:
+            object = BM_Object_Get(context)[0]
+            if object.hl_use_unique_per_map:
+                for map in object.global_maps:
+                    if map.hl_use_cage and map.hl_cage_object_index != -1:
+                        context.scene.bm_table_of_objects[map.hl_cage_object_index].hl_is_cage = True
+                        
 
 def BM_ITEM_PROPS_hl_use_cage_Update(self, context):
     if self.hl_use_cage:
