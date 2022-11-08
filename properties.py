@@ -225,7 +225,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Use Cage Object",
         description="Cast rays to Object from cage",
         default=False,
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
+        update=BM_ITEM_PROPS_hl_use_cage_Update)
 
     hl_cage_type : bpy.props.EnumProperty(
         name="Cage type",
@@ -257,8 +257,12 @@ class BM_Map(bpy.types.PropertyGroup):
     hl_cage : bpy.props.EnumProperty(
         name = "Cage Object",
         description = "Object to use as cage instead of calculating with cage extrusion",
-        items = [('NONE', "None", "None")],
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
+        items = BM_ITEM_PROPS_hl_cage_Items,
+        update=BM_ITEM_PROPS_hl_cage_Update)
+
+    hl_cage_name_old : bpy.props.StringProperty()
+
+    hl_cage_object_index : bpy.props.IntProperty(default=-1)
 
 # Map UV Props:
     uv_bake_data : bpy.props.EnumProperty(
@@ -1715,7 +1719,7 @@ class BM_Object(bpy.types.PropertyGroup):
         name="Use Cage Object",
         description="Cast rays to Object from cage",
         default=False,
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
+        update=BM_ITEM_PROPS_hl_use_cage_Update)
 
     hl_cage_type : bpy.props.EnumProperty(
         name="Cage type",
@@ -1748,11 +1752,11 @@ class BM_Object(bpy.types.PropertyGroup):
         name = "Cage Object",
         description = "Object to use as cage instead of calculating with cage extrusion",
         items = BM_ITEM_PROPS_hl_cage_Items,
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
+        update=BM_ITEM_PROPS_hl_cage_Update)
     
-    hl_cage_name : bpy.props.StringProperty()
-
     hl_cage_name_old : bpy.props.StringProperty()
+
+    hl_cage_object_index : bpy.props.IntProperty(default=-1)
 
 # Item UV Props:
     uv_use_unique_per_map : bpy.props.BoolProperty(
