@@ -420,7 +420,7 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             new_item.global_object_name = shell[0]
                             new_item.nm_this_indent = 2
                             new_item.nm_is_expanded = True
-                            setattr(new_item, shell[4], True)
+                            # setattr(new_item, shell[4], True)
                             # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
                             # move item to the right place
                             scene.bm_table_of_objects.move(len(scene.bm_table_of_objects) - 2, container_insert_index + 1)
@@ -437,7 +437,7 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                         new_item.global_object_name = shell[0]
                         new_item.nm_this_indent = 2
                         new_item.nm_is_expanded = True
-                        setattr(new_item, shell[4], True)
+                        # setattr(new_item, shell[4], True)
                         # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
                         # move item to the right place
                         scene.bm_table_of_objects.move(len(scene.bm_table_of_objects) - 1, insert_index + 1)
@@ -523,7 +523,7 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                                 new_item.global_object_name = object_name
                                 new_item.nm_this_indent = 2
                                 new_item.nm_is_expanded = True
-                                setattr(new_item, prefix_props[local_index], True)
+                                # setattr(new_item, prefix_props[local_index], True)
                                 # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
                 # adding detached as regular items
                 for object_name in detached:
