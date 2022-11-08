@@ -222,7 +222,7 @@ class BM_Map(bpy.types.PropertyGroup):
         update=BM_ITEM_PROPS_HighLowSettings_Update)
 
     hl_use_cage : bpy.props.BoolProperty(
-        name="Use Cage",
+        name="Use Cage Object",
         description="Cast rays to Object from cage",
         default=False,
         update=BM_ITEM_PROPS_HighLowSettings_Update)
@@ -1712,7 +1712,7 @@ class BM_Object(bpy.types.PropertyGroup):
         update=BM_ITEM_PROPS_HighLowSettings_Update)
 
     hl_use_cage : bpy.props.BoolProperty(
-        name="Use Cage",
+        name="Use Cage Object",
         description="Cast rays to Object from cage",
         default=False,
         update=BM_ITEM_PROPS_HighLowSettings_Update)
