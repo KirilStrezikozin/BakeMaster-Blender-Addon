@@ -791,10 +791,13 @@ def BM_ITEM_PROPS_hl_cage_Items(self, context):
     use_nm = context.scene.bm_props.global_use_name_matching
     cage_container_master_index = -1
     include = []
-    if active_object.hl_use_unique_per_map:
+    if active_object.hl_use_unique_per_map and len(active_object.global_maps):
+        active_map = BM_Map_Get(active_object)
         for map in active_object.global_maps:
-            if map.hl_use_cage and map.hl_cage_object_index != -1 and map.hl_cage not in include:
-                include.append(map.hl_cage)
+            if map.global_map_index == active_map.global_map_index:
+                continue
+            if map.hl_use_cage and map.hl_cage_object_index != -1 and map.hl_cage_name_old not in include:
+                include.append(map.hl_cage_name_old)
     added = []
 
     for index, object in enumerate(context.scene.bm_table_of_objects):
