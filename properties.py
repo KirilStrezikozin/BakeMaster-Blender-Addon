@@ -1747,8 +1747,12 @@ class BM_Object(bpy.types.PropertyGroup):
     hl_cage : bpy.props.EnumProperty(
         name = "Cage Object",
         description = "Object to use as cage instead of calculating with cage extrusion",
-        items = [('NONE', "None", "None")],
+        items = BM_ITEM_PROPS_hl_cage_Items,
         update=BM_ITEM_PROPS_HighLowSettings_Update)
+    
+    hl_cage_name : bpy.props.StringProperty()
+
+    hl_cage_name_old : bpy.props.StringProperty()
 
 # Item UV Props:
     uv_use_unique_per_map : bpy.props.BoolProperty(
