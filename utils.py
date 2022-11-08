@@ -793,13 +793,13 @@ def BM_ITEM_PROPS_hl_cage_Items(self, context):
     include = []
     if active_object.hl_use_unique_per_map:
         for map in active_object.global_maps:
-            if map.hl_use_cage and map.hl_cage_object_index != -1:
+            if map.hl_use_cage and map.hl_cage_object_index != -1 and map.hl_cage not in include:
                 include.append(map.hl_cage)
     added = []
 
     for index, object in enumerate(context.scene.bm_table_of_objects):
         # add current chosen cage
-        if index == self.hl_cage_object_index or object.global_object_name in include and object.global_object_name not in added:
+        if (index == self.hl_cage_object_index and object.global_object_name not in added) or (object.global_object_name in include and object.global_object_name not in added):
             items.append((str(object.global_object_name), object.global_object_name, "Object to use as Cage"))
             added.append(object.global_object_name)
             continue
