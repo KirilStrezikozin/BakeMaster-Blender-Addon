@@ -609,8 +609,7 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                 removed_was_highpoly = scene.bm_table_of_objects[global_active_index].hl_is_highpoly
                 if removed_was_highpoly is False:
                     highpolies_holder = context.scene.bm_table_of_objects[global_active_index]
-                    for highpoly in highpolies_holder.hl_highpoly_table:
-                        BM_ITEM_PROPS_hl_remove_highpoly_Update(highpoly, context)
+                    BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_UnsetHighpolies(context, highpolies_holder)
                 scene.bm_table_of_objects.remove(global_active_index)
                 # update highpolies
                 BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, global_active_index, 'OBJECT', removed_was_highpoly)
@@ -647,8 +646,7 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                         removed_was_highpoly = scene.bm_table_of_objects[index].hl_is_highpoly
                         if removed_was_highpoly is False:
                             highpolies_holder = context.scene.bm_table_of_objects[index]
-                            for highpoly in highpolies_holder.hl_highpoly_table:
-                                BM_ITEM_PROPS_hl_remove_highpoly_Update(highpoly, context)
+                            BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_UnsetHighpolies(context, highpolies_holder)
                         scene.bm_table_of_objects.remove(index)
                         # update highpolies
                         BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, 'OBJECT', removed_was_highpoly)
@@ -668,8 +666,7 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                         removed_was_highpoly = scene.bm_table_of_objects[index].hl_is_highpoly
                         if removed_was_highpoly is False:
                             highpolies_holder = context.scene.bm_table_of_objects[index]
-                            for highpoly in highpolies_holder.hl_highpoly_table:
-                                BM_ITEM_PROPS_hl_remove_highpoly_Update(highpoly, context)
+                            BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_UnsetHighpolies(context, highpolies_holder)
                         scene.bm_table_of_objects.remove(index)
                         # update highpolies
                         BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, 'OBJECT', removed_was_highpoly)
@@ -697,8 +694,7 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                         removed_was_highpoly = scene.bm_table_of_objects[global_active_index].hl_is_highpoly
                         if removed_was_highpoly is False:
                             highpolies_holder = context.scene.bm_table_of_objects[global_active_index]
-                            for highpoly in highpolies_holder.hl_highpoly_table:
-                                BM_ITEM_PROPS_hl_remove_highpoly_Update(highpoly, context)
+                            BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_UnsetHighpolies(context, highpolies_holder)
                         scene.bm_table_of_objects.remove(global_active_index)
                         # update highpolies
                         BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, global_active_index, 'OBJECT', removed_was_highpoly)
@@ -725,8 +721,7 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                                 removed_was_highpoly = scene.bm_table_of_objects[index].hl_is_highpoly
                                 if removed_was_highpoly is False:
                                     highpolies_holder = context.scene.bm_table_of_objects[index]
-                                    for highpoly in highpolies_holder.hl_highpoly_table:
-                                        BM_ITEM_PROPS_hl_remove_highpoly_Update(highpoly, context)
+                                    BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_UnsetHighpolies(context, highpolies_holder)
                                 scene.bm_table_of_objects.remove(index)
                                 # update highpolies
                                 BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, 'OBJECT', removed_was_highpoly)
@@ -821,8 +816,7 @@ class BM_OT_Table_of_Objects_Refresh(bpy.types.Operator):
             removed_was_highpoly = scene.bm_table_of_objects[index].hl_is_highpoly
             if removed_was_highpoly is False:
                 highpolies_holder = context.scene.bm_table_of_objects[index]
-                for highpoly in highpolies_holder.hl_highpoly_table:
-                    BM_ITEM_PROPS_hl_remove_highpoly_Update(highpoly, context)
+                BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_UnsetHighpolies(context, highpolies_holder)
             scene.bm_table_of_objects.remove(index)
             # update highpolies
             BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, 'OBJECT', removed_was_highpoly)
@@ -891,12 +885,15 @@ class BM_OT_ITEM_Highpoly_Table_Remove(bpy.types.Operator):
     def execute(self, context):
         object = BM_Object_Get(context)[0]
         if len(object.hl_highpoly_table):
+            BM_ITEM_PROPS_hl_highpoly_RemoveNone(context, object)
+
             for item in object.hl_highpoly_table:
                 if item.global_item_index > object.hl_highpoly_table[object.hl_highpoly_table_active_index].global_item_index:
                     item.global_item_index -= 1
             # set hl_is_highpoly to False for chosen highpoly on remove
             BM_ITEM_PROPS_hl_remove_highpoly_Update(object.hl_highpoly_table[object.hl_highpoly_table_active_index], context)
             object.hl_highpoly_table.remove(object.hl_highpoly_table_active_index)
+            BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
             if object.hl_highpoly_table_active_index > 0:
                 object.hl_highpoly_table_active_index -= 1
         return {'FINISHED'}
@@ -927,12 +924,15 @@ class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
         object = BM_Object_Get(context)[0]
         map = BM_Map_Get(object)
         if len(map.hl_highpoly_table):
+            BM_ITEM_PROPS_hl_highpoly_RemoveNone(context, map)
+
             for item in map.hl_highpoly_table:
                 if item.global_item_index > map.hl_highpoly_table[map.hl_highpoly_table_active_index].global_item_index:
                     item.global_item_index -= 1
             # set hl_is_highpoly to False for chosen highpoly on remove
             BM_ITEM_PROPS_hl_remove_highpoly_Update(map.hl_highpoly_table[map.hl_highpoly_table_active_index], context)
             map.hl_highpoly_table.remove(map.hl_highpoly_table_active_index)
+            BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
             if map.hl_highpoly_table_active_index > 0:
                 map.hl_highpoly_table_active_index -= 1
         return {'FINISHED'}
@@ -1218,18 +1218,24 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
             if self.control == 'REMOVE':
                 if object.global_maps_active_index != 0:
                     object.global_maps_active_index -= 1
+                # unset highpolies
+                BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, global_active_index, 'MAP', False)
                 # update use_cage
                 BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, global_active_index, 'MAP')
                 object.global_maps.remove(global_active_index)
+                BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
                 
             elif self.control == 'TRASH':
                 to_remove = []
                 for index, map in enumerate(object.global_maps):
                     to_remove.append(index)
                 for index in to_remove[::-1]:
+                    # unset highpolies
+                    BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, 'MAP', False)
                     # update use_cage
                     BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, 'MAP')
                     object.global_maps.remove(index)
+                    BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
 
                 object.global_maps_active_index = 0
 
