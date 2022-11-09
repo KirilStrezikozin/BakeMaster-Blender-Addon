@@ -296,6 +296,8 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                     if object.type == 'MESH':
 
                         if object not in objects and object.data not in objects_data:
+                            # remove None all highpolies
+                            BM_ITEM_PROPS_hl_highpoly_UpdateOnAdd(context)
                             # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                             BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                             new_item = scene.bm_table_of_objects.add()
@@ -410,6 +412,8 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                                 skip_add_container = True
                                 shell[2] = object.nm_master_index
                         if skip_add_container is False:
+                            # remove None all highpolies
+                            BM_ITEM_PROPS_hl_highpoly_UpdateOnAdd(context)
                             # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                             BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                             new_container = scene.bm_table_of_objects.add()
@@ -420,6 +424,8 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             new_container.nm_is_expanded = True
                             setattr(new_container, container_props[shell[3]], True)
                             # new_container.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_container.bake_batchname)
+                            # remove None all highpolies
+                            BM_ITEM_PROPS_hl_highpoly_UpdateOnAdd(context)
                             # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                             BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                             new_item = scene.bm_table_of_objects.add()
@@ -439,6 +445,8 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                         for index, object in enumerate(scene.bm_table_of_objects):
                             if object.nm_item_uni_container_master_index == shell[1] and object.nm_item_local_container_master_index == shell[2]:
                                 insert_index = index
+                        # remove None all highpolies
+                        BM_ITEM_PROPS_hl_highpoly_UpdateOnAdd(context)
                         # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                         BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                         new_item = scene.bm_table_of_objects.add()
@@ -471,6 +479,8 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                 ### constructing new Table_of_Objects items
                 for index, shell in enumerate(groups):
                     # adding universal container to the bm_table_of_objects
+                    # remove None all highpolies
+                    BM_ITEM_PROPS_hl_highpoly_UpdateOnAdd(context)
                     # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                     BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                     universal_container = context.scene.bm_table_of_objects.add()
@@ -516,6 +526,8 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                     for local_index, local_names in enumerate(object_names):
 
                         if len(local_names):
+                            # remove None all highpolies
+                            BM_ITEM_PROPS_hl_highpoly_UpdateOnAdd(context)
                             # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                             BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                             local_container = context.scene.bm_table_of_objects.add()
@@ -531,6 +543,8 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                                 # do not add detached names
                                 if object_name in detached:
                                     continue
+                                # remove None all highpolies
+                                BM_ITEM_PROPS_hl_highpoly_UpdateOnAdd(context)
                                 # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                                 BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                                 new_item = context.scene.bm_table_of_objects.add()
@@ -541,6 +555,8 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                                 # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
                 # adding detached as regular items
                 for object_name in detached:
+                    # remove None all highpolies
+                    BM_ITEM_PROPS_hl_highpoly_UpdateOnAdd(context)
                     # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                     BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                     new_item = context.scene.bm_table_of_objects.add()
@@ -590,7 +606,14 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
             if scene.bm_props.global_use_name_matching is False or item.nm_is_detached is True:
                 # update use_cage
                 BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, global_active_index, 'OBJECT')
+                removed_was_highpoly = scene.bm_table_of_objects[global_active_index].hl_is_highpoly
+                if removed_was_highpoly is False:
+                    highpolies_holder = context.scene.bm_table_of_objects[global_active_index]
+                    for highpoly in highpolies_holder.hl_highpoly_table:
+                        BM_ITEM_PROPS_hl_remove_highpoly_Update(highpoly, context)
                 scene.bm_table_of_objects.remove(global_active_index)
+                # update highpolies
+                BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, global_active_index, 'OBJECT', removed_was_highpoly)
                 # remove obj from texset if it was there
                 BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, global_active_index)
                 if global_active_index != 0:
@@ -621,7 +644,14 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                     for index in sorted(dict.fromkeys(to_remove), reverse=True):
                         # update use_cage
                         BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, 'OBJECT')
+                        removed_was_highpoly = scene.bm_table_of_objects[index].hl_is_highpoly
+                        if removed_was_highpoly is False:
+                            highpolies_holder = context.scene.bm_table_of_objects[index]
+                            for highpoly in highpolies_holder.hl_highpoly_table:
+                                BM_ITEM_PROPS_hl_remove_highpoly_Update(highpoly, context)
                         scene.bm_table_of_objects.remove(index)
+                        # update highpolies
+                        BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, 'OBJECT', removed_was_highpoly)
                         # remove obj from texset if it was there
                         BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
 
@@ -635,7 +665,14 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                     for index in sorted(to_remove, reverse=True):
                         # update use_cage
                         BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, 'OBJECT')
+                        removed_was_highpoly = scene.bm_table_of_objects[index].hl_is_highpoly
+                        if removed_was_highpoly is False:
+                            highpolies_holder = context.scene.bm_table_of_objects[index]
+                            for highpoly in highpolies_holder.hl_highpoly_table:
+                                BM_ITEM_PROPS_hl_remove_highpoly_Update(highpoly, context)
                         scene.bm_table_of_objects.remove(index)
+                        # update highpolies
+                        BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, 'OBJECT', removed_was_highpoly)
                         # remove obj from texset if it was there
                         BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
                 # removing items in locals
@@ -657,7 +694,14 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                     if len_of_local > 1:
                         # update use_cage
                         BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, global_active_index, 'OBJECT')
+                        removed_was_highpoly = scene.bm_table_of_objects[global_active_index].hl_is_highpoly
+                        if removed_was_highpoly is False:
+                            highpolies_holder = context.scene.bm_table_of_objects[global_active_index]
+                            for highpoly in highpolies_holder.hl_highpoly_table:
+                                BM_ITEM_PROPS_hl_remove_highpoly_Update(highpoly, context)
                         scene.bm_table_of_objects.remove(global_active_index)
+                        # update highpolies
+                        BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, global_active_index, 'OBJECT', removed_was_highpoly)
                         # remove obj from texset if it was there
                         BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, global_active_index)
                     else:
@@ -678,7 +722,14 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                             for index in sorted(dict.fromkeys(to_remove), reverse=True):
                                 # update use_cage
                                 BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, 'OBJECT')
+                                removed_was_highpoly = scene.bm_table_of_objects[index].hl_is_highpoly
+                                if removed_was_highpoly is False:
+                                    highpolies_holder = context.scene.bm_table_of_objects[index]
+                                    for highpoly in highpolies_holder.hl_highpoly_table:
+                                        BM_ITEM_PROPS_hl_remove_highpoly_Update(highpoly, context)
                                 scene.bm_table_of_objects.remove(index)
+                                # update highpolies
+                                BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, 'OBJECT', removed_was_highpoly)
                                 # remove obj from texset if it was there
                                 BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
                 # updating nm master_indexes
@@ -767,7 +818,14 @@ class BM_OT_Table_of_Objects_Refresh(bpy.types.Operator):
         for index in sorted(list(dict.fromkeys(to_remove)), reverse=True):
             # update use_cage
             BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, 'OBJECT')
+            removed_was_highpoly = scene.bm_table_of_objects[index].hl_is_highpoly
+            if removed_was_highpoly is False:
+                highpolies_holder = context.scene.bm_table_of_objects[index]
+                for highpoly in highpolies_holder.hl_highpoly_table:
+                    BM_ITEM_PROPS_hl_remove_highpoly_Update(highpoly, context)
             scene.bm_table_of_objects.remove(index)
+            # update highpolies
+            BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, 'OBJECT', removed_was_highpoly)
             # remove obj from texset if it was there
             BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
         # active index update
@@ -819,6 +877,8 @@ class BM_OT_ITEM_Highpoly_Table_Add(bpy.types.Operator):
         object = BM_Object_Get(context)[0]
         new_item = object.hl_highpoly_table.add()
         new_item.global_item_index = len(object.hl_highpoly_table)
+        # set chosen highpoly hl_is_highpoly to True on add
+        BM_ITEM_PROPS_hl_add_highpoly_Update(new_item, context)
         object.hl_highpoly_table_active_index = len(object.hl_highpoly_table) - 1
         return {'FINISHED'}
 
@@ -834,6 +894,8 @@ class BM_OT_ITEM_Highpoly_Table_Remove(bpy.types.Operator):
             for item in object.hl_highpoly_table:
                 if item.global_item_index > object.hl_highpoly_table[object.hl_highpoly_table_active_index].global_item_index:
                     item.global_item_index -= 1
+            # set hl_is_highpoly to False for chosen highpoly on remove
+            BM_ITEM_PROPS_hl_remove_highpoly_Update(object.hl_highpoly_table[object.hl_highpoly_table_active_index], context)
             object.hl_highpoly_table.remove(object.hl_highpoly_table_active_index)
             if object.hl_highpoly_table_active_index > 0:
                 object.hl_highpoly_table_active_index -= 1
@@ -850,6 +912,8 @@ class BM_OT_MAP_Highpoly_Table_Add(bpy.types.Operator):
         map = BM_Map_Get(object)
         new_item = map.hl_highpoly_table.add()
         new_item.global_item_index = len(map.hl_highpoly_table)
+        # set chosen highpoly hl_is_highpoly to True on add
+        BM_ITEM_PROPS_hl_add_highpoly_Update(new_item, context)
         map.hl_highpoly_table_active_index = len(map.hl_highpoly_table) - 1
         return {'FINISHED'}
 
@@ -866,6 +930,8 @@ class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
             for item in map.hl_highpoly_table:
                 if item.global_item_index > map.hl_highpoly_table[map.hl_highpoly_table_active_index].global_item_index:
                     item.global_item_index -= 1
+            # set hl_is_highpoly to False for chosen highpoly on remove
+            BM_ITEM_PROPS_hl_remove_highpoly_Update(map.hl_highpoly_table[map.hl_highpoly_table_active_index], context)
             map.hl_highpoly_table.remove(map.hl_highpoly_table_active_index)
             if map.hl_highpoly_table_active_index > 0:
                 map.hl_highpoly_table_active_index -= 1
