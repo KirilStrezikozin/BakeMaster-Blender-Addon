@@ -907,25 +907,26 @@ def BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context):
         elif object.hl_use_cage and object.hl_cage_object_index == -1:
             object.hl_use_cage = False
 
+# TODO: highpoly
 def BM_ITEM_PROPS_hl_highpoly_Items(self, context):
     items = []
     active_object = BM_Object_Get(context)[0]
     use_nm = context.scene.bm_props.global_use_name_matching
-    cage_container_master_index = -1
+    high_container_master_index = -1
     include = []
-    if active_object.hl_use_unique_per_map and len(active_object.global_maps):
-        active_map = BM_Map_Get(active_object)
-        for map in active_object.global_maps:
-            if map.global_map_index == active_map.global_map_index:
-                continue
-            if map.hl_use_cage and map.hl_cage_object_index != -1 and map.hl_cage_name_old not in include:
-                include.append(map.hl_cage_name_old)
+    # if active_object.hl_use_unique_per_map and len(active_object.global_maps):
+    #     active_map = BM_Map_Get(active_object)
+    #     for map in active_object.global_maps:
+    #         if map.global_map_index == active_map.global_map_index:
+    #             continue
+    #         if map.hl_use_cage and map.hl_cage_object_index != -1 and map.hl_cage_name_old not in include:
+    #             include.append(map.hl_cage_name_old)
     added = []
 
     for index, object in enumerate(context.scene.bm_table_of_objects):
-        # add current chosen cage
-        if (index == self.hl_cage_object_index and object.global_object_name not in added) or (object.global_object_name in include and object.global_object_name not in added):
-            items.append((str(object.global_object_name), object.global_object_name, "Object to use as Cage"))
+        # add current chosen high
+        if (index == self.global_highpoly_object_index and object.global_object_name not in added) or (object.global_object_name in include and object.global_object_name not in added):
+            items.append((str(object.global_object_name), object.global_object_name, "Object to use as Highpoly"))
             added.append(object.global_object_name)
             continue
         # skip the item itself and all cages, lows, high already
@@ -934,71 +935,123 @@ def BM_ITEM_PROPS_hl_highpoly_Items(self, context):
         if use_nm:
             if active_object.nm_is_detached:
                 if object.nm_is_detached:
-                    items.append((str(object.global_object_name), object.global_object_name, "Object to use as Cage"))
+                    items.append((str(object.global_object_name), object.global_object_name, "Object to use as Highpoly"))
                     added.append(object.global_object_name)
             else:
-                if all([object.nm_is_local_container, object.nm_is_cage_container, object.nm_item_uni_container_master_index == active_object.nm_item_uni_container_master_index, cage_container_master_index == -1]):
-                    cage_container_master_index = object.nm_master_index
-                if cage_container_master_index != -1 and object.nm_item_local_container_master_index == cage_container_master_index and object.nm_item_uni_container_master_index == active_object.nm_item_uni_container_master_index:
-                    items.append((str(object.global_object_name), object.global_object_name, "Object to use as Cage"))
+                if all([object.nm_is_local_container, object.nm_is_highpoly_container, object.nm_item_uni_container_master_index == active_object.nm_item_uni_container_master_index, high_container_master_index == -1]):
+                    high_container_master_index = object.nm_master_index
+                if high_container_master_index != -1 and object.nm_item_local_container_master_index == high_container_master_index and object.nm_item_uni_container_master_index == active_object.nm_item_uni_container_master_index:
+                    items.append((str(object.global_object_name), object.global_object_name, "Object to use as Highpoly"))
                     added.append(object.global_object_name)
         else:
-            items.append((str(object.global_object_name), object.global_object_name, "Object to use as Cage"))
+            items.append((str(object.global_object_name), object.global_object_name, "Object to use as Highpoly"))
             added.append(object.global_object_name)
 
     if len(items) == 0:
-        items.append(('NONE', "None", "No cage available within the Table of Objects"))
+        items.append(('NONE', "None", "No highpoly available within the Table of Objects"))
     return items
 
 def BM_ITEM_PROPS_hl_highpoly_Update(self, context):
-    if self.hl_cage != self.hl_cage_name_old:
-        self.hl_cage_name_old = self.hl_cage
+    if self.global_object_name != self.global_highpoly_name_old:
+        self.global_highpoly_name_old = self.global_object_name
         try:
-            context.scene.bm_table_of_objects[self.hl_cage_object_index].hl_is_cage = False
+            context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_highpoly = False
         except IndexError:
             pass
         for index, object in enumerate(context.scene.bm_table_of_objects):
-            if object.global_object_name == self.hl_cage_name_old and not any([object.nm_is_local_container, object.nm_is_universal_container]):
-                self.hl_cage_object_index = index
+            if object.global_object_name == self.global_highpoly_name_old and not any([object.nm_is_local_container, object.nm_is_universal_container]):
+                self.global_highpoly_object_index = index
                 break
-        context.scene.bm_table_of_objects[self.hl_cage_object_index].hl_is_cage = True
-        try:
-            self.global_map_type
-        except AttributeError:
-            return
-        else:
-            object = BM_Object_Get(context)[0]
-            if object.hl_use_unique_per_map:
-                for map in object.global_maps:
-                    if map.hl_use_cage and map.hl_cage_object_index != -1:
-                        context.scene.bm_table_of_objects[map.hl_cage_object_index].hl_is_cage = True
+        context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_highpoly = True
+        # try:
+        #     self.global_map_type
+        # except AttributeError:
+        #     return
+        # else:
+        #     object = BM_Object_Get(context)[0]
+        #     if object.hl_use_unique_per_map:
+        #         for map in object.global_maps:
+        #             if map.hl_use_cage and map.hl_cage_object_index != -1:
+        #                 context.scene.bm_table_of_objects[map.hl_cage_object_index].hl_is_cage = True
 
-def BM_ITEM_PROPS_hl_highpoly_UpdateOnRemove(context, index, type):
+def BM_ITEM_PROPS_hl_add_highpoly_Update(self, context):
+    self.global_highpoly_name_old = self.global_object_name
+    try:
+        context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_highpoly = False
+    except IndexError:
+        pass
+    for index, object in enumerate(context.scene.bm_table_of_objects):
+        if object.global_object_name == self.global_highpoly_name_old and not any([object.nm_is_local_container, object.nm_is_universal_container]):
+            self.global_highpoly_object_index = index
+            break
+    context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_highpoly = True
+
+def BM_ITEM_PROPS_hl_remove_highpoly_Update(self, context):
+    try:
+        context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_highpoly = False
+    except IndexError:
+        pass
+
+def BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, type, removed_was_highpoly):
     if type == 'OBJECT':
-        object = context.scene.bm_table_of_objects[index]
-        if object.hl_use_unique_per_map:
-            for map in object.global_maps:
-                if map.hl_use_cage:
-                    map.hl_use_cage = False
-        else:
-            if object.hl_use_cage:
-                object.hl_use_cage = False
-            elif object.hl_is_cage:
-                for object1 in context.scene.bm_table_of_objects:
-                    if object1.hl_use_unique_per_map:
-                        for map in object1.global_maps:
-                            if map.hl_use_cage and map.hl_cage_object_index == index:
-                                map.hl_use_cage = False
-                    elif object1.hl_cage_object_index == index:
-                        object1.hl_use_cage = False
-    elif type == 'MAP':
-        object = BM_Object_Get(context)[0]
-        map = object.global_maps[index]
-        if map.hl_use_cage:
-            map.hl_use_cage = False
-            for map1 in object.global_maps:
-                if map1.hl_use_cage and map1.hl_cage_object_index != -1:
-                    context.scene.bm_table_of_objects[map1.hl_cage_object_index].hl_is_cage = True
+        # if object.hl_use_unique_per_map:
+        #     for map in object.global_maps:
+        #         if map.hl_use_cage:
+        #             map.hl_use_cage = False
+        # else:
+        if removed_was_highpoly:
+            for object1 in context.scene.bm_table_of_objects:
+                # if object1.hl_use_unique_per_map:
+                #     for map in object1.global_maps:
+                #         if map.hl_use_cage and map.hl_cage_object_index == index:
+                #             map.hl_use_cage = False
+                for highpoly_index, highpoly in enumerate(object1.hl_highpoly_table):
+                    if highpoly.global_highpoly_object_index == index:
+                        # default remove highpoly
+                        for item in object1.hl_highpoly_table:
+                            if item.global_item_index > highpoly.global_item_index:
+                                item.global_item_index -= 1
+                        # set hl_is_highpoly to False for chosen highpoly on remove
+                        BM_ITEM_PROPS_hl_remove_highpoly_Update(highpoly, context)
+                        object1.hl_highpoly_table.remove(highpoly_index)
+                        if object1.hl_highpoly_table_active_index > 0:
+                            object1.hl_highpoly_table_active_index -= 1
+                        # update highpolies order
+                        BM_ITEM_PROPS_hl_highpoly_UpdateOrder(context)
+                        break
+    # elif type == 'MAP':
+    #     object = BM_Object_Get(context)[0]
+    #     map = object.global_maps[index]
+    #     if map.hl_use_cage:
+    #         map.hl_use_cage = False
+    #         for map1 in object.global_maps:
+    #             if map1.hl_use_cage and map1.hl_cage_object_index != -1:
+    #                 context.scene.bm_table_of_objects[map1.hl_cage_object_index].hl_is_cage = True
+
+def BM_ITEM_PROPS_hl_highpoly_UpdateOnAdd(context):
+    for object in context.scene.bm_table_of_objects:
+        for highpoly_index, highpoly in enumerate(object.hl_highpoly_table):
+            if highpoly.global_highpoly_object_index == -1:
+                # default remove highpoly
+                for item in object.hl_highpoly_table:
+                    if item.global_item_index > highpoly.global_item_index:
+                        item.global_item_index -= 1
+                # set hl_is_highpoly to False for chosen highpoly on remove
+                BM_ITEM_PROPS_hl_remove_highpoly_Update(highpoly, context)
+                object.hl_highpoly_table.remove(highpoly_index)
+                if object.hl_highpoly_table_active_index > 0:
+                    object.hl_highpoly_table_active_index -= 1
+                # update highpolies order
+                BM_ITEM_PROPS_hl_highpoly_UpdateOrder(context)
+
+def BM_ITEM_PROPS_hl_highpoly_UpdateOrder(context):
+    for object in context.scene.bm_table_of_objects:
+        for highpoly in object.hl_highpoly_table:
+            for index, object1 in enumerate(context.scene.bm_table_of_objects):
+                if object1.global_object_name == highpoly.global_highpoly_name_old and not any([object1.nm_is_local_container, object1.nm_is_universal_container]):
+                    highpoly.global_highpoly_object_index = index
+                    break
+            context.scene.bm_table_of_objects[highpoly.global_highpoly_object_index].hl_is_highpoly = True
 
 ###############################################################
 ### uv Props Funcs ###
@@ -1141,47 +1194,6 @@ def BM_ITEM_UseTargetUpdate(self, context):
         BM_ITEM_PROPS_hl_highpoly_Update(self, context)
 
     #BM_ITEM_RemoveLocalPreviews(self, context)
-
-def BM_ITEM_PROPS_hl_highpoly_Items(self, context):
-    source = [('NONE', "None", "")]
-
-    # for index, item in enumerate(context.scene.bm_aol):
-    #     try:
-    #         context.scene.objects[item.object_pointer.name]
-    #     except KeyError:
-    #         pass
-    #     else:
-    #         if not item.use_target:
-    #             if item.source_name == self.object_pointer.name or not item.use_source:
-    #                 source.append((str(index), item.object_pointer.name, ""))
-    return source
-
-def BM_ITEM_PROPS_hl_highpoly_Update(self, context):
-    return
-
-    BM_ITEM_RemoveLocalPreviews(self, context)
-
-    if self.source == '':
-        self.source = 'NONE'
-
-    if self.source == 'NONE':
-        for index, item in enumerate(context.scene.bm_aol):
-            if item.source_name == self.object_pointer.name:
-                item.use_source = False
-                item.source_name = ""
-                break
-    else:
-        for index, item in enumerate(context.scene.bm_aol):
-            if item.use_source and item.source_name == self.object_pointer.name:
-                item.use_source = False
-                item.source_name = ""
-                break
-
-        for index, item in enumerate(context.scene.bm_aol):
-            if str(index) == self.source:
-                item.use_source = True
-                item.source_name = self.object_pointer.name
-                break
 
 def BM_ITEM_OverwriteUpdate(self, context):
     return
