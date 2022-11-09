@@ -177,9 +177,14 @@ class BM_Map_Highpoly(bpy.types.PropertyGroup):
     global_object_name : bpy.props.EnumProperty(
         name="Highpoly",
         description="Choose Highpoly for the Object from the list\n(Highpoly should be added to BakeMaster Table of Objects)",
-        items=BM_ITEM_PROPS_hl_highpoly_Items)
+        items=BM_ITEM_PROPS_hl_highpoly_Items,
+        update=BM_ITEM_PROPS_hl_highpoly_Update)
     
     global_item_index : bpy.props.IntProperty()
+
+    global_highpoly_name_old : bpy.props.StringProperty()
+
+    global_highpoly_object_index : bpy.props.IntProperty(default=-1)
 
 class BM_Map(bpy.types.PropertyGroup):
     global_use_bake : bpy.props.BoolProperty(
@@ -200,12 +205,6 @@ class BM_Map(bpy.types.PropertyGroup):
         default=True)
     
 # Map High to Lowpoly props:
-    hl_highpoly_table : bpy.props.CollectionProperty(type=BM_Map_Highpoly)
-
-    hl_highpoly_table_active_index : bpy.props.IntProperty(
-        name="Highpoly Object",
-        default=0)
-
     hl_is_highpoly : bpy.props.BoolProperty(
         default=False,
         update=BM_ITEM_PROPS_HighLowSettings_Update)
@@ -218,8 +217,11 @@ class BM_Map(bpy.types.PropertyGroup):
         default=False,
         update=BM_ITEM_PROPS_HighLowSettings_Update)
 
-    hl_highpoly_name : bpy.props.StringProperty(
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
+    hl_highpoly_table : bpy.props.CollectionProperty(type=BM_Map_Highpoly)
+
+    hl_highpoly_table_active_index : bpy.props.IntProperty(
+        name="Highpoly Object",
+        default=0)
 
     hl_use_cage : bpy.props.BoolProperty(
         name="Use Cage Object",
@@ -1574,9 +1576,14 @@ class BM_Object_Highpoly(bpy.types.PropertyGroup):
     global_object_name : bpy.props.EnumProperty(
         name="Highpoly",
         description="Choose Highpoly for the Object from the list\n(Highpoly should be added to BakeMaster Table of Objects)",
-        items=BM_ITEM_PROPS_hl_highpoly_Items)
+        items=BM_ITEM_PROPS_hl_highpoly_Items,
+        update=BM_ITEM_PROPS_hl_highpoly_Update)
     
     global_item_index : bpy.props.IntProperty()
+
+    global_highpoly_name_old : bpy.props.StringProperty()
+
+    global_highpoly_object_index : bpy.props.IntProperty(default=-1)
 
 class BM_Object_ChannelPack(bpy.types.PropertyGroup):
     global_channelpack_name : bpy.props.StringProperty(
@@ -1694,12 +1701,6 @@ class BM_Object(bpy.types.PropertyGroup):
         default=False,
         update=BM_ITEM_PROPS_HighLowSettings_Update)
     
-    hl_highpoly_table : bpy.props.CollectionProperty(type=BM_Object_Highpoly)
-
-    hl_highpoly_table_active_index : bpy.props.IntProperty(
-        name="Highpoly Object",
-        default=0)
-
     hl_is_highpoly : bpy.props.BoolProperty(
         default=False,
         update=BM_ITEM_PROPS_HighLowSettings_Update)
@@ -1712,8 +1713,11 @@ class BM_Object(bpy.types.PropertyGroup):
         default=False,
         update=BM_ITEM_PROPS_HighLowSettings_Update)
 
-    hl_highpoly_name : bpy.props.StringProperty(
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
+    hl_highpoly_table : bpy.props.CollectionProperty(type=BM_Object_Highpoly)
+
+    hl_highpoly_table_active_index : bpy.props.IntProperty(
+        name="Highpoly Object",
+        default=0)
 
     hl_use_cage : bpy.props.BoolProperty(
         name="Use Cage Object",
