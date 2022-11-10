@@ -48,6 +48,9 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                     scene.bm_table_of_objects.move(global_active_index, global_active_index - 1)
                     # sync texset objs
                     BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                    # update cage and highpolies source objects indexes
+                    BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+                    BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
                     scene.bm_props.global_active_index -= 1
                 # move nm items
                 else:
@@ -74,6 +77,9 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                             scene.bm_table_of_objects.move(index, move_starter_index + increaser)
                             # sync texset objs
                             BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                            # update cage and highpolies source objects indexes
+                            BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+                            BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
                             increaser += 1
                                 
                     # moving local container (cant move out of its uni)
@@ -95,6 +101,9 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                             scene.bm_table_of_objects.move(index, move_starter_index + increaser)
                             # sync texset objs
                             BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                            # update cage and highpolies source objects indexes
+                            BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+                            BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
                             increaser += 1
                     
                     # move local item
@@ -115,6 +124,9 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                             scene.bm_table_of_objects.move(global_active_index, move_starter_index)
                             # sync texset objs
                             BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                            # update cage and highpolies source objects indexes
+                            BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+                            BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
                     
                     # move detached
                     else:
@@ -134,6 +146,9 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                         scene.bm_table_of_objects.move(global_active_index, move_starter_index)
                         # sync texset objs
                         BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                        # update cage and highpolies source objects indexes
+                        BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+                        BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
 
                     # updating active index
                     if move_to_index != -1:
@@ -149,6 +164,9 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                     scene.bm_table_of_objects.move(global_active_index, global_active_index + 1)
                     # sync texset objs
                     BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                    # update cage and highpolies source objects indexes
+                    BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+                    BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
                     scene.bm_props.global_active_index += 1
                 # move nm items
                 else:
@@ -184,6 +202,9 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                             scene.bm_table_of_objects.move(global_active_index, move_starter_index + len_of_locals)
                             # sync texset objs
                             BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                            # update cage and highpolies source objects indexes
+                            BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+                            BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
                                 
                     # moving local container (cant move out of its uni)
                     elif item.nm_is_local_container:
@@ -209,6 +230,9 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                             scene.bm_table_of_objects.move(global_active_index, move_starter_index + len_of_locals)
                             # sync texset objs
                             BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                            # update cage and highpolies source objects indexes
+                            BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+                            BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
                     
                     # move local item
                     elif item.nm_is_detached is False:
@@ -229,6 +253,9 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                             scene.bm_table_of_objects.move(global_active_index, move_starter_index)
                             # sync texset objs
                             BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                            # update cage and highpolies source objects indexes
+                            BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+                            BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
                     
                     # move detached
                     else:
@@ -251,6 +278,9 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                         scene.bm_table_of_objects.move(global_active_index, move_starter_index)
                         # sync texset objs
                         BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                        # update cage and highpolies source objects indexes
+                        BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+                        BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
 
                     # updating active index
                     if move_to_index != -1:
