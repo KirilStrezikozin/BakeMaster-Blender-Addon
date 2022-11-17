@@ -926,6 +926,9 @@ class BM_OT_ITEM_Highpoly_Table_Remove(bpy.types.Operator):
             BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
             if object.hl_highpoly_table_active_index > 0:
                 object.hl_highpoly_table_active_index -= 1
+
+            if len(object.hl_highpoly_table) == 0:
+                object.hl_use_cage = False
         return {'FINISHED'}
 
 class BM_OT_MAP_Highpoly_Table_Add(bpy.types.Operator):
@@ -965,6 +968,9 @@ class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
             BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
             if map.hl_highpoly_table_active_index > 0:
                 map.hl_highpoly_table_active_index -= 1
+
+            if len(map.hl_highpoly_table) == 0:
+                map.hl_use_cage = False
         return {'FINISHED'}
 
 class BM_OT_ITEM_ChannelPack_Table_Add(bpy.types.Operator):
