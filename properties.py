@@ -186,6 +186,8 @@ class BM_Map_Highpoly(bpy.types.PropertyGroup):
 
     global_highpoly_object_index : bpy.props.IntProperty(default=-1)
 
+    global_highpoly_object_include : bpy.props.StringProperty(default="")
+
 class BM_Map(bpy.types.PropertyGroup):
     global_use_bake : bpy.props.BoolProperty(
         name = "Include/exclude map in the bake",
@@ -265,6 +267,8 @@ class BM_Map(bpy.types.PropertyGroup):
     hl_cage_name_old : bpy.props.StringProperty()
 
     hl_cage_object_index : bpy.props.IntProperty(default=-1)
+
+    hl_cage_object_include : bpy.props.StringProperty(default="")
 
 # Map UV Props:
     uv_bake_data : bpy.props.EnumProperty(
@@ -1585,6 +1589,8 @@ class BM_Object_Highpoly(bpy.types.PropertyGroup):
 
     global_highpoly_object_index : bpy.props.IntProperty(default=-1)
 
+    global_highpoly_object_include : bpy.props.StringProperty(default="")
+
 class BM_Object_ChannelPack(bpy.types.PropertyGroup):
     global_channelpack_name : bpy.props.StringProperty(
         name="Pack Name",
@@ -1761,6 +1767,8 @@ class BM_Object(bpy.types.PropertyGroup):
     hl_cage_name_old : bpy.props.StringProperty()
 
     hl_cage_object_index : bpy.props.IntProperty(default=-1)
+
+    hl_cage_object_include : bpy.props.StringProperty(default="")
 
 # Item UV Props:
     uv_use_unique_per_map : bpy.props.BoolProperty(
