@@ -839,7 +839,8 @@ def BM_ITEM_PROPS_hl_cage_Update(self, context):
             if object.global_object_name == self.hl_cage_name_old and not any([object.nm_is_local_container, object.nm_is_universal_container]):
                 self.hl_cage_object_index = index
                 break
-        context.scene.bm_table_of_objects[self.hl_cage_object_index].hl_is_cage = True
+        if self.hl_cage_object_index != -1:
+            context.scene.bm_table_of_objects[self.hl_cage_object_index].hl_is_cage = True
         self.hl_cage_object_include = self.hl_cage
         try:
             self.global_map_type
@@ -863,7 +864,8 @@ def BM_ITEM_PROPS_hl_use_cage_Update(self, context):
             if object.global_object_name == self.hl_cage_name_old and not any([object.nm_is_local_container, object.nm_is_universal_container]):
                 self.hl_cage_object_index = index
                 break
-        context.scene.bm_table_of_objects[self.hl_cage_object_index].hl_is_cage = True
+        if self.hl_cage_object_index != -1:
+            context.scene.bm_table_of_objects[self.hl_cage_object_index].hl_is_cage = True
         self.hl_cage_object_include = self.hl_cage
     else:
         self.hl_cage_name_old = ""
@@ -1145,7 +1147,7 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context):
 ###############################################################
 def BM_ITEM_PROPS_uv_active_layer_Items(self, context):
     object = BM_Object_Get(context)
-    if object[0].nm_is_universal_container and object[0].nm_is_global_container:
+    if object[0].nm_is_universal_container and object[0].nm_uni_container_is_global:
         return [('CONTAINER_AUTO', "Automatic", "UV Map is set automatically because Contaniner configures all its object settings")]
     if object[1] is False:
         return [('NONE', "None", "Current Object doesn't support UV Layers")]
