@@ -994,7 +994,8 @@ def BM_ITEM_PROPS_hl_highpoly_Update(self, context):
             if object.global_object_name == self.global_highpoly_name_old and not any([object.nm_is_local_container, object.nm_is_universal_container]):
                 self.global_highpoly_object_index = index
                 break
-        context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_highpoly = True
+        if self.global_highpoly_object_index != -1:
+            context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_highpoly = True
         self.global_highpoly_object_include = self.global_object_name
         BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
 
@@ -1008,7 +1009,8 @@ def BM_ITEM_PROPS_hl_add_highpoly_Update(self, context):
         if object.global_object_name == self.global_highpoly_name_old and not any([object.nm_is_local_container, object.nm_is_universal_container]):
             self.global_highpoly_object_index = index
             break
-    context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_highpoly = True
+    if self.global_highpoly_object_index != -1:
+        context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_highpoly = True
     self.global_highpoly_object_include = self.global_object_name
     BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
 
@@ -1103,14 +1105,16 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateOrder(context):
                         if object1.global_object_name == highpoly.global_highpoly_name_old and not any([object1.nm_is_local_container, object1.nm_is_universal_container]):
                             highpoly.global_highpoly_object_index = index
                             break
-                    context.scene.bm_table_of_objects[highpoly.global_highpoly_object_index].hl_is_highpoly = True
+                    if highpoly.global_highpoly_object_index != -1:
+                        context.scene.bm_table_of_objects[highpoly.global_highpoly_object_index].hl_is_highpoly = True
         else:
             for highpoly in object.hl_highpoly_table:
                 for index, object1 in enumerate(context.scene.bm_table_of_objects):
                     if object1.global_object_name == highpoly.global_highpoly_name_old and not any([object1.nm_is_local_container, object1.nm_is_universal_container]):
                         highpoly.global_highpoly_object_index = index
                         break
-                context.scene.bm_table_of_objects[highpoly.global_highpoly_object_index].hl_is_highpoly = True
+                if highpoly.global_highpoly_object_index != -1:
+                    context.scene.bm_table_of_objects[highpoly.global_highpoly_object_index].hl_is_highpoly = True
 
 def BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context):
     for object in context.scene.bm_table_of_objects:
