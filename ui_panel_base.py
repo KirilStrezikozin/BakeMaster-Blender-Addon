@@ -671,9 +671,9 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     # format
                     format_box_column = format_box.column(align=True)
                     format_box_column.prop(format_prop_collection, 'out_file_format')
-                    if format_prop_collection.out_file_format == 'PSD':
-                        format_box_column.prop(format_prop_collection, 'out_psd_include')
-                    elif format_prop_collection.out_file_format == 'OPEN_EXR':
+                    # if format_prop_collection.out_file_format == 'PSD':
+                        # format_box_column.prop(format_prop_collection, 'out_psd_include')
+                    if format_prop_collection.out_file_format == 'OPEN_EXR':
                         format_box_column.prop(format_prop_collection, 'out_exr_codec')
                     elif format_prop_collection.out_file_format == 'PNG':
                         format_box_column.prop(format_prop_collection, 'out_compression')
