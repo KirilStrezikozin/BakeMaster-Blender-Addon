@@ -904,6 +904,9 @@ class BM_OT_ITEM_Highpoly_Table_Add(bpy.types.Operator):
         # set chosen highpoly hl_is_highpoly to True on add
         BM_ITEM_PROPS_hl_add_highpoly_Update(new_item, context)
         object.hl_highpoly_table_active_index = len(object.hl_highpoly_table) - 1
+
+        # set is_lowpoly for current object
+        object.hl_is_lowpoly = True
         return {'FINISHED'}
 
 class BM_OT_ITEM_Highpoly_Table_Remove(bpy.types.Operator):
@@ -929,6 +932,7 @@ class BM_OT_ITEM_Highpoly_Table_Remove(bpy.types.Operator):
 
             if len(object.hl_highpoly_table) == 0:
                 object.hl_use_cage = False
+                object.hl_is_lowpoly = False
         return {'FINISHED'}
 
 class BM_OT_MAP_Highpoly_Table_Add(bpy.types.Operator):
@@ -945,6 +949,9 @@ class BM_OT_MAP_Highpoly_Table_Add(bpy.types.Operator):
         # set chosen highpoly hl_is_highpoly to True on add
         BM_ITEM_PROPS_hl_add_highpoly_Update(new_item, context)
         map.hl_highpoly_table_active_index = len(map.hl_highpoly_table) - 1
+
+        # set is_lowpoly for current object
+        map.hl_is_lowpoly = True
         return {'FINISHED'}
 
 class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
@@ -971,6 +978,7 @@ class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
 
             if len(map.hl_highpoly_table) == 0:
                 map.hl_use_cage = False
+                map.hl_is_lowpoly = False
         return {'FINISHED'}
 
 class BM_OT_ITEM_ChannelPack_Table_Add(bpy.types.Operator):
