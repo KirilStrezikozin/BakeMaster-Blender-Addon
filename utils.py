@@ -1145,6 +1145,8 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context):
 ###############################################################
 def BM_ITEM_PROPS_uv_active_layer_Items(self, context):
     object = BM_Object_Get(context)
+    if object[0].nm_is_universal_container and object[0].nm_is_global_container:
+        return [('CONTAINER_AUTO', "Automatic", "UV Map is set automatically because Contaniner configures all its object settings")]
     if object[1] is False:
         return [('NONE', "None", "Current Object doesn't support UV Layers")]
     source_object = context.scene.objects[object[0].global_object_name].data
