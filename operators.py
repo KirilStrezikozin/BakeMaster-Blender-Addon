@@ -918,7 +918,7 @@ class BM_OT_ITEM_Highpoly_Table_Remove(bpy.types.Operator):
     def execute(self, context):
         object = BM_Object_Get(context)[0]
         if len(object.hl_highpoly_table):
-            BM_ITEM_PROPS_hl_highpoly_RemoveNone(context, object)
+            # BM_ITEM_PROPS_hl_highpoly_RemoveNone(context, object)
 
             for item in object.hl_highpoly_table:
                 if item.global_item_index > object.hl_highpoly_table[object.hl_highpoly_table_active_index].global_item_index:
@@ -964,7 +964,7 @@ class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
         object = BM_Object_Get(context)[0]
         map = BM_Map_Get(object)
         if len(map.hl_highpoly_table):
-            BM_ITEM_PROPS_hl_highpoly_RemoveNone(context, map)
+            # BM_ITEM_PROPS_hl_highpoly_RemoveNone(context, map)
 
             for item in map.hl_highpoly_table:
                 if item.global_item_index > map.hl_highpoly_table[map.hl_highpoly_table_active_index].global_item_index:
