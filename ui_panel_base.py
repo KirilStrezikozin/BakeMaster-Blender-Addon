@@ -417,7 +417,7 @@ class BM_PT_ItemBase(bpy.types.Panel):
                     draw_label = object1.nm_uni_container_is_global
                     break
             if draw_label:
-                label = "Configured by %s" % container_name
+                label = "Settings configured by %s" % container_name
                 self.layout.label(text=label)
 
 class BM_PT_Item_ObjectBase(bpy.types.Panel):
@@ -458,6 +458,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
         hl_box = layout.box()
         hl_box.use_property_split = True
         hl_box.use_property_decorate = False
+        hl_draw = True
 
         # hl header
         hl_box_header = hl_box.row(align=True)
@@ -483,12 +484,16 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                 hl_box_highpoly_frame.column()
                 hl_box_highpoly = hl_box_highpoly_frame.column()
                 label = "Highpoly" if len(object.hl_highpoly_table) <= 1 else "Highpolies"
+                if object.nm_is_universal_container and object.nm_uni_container_is_global:
+                    label += " (automatic)"
+                    hl_draw = False
                 hl_box_highpoly.label(text=label)
-                hl_box_highpoly_table = hl_box_highpoly.column().row()
-                hl_box_highpoly_table.template_list('BM_UL_Table_of_Objects_Item_Highpoly', "", object, 'hl_highpoly_table', object, 'hl_highpoly_table_active_index', rows=rows)
-                hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
-                hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
-                hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
+                if hl_draw:
+                    hl_box_highpoly_table = hl_box_highpoly.column().row()
+                    hl_box_highpoly_table.template_list('BM_UL_Table_of_Objects_Item_Highpoly', "", object, 'hl_highpoly_table', object, 'hl_highpoly_table_active_index', rows=rows)
+                    hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
+                    hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
+                    hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
                 # cage
                 if len(object.hl_highpoly_table):
                     hl_box_cage = hl_box.column(align=True)
@@ -503,8 +508,11 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                         else:
                             label = "Cage Extrusion"
                             hl_box_cage.prop(object, 'hl_cage_extrusion', text=label)
-                            hl_box_cage.prop(object, 'hl_use_cage')
-                            hl_box_cage.prop(object, 'hl_cage')
+                            if hl_draw:
+                                hl_box_cage.prop(object, 'hl_use_cage')
+                                hl_box_cage.prop(object, 'hl_cage')
+                            else:
+                                hl_box_cage.prop(object, 'hl_use_cage', text="Use Cage Object (automatic)")
                     else:
                         hl_box_cage.prop(object, 'hl_cage_extrusion', text="Extrusion")
         
@@ -966,6 +974,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 hl_box = layout.box()
                 hl_box.use_property_split = True
                 hl_box.use_property_decorate = False
+                hl_draw = True
         
                 # hl header
                 hl_box_header = hl_box.row(align=True)
@@ -987,12 +996,16 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     hl_box_highpoly_frame.column()
                     hl_box_highpoly = hl_box_highpoly_frame.column()
                     label = "Highpoly" if len(map.hl_highpoly_table) <= 1 else "Highpolies"
-                    hl_box_highpoly.label(text=label)
-                    hl_box_highpoly_table = hl_box_highpoly.column().row()
-                    hl_box_highpoly_table.template_list('BM_UL_Table_of_Maps_Item_Highpoly', "", map, 'hl_highpoly_table', map, 'hl_highpoly_table_active_index', rows=rows)
-                    hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
-                    hl_highpoly_table_column.operator(BM_OT_MAP_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
-                    hl_highpoly_table_column.operator(BM_OT_MAP_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
+                    if object.nm_is_universal_container and object.nm_uni_container_is_global:
+                        label += " (automatic)"
+                        hl_draw = False
+                    if hl_draw:
+                        hl_box_highpoly.label(text=label)
+                        hl_box_highpoly_table = hl_box_highpoly.column().row()
+                        hl_box_highpoly_table.template_list('BM_UL_Table_of_Maps_Item_Highpoly', "", map, 'hl_highpoly_table', map, 'hl_highpoly_table_active_index', rows=rows)
+                        hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
+                        hl_highpoly_table_column.operator(BM_OT_MAP_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
+                        hl_highpoly_table_column.operator(BM_OT_MAP_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
                     # cage
                     if len(map.hl_highpoly_table):
                         hl_box_cage = hl_box.column(align=True)
@@ -1007,8 +1020,11 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                             else:
                                 label = "Cage Extrusion"
                                 hl_box_cage.prop(map, 'hl_cage_extrusion', text=label)
-                                hl_box_cage.prop(map, 'hl_use_cage')
-                                hl_box_cage.prop(map, 'hl_cage')
+                                if hl_draw:
+                                    hl_box_cage.prop(map, 'hl_use_cage')
+                                    hl_box_cage.prop(map, 'hl_cage')
+                                else:
+                                    hl_box_cage.prop(map, 'hl_use_cage', text="Use Cage Object (auto)")
                         else:
                             hl_box_cage.prop(map, 'hl_cage_extrusion', text="Extrusion")
         
