@@ -495,7 +495,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                     hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
                     hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
                 # cage
-                if len(object.hl_highpoly_table):
+                if len(object.hl_highpoly_table) or hl_draw is False:
                     hl_box_cage = hl_box.column(align=True)
                     hl_box_cage.prop(object, 'hl_cage_type')
                     if object.hl_cage_type == 'STANDARD':
@@ -999,15 +999,15 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     if object.nm_is_universal_container and object.nm_uni_container_is_global:
                         label += " (automatic)"
                         hl_draw = False
-                    if hl_draw:
                         hl_box_highpoly.label(text=label)
+                    if hl_draw:
                         hl_box_highpoly_table = hl_box_highpoly.column().row()
                         hl_box_highpoly_table.template_list('BM_UL_Table_of_Maps_Item_Highpoly', "", map, 'hl_highpoly_table', map, 'hl_highpoly_table_active_index', rows=rows)
                         hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
                         hl_highpoly_table_column.operator(BM_OT_MAP_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
                         hl_highpoly_table_column.operator(BM_OT_MAP_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
                     # cage
-                    if len(map.hl_highpoly_table):
+                    if len(map.hl_highpoly_table) or hl_draw is False:
                         hl_box_cage = hl_box.column(align=True)
                         hl_box_cage.prop(map, 'hl_cage_type')
                         if map.hl_cage_type == 'STANDARD':
