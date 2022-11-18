@@ -346,15 +346,15 @@ class BM_Map(bpy.types.PropertyGroup):
                  ('JPEG', "JPEG", "Output image in JPEG format. Uncompressed file format and takes the most amount of data and is the exact representation of the image. \n\nCons: With every edit and resave the image quality will deteriorate.\nPros: lightweight"),
                  ('TIFF', "TIFF", "Output image in TIFF format. Photographic file standard in print"),
                  ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps"),
-                 ('PSD', "PSD", "Output image in Photoshop PSD layers")],
+                 ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps for current Object will be saved to a single .psd file")],
         update = BM_ITEM_PROPS_OutputSettings_Update)
 
-    out_psd_include : bpy.props.EnumProperty(
-        name="PSD includes",
-        description="What maps to put into one PSD file",
-        default='MAP',
-        items=[('MAP', "One map", "Each baked map - separate psd file")],
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+    # out_psd_include : bpy.props.EnumProperty(
+        # name="PSD includes",
+        # description="What maps to put into one PSD file",
+        # default='MAP',
+        # items=[('MAP', "One map", "Each baked map - separate psd file")],
+        # update = BM_ITEM_PROPS_OutputSettings_Update)
 
     out_exr_codec : bpy.props.EnumProperty(
         name="Codec",
@@ -1856,16 +1856,16 @@ class BM_Object(bpy.types.PropertyGroup):
                  ('JPEG', "JPEG", "Output image in JPEG format. Uncompressed file format and takes the most amount of data and is the exact representation of the image. \n\nCons: With every edit and resave the image quality will deteriorate.\nPros: lightweight"),
                  ('TIFF', "TIFF", "Output image in TIFF format. Photographic file standard in print"),
                  ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps"),
-                 ('PSD', "PSD", "Output image in Photoshop PSD layers")],
+                 ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps for current Object will be saved to a single .psd file")],
         update = BM_ITEM_PROPS_OutputSettings_Update)
 
-    out_psd_include : bpy.props.EnumProperty(
-        name="PSD includes",
-        description="What maps to put into one PSD file",
-        default='MAP',
-        items=[('MAP', "One map", "Each baked map - separate psd file"),
-               ('ALL_MAPS', "All object's maps", "All object's maps into single PSD file")],
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+    # out_psd_include : bpy.props.EnumProperty(
+        # name="PSD includes",
+        # description="What maps to put into one PSD file",
+        # default='MAP',
+        # items=[('MAP', "One map", "Each baked map - separate psd file"),
+               # ('ALL_MAPS', "All object's maps", "All object's maps into single PSD file")],
+        # update = BM_ITEM_PROPS_OutputSettings_Update)
 
     out_exr_codec : bpy.props.EnumProperty(
         name="Codec",
