@@ -785,6 +785,45 @@ def BM_Table_of_Objects_GetFTL(context, items, bitflag_filter_item):
 ###############################################################
 ### hl Props Funcs ###
 ###############################################################
+def BM_ITEM_PROPS_hl_use_unique_per_map_Update(self, context):
+    object = BM_Object_Get(context)[0]
+    if object.hl_use_unique_per_map and len(object.global_maps):
+        data = {
+            'hl_cage_type' : object.hl_cage_type,
+            'hl_cage_extrusion' : object.hl_cage_extrusion,
+            'hl_max_ray_distance' : object.hl_max_ray_distance,
+            'hl_use_cage' : object.hl_use_cage,
+            'hl_cage' : object.hl_cage,
+        }
+        object.hl_use_cage = False
+        set_highpoly = False
+        highpoly_data = []
+        
+        if len(object.hl_highpoly_table):
+            set_highpoly = True
+            for highpoly in object.hl_highpoly_table:
+                if highpoly.global_highpoly_object_index != -1:
+                    highpoly_data.append(highpoly.global_object_name)
+            to_remove = []
+            for index, _ in enumerate(object.hl_highpoly_table):
+                to_remove.append(index)
+            for index in sorted(to_remove, reverse=True):
+                context.scene.bm_table_of_objects[object.hl_highpoly_table[index].global_highpoly_object_index].hl_is_highpoly = False
+                object.hl_highpoly_table.remove(index)
+            object.hl_highpoly_table_active_index = 0
+            object.hl_is_lowpoly = False
+
+        for map in object.global_maps:
+            for key in data:
+                setattr(map, key, data[key])
+
+            if set_highpoly:
+                for index, key in enumerate(highpoly_data):
+                    new_highpoly = map.hl_highpoly_table.add()
+                    new_highpoly.global_item_index = index + 1
+                    new_highpoly.global_object_name = key
+                    BM_ITEM_PROPS_hl_add_highpoly_Update(new_highpoly, context)
+
 def BM_ITEM_PROPS_hl_cage_Items(self, context):
     items = []
     active_object = BM_Object_Get(context)[0]
@@ -1145,6 +1184,12 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context):
 ###############################################################
 ### uv Props Funcs ###
 ###############################################################
+def BM_ITEM_PROPS_uv_use_unique_per_map_Update(self, context):
+    pass
+
+def BM_ITEM_PROPS_out_use_unique_per_map_Update(self, context):
+    pass
+
 def BM_ITEM_PROPS_uv_active_layer_Items(self, context):
     object = BM_Object_Get(context)
     if object[0].nm_is_universal_container and object[0].nm_uni_container_is_global:

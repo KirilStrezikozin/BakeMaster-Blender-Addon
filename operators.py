@@ -912,7 +912,7 @@ class BM_OT_ITEM_Highpoly_Table_Add(bpy.types.Operator):
 class BM_OT_ITEM_Highpoly_Table_Remove(bpy.types.Operator):
     bl_idname = 'bakemaster.item_highpoly_table_remove'
     bl_label = ""
-    bl_description = "Remove new highpoly for the current object"
+    bl_description = "Remove new highpoly from the current object"
     bl_options = {'INTERNAL', 'UNDO'}
 
     def execute(self, context):
@@ -951,13 +951,13 @@ class BM_OT_MAP_Highpoly_Table_Add(bpy.types.Operator):
         map.hl_highpoly_table_active_index = len(map.hl_highpoly_table) - 1
 
         # set is_lowpoly for current object
-        map.hl_is_lowpoly = True
+        object.hl_is_lowpoly = True
         return {'FINISHED'}
 
 class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
     bl_idname = 'bakemaster.map_highpoly_table_remove'
     bl_label = ""
-    bl_description = "Remove highpoly for the current map"
+    bl_description = "Remove highpoly from the current map"
     bl_options = {'INTERNAL', 'UNDO'}
 
     def execute(self, context):
@@ -978,7 +978,7 @@ class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
 
             if len(map.hl_highpoly_table) == 0:
                 map.hl_use_cage = False
-                map.hl_is_lowpoly = False
+                object.hl_is_lowpoly = False
         return {'FINISHED'}
 
 class BM_OT_ITEM_ChannelPack_Table_Add(bpy.types.Operator):

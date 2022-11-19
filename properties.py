@@ -1705,7 +1705,7 @@ class BM_Object(bpy.types.PropertyGroup):
         name="Unique per map",
         description="Set unqiue High to Lowpoly Settings for each map",
         default=False,
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
+        update=BM_ITEM_PROPS_hl_use_unique_per_map_Update)
     
     hl_is_highpoly : bpy.props.BoolProperty(
         default=False,
@@ -1774,7 +1774,8 @@ class BM_Object(bpy.types.PropertyGroup):
     uv_use_unique_per_map : bpy.props.BoolProperty(
         name="Unique per map",
         description="Set unqiue UV Settings for each map",
-        default=False)    
+        default=False,
+        update=BM_ITEM_PROPS_uv_use_unique_per_map_Update)
 
     uv_bake_data : bpy.props.EnumProperty(
         name = "Bake Data",
@@ -1839,7 +1840,8 @@ class BM_Object(bpy.types.PropertyGroup):
     out_use_unique_per_map : bpy.props.BoolProperty(
         name="Unique per map",
         description="Set unqiue Output Settings for each map",
-        default=False)
+        default=False,
+        update=BM_ITEM_PROPS_out_use_unique_per_map_Update)
     
     out_use_denoise : bpy.props.BoolProperty(
         name = "Denoise",
