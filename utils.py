@@ -813,7 +813,8 @@ def BM_ITEM_PROPS_hl_use_unique_per_map_Update(self, context):
             object.hl_highpoly_table_active_index = 0
             object.hl_is_lowpoly = False
 
-        for map in object.global_maps:
+        for map_index, map in enumerate(object.global_maps):
+            object.global_maps_active_index = map_index
             for key in data:
                 setattr(map, key, data[key])
 
@@ -821,8 +822,10 @@ def BM_ITEM_PROPS_hl_use_unique_per_map_Update(self, context):
                 for index, key in enumerate(highpoly_data):
                     new_highpoly = map.hl_highpoly_table.add()
                     new_highpoly.global_item_index = index + 1
-                    new_highpoly.global_object_name = key
                     BM_ITEM_PROPS_hl_add_highpoly_Update(new_highpoly, context)
+                    new_highpoly.global_object_name = key
+                    map.hl_highpoly_table_active_index = len(map.hl_highpoly_table) - 1
+
 
 def BM_ITEM_PROPS_hl_cage_Items(self, context):
     items = []
