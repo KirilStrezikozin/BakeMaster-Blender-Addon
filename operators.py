@@ -905,7 +905,6 @@ class BM_OT_ITEM_Highpoly_Table_Add(bpy.types.Operator):
         BM_ITEM_PROPS_hl_add_highpoly_Update(new_item, context)
         object.hl_highpoly_table_active_index = len(object.hl_highpoly_table) - 1
 
-        # set is_lowpoly for current object
         object.hl_is_lowpoly = True
         return {'FINISHED'}
 
@@ -950,7 +949,6 @@ class BM_OT_MAP_Highpoly_Table_Add(bpy.types.Operator):
         BM_ITEM_PROPS_hl_add_highpoly_Update(new_item, context)
         map.hl_highpoly_table_active_index = len(map.hl_highpoly_table) - 1
 
-        # set is_lowpoly for current object
         object.hl_is_lowpoly = True
         return {'FINISHED'}
 
@@ -978,6 +976,12 @@ class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
 
             if len(map.hl_highpoly_table) == 0:
                 map.hl_use_cage = False
+
+            # count highpolies and set object.hl_is_lowpoly based of that
+            len_of_highpolies = 0
+            for map1 in object.global_maps:
+                len_of_highpolies += len(map1.hl_highpoly_table)
+            if len_of_highpolies == 0:
                 object.hl_is_lowpoly = False
         return {'FINISHED'}
 

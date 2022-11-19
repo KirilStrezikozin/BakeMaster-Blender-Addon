@@ -787,7 +787,7 @@ def BM_Table_of_Objects_GetFTL(context, items, bitflag_filter_item):
 ###############################################################
 def BM_ITEM_PROPS_hl_use_unique_per_map_Update(self, context):
     object = self
-    if object.hl_use_unique_per_map and len(object.global_maps):
+    if object.hl_use_unique_per_map:
         data = {
             'hl_cage_type' : object.hl_cage_type,
             'hl_cage_extrusion' : object.hl_cage_extrusion,
@@ -799,6 +799,9 @@ def BM_ITEM_PROPS_hl_use_unique_per_map_Update(self, context):
         set_highpoly = False
         highpoly_data = []
         
+        for highpoly in object.hl_highpoly_table:
+            highpoly_data.append(highpoly.global_object_name)
+
         if len(object.hl_highpoly_table):
             set_highpoly = True
             BM_ITEM_PROPS_hl_use_unique_per_map_Update_TrashHighpolies(object, object, context)
@@ -815,8 +818,9 @@ def BM_ITEM_PROPS_hl_use_unique_per_map_Update(self, context):
                     BM_ITEM_PROPS_hl_add_highpoly_Update(new_highpoly, context)
                     new_highpoly.global_object_name = key
                     map.hl_highpoly_table_active_index = len(map.hl_highpoly_table) - 1
+                    object.hl_is_lowpoly = True
     
-    elif object.hl_use_unique_per_map is False:
+    else:
         for map in object.global_maps:
             BM_ITEM_PROPS_hl_use_unique_per_map_Update_TrashHighpolies(map, object, context)
 
@@ -1129,10 +1133,16 @@ def BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, type, removed_was_hi
         if removed_was_highpoly:
             for object1 in context.scene.bm_table_of_objects:
                 if object1.hl_use_unique_per_map:
+                    len_of_highpolies = 0
                     for map in object1.global_maps:
                         BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_RemoveHighpoly(context, map, index)
+                        len_of_highpolies += len(map.hl_highpoly_table)
+                    if len_of_highpolies == 0:
+                        object1.hl_is_lowpoly = False
                 else:
                     BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_RemoveHighpoly(context, object1, index)
+                    if len(object1.hl_highpoly_table) == 0:
+                        object1.hl_is_lowpoly = False
 
     elif type == 'MAP':
         object = BM_Object_Get(context)[0]
@@ -1156,10 +1166,16 @@ def BM_ITEM_PROPS_hl_highpoly_RemoveNone(context, container):
 def BM_ITEM_PROPS_hl_highpoly_UpdateOnAdd(context):
     for object in context.scene.bm_table_of_objects:
         if object.hl_use_unique_per_map:
+            len_of_highpolies = 0
             for map in object.global_maps:
                 BM_ITEM_PROPS_hl_highpoly_RemoveNone(context, map)
+                len_of_highpolies += len(map.hl_highpoly_table)
+            if len_of_highpolies == 0:
+                object.hl_is_lowpoly = False
         else:
             BM_ITEM_PROPS_hl_highpoly_RemoveNone(context, object)
+            if len(object.hl_highpoly_table) == 0:
+                 object.hl_is_lowpoly = False
 
 def BM_ITEM_PROPS_hl_highpoly_UpdateOrder(context):
     for object in context.scene.bm_table_of_objects:
