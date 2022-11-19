@@ -786,7 +786,7 @@ def BM_Table_of_Objects_GetFTL(context, items, bitflag_filter_item):
 ### hl Props Funcs ###
 ###############################################################
 def BM_ITEM_PROPS_hl_use_unique_per_map_Update(self, context):
-    object = BM_Object_Get(context)[0]
+    object = self
     if object.hl_use_unique_per_map and len(object.global_maps):
         data = {
             'hl_cage_type' : object.hl_cage_type,
@@ -1209,7 +1209,23 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context):
 ### uv Props Funcs ###
 ###############################################################
 def BM_ITEM_PROPS_uv_use_unique_per_map_Update(self, context):
-    pass
+    object = self
+    if object.uv_use_unique_per_map:
+        data = {
+            'uv_bake_data' : object.uv_bake_data,
+            'uv_bake_target' : object.uv_bake_target,
+            'uv_active_layer' : object.uv_active_layer,
+            'uv_type' : object.uv_type,
+            'uv_snap_islands_to_pixels' : object.uv_snap_islands_to_pixels,
+            'uv_use_auto_unwrap' : object.uv_use_auto_unwrap,
+            'uv_auto_unwrap_angle_limit' : object.uv_auto_unwrap_angle_limit,
+            'uv_auto_unwrap_island_margin' : object.uv_auto_unwrap_island_margin,
+            'uv_auto_unwrap_use_scale_to_bounds' : object.uv_auto_unwrap_use_scale_to_bounds,
+        }
+    
+        for map in object.global_maps:
+            for key in data:
+                setattr(map, key, data[key])
 
 def BM_ITEM_PROPS_out_use_unique_per_map_Update(self, context):
     pass
