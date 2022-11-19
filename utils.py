@@ -801,17 +801,7 @@ def BM_ITEM_PROPS_hl_use_unique_per_map_Update(self, context):
         
         if len(object.hl_highpoly_table):
             set_highpoly = True
-            for highpoly in object.hl_highpoly_table:
-                if highpoly.global_highpoly_object_index != -1:
-                    highpoly_data.append(highpoly.global_object_name)
-            to_remove = []
-            for index, _ in enumerate(object.hl_highpoly_table):
-                to_remove.append(index)
-            for index in sorted(to_remove, reverse=True):
-                context.scene.bm_table_of_objects[object.hl_highpoly_table[index].global_highpoly_object_index].hl_is_highpoly = False
-                object.hl_highpoly_table.remove(index)
-            object.hl_highpoly_table_active_index = 0
-            object.hl_is_lowpoly = False
+            BM_ITEM_PROPS_hl_use_unique_per_map_Update_TrashHighpolies(object, object, context)
 
         for map_index, map in enumerate(object.global_maps):
             object.global_maps_active_index = map_index
@@ -825,7 +815,20 @@ def BM_ITEM_PROPS_hl_use_unique_per_map_Update(self, context):
                     BM_ITEM_PROPS_hl_add_highpoly_Update(new_highpoly, context)
                     new_highpoly.global_object_name = key
                     map.hl_highpoly_table_active_index = len(map.hl_highpoly_table) - 1
+    
+    elif object.hl_use_unique_per_map is False:
+        for map in object.global_maps:
+            BM_ITEM_PROPS_hl_use_unique_per_map_Update_TrashHighpolies(map, object, context)
 
+def BM_ITEM_PROPS_hl_use_unique_per_map_Update_TrashHighpolies(container, object, context):
+    to_remove = []
+    for index, _ in enumerate(container.hl_highpoly_table):
+        to_remove.append(index)
+    for index in sorted(to_remove, reverse=True):
+        context.scene.bm_table_of_objects[container.hl_highpoly_table[index].global_highpoly_object_index].hl_is_highpoly = False
+        container.hl_highpoly_table.remove(index)
+    container.hl_highpoly_table_active_index = 0
+    object.hl_is_lowpoly = False
 
 def BM_ITEM_PROPS_hl_cage_Items(self, context):
     items = []
