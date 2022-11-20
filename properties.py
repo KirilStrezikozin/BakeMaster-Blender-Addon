@@ -1991,12 +1991,12 @@ class BM_Object(bpy.types.PropertyGroup):
     out_super_sampling_aa : bpy.props.EnumProperty(
         name="SuperSampling AA",
         description="SSAA. Improve image quality by baking at a higher resolution and then downscaling to a lower resolution. Helps removing stepping, jagging, and dramatic color difference near color area edges",
-        default='1X',
-        items=[('1X', "1x1", "No supersampling. Bake and save with chosen resolution"),
-               ('2X', "2x2", "Bake at 2x the chosen resolution and then downscale"),
-               ('4X', "4x4", "Bake at 4x the chosen resolution and then downscale"),
-               ('8X', "8x8", "Bake at 8x the chosen resolution and then downscale"),
-               ('16X', "16x16", "Bake at 16x the chosen resolution and then downscale")],
+        default='1X1',
+        items=[('1X1', "1x1", "No supersampling. Bake and save with chosen resolution"),
+               ('2X2', "2x2", "Bake at 2x the chosen resolution and then downscale"),
+               ('4X4', "4x4", "Bake at 4x the chosen resolution and then downscale"),
+               ('8X8', "8x8", "Bake at 8x the chosen resolution and then downscale"),
+               ('16X16', "16x16", "Bake at 16x the chosen resolution and then downscale")],
         update=BM_ITEM_PROPS_OutputSettings_Update)
 
     out_samples : bpy.props.IntProperty(
