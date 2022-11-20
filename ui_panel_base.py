@@ -621,6 +621,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
     def draw_header(self, context):
         label = "Maps"
         self.layout.label(text=label)
+        BM_PT_MapsConfigurator_Presets.draw_panel_header(self.layout)
 
     def draw(self, context):
         layout = self.layout
