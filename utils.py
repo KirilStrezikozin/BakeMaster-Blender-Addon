@@ -567,7 +567,6 @@ def BM_CHANNELPACK_PROPS_map_Items_GetAllChosen(self):
 def BM_CHANNELPACK_PROPS_map_Items_Get(self, context, prop_channel_index):
     new_items = [('NONE', "None", "Set None to identify usage of no map for the current channel or no maps available to set")]
     chosen = BM_CHANNELPACK_PROPS_map_Items_GetAllChosen(self)
-    print(chosen)
     object = BM_Object_Get(context)[0]
     maps_names = {
         'ALBEDO' : "Albedo",
@@ -739,10 +738,8 @@ def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_A(self, context):
 #         except (TypeError, ValueError):
 #             pass
 
-def BM_ITEM_PROPS_bake_batchname_Update(self, context):
-    # DEMO: no refresh on add maps, maps props update, no refresh on obj add,
-    # TODO: blender preferences to set what to write for some batch name args
-    # update batchname preview
+def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context):
+    # funcs for data get
     def get_objectname(container):
         if not any([container.nm_is_universal_container, container.nm_is_local_container, context.scene.bm_props.global_use_name_matching]):
             return container.global_object_name
@@ -761,9 +758,16 @@ def BM_ITEM_PROPS_bake_batchname_Update(self, context):
     
     def get_packname(container):
         for chnlpack in container.chnlp_channelpacking_table:
-            for map_index, map_pass in enumerate(container.global_maps):
-                # DEMO
-                if any([chnlpack.global_r_map == str(map_index), chnlpack.global_g_map == str(map_index), chnlpack.global_b_map == str(map_index), chnlpack.global_a_map == str(map_index)]):
+            chosen_data = {
+                'R1G1B' : ['_map_R', '_map_G', '_map_B'],
+                'RGB1A' : ['_map_RGB', '_map_A'],
+                'R1G1B1A' : ['_map_R', '_map_G', '_map_B', '_map_A'],
+            }
+            chosen_maps = []
+            for prop in chosen_data[chnlpack.global_channelpack_type]:
+                chosen_maps.append(getattr(chnlpack, '{}{}'.format(chnlpack.global_channelpack_type, prop)))
+            for map_pass in container.global_maps:
+                if str(map_pass.global_map_index) in chosen_maps:
                     return chnlpack.global_channelpack_name
         return None
     
@@ -775,7 +779,7 @@ def BM_ITEM_PROPS_bake_batchname_Update(self, context):
         
         if container.global_is_included_in_texset:
             return None
-        for texset in context.scene.global_texturesets_table:
+        for texset in context.scene.bm_props.global_texturesets_table:
             for obj in texset.global_textureset_table_of_objects:
                 if obj.global_object_name == container_name:
                     if texset.global_textureset_naming == 'TEXSET_INDEX':
@@ -796,9 +800,6 @@ def BM_ITEM_PROPS_bake_batchname_Update(self, context):
     def get_mapres(map_pass):
         if map_pass.out_res == 'CUSTOM':
             return map_pass.out_res_height + "x" + map_pass.out_res_width
-        elif map_pass.out_res == 'TEXEL':
-            # DEMO
-            return "1891"
         else:
             return map_pass.out_res
     
@@ -810,8 +811,8 @@ def BM_ITEM_PROPS_bake_batchname_Update(self, context):
     
     object = BM_Object_Get(context)[0]
     if len(object.global_maps) == 0:
-        self.bake_batchname_preview = "*Object has no Maps*"
-        return
+        # self.bake_batchname_preview = "*Object has no Maps*"
+        return "*Object has no Maps*"
     map = object.global_maps[object.global_maps_active_index]
 
     gen_keywords_values = {
@@ -821,17 +822,17 @@ def BM_ITEM_PROPS_bake_batchname_Update(self, context):
         "$packname" : get_packname(object),
         "$texsetname" : get_texsetname(object),
         "$mapindex" : map.global_map_index,
-        "$mapname" : map.global_map_prefix, # DEMO
+        "$mapname" : getattr(map, 'map_{}_prefix'.format(map.global_map_type)),
         "$mapres" : get_mapres(map),
-        "$mapbit" : "32bit" if map.out_use_32bit else "8bit", # DEMO
-        "$maptrans" : "transbg" if map.out_use_transbg else "", # DEMO
+        "$mapbit" : "32bit" if map.out_use_32bit else "8bit",
+        "$maptrans" : "transbg" if map.out_use_transbg else "",
         "$mapssaa" : map.out_super_sampling_aa,
         "$mapsamples" : map.out_samples,
-        "$mapdenoise" : "denoised" if map.out_use_denoise else "", # DEMO
+        "$mapdenoise" : "denoised" if map.out_use_denoise else "",
         "$mapnormal" : get_mapnormal(map),
         "$mapuv" : map.uv_active_layer,
         "$engine" : object.bake_device,
-        "$autouv" : "autouv" if map.uv_use_auto_unwrap else "" # DEMO
+        "$autouv" : "autouv" if object.uv_use_auto_unwrap else "",
     }
 
     preview = ""
@@ -847,7 +848,7 @@ def BM_ITEM_PROPS_bake_batchname_Update(self, context):
                 preview += char
         # trying to find keyword value, if can't continue adding chars to temp_preview
         else:
-            # no keyword found but found $, aborting finding keyword and addin temp_preview to preview
+            # no keyword found but found $, aborting finding keyword and adding temp_preview to preview
             if char == '$':
                 preview += temp_preview
                 temp_preview = '$'
@@ -870,7 +871,8 @@ def BM_ITEM_PROPS_bake_batchname_Update(self, context):
                     preview += str(gen_keywords_values[temp_preview.lower()])
                 finding_keyword = False
 
-    self.bake_batchname_preview = preview
+    # self.bake_batchname_preview = preview
+    return preview
 
 def BM_ITEM_PROPS_bake_batchname_use_caps_Update(self, context):
     # upper-case batch name if true else lower-case
