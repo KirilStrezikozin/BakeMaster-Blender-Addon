@@ -690,9 +690,9 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     if format_prop_collection.out_res == 'CUSTOM':
                         format_box_column.prop(format_prop_collection, 'out_res_height')
                         format_box_column.prop(format_prop_collection, 'out_res_width')
-                    elif format_prop_collection.out_res == 'TEXEL':
-                        format_box_column.prop(format_prop_collection, 'out_texel_density_value')
-                        format_box_column.prop(format_prop_collection, 'out_texel_density_match')
+                    # elif format_prop_collection.out_res == 'TEXEL':
+                        # format_box_column.prop(format_prop_collection, 'out_texel_density_value')
+                        # format_box_column.prop(format_prop_collection, 'out_texel_density_match')
                     format_box_column = format_box.column(align=True)
                     if bpy.app.version >= (3, 1, 0):
                         format_box_column.prop(format_prop_collection, 'out_margin_type')

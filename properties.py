@@ -346,7 +346,7 @@ class BM_Map(bpy.types.PropertyGroup):
                  ('JPEG', "JPEG", "Output image in JPEG format. Uncompressed file format and takes the most amount of data and is the exact representation of the image. \n\nCons: With every edit and resave the image quality will deteriorate.\nPros: lightweight"),
                  ('TIFF', "TIFF", "Output image in TIFF format. Photographic file standard in print"),
                  ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps"),
-                 ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps for current Object will be saved to a single .psd file")],
+                 ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps with PSD set as file format for current Object will be saved to a single .psd file")],
         update = BM_ITEM_PROPS_OutputSettings_Update)
 
     # out_psd_include : bpy.props.EnumProperty(
@@ -388,8 +388,8 @@ class BM_Map(bpy.types.PropertyGroup):
                  ('2048', "2K (2048x2048)", ""),
                  ('4096', "4K (4096x4096)", ""),
                  ('8192', "8K (8192x8192)", ""),
-                 ('CUSTOM', "Custom", "Enter custom height and width"),
-                 ('TEXEL', "Texel Density defined", "Define image resolution based on object's texel density")],
+                 ('CUSTOM', "Custom", "Enter custom height and width")],
+                 #('TEXEL', "Texel Density defined", "Define image resolution based on object's texel density")],
         update = BM_ITEM_PROPS_OutputSettings_Update)
 
     out_res_height : bpy.props.IntProperty(
@@ -410,19 +410,19 @@ class BM_Map(bpy.types.PropertyGroup):
         subtype = 'PIXEL',
         update = BM_ITEM_PROPS_OutputSettings_Update)
 
-    out_texel_density_value : bpy.props.IntProperty(
-        name="Texel Density",
-        description="How many pixels should be in image per 1 unit (1m) of object's face.\nAutomatically calculated when chosen from Map Resolution List based on object's space relativity to Scene Render Resolution",
-        default=100,
-        min=1,
-        max=65536,
-        subtype='PIXEL',
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+    # out_texel_density_value : bpy.props.IntProperty(
+        # name="Texel Density",
+        # description="How many pixels should be in image per 1 unit (1m) of object's face.\nAutomatically calculated when chosen from Map Resolution List based on object's space relativity to Scene Render Resolution",
+        # default=100,
+        # min=1,
+        # max=65536,
+        # subtype='PIXEL',
+        # update = BM_ITEM_PROPS_OutputSettings_Update)
     
-    out_texel_density_match : bpy.props.BoolProperty(
-        name="Match to Common",
-        description="Recalculate chosen Texel Density so that the image resolution is set to closest common resolution in Map Resolution List.\n(If checked then, for example, when image res by Texel Density is 1891px, it will be changed to 2048px (common 2K). If unchecked, then wil remain 1891px)",
-        default=True)
+    # out_texel_density_match : bpy.props.BoolProperty(
+        # name="Match to Common",
+        # description="Recalculate chosen Texel Density so that the image resolution is set to closest common resolution in Map Resolution List.\n(If checked then, for example, when image res by Texel Density is 1891px, it will be changed to 2048px (common 2K). If unchecked, then wil remain 1891px)",
+        # default=True)
 
     out_margin : bpy.props.IntProperty(
         name = "Margin",
@@ -1901,8 +1901,8 @@ class BM_Object(bpy.types.PropertyGroup):
                  ('2048', "2K (2048x2048)", ""),
                  ('4096', "4K (4096x4096)", ""),
                  ('8192', "8K (8192x8192)", ""),
-                 ('CUSTOM', "Custom", "Enter custom height and width"),
-                 ('TEXEL', "Texel Density defined", "Define image resolution based on object's texel density")],
+                 ('CUSTOM', "Custom", "Enter custom height and width")],
+                 # ('TEXEL', "Texel Density defined", "Define image resolution based on object's texel density")],
         update = BM_ITEM_PROPS_OutputSettings_Update)
 
     out_res_height : bpy.props.IntProperty(
@@ -1923,19 +1923,19 @@ class BM_Object(bpy.types.PropertyGroup):
         subtype = 'PIXEL',
         update = BM_ITEM_PROPS_OutputSettings_Update)
 
-    out_texel_density_value : bpy.props.IntProperty(
-        name="Texel Density",
-        description="How many pixels should be in image per 1 unit (1m) of object's face.\nAutomatically calculated when chosen from Map Resolution List based on object's space relativity to Scene Render Resolution",
-        default=100,
-        min=1,
-        max=65536,
-        subtype='PIXEL',
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+    # out_texel_density_value : bpy.props.IntProperty(
+        # name="Texel Density",
+        # description="How many pixels should be in image per 1 unit (1m) of object's face.\nAutomatically calculated when chosen from Map Resolution List based on object's space relativity to Scene Render Resolution",
+        # default=100,
+        # min=1,
+        # max=65536,
+        # subtype='PIXEL',
+        # update = BM_ITEM_PROPS_OutputSettings_Update)
     
-    out_texel_density_match : bpy.props.BoolProperty(
-        name="Match to Common",
-        description="Recalculate chosen Texel Density so that the image resolution is set to closest common resolution in Map Resolution List.\n(If checked then, for example, when image res by Texel Density is 1891px, it will be changed to 2048px (common 2K). If unchecked, then wil remain 1891px)",
-        default=True)
+    # out_texel_density_match : bpy.props.BoolProperty(
+        # name="Match to Common",
+        # description="Recalculate chosen Texel Density so that the image resolution is set to closest common resolution in Map Resolution List.\n(If checked then, for example, when image res by Texel Density is 1891px, it will be changed to 2048px (common 2K). If unchecked, then wil remain 1891px)",
+        # default=True)
 
     out_margin : bpy.props.IntProperty(
         name = "Margin",
