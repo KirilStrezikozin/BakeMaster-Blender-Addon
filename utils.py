@@ -981,7 +981,7 @@ def BM_ITEM_PROPS_hl_use_unique_per_map_Update_TrashHighpolies(container, object
 def BM_ITEM_PROPS_hl_cage_Items(self, context):
     items = []
     # if was chosen None, append it to items
-    if self.hl_cage_object_include != 'NONE' and self.hl_cage_object_index == -1:
+    if self.hl_cage_object_include == 'NONE' and self.hl_cage_object_index == -1:
         items.append(('NONE', "None", "No cage available within the Table of Objects"))
 
     active_object = BM_Object_Get(context)[0]
@@ -1027,6 +1027,9 @@ def BM_ITEM_PROPS_hl_cage_Items(self, context):
 
 def BM_ITEM_PROPS_hl_cage_Update(self, context):
     if self.hl_cage != self.hl_cage_name_old:
+        update_name = False
+        if self.hl_cage_name_old == 'NONE':
+            update_name = True
         self.hl_cage_name_old = self.hl_cage
         try:
             context.scene.bm_table_of_objects[self.hl_cage_object_index].hl_is_cage = False
@@ -1038,6 +1041,8 @@ def BM_ITEM_PROPS_hl_cage_Update(self, context):
                 break
         if self.hl_cage_object_index != -1:
             context.scene.bm_table_of_objects[self.hl_cage_object_index].hl_is_cage = True
+        if update_name:
+            self.hl_cage = self.hl_cage_name_old
         self.hl_cage_object_include = self.hl_cage
         try:
             self.global_map_type
@@ -1052,10 +1057,10 @@ def BM_ITEM_PROPS_hl_cage_Update(self, context):
 
 def BM_ITEM_PROPS_hl_use_cage_Update(self, context):
     if self.hl_use_cage:
-        self.hl_cage_name_old = self.hl_cage
         update_name = False
         if self.hl_cage_name_old == 'NONE':
             update_name = True
+        self.hl_cage_name_old = self.hl_cage
         try:
             context.scene.bm_table_of_objects[self.hl_cage_object_index].hl_is_cage = False
         except IndexError:
