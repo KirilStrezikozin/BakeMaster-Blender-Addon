@@ -1127,38 +1127,32 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
                     channel_pack = object.chnlp_channelpacking_table[object.chnlp_channelpacking_table_active_index]
                     col = chnlpack_box.column(align=True)
                     col.use_property_split = False
-                
-                    row = col.row(align=True)
-                    row.active = channel_pack.global_use_r
-                    split = row.split(factor=0.1)
-                    split.column().prop(channel_pack, 'global_use_r', text="", icon='EVENT_R')
-                    split_row = split.row()
-                    split_row.prop(channel_pack, 'global_r_map', text="")
-                    # split_row.label(text=" R ")
-
-                    row = col.row(align=True)
-                    row.active = channel_pack.global_use_g
-                    split = row.split(factor=0.1)
-                    split.column().prop(channel_pack, 'global_use_g', text="", icon='EVENT_G')
-                    split_row = split.row()
-                    split_row.prop(channel_pack, 'global_g_map', text="")
-                    # split_row.label(text=" G ")
-
-                    row = col.row(align=True)
-                    row.active = channel_pack.global_use_b
-                    split = row.split(factor=0.1)
-                    split.column().prop(channel_pack, 'global_use_b', text="", icon='EVENT_B')
-                    split_row = split.row()
-                    split_row.prop(channel_pack, 'global_b_map', text="")
-                    # split_row.label(text=" B ")
-
-                    row = col.row(align=True)
-                    row.active = channel_pack.global_use_a
-                    split = row.split(factor=0.1)
-                    split.column().prop(channel_pack, 'global_use_a', text="", icon='EVENT_A')
-                    split_row = split.row()
-                    split_row.prop(channel_pack, 'global_a_map', text="")
-                    # split_row.label(text=" A ")
+                    col.prop(channel_pack, 'global_channelpack_type')
+                    col.separator(factor=1.0)
+                    
+                    chnlp_data = {
+                        'R1G1B' : ['R', 'G', 'B'],
+                        'RGB1A' : ['RGB', 'A'],
+                        'R1G1B1A' : ['R', 'G', 'B', 'A'],
+                    }
+                    icons_data = {
+                        'R' : 'EVENT_R',
+                        'G' : 'EVENT_G',
+                        'B' : 'EVENT_B',
+                        'A' : 'EVENT_A',
+                        'RGB' : 'IMAGE_RGB',
+                    }
+                    
+                    chnlp_type = channel_pack.global_channelpack_type
+                    for prop in chnlp_data[chnlp_type]:
+                        prop_use_channel = '{}_use_{}'.format(chnlp_type, prop)
+                        prop_map_channel = '{}_map_{}'.format(chnlp_type, prop)
+                        row = col.row(align=True)
+                        row.active = getattr(channel_pack, prop_use_channel)
+                        split = row.split(factor=0.1)
+                        split.column().prop(channel_pack, prop_use_channel, text="", icon=icons_data[prop])
+                        split_row = split.row()
+                        split_row.prop(channel_pack, prop_map_channel, text="")
 
         # bake output
         bake_box = layout.box()
