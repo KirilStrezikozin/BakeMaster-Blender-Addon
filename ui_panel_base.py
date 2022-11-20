@@ -731,10 +731,13 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
             
             map_settings_column.prop(map, 'map_%s_prefix' % map.global_map_type)
             try:
-                map_settings_column_preview = map_settings_column.row()
-                map_settings_column_preview.prop(map, 'map_%s_use_preview' % map.global_map_type)
+                getattr(map, 'map_%s_use_preview' % map.global_map_type)
             except AttributeError:
                 pass
+            else:
+                map_settings_column_preview = map_settings_column.row()
+                map_settings_column_preview.prop(map, 'map_%s_use_preview' % map.global_map_type)
+
 
             # map_types_settings = [
             #     'NORMAL',
