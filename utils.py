@@ -548,6 +548,125 @@ def BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index):
                 break
 
 ###############################################################
+### Channel Packs Funcs ###
+###############################################################
+def BM_CHANNELPACK_PROPS_map_Items_GetAllChosen(self):
+    chosen_data = {
+        'R1G1B' : ['_map_R', '_map_G', '_map_B'],
+        'RGB1A' : ['_map_RGB', '_map_A'],
+        'R1G1B1A' : ['_map_R', '_map_G', '_map_B', '_map_A'],
+    }
+    chosen = []
+    for prop in chosen_data[self.global_channelpack_type]:
+        index_value = getattr(self, '{}{}_index'.format(self.global_channelpack_type, prop))
+        if index_value != -1:
+            chosen.append(index_value)
+
+    return chosen
+
+def BM_CHANNELPACK_PROPS_map_Items_Get(self, context, prop_channel_index):
+    new_items = [('NONE', "None", "Set None to identify usage of no map for the current channel or no maps available to set")]
+    chosen = BM_CHANNELPACK_PROPS_map_Items_GetAllChosen(self)
+    print(chosen)
+    object = BM_Object_Get(context)[0]
+    maps_names = {
+        'ALBEDO' : "Albedo",
+        'METALNESS' : "Metalness",
+        'ROUGHNESS' : "Roughness",
+        'DIFFUSE' : "Diffuse",
+        'SPECULAR' : "Specular",
+        'GLOSSINESS' : "Glossiness",
+        'OPACITY' : "Opacity",
+        'EMISSION' : "Emission/Lightmap",
+
+        'NORMAL' : "Normal",
+        'DISPLACEMENT' : "Displacement",
+        'VECTOR_DISPLACEMENT' : "Vector Displacement",
+        'POSITION' : "Position",
+        'AO' : "AO",
+        'CAVITY' : "Cavity",
+        'CURVATURE' : "Curvature",
+        'THICKNESS' : "Thickness",
+        'ID' : "Material ID",
+        'MASK' : "Mask",
+        'XYZMASK' : "XYZ Mask",
+        'GRADIENT' : "Gradient Mask",
+        'EDGE' : "Edge Mask",
+        'WIREFRAME' : "Wireframe Mask",
+
+        'PASS' : "BSDF Pass",
+        'VERTEX_COLOR_LAYER' : "VertexColor Layer",
+        'C_COMBINED' : "Combined",
+        'C_AO' : "Ambient Occlusion",
+        'C_SHADOW' : "Shadow",
+        'C_NORMAL' : "Normal",
+        'C_UV' : "UV",
+        'C_ROUGHNESS' : "Roughness",
+        'C_EMIT' : "Emit",
+        'C_ENVIRONMENT' : "Environment",
+        'C_DIFFUSE' : "Diffuse",
+        'C_GLOSSY' : "Glossy",
+        'C_TRANSMISSION' : "Transmission",
+    }
+    for index, map in enumerate(object.global_maps):
+        if map.global_map_index in chosen and map.global_map_index != prop_channel_index:
+            continue
+        print(map.global_map_index)
+        name = '{} {}'.format(map.global_map_index, maps_names[map.global_map_type])
+        new_items.append((str(map.global_map_index), name, "Choose map from the Object's Table of Maps for the current channel"))
+    return new_items
+
+def BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, prop_name):
+    try:
+        setattr(self, prop_name.format("_index"), int(getattr(self, prop_name.format(""))))
+    except ValueError:
+        pass
+
+# Items
+def BM_CHANNELPACK_PROPS_map_Items_R1G1B_R(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B_map_R_index)
+def BM_CHANNELPACK_PROPS_map_Items_R1G1B_G(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B_map_G_index)
+def BM_CHANNELPACK_PROPS_map_Items_R1G1B_B(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B_map_B_index)
+
+def BM_CHANNELPACK_PROPS_map_Items_RGB1A_RGB(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.RGB1A_map_RGB_index)
+def BM_CHANNELPACK_PROPS_map_Items_RGB1A_A(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.RGB1A_map_A_index)
+
+def BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_R(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B1A_map_R_index)
+def BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_G(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B1A_map_G_index)
+def BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_B(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B1A_map_B_index)
+def BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_A(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B1A_map_A_index)
+
+# Updates
+def BM_CHANNELPACK_PROPS_map_Update_R1G1B_R(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B_map_R{}')
+def BM_CHANNELPACK_PROPS_map_Update_R1G1B_G(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B_map_G{}')
+def BM_CHANNELPACK_PROPS_map_Update_R1G1B_B(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B_map_B{}')
+
+def BM_CHANNELPACK_PROPS_map_Update_RGB1A_RGB(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'RGB1A_map_RGB{}')
+def BM_CHANNELPACK_PROPS_map_Update_RGB1A_A(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'RGB1A_map_A{}')
+
+def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_R(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_R{}')
+def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_G(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_G{}')
+def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_B(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_B{}')
+def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_A(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_A{}')
+
+###############################################################
 ### Batch Naming Funcs ###
 ###############################################################
 # def BM_BATCHNAMINGKEY_PROPS_global_keyword_Items(self, context):
