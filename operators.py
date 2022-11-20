@@ -1242,6 +1242,16 @@ class BM_OT_SCENE_TextureSets_Objects_Table_InvertSubItems(bpy.types.Operator):
 #             object.bake_batch_name_table.remove(index)
 #         object.bake_batch_name_table_active_index = 0
 #         return {'FINISHED'}
+class BM_OT_ITEM_BatchNaming_Preview(bpy.types.Operator):
+    bl_idname = 'bakemaster.item_batchnaming_preview'
+    bl_label = "Preview Batch Name"
+    bl_description = "Preview how the configured batch naming convention will look in the output image filename.\n(Demo, values for each keyword might be different for each baked map's image file)"
+    
+    def execute(self, context):
+        object = BM_Object_Get(context)[0]
+        preview = BM_ITEM_PROPS_bake_batchname_GetPreview(object, context)
+        self.report({'INFO'}, preview)
+        return {'FINISHED'}
 
 class BM_OT_ITEM_Maps(bpy.types.Operator):
     bl_idname = 'bakemaster.item_maps_table'
