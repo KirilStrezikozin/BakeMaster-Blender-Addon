@@ -1763,7 +1763,8 @@ class BM_Object(bpy.types.PropertyGroup):
     nm_uni_container_is_global : bpy.props.BoolProperty(
         name="Is Global Container",
         description="If checked, all Container's Objects settings will be configured by Container settings",
-        default=True)
+        default=False,
+        update=BM_ITEM_PROPS_nm_uni_container_is_global_Update)
 
 # Item High to Lowpoly props:
     hl_use_unique_per_map : bpy.props.BoolProperty(
@@ -1875,7 +1876,7 @@ class BM_Object(bpy.types.PropertyGroup):
 
     uv_use_auto_unwrap : bpy.props.BoolProperty(
         name="Auto Unwrap",
-        description="Auto UV Unwrap object using smart project",
+        description="Auto UV Unwrap object using smart project. If UV Type is UDIMs, enabling Auto Unwrap will ignore it",
         update=BM_ITEM_PROPS_UVSettings_Update)
 
     uv_auto_unwrap_angle_limit : bpy.props.IntProperty(
