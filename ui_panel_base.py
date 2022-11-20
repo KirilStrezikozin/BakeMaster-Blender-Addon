@@ -408,6 +408,14 @@ class BM_PT_ItemBase(bpy.types.Panel):
             label = "Object cannot be found"
             icon = 'GHOST_DISABLED'
             self.layout.label(text=label, icon=icon)
+        elif object[0].hl_is_highpoly:
+            label = "Highpoly Object" 
+            icon = 'VIEW_ORTHO'
+            self.layout.label(text=label, icon=icon)
+        elif object[0].hl_is_cage:
+            label = "Cage Object" 
+            icon = 'SELECT_SET'
+            self.layout.label(text=label, icon=icon)
         elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_detached is False:
             container_name = ""
             draw_label = False
@@ -431,6 +439,8 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
         if object[0].nm_is_universal_container:
             return object[0].nm_uni_container_is_global
         elif object[0].nm_is_local_container:
+            return False
+        elif any([object[0].hl_is_highpoly, object[0].hl_is_cage]):
             return False
         elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_detached is False:
             for object1 in context.scene.bm_table_of_objects:
@@ -611,6 +621,8 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
         if object[0].nm_is_universal_container:
             return object[0].nm_uni_container_is_global
         elif object[0].nm_is_local_container:
+            return False
+        elif any([object[0].hl_is_highpoly, object[0].hl_is_cage]):
             return False
         elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_detached is False:
             for object1 in context.scene.bm_table_of_objects:
@@ -1077,6 +1089,8 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
         if object[0].nm_is_universal_container:
             return object[0].nm_uni_container_is_global
         elif object[0].nm_is_local_container:
+            return False
+        elif any([object[0].hl_is_highpoly, object[0].hl_is_cage]):
             return False
         elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_detached is False:
             for object1 in context.scene.bm_table_of_objects:
