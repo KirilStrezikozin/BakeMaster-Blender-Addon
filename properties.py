@@ -1599,40 +1599,87 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
     
     global_channelpack_index : bpy.props.IntProperty()
 
-    global_use_r : bpy.props.BoolProperty(
+    global_channelpack_type : bpy.props.EnumProperty(
+        name="Pack Type",
+        description="Type of packing operation describing its packing format",
+        default='R1G1B1A',
+        items=[('R1G1B', "R+G+B", "Select different maps for R, G, B channels"),
+               ('RGB1A', "RGB+A", "Select one map to cover RGB, another for A channel"),
+               ('R1G1B1A', "R+G+B+A", "Select different maps for R, G, B, A channels")])
+
+    # R+G+B
+    R1G1B_use_R : bpy.props.BoolProperty(
         name="Use Red Channel",
         default=True)
-    
-    global_use_g : bpy.props.BoolProperty(
-        name="Use Green Channel",
-        default=True)
-        
-    global_use_b : bpy.props.BoolProperty(
-        name="Use Blue Channel",
-        default=True)
-
-    global_use_a : bpy.props.BoolProperty(
-        name="Use Alpha Transparency Channel",
-        default=True)
-    
-    global_r_map : bpy.props.EnumProperty(
+    R1G1B_map_R : bpy.props.EnumProperty(
         name="Channel Map",
         description="Choose a map for the Red channel among added to the table of maps",
         items=[('NONE', "None", "")])
-
-    global_g_map : bpy.props.EnumProperty(
+    
+    R1G1B_use_G : bpy.props.BoolProperty(
+        name="Use Green Channel",
+        default=True)
+    R1G1B_map_G : bpy.props.EnumProperty(
         name="Channel Map",
         description="Choose a map for the Green channel among added to the table of maps",
         items=[('NONE', "None", "")])
-
-    global_b_map : bpy.props.EnumProperty(
+        
+    R1G1B_use_B : bpy.props.BoolProperty(
+        name="Use Blue Channel",
+        default=True)
+    R1G1B_map_B : bpy.props.EnumProperty(
         name="Channel Map",
         description="Choose a map for the Blue channel among added to the table of maps",
         items=[('NONE', "None", "")])
 
-    global_a_map : bpy.props.EnumProperty(
+    # RGB+A
+    RGB1A_use_RGB : bpy.props.BoolProperty(
+        name="Use RGB Channels",
+        default=True)
+    RGB1A_map_RGB : bpy.props.EnumProperty(
         name="Channel Map",
-        description="Choose a map for the Alpha Transparency channel among added to the table of maps",
+        description="Choose a map for the RGB channels among added to the table of maps",
+        items=[('NONE', "None", "")])
+
+    RGB1A_use_A : bpy.props.BoolProperty(
+        name="Use Alpha Channel",
+        default=True)
+    RGB1A_map_A : bpy.props.EnumProperty(
+        name="Channel Map",
+        description="Choose a map for the Alpha channel among added to the table of maps",
+        items=[('NONE', "None", "")])
+
+    # R+G+B+A
+    R1G1B1A_use_R : bpy.props.BoolProperty(
+        name="Use Red Channel",
+        default=True)
+    R1G1B1A_map_R : bpy.props.EnumProperty(
+        name="Channel Map",
+        description="Choose a map for the Red channel among added to the table of maps",
+        items=[('NONE', "None", "")])
+    
+    R1G1B1A_use_G : bpy.props.BoolProperty(
+        name="Use Green Channel",
+        default=True)
+    R1G1B1A_map_G : bpy.props.EnumProperty(
+        name="Channel Map",
+        description="Choose a map for the Green channel among added to the table of maps",
+        items=[('NONE', "None", "")])
+        
+    R1G1B1A_use_B : bpy.props.BoolProperty(
+        name="Use Blue Channel",
+        default=True)
+    R1G1B1A_map_B : bpy.props.EnumProperty(
+        name="Channel Map",
+        description="Choose a map for the Blue channel among added to the table of maps",
+        items=[('NONE', "None", "")])
+
+    R1G1B1A_use_A : bpy.props.BoolProperty(
+        name="Use Alpha Channel",
+        default=True)
+    R1G1B1A_map_A : bpy.props.EnumProperty(
+        name="Channel Map",
+        description="Choose a map for the Alpha channel among added to the table of maps",
         items=[('NONE', "None", "")])
 
 # class BM_Object_BatchNamingKeyword(bpy.types.PropertyGroup):
