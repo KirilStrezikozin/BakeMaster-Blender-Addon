@@ -131,6 +131,7 @@ classes = (
     # BM_OT_ITEM_BatchNamingTable_Add,
     # BM_OT_ITEM_BatchNamingTable_Remove,
     # BM_OT_ITEM_BatchNamingTable_Trash,
+    BM_OT_ITEM_BatchNaming_Preview,
     BM_OT_ITEM_Maps,
     BM_OT_ITEM_Bake,
     BM_OT_Help,
