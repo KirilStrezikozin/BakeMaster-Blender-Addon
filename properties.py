@@ -2215,8 +2215,7 @@ class BM_Object(bpy.types.PropertyGroup):
     bake_batchname : bpy.props.StringProperty(
         name="Batch Name",
         description=BM_Labels.PROP_ITEM_bake_batchname_custom_Description,
-        default="$objectindex_$objectname_$mapname",
-        update=BM_ITEM_PROPS_bake_batchname_Update)
+        default="$objectindex_$objectname_$mapname")
 
     bake_batchname_use_caps : bpy.props.BoolProperty(
         name="Use Caps",
