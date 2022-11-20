@@ -40,21 +40,21 @@ def BM_Presets_FolderSetup():
         os.makedirs(bm_presets_dir_path)
 
     ###########################################################
-    # bakemaster full configurator presets
-    presets_makedir(bm_presets_dir_path, "object_configurator_presets")
+    # presets for configuring object(s) fully
+    presets_makedir(bm_presets_dir_path, "global_presets")
     ###########################################################
-    # object settings presets and subdirs for stt, uv, output presets
-    presets_makedir(bm_presets_dir_path, "object_settings_presets")
-    # stt settings presets subdir
-    presets_makedir(bm_presets_dir_path, "stt_settings_presets")
-    # uv settings presets subdir
-    presets_makedir(bm_presets_dir_path, "uv_settings_presets")
-    # output settings presets subdir
-    presets_makedir(bm_presets_dir_path, "output_settings_presets")
+    # presets for configuring hl, uv, out, csh, chnlp, bake
+    presets_makedir(bm_presets_dir_path, "hl_uv_out_presets")
+    presets_makedir(bm_presets_dir_path, "hl_presets")
+    presets_makedir(bm_presets_dir_path, "uv_presets")
+    presets_makedir(bm_presets_dir_path, "out_presets")
+    presets_makedir(bm_presets_dir_path, "csh_presets")
+    presets_makedir(bm_presets_dir_path, "chnlp_presets")
+    presets_makedir(bm_presets_dir_path, "bake_presets")
     ###########################################################
-    # map configurator presets and subdir for map settings presets
-    presets_makedir(bm_presets_dir_path, "maps_configurator_presets")
-    # map settings presets subdir
+    # presets for configuring map(s) fully
+    presets_makedir(bm_presets_dir_path, "global_map_presets")
+    # presets for configuring 
     presets_makedir(bm_presets_dir_path, "map_settings_presets")
     ###########################################################
     # bake settings presets subdir

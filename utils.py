@@ -451,11 +451,95 @@ def BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, name, index=-
 def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
     if self.nm_uni_container_is_global:
         # auto configure highpolies, cages for each lowpoly object
-        # set is_global to True on container creation ot force this func call
-        # TODO: somewhere implement auto uv type setting
+        # set is_global to True on container creation to force this func call
         pass
     else:
-        data
+        data = {
+            'hl_use_unique_per_map' : self.hl_use_unique_per_map,
+            'hl_use_cage' : self.hl_use_cage,
+            'hl_cage_type' : self.hl_cage_type,
+            'hl_cage_extrusion' : self.hl_cage_extrusion,
+            'hl_max_ray_distance' : self.hl_max_ray_distance,
+            'uv_use_unique_per_map' : self.uv_use_unique_per_map,
+            'uv_bake_data' : self.uv_bake_data,
+            'uv_bake_target' : self.uv_bake_target,
+            'uv_type' : self.uv_type,
+            'uv_snap_islands_to_pixels' : self.uv_snap_islands_to_pixels,
+            'uv_use_auto_unwrap' : self.uv_use_auto_unwrap,
+            'uv_auto_unwrap_angle_limit' : self.uv_auto_unwrap_angle_limit,
+            'uv_auto_unwrap_island_margin' : self.uv_auto_unwrap_island_margin,
+            'uv_auto_unwrap_use_scale_to_bounds' : self.uv_auto_unwrap_use_scale_to_bounds,
+            'out_use_unique_per_map' : self.out_use_unique_per_map,
+            'out_use_denoise' : self.out_use_denoise,
+            'out_file_format' : self.out_file_format,
+            'out_exr_codec' : self.out_exr_codec,
+            'out_compression' : self.out_compression,
+            'out_res' : self.out_res,
+            'out_res_height' : self.out_res_height,
+            'out_res_width' : self.out_res_width,
+            'out_margin' : self.out_margin,
+            'out_margin_type' : self.out_margin_type,
+            'out_use_32bit' : self.out_use_32bit,
+            'out_use_alpha' : self.out_use_alpha,
+            'out_use_transbg' : self.out_use_transbg,
+            'out_udim_start_tile' : self.out_udim_start_tile,
+            'out_udim_end_tile' : self.out_udim_end_tile,
+            'out_super_sampling_aa' : self.out_super_sampling_aa,
+            'out_samples' : self.out_samples,
+            'out_use_adaptive_threshold' : self.out_use_adaptive_threshold,
+            'out_min_samples' : self.out_min_samples,
+            'csh_use_triangulate_lowpoly' : self.csh_use_triangulate_lowpoly,
+            'csh_use_lowpoly_reset_normals' : self.csh_use_lowpoly_reset_normals,
+            'csh_lowpoly_use_smooth' : self.csh_lowpoly_use_smooth,
+            'csh_lowpoly_smoothing_groups_enum' : self.csh_lowpoly_smoothing_groups_enum,
+            'csh_lowpoly_smoothing_groups_angle' : self.csh_lowpoly_smoothing_groups_angle,
+            'csh_lowpoly_smoothing_groups_name_contains' : self.csh_lowpoly_smoothing_groups_name_contains,
+            'csh_use_highpoly_reset_normals' : self.csh_use_highpoly_reset_normals,
+            'csh_highpoly_use_smooth' : self.csh_highpoly_use_smooth,
+            'csh_highpoly_smoothing_groups_enum' : self.csh_highpoly_smoothing_groups_enum,
+            'csh_highpoly_smoothing_groups_angle' : self.csh_highpoly_smoothing_groups_angle,
+            'csh_highpoly_smoothing_groups_name_contains' : self.csh_highpoly_smoothing_groups_name_contains,
+            'bake_save_internal' : self.bake_save_internal,
+            'bake_output_filepath' : self.bake_output_filepath,
+            'bake_create_subfolder' : self.bake_create_subfolder,
+            'bake_subfolder_name' : self.bake_subfolder_name,
+            'bake_batchname' : self.bake_batchname,
+            'bake_batchname_use_caps' : self.bake_batchname_use_caps,
+            'bake_create_material' : self.bake_create_material,
+            'bake_device' : self.bake_device,
+        }
+
+        maps_data = []
+        for map in self.global_maps:
+            
+            unique_map_data = {
+            'hl_use_cage' : self.hl_use_cage,
+            'hl_cage_type' : self.hl_cage_type,
+            'hl_cage_extrusion' : self.hl_cage_extrusion,
+            'hl_max_ray_distance' : self.hl_max_ray_distance,
+            'uv_bake_data' : self.uv_bake_data,
+            'uv_bake_target' : self.uv_bake_target,
+            'uv_type' : self.uv_type,
+            'uv_snap_islands_to_pixels' : self.uv_snap_islands_to_pixels,
+            'out_use_denoise' : self.out_use_denoise,
+            'out_file_format' : self.out_file_format,
+            'out_exr_codec' : self.out_exr_codec,
+            'out_compression' : self.out_compression,
+            'out_res' : self.out_res,
+            'out_res_height' : self.out_res_height,
+            'out_res_width' : self.out_res_width,
+            'out_margin' : self.out_margin,
+            'out_margin_type' : self.out_margin_type,
+            'out_use_32bit' : self.out_use_32bit,
+            'out_use_alpha' : self.out_use_alpha,
+            'out_use_transbg' : self.out_use_transbg,
+            'out_udim_start_tile' : self.out_udim_start_tile,
+            'out_udim_end_tile' : self.out_udim_end_tile,
+            'out_super_sampling_aa' : self.out_super_sampling_aa,
+            'out_samples' : self.out_samples,
+            'out_use_adaptive_threshold' : self.out_use_adaptive_threshold,
+            'out_min_samples' : self.out_min_samples,
+            }
 
 ###############################################################
 ### Texture Sets Funcs ###
@@ -1443,6 +1527,7 @@ def BM_ITEM_PROPS_out_use_unique_per_map_Update(self, context):
         data = {
             'out_file_format' : object.out_file_format,
             'out_compression' : object.out_compression,
+            'out_exr_codec' : object.out_exr_codec,
             'out_res' : object.out_res,
             'out_res_height' : object.out_res_height,
             'out_res_width' : object.out_res_width,
@@ -1450,6 +1535,8 @@ def BM_ITEM_PROPS_out_use_unique_per_map_Update(self, context):
             'out_use_32bit' : object.out_use_32bit,
             'out_use_alpha' : object.out_use_alpha,
             'out_use_transbg' : object.out_use_transbg,
+            'out_udim_start_tile' : object.out_udim_start_tile,
+            'out_udim_end_tile' : object.out_udim_end_tile,
             'out_super_sampling_aa' : object.out_super_sampling_aa,
             'out_use_adaptive_sampling' : object.out_use_adaptive_sampling,
             'out_adaptive_treshold' : object.out_adaptive_threshold,

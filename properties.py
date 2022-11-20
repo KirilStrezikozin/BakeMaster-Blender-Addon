@@ -2224,9 +2224,9 @@ class BM_Object(bpy.types.PropertyGroup):
         default=False,
         update=BM_ITEM_PROPS_bake_batchname_use_caps_Update)
     
-    bake_batchname_preview : bpy.props.StringProperty(
-        name="Preview",
-        description="Output file batch name preview (might change for each map)")
+    # bake_batchname_preview : bpy.props.StringProperty(
+        # name="Preview",
+        # description="Output file batch name preview (might change for each map)")
 
     bake_create_material : bpy.props.BoolProperty(
         name="Create Material",
