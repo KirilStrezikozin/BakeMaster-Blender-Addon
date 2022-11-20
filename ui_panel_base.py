@@ -1230,8 +1230,11 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
             bake_box_column = bake_box.column(align=True)
             bake_box_column.prop(object, 'bake_batchname')
             bake_box_column.prop(object, 'bake_batchname_use_caps')
-            bake_box_column.emboss = 'NONE'
-            bake_box_column.prop(object, 'bake_batchname_preview')
+            # bake_box_column.emboss = 'NONE'
+            split = bake_box_column.split(factor=0.4)
+            split.column()
+            split.column().operator(BM_OT_ITEM_BatchNaming_Preview.bl_idname)
+            # bake_box_column.prop(object, 'bake_batchname_preview')
 
             bake_box_column = bake_box.column(align=True)
             bake_box_column.prop(object, 'bake_save_internal')
