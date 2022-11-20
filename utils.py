@@ -611,7 +611,6 @@ def BM_CHANNELPACK_PROPS_map_Items_Get(self, context, prop_channel_index):
     for index, map in enumerate(object.global_maps):
         if map.global_map_index in chosen and map.global_map_index != prop_channel_index:
             continue
-        print(map.global_map_index)
         name = '{} {}'.format(map.global_map_index, maps_names[map.global_map_type])
         new_items.append((str(map.global_map_index), name, "Choose map from the Object's Table of Maps for the current channel"))
     return new_items
@@ -620,7 +619,22 @@ def BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, prop_name):
     try:
         setattr(self, prop_name.format("_index"), int(getattr(self, prop_name.format(""))))
     except ValueError:
-        pass
+        setattr(self, prop_name.format("_index"), -1)
+
+def BM_CHANNELPACK_PROPS_map_UpdateNames(self):
+    chosen_data = {
+        'R1G1B' : ['_map_R', '_map_G', '_map_B'],
+        'RGB1A' : ['_map_RGB', '_map_A'],
+        'R1G1B1A' : ['_map_R', '_map_G', '_map_B', '_map_A'],
+    }
+    for prop in chosen_data[self.global_channelpack_type]:
+        index_value_prop = '{}{}_index'.format(self.global_channelpack_type, prop)
+        map_value_prop = '{}{}'.format(self.global_channelpack_type, prop)
+        index_value = str(getattr(self, index_value_prop))
+        if index_value != "-1" and getattr(self, map_value_prop) != index_value:
+            setattr(self, map_value_prop, index_value)
+        elif index_value == "-1" and getattr(self, map_value_prop) != 'NONE':
+            setattr(self, map_value_prop, 'NONE')
 
 # Items
 def BM_CHANNELPACK_PROPS_map_Items_R1G1B_R(self, context):
@@ -647,24 +661,33 @@ def BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_A(self, context):
 # Updates
 def BM_CHANNELPACK_PROPS_map_Update_R1G1B_R(self, context):
     BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B_map_R{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
 def BM_CHANNELPACK_PROPS_map_Update_R1G1B_G(self, context):
     BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B_map_G{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
 def BM_CHANNELPACK_PROPS_map_Update_R1G1B_B(self, context):
     BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B_map_B{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
 
 def BM_CHANNELPACK_PROPS_map_Update_RGB1A_RGB(self, context):
     BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'RGB1A_map_RGB{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
 def BM_CHANNELPACK_PROPS_map_Update_RGB1A_A(self, context):
     BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'RGB1A_map_A{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
 
 def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_R(self, context):
     BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_R{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
 def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_G(self, context):
     BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_G{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
 def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_B(self, context):
     BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_B{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
 def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_A(self, context):
     BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_A{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
 
 ###############################################################
 ### Batch Naming Funcs ###
