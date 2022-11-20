@@ -448,6 +448,15 @@ def BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, name, index=-
     name_zeros = "0"*(3 - len(name_index_str)) if len(name_index_str) < 3 else ""
     return "{}.{}{}".format(name, name_zeros, str(name_index_str))
 
+def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
+    if self.nm_uni_container_is_global:
+        # auto configure highpolies, cages for each lowpoly object
+        # set is_global to True on container creation ot force this func call
+        # TODO: somewhere implement auto uv type setting
+        pass
+    else:
+        data
+
 ###############################################################
 ### Texture Sets Funcs ###
 ###############################################################
@@ -1409,11 +1418,10 @@ def BM_ITEM_PROPS_uv_active_layer_Items(self, context):
     return uv_layers
 
 def BM_ITEM_PROPS_uv_type_Items(self, context):
+    items = [('AUTO', "Automatic", "Automatically detect UVMap type. If UDIMs detected, UDIM tiles range will be set automatically for each map"),
+             ('SINGLE', "Single (single tile)", "Regular single-tiled UV layer")]
     if bpy.app.version >= (3, 2, 0):
-        items = [('SINGLE', "Single (single tile)", "Regular single-tiled UV layer"),
-                 ('TILED', "Tiled (UDIMs)", "Tiled UV Layer, UDIM tiles")]
-    else:
-        items = [('SINGLE', "Single (single tile)", "Regular single-tiled UV layer")]
+        items.append(('TILED', "Tiled (UDIMs)", "Tiled UV Layer, UDIM tiles"))
     
     return items
 
