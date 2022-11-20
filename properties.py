@@ -1614,7 +1614,9 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
     R1G1B_map_R : bpy.props.EnumProperty(
         name="Channel Map",
         description="Choose a map for the Red channel among added to the table of maps",
-        items=[('NONE', "None", "")])
+        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B_R,
+        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B_R)
+    R1G1B_map_R_index : bpy.props.IntProperty(default=-1)
     
     R1G1B_use_G : bpy.props.BoolProperty(
         name="Use Green Channel",
@@ -1622,7 +1624,9 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
     R1G1B_map_G : bpy.props.EnumProperty(
         name="Channel Map",
         description="Choose a map for the Green channel among added to the table of maps",
-        items=[('NONE', "None", "")])
+        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B_B,
+        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B_B)
+    R1G1B_map_G_index : bpy.props.IntProperty(default=-1)
         
     R1G1B_use_B : bpy.props.BoolProperty(
         name="Use Blue Channel",
@@ -1630,7 +1634,9 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
     R1G1B_map_B : bpy.props.EnumProperty(
         name="Channel Map",
         description="Choose a map for the Blue channel among added to the table of maps",
-        items=[('NONE', "None", "")])
+        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B_G,
+        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B_G)
+    R1G1B_map_B_index : bpy.props.IntProperty(default=-1)
 
     # RGB+A
     RGB1A_use_RGB : bpy.props.BoolProperty(
@@ -1639,7 +1645,9 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
     RGB1A_map_RGB : bpy.props.EnumProperty(
         name="Channel Map",
         description="Choose a map for the RGB channels among added to the table of maps",
-        items=[('NONE', "None", "")])
+        items=BM_CHANNELPACK_PROPS_map_Items_RGB1A_RGB,
+        update=BM_CHANNELPACK_PROPS_map_Update_RGB1A_RGB)
+    RGB1A_map_RGB_index : bpy.props.IntProperty(default=-1)
 
     RGB1A_use_A : bpy.props.BoolProperty(
         name="Use Alpha Channel",
@@ -1647,7 +1655,9 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
     RGB1A_map_A : bpy.props.EnumProperty(
         name="Channel Map",
         description="Choose a map for the Alpha channel among added to the table of maps",
-        items=[('NONE', "None", "")])
+        items=BM_CHANNELPACK_PROPS_map_Items_RGB1A_A,
+        update=BM_CHANNELPACK_PROPS_map_Update_RGB1A_A)
+    RGB1A_map_A_index : bpy.props.IntProperty(default=-1)
 
     # R+G+B+A
     R1G1B1A_use_R : bpy.props.BoolProperty(
@@ -1656,7 +1666,9 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
     R1G1B1A_map_R : bpy.props.EnumProperty(
         name="Channel Map",
         description="Choose a map for the Red channel among added to the table of maps",
-        items=[('NONE', "None", "")])
+        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_R,
+        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_R)
+    R1G1B1A_map_R_index : bpy.props.IntProperty(default=-1)
     
     R1G1B1A_use_G : bpy.props.BoolProperty(
         name="Use Green Channel",
@@ -1664,7 +1676,9 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
     R1G1B1A_map_G : bpy.props.EnumProperty(
         name="Channel Map",
         description="Choose a map for the Green channel among added to the table of maps",
-        items=[('NONE', "None", "")])
+        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_G,
+        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_G)
+    R1G1B1A_map_G_index : bpy.props.IntProperty(default=-1)
         
     R1G1B1A_use_B : bpy.props.BoolProperty(
         name="Use Blue Channel",
@@ -1672,7 +1686,9 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
     R1G1B1A_map_B : bpy.props.EnumProperty(
         name="Channel Map",
         description="Choose a map for the Blue channel among added to the table of maps",
-        items=[('NONE', "None", "")])
+        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_B,
+        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_B)
+    R1G1B1A_map_B_index : bpy.props.IntProperty(default=-1)
 
     R1G1B1A_use_A : bpy.props.BoolProperty(
         name="Use Alpha Channel",
@@ -1680,7 +1696,9 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
     R1G1B1A_map_A : bpy.props.EnumProperty(
         name="Channel Map",
         description="Choose a map for the Alpha channel among added to the table of maps",
-        items=[('NONE', "None", "")])
+        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_A,
+        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_A)
+    R1G1B1A_map_A_index : bpy.props.IntProperty(default=-1)
 
 # class BM_Object_BatchNamingKeyword(bpy.types.PropertyGroup):
 #     global_keyword : bpy.props.EnumProperty(
