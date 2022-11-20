@@ -1243,9 +1243,6 @@ def BM_ITEM_PROPS_uv_use_unique_per_map_Update(self, context):
             for key in data:
                 setattr(map, key, data[key])
 
-def BM_ITEM_PROPS_out_use_unique_per_map_Update(self, context):
-    pass
-
 def BM_ITEM_PROPS_uv_active_layer_Items(self, context):
     object = BM_Object_Get(context)
     if object[0].nm_is_universal_container and object[0].nm_uni_container_is_global:
@@ -1279,6 +1276,34 @@ def BM_ITEM_PROPS_uv_bake_target_Items(self, context):
         items = [('IMAGE_TEXTURES', "Image Textures", "Bake to image texture files (image files)")]
     
     return items
+
+###############################################################
+### out Props Funcs ###
+###############################################################
+def BM_ITEM_PROPS_out_use_unique_per_map_Update(self, context):
+    object = self
+    if object.out_use_unique_per_map:
+        data = {
+            'out_file_format' : object.out_file_format,
+            'out_compression' : object.out_compression,
+            'out_res' : object.out_res,
+            'out_res_height' : object.out_res_height,
+            'out_res_width' : object.out_res_width,
+            'out_margin' : object.out_margin,
+            'out_use_32bit' : object.out_use_32bit,
+            'out_use_alpha' : object.out_use_alpha,
+            'out_use_transbg' : object.out_use_transbg,
+            'out_super_sampling_aa' : object.out_super_sampling_aa,
+            'out_use_adaptive_sampling' : object.out_use_adaptive_sampling,
+            'out_adaptive_treshold' : object.out_adaptive_threshold,
+            'out_samples' : object.out_samples,
+            'out_min_samples' : object.out_min_samples,
+            'out_use_denoise' : object.out_use_denoise,
+        }
+
+        for map in object.global_maps:
+            for key in data:
+                setattr(map, key, data[key])
 
 def BM_ITEM_PROPS_UVSettings_Update(self, context):
     pass
