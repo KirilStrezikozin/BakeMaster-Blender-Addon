@@ -1629,16 +1629,34 @@ def BM_MAP_PROPS_map_vertexcolor_layer_Items(self, context):
     else:
         return object_get_vertexcolor_layers(source_object.data.color_attributes)
 
+def BM_MAP_PROPS_map_normal_data_Items(self, context):
+    object = BM_Object_Get(context)[0]
+    if object.hl_use_unique_per_map:
+        len_of_highpolies = len(BM_Map_Get(object).hl_highpoly_table)
+    else:
+        len_of_highpolies = len(object.hl_highpoly_table)
+    if len_of_highpolies > 0:
+        items = [('HIGHPOLY', "Highpoly", "Bake normals from highpoly object data to lowpoly"),
+                 ('MULTIRES', "Multires Modifier", "Bake normals from existing Multires modifier"),
+                 ('MATERIAL', "Object/Materials", "Bake normals from object data")]
+    else:
+        items = [('MULTIRES', "Multires Modifier", "Bake normals from existing Multires modifier"),
+                 ('MATERIAL', "Object/Materials", "Bake normals from object data")]
+    return items 
+
 def BM_MAP_PROPS_map_displacement_data_Items(self, context):
     object = BM_Object_Get(context)[0]
-    if len(object.hl_highpoly_table):
+    if object.hl_use_unique_per_map:
+        len_of_highpolies = len(BM_Map_Get(object).hl_highpoly_table)
+    else:
+        len_of_highpolies = len(object.hl_highpoly_table)
+    if len_of_highpolies > 0:
         items = [('HIGHPOLY', "Highpoly", "Bake displacement from highpoly object data to lowpoly"),
                  ('MULTIRES', "Multires Modifier", "Bake displacement from existing Multires modifier"),
                  ('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
     else:
         items = [('MULTIRES', "Multires Modifier", "Bake displacement from existing Multires modifier"),
                  ('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
-
     return items
 
 def BM_ITEM_UseTargetUpdate(self, context):
