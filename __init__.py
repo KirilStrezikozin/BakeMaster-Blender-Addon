@@ -61,6 +61,8 @@ else:
 import bpy
 
 classes = (
+    BM_PREFS_Addon_Preferences,
+
     BM_UL_Table_of_Objects_Item,
     BM_UL_Table_of_Objects_Item_Highpoly,
     BM_UL_Table_of_Maps_Item,
