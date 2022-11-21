@@ -738,7 +738,12 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     map_settings_column.enabled = False
 
             # map settings body
-            if (object.hl_use_unique_per_map is False and len(object.hl_highpoly_table) > 0) or (object.hl_use_unique_per_map and len(map.hl_highpoly_table)):
+            draw_affect_by_hl = False
+            if object.hl_use_unique_per_map and len(map.hl_highpoly_table):
+                draw_affect_by_hl = True
+            elif len(object.hl_highpoly_table):
+                draw_affect_by_hl = True
+            if draw_affect_by_hl and map.global_map_type not in ['NORMAL', 'DISPLACEMENT']:
                 map_settings_column.prop(map, 'global_affect_by_hl', text="Affect by Highpoly")
             
             map_settings_column.prop(map, 'map_%s_prefix' % map.global_map_type)
@@ -814,10 +819,11 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
             # Object-based Maps
             elif map.global_map_type == 'NORMAL':
                 try:
-                    if map.global_affect_by_hl:
+                    if map.map_normal_data != 'MATERIAL':
                         map_settings_column_preview.active = False
                 except NameError:
                     pass
+                map_settings_column.prop(map, 'map_normal_data')
                 map_settings_column.prop(map, 'map_normal_space')
                 map_settings_column.prop(map, 'map_normal_preset')
                 if map.map_normal_preset == 'CUSTOM':
