@@ -24,6 +24,17 @@ from .operator_bake import BM_OT_ITEM_Bake
 from .utils import BM_Object_Get
 from .presets import *
 
+class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
+    bl_idname = __package__
+
+    def draw(self, context):
+        bm_props = context.scene.bm_props
+        layout = self.layout.column(align=True)
+        layout.prop(bm_props, 'global_lowpoly_tag')
+        layout.prop(bm_props, 'global_highpoly_tag')
+        layout.prop(bm_props, 'global_cage_tag')
+        layout.prop(bm_props, 'global_decal_tag')
+
 class BM_UL_Table_of_Objects_Item(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         row = layout.row()   
