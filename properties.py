@@ -169,6 +169,27 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Texture Set.\nTexture Set is a set of objects that share the same image texture file for each map",
         default=0)
 
+# Addon Preferences Props
+    global_lowpoly_tag : bpy.props.StringProperty(
+        name="Lowpoly Tag",
+        description="What keyword to search for in Object name to determine if it's a Lowpoly Object",
+        default="low")
+
+    global_highpoly_tag : bpy.props.StringProperty(
+        name="Highpoly Tag",
+        description="What keyword to search for in Object name to determine if it's a Highpoly Object",
+        default="high")
+
+    global_cage_tag : bpy.props.StringProperty(
+        name="Cage Tag",
+        description="What keyword to search for in Object name to determine if it's a Cage Object",
+        default="cage")
+
+    global_decal_tag : bpy.props.StringProperty(
+        name="Decal Tag",
+        description="What keyword to search for in Object name to determine if it's a Decal Object",
+        default="decal")
+
 ##################################################
 ### MAP PROPS ###
 ##################################################
