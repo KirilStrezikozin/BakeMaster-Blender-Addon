@@ -770,6 +770,11 @@ class BM_Map(bpy.types.PropertyGroup):
         default=False,
         update=BM_MAP_Preview_AO)
 
+    map_normal_data : bpy.props.EnumProperty(
+        name="Data",
+        description="Data for Normal map",
+        items=BM_MAP_PROPS_map_normal_data_Items)
+
     map_normal_space : bpy.props.EnumProperty(
         name = "Normal Space",
         description = "Choose normal space for baking",
