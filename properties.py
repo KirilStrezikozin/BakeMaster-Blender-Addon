@@ -131,6 +131,10 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Expand/Collapse Bake Output Settings panel",
         default=False)
 
+    local_is_decal_panel_expanded : bpy.props.BoolProperty(
+        name="Expand/Collapse Decal Settings panel",
+        default=False)
+
     local_is_hl_panel_expanded : bpy.props.BoolProperty(
         name="Expand/Collapse High to Lowpoly Settings panel",
         default=False)
@@ -1803,6 +1807,43 @@ class BM_Object(bpy.types.PropertyGroup):
         description="If checked, all Container's Objects settings will be configured by Container settings",
         default=False,
         update=BM_ITEM_PROPS_nm_uni_container_is_global_Update)
+
+# Item Decal Props:
+    decal_is_decal : bpy.props.BoolProperty(
+        name="Decal Object",
+        description="Set the current Object to be Decal Object",
+        default=False,
+        update=BM_ITEM_PROPS_decal_is_decal_Update)
+
+    decal_use_custom_camera : bpy.props.BoolProperty(
+        name="Use Custom Camera",
+        description="Use Custom Camera Object in the Scene for baking decal's maps",
+        default=False)
+    
+    decal_custom_camera : bpy.props.EnumProperty(
+        name="Camera",
+        descritption="Choose Camera Object",
+        items=BM_ITEM_PROPS_decal_custom_camera_Items)
+
+    decal_upper_coordinate : bpy.props.EnumProperty(
+        name="Upper Coordinate",
+        description="Choose coordinate specifying where the decal's top is",
+        default='+Z',
+        items=[('+X', "+X", ""),
+               ('+Y', "+Y", ""),
+               ('+Z', "+Z", ""),
+               ('-X', "-X", ""),
+               ('-Y', "-Y", ""),
+               ('-Z', "-Z", "")])
+
+    decal_boundary_offset : bpy.props.FloatProperty(
+        name="Boundary Offset",
+        description="Distance to use between decal object's bounds and captured image area bounds",
+        default=0.1,
+        min=0,
+        max=1)
+    
+    decal_upper_coordinate : bpy.props
 
 # Item High to Lowpoly props:
     hl_use_unique_per_map : bpy.props.BoolProperty(
