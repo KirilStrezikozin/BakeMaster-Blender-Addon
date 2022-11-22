@@ -283,7 +283,7 @@ class BM_UL_TextureSets_Objects_Table_Item_SubItem(bpy.types.UIList):
         # icon = 'MESH_PLANE'
         source_object = [object for object in context.scene.bm_table_of_objects if object.global_object_name == item.global_object_name][0]
 
-        if source_object.global_use_bake is False:
+        if source_object.global_use_bake is False or source_object.decal_is_decal:
             layout.active = False
         try:
             context.scene.objects[source_object.global_object_name]
