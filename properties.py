@@ -209,6 +209,12 @@ class BM_Map_Highpoly(bpy.types.PropertyGroup):
 
     global_highpoly_object_include : bpy.props.StringProperty(default="")
 
+    global_is_decal : bpy.props.BoolProperty(
+        name="Decal",
+        description="Mark Object as a Decal to bake onto Lowpoly",
+        default=False,
+        update=BM_ITEM_PROPS_hl_highpoly_is_decal_Update)
+
 class BM_Map(bpy.types.PropertyGroup):
     global_use_bake : bpy.props.BoolProperty(
         name = "Include/exclude map in the bake",
@@ -1617,6 +1623,12 @@ class BM_Object_Highpoly(bpy.types.PropertyGroup):
 
     global_highpoly_object_include : bpy.props.StringProperty(default="")
 
+    global_is_decal : bpy.props.BoolProperty(
+        name="Decal",
+        description="Mark Object as a Decal to bake onto Lowpoly",
+        default=False,
+        update=BM_ITEM_PROPS_hl_highpoly_is_decal_Update)
+
 class BM_Object_ChannelPack(bpy.types.PropertyGroup):
     global_channelpack_name : bpy.props.StringProperty(
         name="Pack Name",
@@ -1811,11 +1823,20 @@ class BM_Object(bpy.types.PropertyGroup):
         default=False,
         update=BM_ITEM_PROPS_HighLowSettings_Update)
 
+    hl_is_decal : bpy.props.BoolProperty(
+        default=False,
+        update=BM_ITEM_PROPS_HighLowSettings_Update)
+
     hl_highpoly_table : bpy.props.CollectionProperty(type=BM_Object_Highpoly)
 
     hl_highpoly_table_active_index : bpy.props.IntProperty(
         name="Highpoly Object",
         default=0)
+
+    hl_decals_use_separate_texset : bpy.props.BoolProperty(
+        name="Separate Decals",
+        description="If checked, all specified decals will be baked to a separate texture set for the Object,\notherwise, decals map passes will be baked to Object's textures",
+        default=False)
 
     hl_use_cage : bpy.props.BoolProperty(
         name="Use Cage Object",
