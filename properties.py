@@ -670,6 +670,94 @@ class BM_Map(bpy.types.PropertyGroup):
                ('ALPHA', "Alpha", ""),
                ('NORMAL', "Normal", "")])
 
+# Decal Pass Map Props
+    map_DECAL_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="DECAL")
+
+    map_DECAL_use_preview : bpy.props.BoolProperty(
+        name="Preview",
+        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        default=False,
+        update=BM_MAP_Preview_AO)
+    
+    map_decal_pass_type : bpy.props.EnumProperty(
+        name="Pass Type",
+        description="Decal Map pass type to bake",
+        default='NORMAL',
+        items=[('NORMAL', "Normal", "Normals Pass using MatCap"),
+               ('HEIGHT', "Height", "How high mesh parts are from the world ground level"),
+               ('OPACITY', "Opacity", "Decal Object - white, empty space - black")])
+
+    map_decal_height_opacity_invert : bpy.props.BoolProperty(
+        name="Invert",
+        description="Invert colors of the map",
+        default=False)
+
+    map_decal_normal_preset : bpy.props.EnumProperty(
+        name="Preset",
+        description="Decal Map Normal Pass preset for different software for correct result when used in that software",
+        default='BLENDER',
+        items=[('CUSTOM', "Custom", "Choose custom algorithm"),
+               ('BLENDER', "Blender", "Blender uses OpenGL format"),
+               ('3DS_MAX', "3DS Max", "3DS Max uses DirectX format"),
+               ('CORONA', "Corona", "Corona uses DirectX format"),
+               ('CRYENGINE', "CryEngine", "CryEngine uses DirectX format"),
+               ('SUBSTANCE_PAINTER', "Substance Painter", "Substance Painter uses DirectX format"),
+               ('UNREAL_ENGINE', "Unreal Engine", "Unreal Engine uses DirectX format"),
+               ('CINEMA_4D', "Cinema 4D", "Cinema 4D uses OpenGL format"),
+               ('ARNOLD', "Arnold", "Arnold uses OpenGL format"),
+               ('HOUDINI', "Houdini", "Houdini uses OpenGL format"),
+               ('MARMOSET_TOOLBAG', "Marmoset Toolbag", "Marmoset Toolbag uses OpenGL format"),
+               ('MAYA', "Maya", "Maya uses OpenGL format"),
+               ('OCTANE', "Octane", "Octane uses OpenGL format"),
+               ('REDSHIFT', "Redshift", "Redshift uses OpenGL format"),
+               ('UNITY', "Unity", "Unity uses OpenGL format"),
+               ('VRAY', "VRay", "VRay uses OpenGL format"),
+               ('ZBRUSH', "ZBrush", "ZBrush uses OpenGL format")])
+    
+    map_decal_normal_custom_preset : bpy.props.EnumProperty(
+        name="Custom Format",
+        description="Decal Map Normal Pass format (Green channel is inverted)",
+        default='OPEN_GL',
+        items=[('OPEN_GL', "OpenGL", "OpenGL Normal Map format. Green Channel Axis is +Y"),
+               ('DIRECTX', "DirectX", "DirectX Normal Map format. Green Channel Axis is -Y"),
+               ('CUSTOM', "Custom", "Set custom axes for channels")])
+
+    map_decal_normal_r : bpy.props.EnumProperty(
+        name = "Normal Space",
+        description = "Axis to bake in %s channel" % "red",
+        default = 'POS_X',
+        items = [('POS_X', "+X", ""),
+                 ('POS_Y', "+Y", ""),
+                 ('POS_Z', "+Z", ""),
+                 ('NEG_X', "-X", ""),
+                 ('NEG_Y', "-Y", ""),
+                 ('NEG_Z', "-Z", "")])
+
+    map_decal_normal_g : bpy.props.EnumProperty(
+        name = "Normal Space",
+        description = "Axis to bake in %s channel" % "green",
+        default = 'POS_Y',
+        items = [('POS_X', "+X", ""),
+                 ('POS_Y', "+Y", ""),
+                 ('POS_Z', "+Z", ""),
+                 ('NEG_X', "-X", ""),
+                 ('NEG_Y', "-Y", ""),
+                 ('NEG_Z', "-Z", "")])
+
+    map_decal_normal_b : bpy.props.EnumProperty(
+        name = "Normal Space",
+        description = "Axis to bake in %s channel" % "blue",
+        default = 'POS_Z',
+        items = [('POS_X', "+X", ""),
+                 ('POS_Y', "+Y", ""),
+                 ('POS_Z', "+Z", ""),
+                 ('NEG_X', "-X", ""),
+                 ('NEG_Y', "-Y", ""),
+                 ('NEG_Z', "-Z", "")])
+
 # Vertex Color Layer Map Props
     map_VERTEX_COLOR_LAYER_prefix : bpy.props.StringProperty(
         name="Prefix",
