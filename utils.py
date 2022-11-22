@@ -1653,6 +1653,8 @@ def BM_MAP_PROPS_map_normal_data_Items(self, context):
     else:
         items = [('MULTIRES', "Multires Modifier", "Bake normals from existing Multires modifier"),
                  ('MATERIAL', "Object/Materials", "Bake normals from object data")]
+    if object.decal_is_decal:
+        items = [('MATERIAL', "Object/Materials", "Bake normals from object data")]
     return items 
 
 def BM_MAP_PROPS_map_displacement_data_Items(self, context):
@@ -1668,6 +1670,8 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
     else:
         items = [('MULTIRES', "Multires Modifier", "Bake displacement from existing Multires modifier"),
                  ('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
+    if object.decal_is_decal:
+        items = [('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
     return items
 
 def BM_ITEM_UseTargetUpdate(self, context):
