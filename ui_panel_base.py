@@ -66,7 +66,7 @@ class BM_UL_Table_of_Objects_Item(bpy.types.UIList):
                         icon = icon_[0]
                     else:
                         icon = 'OUTLINER_OB_MESH'
-                    if item.hl_is_highpoly and item.hl_is_decal:
+                    if (item.hl_is_highpoly and item.hl_is_decal) or item.decal_is_decal:
                         icon = 'XRAY'
                     row.label(text=item.global_object_name, icon=icon)
             
