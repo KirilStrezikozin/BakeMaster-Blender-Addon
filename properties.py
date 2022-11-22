@@ -107,6 +107,10 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         update=BM_SCENE_PROPS_global_use_name_matching_Update)
     
 # Global Panels Props
+    global_is_decal_panel_expanded : bpy.props.BoolProperty(
+        name="Expand/Collapse Decal Settings panel",
+        default=False)
+
     global_is_hl_panel_expanded : bpy.props.BoolProperty(
         name="Expand/Collapse High to Lowpoly Settings panel",
         default=False)
@@ -129,10 +133,6 @@ class BM_SceneProps(bpy.types.PropertyGroup):
 
     global_is_bakeoutput_panel_expanded : bpy.props.BoolProperty(
         name="Expand/Collapse Bake Output Settings panel",
-        default=False)
-
-    local_is_decal_panel_expanded : bpy.props.BoolProperty(
-        name="Expand/Collapse Decal Settings panel",
         default=False)
 
     local_is_hl_panel_expanded : bpy.props.BoolProperty(
@@ -1808,10 +1808,10 @@ class BM_Object(bpy.types.PropertyGroup):
         description="Use Custom Camera Object in the Scene for baking decal's maps",
         default=False)
     
-    decal_custom_camera : bpy.props.EnumProperty(
+    decal_custom_camera : bpy.props.PointerProperty(
         name="Camera",
         descritption="Choose Camera Object",
-        items=BM_ITEM_PROPS_decal_custom_camera_Items)
+        type=bpy.types.Camera)
 
     decal_upper_coordinate : bpy.props.EnumProperty(
         name="Upper Coordinate",
@@ -1830,8 +1830,6 @@ class BM_Object(bpy.types.PropertyGroup):
         default=0.1,
         min=0,
         max=1)
-    
-    decal_upper_coordinate : bpy.props
 
 # Item High to Lowpoly props:
     hl_use_unique_per_map : bpy.props.BoolProperty(
