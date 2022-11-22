@@ -66,6 +66,8 @@ class BM_UL_Table_of_Objects_Item(bpy.types.UIList):
                         icon = icon_[0]
                     else:
                         icon = 'OUTLINER_OB_MESH'
+                    if item.hl_is_highpoly and item.hl_is_decal:
+                        icon = 'XRAY'
                     row.label(text=item.global_object_name, icon=icon)
             
             # drawing containers
@@ -419,6 +421,10 @@ class BM_PT_ItemBase(bpy.types.Panel):
             label = "Object cannot be found"
             icon = 'GHOST_DISABLED'
             self.layout.label(text=label, icon=icon)
+        elif object[0].hl_is_highpoly and object[0].hl_is_decal:
+            label = "Decal Object"
+            icon = 'XRAY'
+            self.layout.label(text=label, icon=icon)
         elif object[0].hl_is_highpoly:
             label = "Highpoly Object" 
             icon = 'VIEW_ORTHO'
@@ -515,6 +521,9 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                     hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
                     hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
                     hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
+                hl_box_decal = hl_box.column(align=True)
+                hl_box_decal.prop(object.hl_highpoly_table[object.hl_highpoly_table_active_index], 'global_is_decal')
+                hl_box_decal.prop(object, 'hl_decals_use_separate_texset')
                 # cage
                 if len(object.hl_highpoly_table) or hl_draw is False:
                     hl_box_cage = hl_box.column(align=True)
