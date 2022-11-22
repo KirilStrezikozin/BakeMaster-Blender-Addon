@@ -259,7 +259,7 @@ class BM_UL_TextureSets_Objects_Table_Item(bpy.types.UIList):
             elif layout.active:
                 icon = 'OUTLINER_OB_MESH'
 
-            if object.global_use_bake is False:
+            if object.global_use_bake is False or object.decal_is_decal:
                 layout.active = False
 
         layout.emboss = 'NONE'
