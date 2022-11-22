@@ -507,6 +507,10 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                 decal_box.prop(object, 'decal_upper_coordinate')
                 decal_box.prop(object, 'decal_boundary_offset')
 
+        # skip drawing hl, uv, csh subpanels
+        if object.decal_is_decal:
+            return
+
         # hl
         hl_box = layout.box()
         hl_box.use_property_split = True
@@ -1043,6 +1047,11 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 map_settings_column.prop(map, 'map_wireframemask_use_invert')
         
             # unique map settings
+
+            # skip drawing hl, uv, csh subpanels
+            if object.decal_is_decal:
+                return
+
             # hl
             if object.hl_use_unique_per_map:
                 hl_box = layout.box()
