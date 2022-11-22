@@ -1295,6 +1295,7 @@ def BM_ITEM_PROPS_hl_highpoly_Update(self, context):
         if self.global_highpoly_name_old == 'NONE':
             update_name = True
         self.global_highpoly_name_old = self.global_object_name
+        self.global_is_decal = False
         try:
             context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_highpoly = False
         except IndexError:
@@ -1312,6 +1313,7 @@ def BM_ITEM_PROPS_hl_highpoly_Update(self, context):
 
 def BM_ITEM_PROPS_hl_add_highpoly_Update(self, context):
     self.global_highpoly_name_old = self.global_object_name
+    self.global_is_decal = False
     try:
         context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_highpoly = False
     except IndexError:
@@ -1324,12 +1326,15 @@ def BM_ITEM_PROPS_hl_add_highpoly_Update(self, context):
         context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_highpoly = True
     self.global_highpoly_object_include = self.global_object_name
     BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
+    BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
 
 def BM_ITEM_PROPS_hl_remove_highpoly_Update(self, context):
+    self.global_is_decal = False
     try: 
         context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_highpoly = False
     except IndexError:
         pass
+    BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
 
 def BM_ITEM_PROPS_hl_highpoly_UpdateNames(context):
     for object in context.scene.bm_table_of_objects:
@@ -1462,6 +1467,14 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context):
                         break
                 highpoly.global_highpoly_name_old = highpoly.global_highpoly_object_include
                 highpoly.global_object_name = highpoly.global_highpoly_object_include
+
+def BM_ITEM_PROPS_hl_highpoly_is_decal_Update(self, context):
+    if self.global_is_decal:
+        if self.global_highpoly_object_index != -1:
+            context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_decal = True
+    else:
+        if self.global_highpoly_object_index != -1:
+            context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_decal = False
 
 ###############################################################
 ### uv Props Funcs ###
