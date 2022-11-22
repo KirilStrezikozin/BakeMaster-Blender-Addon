@@ -521,9 +521,11 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                     hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
                     hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
                     hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
-                hl_box_decal = hl_box.column(align=True)
-                hl_box_decal.prop(object.hl_highpoly_table[object.hl_highpoly_table_active_index], 'global_is_decal')
-                hl_box_decal.prop(object, 'hl_decals_use_separate_texset')
+                # highpoly as decal
+                if len(object.hl_highpoly_table:
+                    hl_box_decal = hl_box.column(align=True)
+                    hl_box_decal.prop(object.hl_highpoly_table[object.hl_highpoly_table_active_index], 'global_is_decal')
+                    hl_box_decal.prop(object, 'hl_decals_use_separate_texset')
                 # cage
                 if len(object.hl_highpoly_table) or hl_draw is False:
                     hl_box_cage = hl_box.column(align=True)
