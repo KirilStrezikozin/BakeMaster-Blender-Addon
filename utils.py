@@ -1591,6 +1591,7 @@ def BM_MAP_PROPS_map_type_Items(self, context):
         ('DISPLACEMENT', "Displacement", "Height map used for displacing mesh polygons"),
         ('VECTOR_DISPLACEMENT', "Vector Displacement", "Displacement map where each pixel stores RGB as XYZ displacement data"),
         ('POSITION', "Position", "Indicates object parts location in the UV space"),
+        ('DECAL', "Decal Pass", "Bake common passes for Decal Object"),
         ('', "Masks and Details", ""),
         ('AO', "AO", "Ambient Occlusion map contains lightning data"),
         ('CAVITY', "Cavity", "Image texture map for crevice details"),
@@ -1605,7 +1606,6 @@ def BM_MAP_PROPS_map_type_Items(self, context):
 
         ('', "Passes and Cycles Default", "Bake Cycles default maps and object data and materials passes"),
         ('PASS', "BSDF Pass", "Choose and bake BSDF pass to image texture"),
-        ('DECAL', "Decal Pass", "Bake common passes for Decal Object"),
         ('VERTEX_COLOR_LAYER', "VertexColor Layer", "Bake VertexColor Layer"),
         ('C_COMBINED', "Combined", "Bakes all materials, textures, and lighting contribution except specularity"),
         ('C_AO', "Ambient Occlusion", "Ambient Occlusion map contains lightning data"),
