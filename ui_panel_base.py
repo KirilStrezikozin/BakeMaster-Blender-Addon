@@ -481,6 +481,32 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
         scene = context.scene
         object = BM_Object_Get(context)[0]
 
+        # decal
+        decal_box = layout.box()
+        decal_box.use_property_split = True
+        decal_box.use_property_decorate = False
+        
+        # decal header
+        decal_box_header = decal_box.row(align=True)
+        decal_box_header.use_property_split = False
+        decal_box_header.emboss = 'NONE'
+        icon = 'TRIA_DOWN' if scene.bm_props.global_is_decal_panel_expanded else 'TRIA_RIGHT'
+        decal_box_header.prop(scene.bm_props, 'global_is_decal_panel_expanded', text="", icon=icon)
+        decal_box_header.emboss = 'NORMAL'
+        decal_box_header.label(text="Decal")
+        BM_PT_MapsConfigurator_Presets.draw_panel_header(decal_box_header)
+
+        # decal body
+        if scene.bm_props.global_is_decal_panel_expanded:
+            decal_box.prop(object, 'decal_is_decal')
+            if object.decal_is_decal:
+                decal_box_column = decal_box.column(align=True)
+                decal_box_column.prop(object, 'decal_use_custom_camera')
+                if object.decal_use_custom_camera:
+                    decal_box_column.prop(object, 'decal_custom_camera')
+                decal_box.prop(object, 'decal_upper_coordinate')
+                decal_box.prop(object, 'decal_boundary_offset')
+
         # hl
         hl_box = layout.box()
         hl_box.use_property_split = True
