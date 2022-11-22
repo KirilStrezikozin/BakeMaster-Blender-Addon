@@ -1020,6 +1020,15 @@ def BM_Table_of_Objects_GetFTL(context, items, bitflag_filter_item):
         return ftl_flags, ftl_neworder
 
 ###############################################################
+### decal Props Funcs ###
+###############################################################
+def BM_ITEM_PROPS_decal_is_decal_Update(self, context):
+    if self.decal_is_decal:
+        self.hl_use_cage = False
+        self.hl_use_unique_per_map = False
+        BM_ITEM_PROPS_hl_use_unique_per_map_Update_TrashHighpolies(self, self, context)
+
+###############################################################
 ### hl Props Funcs ###
 ###############################################################
 def BM_ITEM_PROPS_hl_use_unique_per_map_Update(self, context):
