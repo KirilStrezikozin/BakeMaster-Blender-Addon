@@ -213,12 +213,6 @@ class BM_Map_Highpoly(bpy.types.PropertyGroup):
 
     global_highpoly_object_include : bpy.props.StringProperty(default="")
 
-    global_is_decal : bpy.props.BoolProperty(
-        name="Decal",
-        description="Mark Object as a Decal to bake onto Lowpoly",
-        default=False,
-        update=BM_ITEM_PROPS_hl_highpoly_is_decal_Update)
-
 class BM_Map(bpy.types.PropertyGroup):
     global_use_bake : bpy.props.BoolProperty(
         name = "Include/exclude map in the bake",
@@ -1626,12 +1620,6 @@ class BM_Object_Highpoly(bpy.types.PropertyGroup):
     global_highpoly_object_index : bpy.props.IntProperty(default=-1)
 
     global_highpoly_object_include : bpy.props.StringProperty(default="")
-
-    global_is_decal : bpy.props.BoolProperty(
-        name="Decal",
-        description="Mark Object as a Decal to bake onto Lowpoly",
-        default=False,
-        update=BM_ITEM_PROPS_hl_highpoly_is_decal_Update)
 
 class BM_Object_ChannelPack(bpy.types.PropertyGroup):
     global_channelpack_name : bpy.props.StringProperty(
