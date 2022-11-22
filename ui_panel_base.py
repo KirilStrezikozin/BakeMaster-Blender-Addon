@@ -794,6 +794,8 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 draw_affect_by_hl = True
             elif len(object.hl_highpoly_table):
                 draw_affect_by_hl = True
+            if object.decal_is_decal:
+                draw_affect_by_hl = False
             if draw_affect_by_hl and map.global_map_type not in ['NORMAL', 'DISPLACEMENT']:
                 map_settings_column.prop(map, 'global_affect_by_hl', text="Affect by Highpoly")
             
