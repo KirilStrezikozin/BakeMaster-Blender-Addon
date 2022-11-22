@@ -842,7 +842,22 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
             if map.global_map_type == 'PASS':
                 map_settings_column.prop(map, 'map_pass_type')
 
-            if map.global_map_type == 'VERTEX_COLOR_LAYER':
+            elif map.global_map_type == 'DECAL':
+                map_settings_column.prop(map, 'map_decal_pass_type')
+                if map.map_decal_pass_type == 'NORMAL':
+                    map_settings_column.prop(map, 'map_decal_normal_preset')
+                    if map.map_decal_normal_preset == 'CUSTOM':
+                        sub = map_settings_column.column(align=True)
+                        sub.prop(map, 'map_decal_normal_custom_preset')
+                        if map.map_normal_custom_preset == 'CUSTOM':
+                            sub.prop(map, 'map_decal_normal_r', text="Swizzle R")
+                            sub.prop(map, 'map_decal_normal_g', text="G")
+                            sub.prop(map, 'map_decal_normal_b', text="B")
+                else:
+                    map_settings_column.prop(map, 'map_decal_height_opacity_invert')
+
+
+            elif map.global_map_type == 'VERTEX_COLOR_LAYER':
                 map_settings_column.prop(map, 'map_vertexcolor_layer')
             
             elif map.global_map_type == 'C_NORMAL':
