@@ -1805,12 +1805,12 @@ class BM_Object(bpy.types.PropertyGroup):
 
     decal_use_custom_camera : bpy.props.BoolProperty(
         name="Use Custom Camera",
-        description="Use Custom Camera Object in the Scene for baking decal's maps",
+        description="Use Custom Camera Object for capturing and baking decal maps",
         default=False)
     
     decal_custom_camera : bpy.props.PointerProperty(
         name="Camera",
-        descritption="Choose Camera Object",
+        description="Choose Camera Object",
         type=bpy.types.Camera)
 
     decal_upper_coordinate : bpy.props.EnumProperty(
@@ -1851,6 +1851,8 @@ class BM_Object(bpy.types.PropertyGroup):
         update=BM_ITEM_PROPS_HighLowSettings_Update)
 
     hl_is_decal : bpy.props.BoolProperty(
+        name="Decal",
+        description="Mark the current Highpoly as a Decal Object for the Lowpoly",
         default=False,
         update=BM_ITEM_PROPS_HighLowSettings_Update)
 
