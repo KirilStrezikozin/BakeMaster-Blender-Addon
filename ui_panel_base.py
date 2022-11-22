@@ -554,9 +554,9 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                 # highpoly as decal
                 if len(object.hl_highpoly_table):
                     highpoly_object_index = object.hl_highpoly_table[object.hl_highpoly_table_active_index].global_highpoly_object_index
+                    hl_box_decal = hl_box.column(align=True)
                     if highpoly_object_index != -1:
                         source_object = scene.bm_table_of_objects[highpoly_object_index]
-                        hl_box_decal = hl_box.column(align=True)
                         hl_box_decal.prop(source_object, 'hl_is_decal')
                     hl_box_decal.prop(object, 'hl_decals_use_separate_texset')
                 # cage
@@ -1106,9 +1106,9 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     # highpoly as decal
                     if len(map.hl_highpoly_table):
                         highpoly_object_index = map.hl_highpoly_table[map.hl_highpoly_table_active_index].global_highpoly_object_index
+                        hl_box_decal = hl_box.column(align=True)
                         if highpoly_object_index != -1:
                             source_object = scene.bm_table_of_objects[highpoly_object_index]
-                            hl_box_decal = hl_box.column(align=True)
                             hl_box_decal.prop(source_object, 'hl_is_decal')
                         hl_box_decal.prop(object, 'hl_decals_use_separate_texset')
                     # cage

@@ -486,7 +486,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'out_udim_end_tile' : self.out_udim_end_tile,
             'out_super_sampling_aa' : self.out_super_sampling_aa,
             'out_samples' : self.out_samples,
-            'out_use_adaptive_threshold' : self.out_use_adaptive_threshold,
+            'out_use_adaptive_sampling' : self.out_use_adaptive_sampling,
             'out_min_samples' : self.out_min_samples,
             'csh_use_triangulate_lowpoly' : self.csh_use_triangulate_lowpoly,
             'csh_use_lowpoly_reset_normals' : self.csh_use_lowpoly_reset_normals,
