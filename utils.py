@@ -56,7 +56,7 @@ def BM_Table_of_Objects_NameMatching_GenerateNameChunks(name: str):
             chunks.append(name[chunk_start_index:len(name)])
     return [chunk for chunk in chunks if chunk.replace(" ", "") != ""]
 
-def BM_Table_of_Objects_NameMatching_GetNameChunks(chunks: list, combine_type: str):
+def BM_Table_of_Objects_NameMatching_GetNameChunks(chunks: list, combine_type: str, context=None):
     # get prefixes
     lowpoly_prefix_raw = context.scene.bm_props.global_lowpoly_tag
     highpoly_prefix_raw = context.scene.bm_props.global_highpoly_tag
@@ -169,8 +169,8 @@ def BM_Table_of_Objects_NameMatching_Construct(context, objects_names_input):
             
             # create root_name
             object_name_chunked = NameChunks(object_name)
-            root_name = GetChunks(object_name_chunked, 'ROOT')
-            tale_name = GetChunks(object_name_chunked, 'TALE')
+            root_name = GetChunks(object_name_chunked, 'ROOT', context)
+            tale_name = GetChunks(object_name_chunked, 'TALE', context)
 
             # find any objects in the input_objects with the same root_name and tale_name
             pairs = [object_name]
@@ -178,8 +178,8 @@ def BM_Table_of_Objects_NameMatching_Construct(context, objects_names_input):
                 if object_name_pair in used_obj_names:
                     continue
                 pair_name_chunked = NameChunks(object_name_pair)
-                pair_root = GetChunks(pair_name_chunked, 'ROOT')
-                pair_tale = GetChunks(pair_name_chunked, 'TALE')
+                pair_root = GetChunks(pair_name_chunked, 'ROOT', context)
+                pair_tale = GetChunks(pair_name_chunked, 'TALE', context)
                 if pair_root == root_name and pair_tale == tale_name:
                     # add it to the current shell
                     pairs.append(object_name_pair)
@@ -196,7 +196,7 @@ def BM_Table_of_Objects_NameMatching_Construct(context, objects_names_input):
             if highpoly_prefix_raw in NameChunks(object_name) or cage_prefix_raw in NameChunks(object_name):
 
                 object_name_chunked = NameChunks(object_name)
-                root_name = GetChunks(object_name_chunked, 'ROOT')
+                root_name = GetChunks(object_name_chunked, 'ROOT', context)
 
                 if CombineToRaw(root_name).find(CombineToRaw(root[0])) == 0:
                     used_obj_names.append(object_name)
@@ -456,9 +456,89 @@ def BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, name, index=-
 
 def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
     if self.nm_uni_container_is_global:
-        # auto configure highpolies, cages for each lowpoly object
-        # set is_global to True on container creation to force this func call
-        pass
+        container_objects = []
+        for object in context.scene.bm_table_of_objects:
+            if object.nm_item_uni_container_master_index == self.nm_master_index and object.nm_is_local_container is False:
+                container_objects.append(object.global_object_name)
+
+                # trash highpolies and unset cage
+                object.hl_use_cage = False
+                object.hl_use_unique_per_map = False
+                BM_ITEM_PROPS_hl_use_unique_per_map_Update_TrashHighpolies(object, object, context)
+
+
+        _, roots, _ = BM_Table_of_Objects_NameMatching_Construct(context, container_objects)
+        GetChunks = BM_Table_of_Objects_NameMatching_GenerateNameChunks
+        # get prefixes
+        lowpoly_prefix_raw = context.scene.bm_props.global_lowpoly_tag
+        highpoly_prefix_raw = context.scene.bm_props.global_highpoly_tag
+        cage_prefix_raw = context.scene.bm_props.global_cage_tag
+        decal_prefix_raw = context.scene.bm_props.global_decal_tag
+
+        for root in roots:
+            # root[0] - root_name chunks
+            # root[1] - objects' names
+
+            # get object name, source object
+            lowpoly_object_name = root[1][0]
+            lowpoly_sources = [object for object in context.scene.bm_table_of_objects if object.global_object_name == lowpoly_object_name]
+            lowpoly_object = None
+            if len(lowpoly_sources):
+                lowpoly_object = lowpoly_sources[0]
+            else:
+                continue
+
+            # set object as decal object, do not set highpolies and cage
+            if decal_prefix_raw in GetChunks(lowpoly_object_name):
+                lowpoly_object.decal_is_decal = True
+                continue
+
+            highpolies = []
+            cage = "NONE"
+            marked_decals = []
+
+            # find highpolies, cage
+            for object_name in root[1]:
+                if object_name == lowpoly_object_name:
+                    continue
+                object_name_chunked = GetChunks(object_name)
+                # found highpoly
+                if highpoly_prefix_raw in object_name_chunked:
+                    highpolies.append(object_name)
+                    if decal_prefix_raw in object_name_chunked:
+                        marked_decals.append(1)
+                    else:
+                        marked_decals.append(0)
+                # found cage
+                elif cage_prefix_raw in object_name_chunked and cage != "NONE":
+                    cage = object_name
+
+            # set cage
+            if cage != "NONE":
+                try:
+                    lowpoly_object.hl_use_cage = True
+                    lowpoly_object.hl_cage = cage
+                except TypeError:
+                    lowpoly_object.hl_use_cage = False
+
+            # add highpolies
+            lowpoly_object.hl_highpoly_table_active_index = 0
+            for highpoly_index, highpoly in enumerate(highpolies):
+                new_highpoly = lowpoly_object.hl_highpoly_table.add()
+                new_highpoly.global_item_index = highpoly_index + 1
+                try:
+                    BM_ITEM_PROPS_hl_add_highpoly_Update(new_highpoly, context)
+                    new_highpoly.global_object_name = highpoly
+                    lowpoly_object.hl_highpoly_table_active_index = len(lowpoly_object.hl_highpoly_table) - 1
+                    lowpoly_object.hl_is_lowpoly = True
+                except TypeError:
+                    lowpoly_object.hl_highpoly_table.remove(highpoly_index)
+                    continue
+
+                # mark highpoly source object as decal if decal tag had been found previously
+                if marked_decals[highpoly_index] == 1 and new_highpoly.global_highpoly_object_index != -1: 
+                    context.scene.bm_table_of_objects[new_highpoly.global_highpoly_object_index].hl_is_decal = True
+
     else:
         data = {
             'decal_is_decal' : self.decal_is_decal,
