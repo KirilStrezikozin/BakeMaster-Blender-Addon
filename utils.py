@@ -465,6 +465,8 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                 object.hl_use_cage = False
                 object.hl_use_unique_per_map = False
                 BM_ITEM_PROPS_hl_use_unique_per_map_Update_TrashHighpolies(object, object, context)
+                object.hl_is_lowpoly = False
+                object.decal_is_decal = False
 
 
         _, roots, _ = BM_Table_of_Objects_NameMatching_Construct(context, container_objects)
@@ -481,12 +483,14 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
 
             # get object name, source object
             lowpoly_object_name = root[1][0]
-            lowpoly_sources = [object for object in context.scene.bm_table_of_objects if object.global_object_name == lowpoly_object_name]
+            lowpoly_sources = [index for index, object in enumerate(context.scene.bm_table_of_objects) if object.global_object_name == lowpoly_object_name]
             lowpoly_object = None
             if len(lowpoly_sources):
-                lowpoly_object = lowpoly_sources[0]
+                lowpoly_object = context.scene.bm_table_of_objects[lowpoly_sources[0]]
+                context.scene.bm_props.global_active_index = lowpoly_sources[0]
             else:
                 continue
+            print(lowpoly_object_name)
 
             # set object as decal object, do not set highpolies and cage
             if decal_prefix_raw in GetChunks(lowpoly_object_name):
@@ -510,34 +514,38 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                     else:
                         marked_decals.append(0)
                 # found cage
-                elif cage_prefix_raw in object_name_chunked and cage != "NONE":
+                elif cage_prefix_raw in object_name_chunked and cage == "NONE":
                     cage = object_name
 
+            # add highpolies
+            lowpoly_object.hl_highpoly_table_active_index = 0
+            print(highpolies)
+            for highpoly_index, highpoly in enumerate(highpolies):
+                new_highpoly = lowpoly_object.hl_highpoly_table.add()
+                new_highpoly.global_item_index = highpoly_index + 1
+                try:
+                    BM_ITEM_PROPS_hl_add_highpoly_Update(new_highpoly, context)
+                    print(new_highpoly.global_object_name)
+                    new_highpoly.global_object_name = highpoly
+                    print(new_highpoly.global_object_name)
+                    lowpoly_object.hl_highpoly_table_active_index = len(lowpoly_object.hl_highpoly_table) - 1
+                    lowpoly_object.hl_is_lowpoly = True
+                except TypeError:
+                    # lowpoly_object.hl_highpoly_table.remove(highpoly_index)
+                    pass
+
+                # mark highpoly source object as decal if decal tag had been found previously
+                if marked_decals[highpoly_index] == 1 and new_highpoly.global_highpoly_object_index != -1: 
+                    context.scene.bm_table_of_objects[new_highpoly.global_highpoly_object_index].hl_is_decal = True
+
             # set cage
+            print(cage)
             if cage != "NONE":
                 try:
                     lowpoly_object.hl_use_cage = True
                     lowpoly_object.hl_cage = cage
                 except TypeError:
                     lowpoly_object.hl_use_cage = False
-
-            # add highpolies
-            lowpoly_object.hl_highpoly_table_active_index = 0
-            for highpoly_index, highpoly in enumerate(highpolies):
-                new_highpoly = lowpoly_object.hl_highpoly_table.add()
-                new_highpoly.global_item_index = highpoly_index + 1
-                try:
-                    BM_ITEM_PROPS_hl_add_highpoly_Update(new_highpoly, context)
-                    new_highpoly.global_object_name = highpoly
-                    lowpoly_object.hl_highpoly_table_active_index = len(lowpoly_object.hl_highpoly_table) - 1
-                    lowpoly_object.hl_is_lowpoly = True
-                except TypeError:
-                    lowpoly_object.hl_highpoly_table.remove(highpoly_index)
-                    continue
-
-                # mark highpoly source object as decal if decal tag had been found previously
-                if marked_decals[highpoly_index] == 1 and new_highpoly.global_highpoly_object_index != -1: 
-                    context.scene.bm_table_of_objects[new_highpoly.global_highpoly_object_index].hl_is_decal = True
 
     else:
         data = {
@@ -547,7 +555,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'decal_upper_coordinate' : self.decal_upper_coordinate,
             'decal_boundary_offset' : self.decal_boundary_offset,
             'hl_decals_use_separate_texset' : self.hl_decals_use_separate_texset,
-            'hl_use_cage' : self.hl_use_cage,
+            # 'hl_use_cage' : self.hl_use_cage,
             'hl_cage_type' : self.hl_cage_type,
             'hl_cage_extrusion' : self.hl_cage_extrusion,
             'hl_max_ray_distance' : self.hl_max_ray_distance,
