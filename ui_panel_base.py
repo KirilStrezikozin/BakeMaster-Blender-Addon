@@ -421,6 +421,17 @@ class BM_PT_ItemBase(bpy.types.Panel):
             label = "Object cannot be found"
             icon = 'GHOST_DISABLED'
             self.layout.label(text=label, icon=icon)
+        elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_detached is False:
+            container_name = ""
+            draw_label = False
+            for object1 in context.scene.bm_table_of_objects:
+                if object1.nm_is_universal_container and object1.nm_master_index == object[0].nm_item_uni_container_master_index:
+                    container_name = object1.nm_container_name
+                    draw_label = object1.nm_uni_container_is_global
+                    break
+            if draw_label:
+                label = "Settings configured by %s" % container_name
+                self.layout.label(text=label)
         elif object[0].hl_is_highpoly and object[0].hl_is_decal:
             label = "Decal Object"
             icon = 'XRAY'
@@ -433,17 +444,6 @@ class BM_PT_ItemBase(bpy.types.Panel):
             label = "Cage Object" 
             icon = 'SELECT_SET'
             self.layout.label(text=label, icon=icon)
-        elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_detached is False:
-            container_name = ""
-            draw_label = False
-            for object1 in context.scene.bm_table_of_objects:
-                if object1.nm_is_universal_container and object1.nm_master_index == object[0].nm_item_uni_container_master_index:
-                    container_name = object1.nm_container_name
-                    draw_label = object1.nm_uni_container_is_global
-                    break
-            if draw_label:
-                label = "Settings configured by %s" % container_name
-                self.layout.label(text=label)
 
 class BM_PT_Item_ObjectBase(bpy.types.Panel):
     bl_label = " "
@@ -498,7 +498,8 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
 
         # decal body
         if scene.bm_props.global_is_decal_panel_expanded:
-            decal_box.prop(object, 'decal_is_decal')
+            if object.nm_uni_container_is_global is False:
+                decal_box.prop(object, 'decal_is_decal')
             if object.decal_is_decal or object.nm_uni_container_is_global:
                 decal_box_column = decal_box.column(align=True)
                 decal_box_column.prop(object, 'decal_use_custom_camera')
