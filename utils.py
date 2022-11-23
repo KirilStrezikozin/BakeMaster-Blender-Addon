@@ -502,7 +502,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
         cage_prefix_raw = context.scene.bm_props.global_cage_tag
         decal_prefix_raw = context.scene.bm_props.global_decal_tag
 
-        # decal objects are likely to drop into detached
+        # decal objects are likely to be dropped into detached
         for detached_name in detached:
             detached_sources = [index for index, object in enumerate(context.scene.bm_table_of_objects) if object.global_object_name == detached_name]
             detached_object = None
@@ -513,7 +513,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                 continue
 
             # set object as decal object
-            if decal_prefix_raw in GetChunks(detached):
+            if decal_prefix_raw in GetChunks(detached_name):
                 detached_object.decal_is_decal = True
 
         for root in roots:
