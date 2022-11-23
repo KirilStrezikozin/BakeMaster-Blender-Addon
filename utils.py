@@ -490,7 +490,6 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                 context.scene.bm_props.global_active_index = lowpoly_sources[0]
             else:
                 continue
-            print(lowpoly_object_name)
 
             # set object as decal object, do not set highpolies and cage
             if decal_prefix_raw in GetChunks(lowpoly_object_name):
@@ -519,15 +518,12 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
 
             # add highpolies
             lowpoly_object.hl_highpoly_table_active_index = 0
-            print(highpolies)
             for highpoly_index, highpoly in enumerate(highpolies):
                 new_highpoly = lowpoly_object.hl_highpoly_table.add()
                 new_highpoly.global_item_index = highpoly_index + 1
                 try:
                     BM_ITEM_PROPS_hl_add_highpoly_Update(new_highpoly, context)
-                    print(new_highpoly.global_object_name)
                     new_highpoly.global_object_name = highpoly
-                    print(new_highpoly.global_object_name)
                     lowpoly_object.hl_highpoly_table_active_index = len(lowpoly_object.hl_highpoly_table) - 1
                     lowpoly_object.hl_is_lowpoly = True
                 except TypeError:
@@ -539,7 +535,6 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                     context.scene.bm_table_of_objects[new_highpoly.global_highpoly_object_index].hl_is_decal = True
 
             # set cage
-            print(cage)
             if cage != "NONE":
                 try:
                     lowpoly_object.hl_use_cage = True
