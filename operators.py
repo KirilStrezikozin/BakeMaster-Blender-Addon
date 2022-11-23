@@ -370,13 +370,13 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                 # try match some
                 for object_name in new_objs:
                     object_name_chunked = BM_Table_of_Objects_NameMatching_GenerateNameChunks(object_name)
-                    root_name = BM_Table_of_Objects_NameMatching_GetNameChunks(object_name_chunked, 'ROOT')
+                    root_name = BM_Table_of_Objects_NameMatching_GetNameChunks(object_name_chunked, 'ROOT', context)
                     match_found = False
                     for object in scene.bm_table_of_objects:
                         if not any([object.nm_is_universal_container, object.nm_is_local_container, object.nm_is_detached]) and object.global_object_name != object_name:
 
                             pair_object_name_chunked = BM_Table_of_Objects_NameMatching_GenerateNameChunks(object.global_object_name)
-                            pair_root_name = BM_Table_of_Objects_NameMatching_GetNameChunks(pair_object_name_chunked, 'ROOT')
+                            pair_root_name = BM_Table_of_Objects_NameMatching_GetNameChunks(pair_object_name_chunked, 'ROOT', context)
 
                             # check if found match
                             if BM_Table_of_Objects_NameMatching_CombineToRaw(pair_root_name).find(BM_Table_of_Objects_NameMatching_CombineToRaw(root_name)) == 0 or BM_Table_of_Objects_NameMatching_CombineToRaw(root_name).find(BM_Table_of_Objects_NameMatching_CombineToRaw(pair_root_name)) == 0:
