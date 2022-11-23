@@ -178,8 +178,13 @@ def BM_Table_of_Objects_NameMatching_Construct(context, objects_names_input):
                 if object_name_pair in used_obj_names:
                     continue
                 pair_name_chunked = NameChunks(object_name_pair)
+                pair_name_chunked_no_decal = NameChunks(object_name_pair)
+                try:
+                    pair_name_chunked_no_decal.remove(decal_prefix_raw)
+                except ValueError:
+                    pass
                 pair_root = GetChunks(pair_name_chunked, 'ROOT', context)
-                pair_tale = GetChunks(pair_name_chunked, 'TALE', context)
+                pair_tale = GetChunks(pair_name_chunked_no_decal, 'TALE', context)
                 if pair_root == root_name and pair_tale == tale_name:
                     # add it to the current shell
                     pairs.append(object_name_pair)
@@ -196,6 +201,10 @@ def BM_Table_of_Objects_NameMatching_Construct(context, objects_names_input):
             if highpoly_prefix_raw in NameChunks(object_name) or cage_prefix_raw in NameChunks(object_name):
 
                 object_name_chunked = NameChunks(object_name)
+                try:
+                    object_name_chunked.remove(decal_prefix_raw)
+                except ValueError:
+                    pass
                 root_name = GetChunks(object_name_chunked, 'ROOT', context)
 
                 if CombineToRaw(root_name).find(CombineToRaw(root[0])) == 0:
