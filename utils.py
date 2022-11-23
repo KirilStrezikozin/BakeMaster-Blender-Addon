@@ -520,8 +520,12 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
         }
 
         # apply props values to all container objects
-        for object in context.scene.bm_table_of_objects:
-            if object.nm_item_uni_container_master_index == self.nm_master_index and object.nm_is_local_container is False:
+        local_c_master_index = -1
+        for object_index, object in enumerate(context.scene.bm_table_of_objects):
+            if object.nm_item_uni_container_master_index == self.nm_master_index and object.nm_is_lowpoly_container:
+                local_c_master_index = object.nm_master_index
+
+            if object.nm_item_uni_container_master_index == self.nm_master_index and object.nm_is_local_container is False and object.nm_item_local_container_master_index == local_c_master_index:
                 for key in data:
                     setattr(object, key, data[key])
 
