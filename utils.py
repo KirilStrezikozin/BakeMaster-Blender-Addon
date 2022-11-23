@@ -57,9 +57,11 @@ def BM_Table_of_Objects_NameMatching_GenerateNameChunks(name: str):
     return [chunk for chunk in chunks if chunk.replace(" ", "") != ""]
 
 def BM_Table_of_Objects_NameMatching_GetNameChunks(chunks: list, combine_type: str):
-    lowpoly_prefix_raw = "low"
-    highpoly_prefix_raw = "high"
-    cage_prefix_raw = "cage"
+    # get prefixes
+    lowpoly_prefix_raw = context.scene.bm_props.global_lowpoly_tag
+    highpoly_prefix_raw = context.scene.bm_props.global_highpoly_tag
+    cage_prefix_raw = context.scene.bm_props.global_cage_tag
+    decal_prefix_raw = context.scene.bm_props.global_decal_tag
     combined_name = []
 
     if combine_type == 'ROOT':
@@ -143,14 +145,17 @@ def BM_Table_of_Objects_NameMatching_CombineGroups(groups: list):
     return [group for group in combined if len(group)]
 
 def BM_Table_of_Objects_NameMatching_Construct(context, objects_names_input):
+    # funcs pointers
     NameChunks = BM_Table_of_Objects_NameMatching_GenerateNameChunks
     GetChunks = BM_Table_of_Objects_NameMatching_GetNameChunks
     Intersaction = BM_Table_of_Objects_NameMatching_IndexesIntersaction
     CombineToRaw = BM_Table_of_Objects_NameMatching_CombineToRaw
     CombineGroups = BM_Table_of_Objects_NameMatching_CombineGroups
-    lowpoly_prefix_raw = "low"
-    highpoly_prefix_raw = "high"
-    cage_prefix_raw = "cage"
+    # get prefixes
+    lowpoly_prefix_raw = context.scene.bm_props.global_lowpoly_tag
+    highpoly_prefix_raw = context.scene.bm_props.global_highpoly_tag
+    cage_prefix_raw = context.scene.bm_props.global_cage_tag
+    decal_prefix_raw = context.scene.bm_props.global_decal_tag
     roots = []
     detached = []
 
@@ -299,9 +304,11 @@ def BM_SCENE_PROPS_global_use_name_matching_Update(self, context):
     GetAllObjectNames = BM_Table_of_Objects_NameMatching_GetAllObjectNames
     NameChunks = BM_Table_of_Objects_NameMatching_GenerateNameChunks
     CombineToRaw = BM_Table_of_Objects_NameMatching_CombineToRaw
-    lowpoly_prefix_raw = "low"
-    highpoly_prefix_raw = "high"
-    cage_prefix_raw = "cage"
+    # get prefixes
+    lowpoly_prefix_raw = context.scene.bm_props.global_lowpoly_tag
+    highpoly_prefix_raw = context.scene.bm_props.global_highpoly_tag
+    cage_prefix_raw = context.scene.bm_props.global_cage_tag
+    decal_prefix_raw = context.scene.bm_props.global_decal_tag
 
     # trash texsets
     to_remove = []

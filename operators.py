@@ -303,9 +303,11 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
         exists = False
         objects = []
         objects_data = []
-        lowpoly_prefix_raw = "low"
-        highpoly_prefix_raw = "high"
-        cage_prefix_raw = "cage"
+        # get prefixes
+        lowpoly_prefix_raw = context.scene.bm_props.global_lowpoly_tag
+        highpoly_prefix_raw = context.scene.bm_props.global_highpoly_tag
+        cage_prefix_raw = context.scene.bm_props.global_cage_tag
+        decal_prefix_raw = context.scene.bm_props.global_decal_tag
         refresh_nm_config = False
 
         if context.object:
