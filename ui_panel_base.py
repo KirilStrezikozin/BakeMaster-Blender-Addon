@@ -499,7 +499,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
         # decal body
         if scene.bm_props.global_is_decal_panel_expanded:
             decal_box.prop(object, 'decal_is_decal')
-            if object.decal_is_decal:
+            if object.decal_is_decal or object.nm_uni_container_is_global:
                 decal_box_column = decal_box.column(align=True)
                 decal_box_column.prop(object, 'decal_use_custom_camera')
                 if object.decal_use_custom_camera:
@@ -508,7 +508,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                 decal_box.prop(object, 'decal_boundary_offset')
 
         # skip drawing hl, uv, csh subpanels
-        if object.decal_is_decal:
+        if object.decal_is_decal and object.nm_uni_container_is_global is False:
             return
 
         # hl
@@ -798,7 +798,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 draw_affect_by_hl = True
             elif len(object.hl_highpoly_table):
                 draw_affect_by_hl = True
-            if object.decal_is_decal:
+            if object.decal_is_decal and object.nm_uni_container_is_global is False:
                 draw_affect_by_hl = False
             if draw_affect_by_hl and map.global_map_type not in ['NORMAL', 'DISPLACEMENT']:
                 map_settings_column.prop(map, 'global_affect_by_hl', text="Affect by Highpoly")
@@ -1063,7 +1063,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
             # unique map settings
 
             # skip drawing hl, uv, csh subpanels
-            if object.decal_is_decal:
+            if object.decal_is_decal and object.nm_uni_container_is_global is False:
                 return
 
             # hl
