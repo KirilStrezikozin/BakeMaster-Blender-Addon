@@ -1829,8 +1829,11 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context):
                         if object1.global_object_name == highpoly.global_highpoly_object_include and not any([object1.nm_is_local_container, object1.nm_is_universal_container]):
                             highpoly.global_highpoly_object_index = index
                             break
-                    highpoly.global_highpoly_name_old = highpoly.global_highpoly_object_include
-                    highpoly.global_object_name = highpoly.global_highpoly_object_include
+                    try:
+                        highpoly.global_highpoly_name_old = highpoly.global_highpoly_object_include
+                        highpoly.global_object_name = highpoly.global_highpoly_object_include
+                    except TypeError:
+                        pass
         else:
             for highpoly in object.hl_highpoly_table:
                 if highpoly.global_highpoly_object_index == -1:
@@ -1839,8 +1842,11 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context):
                     if object1.global_object_name == highpoly.global_highpoly_object_include and not any([object1.nm_is_local_container, object1.nm_is_universal_container]):
                         highpoly.global_highpoly_object_index = index
                         break
-                highpoly.global_highpoly_name_old = highpoly.global_highpoly_object_include
-                highpoly.global_object_name = highpoly.global_highpoly_object_include
+                try:
+                    highpoly.global_highpoly_name_old = highpoly.global_highpoly_object_include
+                    highpoly.global_object_name = highpoly.global_highpoly_object_include
+                except TypeError:
+                    pass
 
 ###############################################################
 ### uv Props Funcs ###
