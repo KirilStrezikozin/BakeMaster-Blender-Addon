@@ -232,18 +232,6 @@ class BM_Map(bpy.types.PropertyGroup):
         default=True)
     
 # Map High to Lowpoly props:
-    hl_is_highpoly : bpy.props.BoolProperty(
-        default=False,
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
-
-    hl_is_lowpoly : bpy.props.BoolProperty(
-        default=False,
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
-
-    hl_is_cage : bpy.props.BoolProperty(
-        default=False,
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
-
     hl_highpoly_table : bpy.props.CollectionProperty(type=BM_Map_Highpoly)
 
     hl_highpoly_table_active_index : bpy.props.IntProperty(
