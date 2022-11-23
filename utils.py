@@ -521,18 +521,35 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
 
         # apply props values to all container objects
         local_c_master_index = -1
-        for object_index, object in enumerate(context.scene.bm_table_of_objects):
+        for object in context.scene.bm_table_of_objects:
             if object.nm_item_uni_container_master_index == self.nm_master_index and object.nm_is_lowpoly_container:
                 local_c_master_index = object.nm_master_index
 
             if object.nm_item_uni_container_master_index == self.nm_master_index and object.nm_is_local_container is False and object.nm_item_local_container_master_index == local_c_master_index:
+                # object
+                # set
                 for key in data:
                     setattr(object, key, data[key])
+                
+                # maps
+                # trash
+                BM_ITEM_RemoveLocalPreviews(object, context)
+                to_remove = []
+                for map_index, map in enumerate(object.global_maps):
+                    to_remove.append(map_index)
+                for map_index in sorted(to_remove, reverse=True):
+                    # unset highpolies
+                    BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, map_index, 'MAP', False)
+                    # update use_cage
+                    BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, map_index, 'MAP')
+                    object.global_maps.remove(map_index)
+                    BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
+                object.global_maps_active_index = 0
 
+                # add
                 for map_index, map in enumerate(self.global_maps):
                     new_map = object.global_maps.add()
                     object.global_maps_active_index = map_index
-
                     map_data = {
                         'global_map_index' : map_index + 1,
                         'global_use_bake' : map.global_use_bake,
@@ -764,8 +781,53 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                         'map_wireframemask_use_invert' : map.map_wireframemask_use_invert,
                     }
 
+                    # set
                     for map_key in map_data:
                         setattr(new_map, map_key, map_data[map_key])
+                
+                # channel packs
+                # trash
+                to_remove = []
+                for channelpack_index, _ in enumerate(object.chnlp_channelpacking_table):
+                    to_remove.append(channelpack_index)
+                for channelpack_index in sorted(to_remove, reverse=True):
+                    object.chnlp_channelpacking_table.remove(channelpack_index)
+                object.chnlp_channelpacking_table_active_index = 0
+
+                # add 
+                for channelpack_index, channelpack in enumerate(self.chnlp_channelpacking_table):
+                    object.chnlp_channelpacking_table_active_index = channelpack_index
+                    channelpack_data = {
+                        'global_channelpack_name' : channelpack.global_channelpack_name,
+                        'global_channelpack_index' : channelpack_index + 1,
+                        'global_channelpack_type' : channelpack.global_channelpack_type,
+
+                        'R1G1B_use_R' : channelpack.R1G1B_use_R,
+                        'R1G1B_map_R' : channelpack.R1G1B_map_R,
+                        'R1G1B_use_G' : channelpack.R1G1B_use_G,
+                        'R1G1B_map_G' : channelpack.R1G1B_map_G,
+                        'R1G1B_use_B' : channelpack.R1G1B_use_B,
+                        'R1G1B_map_B' : channelpack.R1G1B_map_B,
+
+                        'RGB1A_use_RGB' : channelpack.RGB1A_use_RGB,
+                        'RGB1A_map_RGB' : channelpack.RGB1A_map_RGB,
+                        'RGB1A_use_A' : channelpack.RGB1A_use_A,
+                        'RGB1A_map_A' : channelpack.RGB1A_map_A,
+
+                        'R1G1B1A_use_R' : channelpack.R1G1B1A_use_R,
+                        'R1G1B1A_map_R' : channelpack.R1G1B1A_map_R,
+                        'R1G1B1A_use_G' : channelpack.R1G1B1A_use_G,
+                        'R1G1B1A_map_G' : channelpack.R1G1B1A_map_G,
+                        'R1G1B1A_use_B' : channelpack.R1G1B1A_use_B,
+                        'R1G1B1A_map_B' : channelpack.R1G1B1A_map_B,
+                        'R1G1B1A_use_A' : channelpack.R1G1B1A_use_A,
+                        'R1G1B1A_map_A' : channelpack.R1G1B1A_map_A,
+                    }
+
+                    # set
+                    new_channelpack = object.chnlp_channelpacking_table.add()
+                    for chnlp_key in channelpack_data:
+                        setattr(new_channelpack, chnlp_key, channelpack_data[chnlp_key])
 
 ###############################################################
 ### Texture Sets Funcs ###
