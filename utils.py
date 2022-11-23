@@ -440,7 +440,6 @@ def BM_ITEM_PROPS_nm_container_name_Update(self, context):
         else:
             self.nm_container_name_old = self.nm_container_name
 
-
 def BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, name, index=-1):
     # when creating new container, make sure its name is unique
     name_index = 0
@@ -462,12 +461,16 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
         pass
     else:
         data = {
-            'hl_use_unique_per_map' : self.hl_use_unique_per_map,
+            'decal_is_decal' : self.decal_is_decal,
+            'decal_use_custom_camera' : self.decal_use_custom_camera,
+            'decal_custom_camera' : self.decal_custom_camera,
+            'decal_upper_coordinate' : self.decal_upper_coordinate,
+            'decal_boundary_offset' : self.decal_boundary_offset,
+            'hl_decals_use_separate_texset' : self.hl_decals_use_separate_texset,
             'hl_use_cage' : self.hl_use_cage,
             'hl_cage_type' : self.hl_cage_type,
             'hl_cage_extrusion' : self.hl_cage_extrusion,
             'hl_max_ray_distance' : self.hl_max_ray_distance,
-            'uv_use_unique_per_map' : self.uv_use_unique_per_map,
             'uv_bake_data' : self.uv_bake_data,
             'uv_bake_target' : self.uv_bake_target,
             'uv_type' : self.uv_type,
@@ -476,7 +479,6 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'uv_auto_unwrap_angle_limit' : self.uv_auto_unwrap_angle_limit,
             'uv_auto_unwrap_island_margin' : self.uv_auto_unwrap_island_margin,
             'uv_auto_unwrap_use_scale_to_bounds' : self.uv_auto_unwrap_use_scale_to_bounds,
-            'out_use_unique_per_map' : self.out_use_unique_per_map,
             'out_use_denoise' : self.out_use_denoise,
             'out_file_format' : self.out_file_format,
             'out_exr_codec' : self.out_exr_codec,
@@ -494,6 +496,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'out_super_sampling_aa' : self.out_super_sampling_aa,
             'out_samples' : self.out_samples,
             'out_use_adaptive_sampling' : self.out_use_adaptive_sampling,
+            'out_adaptive_threshold' : self.out_adaptive_threshold,
             'out_min_samples' : self.out_min_samples,
             'csh_use_triangulate_lowpoly' : self.csh_use_triangulate_lowpoly,
             'csh_use_lowpoly_reset_normals' : self.csh_use_lowpoly_reset_normals,
@@ -516,37 +519,249 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'bake_device' : self.bake_device,
         }
 
-        maps_data = []
-        for map in self.global_maps:
-            
-            unique_map_data = {
-            'hl_use_cage' : self.hl_use_cage,
-            'hl_cage_type' : self.hl_cage_type,
-            'hl_cage_extrusion' : self.hl_cage_extrusion,
-            'hl_max_ray_distance' : self.hl_max_ray_distance,
-            'uv_bake_data' : self.uv_bake_data,
-            'uv_bake_target' : self.uv_bake_target,
-            'uv_type' : self.uv_type,
-            'uv_snap_islands_to_pixels' : self.uv_snap_islands_to_pixels,
-            'out_use_denoise' : self.out_use_denoise,
-            'out_file_format' : self.out_file_format,
-            'out_exr_codec' : self.out_exr_codec,
-            'out_compression' : self.out_compression,
-            'out_res' : self.out_res,
-            'out_res_height' : self.out_res_height,
-            'out_res_width' : self.out_res_width,
-            'out_margin' : self.out_margin,
-            'out_margin_type' : self.out_margin_type,
-            'out_use_32bit' : self.out_use_32bit,
-            'out_use_alpha' : self.out_use_alpha,
-            'out_use_transbg' : self.out_use_transbg,
-            'out_udim_start_tile' : self.out_udim_start_tile,
-            'out_udim_end_tile' : self.out_udim_end_tile,
-            'out_super_sampling_aa' : self.out_super_sampling_aa,
-            'out_samples' : self.out_samples,
-            'out_use_adaptive_threshold' : self.out_use_adaptive_threshold,
-            'out_min_samples' : self.out_min_samples,
-            }
+        # apply props values to all container objects
+        for object in context.scene.bm_table_of_objects:
+            if object.nm_item_uni_container_master_index == self.nm_master_index and object.nm_is_local_container is False:
+                for key in data:
+                    setattr(object, key, data[key])
+
+                for map_index, map in enumerate(self.global_maps):
+                    new_map = object.global_maps.add()
+                    object.global_maps_active_index = map_index
+
+                    map_data = {
+                        'global_map_index' : map_index + 1,
+                        'global_use_bake' : map.global_use_bake,
+                        'global_map_type' : map.global_map_type,
+                        'global_affect_by_hl' : map.global_affect_by_hl,
+
+                        'hl_use_cage' : map.hl_use_cage,
+                        'hl_cage_type' : map.hl_cage_type,
+                        'hl_cage_extrusion' : map.hl_cage_extrusion,
+                        'hl_max_ray_distance' : map.hl_max_ray_distance,
+
+                        'uv_bake_data' : map.uv_bake_data,
+                        'uv_bake_target' : map.uv_bake_target,
+                        'uv_active_layer' : map.uv_active_layer,
+                        'uv_type' : map.uv_type,
+                        'uv_snap_islands_to_pixels' : map.uv_snap_islands_to_pixels,
+
+                        'out_use_denoise' : map.out_use_denoise,
+                        'out_file_format' : map.out_file_format,
+                        'out_exr_codec' : map.out_exr_codec,
+                        'out_compression' : map.out_compression,
+                        'out_res' : map.out_res,
+                        'out_res_height' : map.out_res_height,
+                        'out_res_width' : map.out_res_width,
+                        'out_margin' : map.out_margin,
+                        'out_margin_type' : map.out_margin_type,
+                        'out_use_32bit' : map.out_use_32bit,
+                        'out_use_alpha' : map.out_use_alpha,
+                        'out_use_transbg' : map.out_use_transbg,
+                        'out_udim_start_tile' : map.out_udim_start_tile,
+                        'out_udim_end_tile' : map.out_udim_end_tile,
+                        'out_super_sampling_aa' : map.out_super_sampling_aa,
+                        'out_samples' : map.out_samples,
+                        'out_use_adaptive_sampling' : map.out_use_adaptive_sampling,
+                        'out_adaptive_threshold' : map.out_adaptive_threshold,
+                        'out_min_samples' : map.out_min_samples,
+
+                        'map_ALBEDO_prefix' : map.map_ALBEDO_prefix,
+
+                        'map_METALNESS_prefix' : map.map_METALNESS_prefix,
+
+                        'map_ROUGHNESS_prefix' : map.map_ROUGHNESS_prefix,
+
+                        'map_DIFFUSE_prefix' : map.map_DIFFUSE_prefix,
+
+                        'map_SPECULAR_prefix' : map.map_SPECULAR_prefix,
+
+                        'map_GLOSSINESS_prefix' : map.map_GLOSSINESS_prefix,
+
+                        'map_OPACITY_prefix' : map.map_OPACITY_prefix,
+
+                        'map_EMISSION_prefix' : map.map_EMISSION_prefix,
+
+                        'map_PASS_prefix' : map.map_PASS_prefix,
+                        'map_PASS_use_preview' : map.map_PASS_use_preview,
+                        'map_pass_type' : map.map_pass_type,
+
+                        'map_DECAL_prefix' : map.map_DECAL_prefix,
+                        'map_DECAL_use_preview' : map.map_DECAL_use_preview,
+                        'map_decal_pass_type' : map.map_decal_pass_type,
+                        'map_decal_height_opacity_invert' : map.map_decal_height_opacity_invert,
+                        'map_decal_normal_preset' : map.map_decal_normal_preset,
+                        'map_decal_normal_custom_preset' : map.map_decal_normal_custom_preset,
+                        'map_decal_normal_r' : map.map_decal_normal_r,
+                        'map_decal_normal_g' : map.map_decal_normal_g,
+                        'map_decal_normal_b' : map.map_decal_normal_b,
+
+                        'map_VERTEX_COLOR_LAYER_prefix' : map.map_VERTEX_COLOR_LAYER_prefix,
+                        'map_VERTEX_COLOR_LAYER_use_preview' : map.map_VERTEX_COLOR_LAYER_use_preview,
+                        'map_vertexcolor_layer' : map.map_vertexcolor_layer,
+
+                        'map_C_COMBINED_prefix' : map.map_C_COMBINED_prefix,
+
+                        'map_C_AO_prefix' : map.map_C_AO_prefix,
+
+                        'map_C_SHADOW_prefix' : map.map_C_SHADOW_prefix,
+
+                        'map_C_NORMAL_prefix' : map.map_C_NORMAL_prefix,
+
+                        'map_C_UV_prefix' : map.map_C_UV_prefix,
+
+                        'map_C_ROUGHNESS_prefix' : map.map_C_ROUGHNESS_prefix,
+
+                        'map_C_EMIT_prefix' : map.map_C_EMIT_prefix,
+
+                        'map_C_ENVIRONMENT_prefix' : map.map_C_ENVIRONMENT_prefix,
+
+                        'map_C_DIFFUSE_prefix' : map.map_C_DIFFUSE_prefix,
+
+                        'map_C_GLOSSY_prefix' : map.map_C_GLOSSY_prefix,
+
+                        'map_C_TRANSMISSION_prefix' : map.map_C_TRANSMISSION_prefix,
+
+                        'map_cycles_use_pass_direct' : map.map_cycles_use_pass_direct,
+                        'map_cycles_use_pass_indirect' : map.map_cycles_use_pass_indirect,
+                        'map_cycles_use_pass_color' : map.map_cycles_use_pass_color,
+                        'map_cycles_use_pass_diffuse' : map.map_cycles_use_pass_diffuse,
+                        'map_cycles_use_pass_glossy' : map.map_cycles_use_pass_glossy,
+                        'map_cycles_use_pass_transmission' : map.map_cycles_use_pass_transmission,
+                        'map_cycles_use_pass_ambient_occlusion' : map.map_cycles_use_pass_ambient_occlusion,
+                        'map_cycles_use_pass_emit' : map.map_cycles_use_pass_emit,
+
+                        'map_NORMAL_prefix' : map.map_NORMAL_prefix,
+                        'map_NORMAL_use_preview' : map.map_NORMAL_use_preview,
+                        'map_normal_data' : map.map_normal_data,
+                        'map_normal_space' : map.map_normal_space,
+                        'map_normal_preset' : map.map_normal_preset,
+                        'map_normal_custom_preset' : map.map_normal_custom_preset,
+                        'map_normal_r' : map.map_normal_r,
+                        'map_normal_g' : map.map_normal_g,
+                        'map_normal_b' : map.map_normal_b,
+
+                        'map_DISPLACEMENT_prefix' : map.map_DISPLACEMENT_prefix,
+                        'map_DISPLACEMENT_use_preview' : map.map_DISPLACEMENT_use_preview,
+                        'map_displacement_data' : map.map_displacement_data,
+                        'map_displacement_result' : map.map_displacement_result,
+                        'map_displacement_subdiv_levels' : map.map_displacement_subdiv_levels,
+
+                        'map_VECTOR_DISPLACEMENT_prefix' : map.map_VECTOR_DISPLACEMENT_prefix,
+                        'map_VECTOR_DISPLACEMENT_use_preview' : map.map_VECTOR_DISPLACEMENT_use_preview,
+                        'map_vector_displacement_use_default' : map.map_vector_displacement_use_default,
+                        'map_vector_displacement_use_negative' : map.map_vector_displacement_use_negative,
+                        'map_vector_displacement_result' : map.map_vector_displacement_result,
+                        'map_vector_displacement_subdiv_levels' : map.map_vector_displacement_subdiv_levels,
+
+                        'map_POSITION_prefix' : map.map_POSITION_prefix,
+                        'map_POSITION_use_preview' : map.map_POSITION_use_preview,
+
+                        'map_AO_prefix' : map.map_AO_prefix,
+                        'map_AO_use_preview' : map.map_AO_use_preview,
+                        'map_ao_use_default' : map.map_ao_use_default,
+                        'map_ao_samples' : map.map_ao_samples,
+                        'map_ao_distance' : map.map_ao_distance,
+                        'map_ao_black_point' : map.map_ao_black_point,
+                        'map_ao_white_point' : map.map_ao_white_point,
+                        'map_ao_brightness' : map.map_ao_brightness,
+                        'map_ao_contrast' : map.map_ao_contrast,
+                        'map_ao_opacity' : map.map_ao_opacity,
+                        'map_ao_use_local' : map.map_ao_use_local,
+                        'map_ao_use_invert' : map.map_ao_use_invert,
+
+                        'map_CAVITY_prefix' : map.map_CAVITY_prefix,
+                        'map_CAVITY_use_preview' : map.map_CAVITY_use_preview,
+                        'map_cavity_use_default' : map.map_cavity_use_default,
+                        'map_cavity_black_point' : map.map_cavity_black_point,
+                        'map_cavity_white_point' : map.map_cavity_white_point,
+                        'map_cavity_power' : map.map_cavity_power,
+                        'map_cavity_use_invert' : map.map_cavity_use_invert,
+
+                        'map_CURVATURE_prefix' : map.map_CURVATURE_prefix,
+                        'map_CURVATURE_use_preview' : map.map_CURVATURE_use_preview,
+                        'map_curv_use_default' : map.map_curv_use_default,
+                        'map_curv_samples' : map.map_curv_samples,
+                        'map_curv_radius' : map.map_curv_radius,
+                        'map_curv_black_point' : map.map_curv_black_point,
+                        'map_curv_mid_point' : map.map_curv_mid_point,
+                        'map_curv_white_point' : map.map_curv_white_point,
+                        'map_curv_body_gamma' : map.map_curv_body_gamma,
+                        'map_curv_use_invert' : map.map_curv_use_invert,
+
+                        'map_THICKNESS_prefix' : map.map_THICKNESS_prefix,
+                        'map_THICKNESS_use_preview' : map.map_THICKNESS_use_preview,
+                        'map_thick_use_default' : map.map_thick_use_default,
+                        'map_thick_samples' : map.map_thick_samples,
+                        'map_thick_distance' : map.map_thick_distance,
+                        'map_thick_black_point' : map.map_thick_black_point,
+                        'map_thick_white_point' : map.map_thick_white_point,
+                        'map_thick_brightness' : map.map_thick_brightness,
+                        'map_thick_contrast' : map.map_thick_contrast,
+                        'map_thick_use_invert' : map.map_thick_use_invert,
+
+                        'map_ID_prefix' : map.map_ID_prefix,
+                        'map_ID_use_preview' : map.map_ID_use_preview,
+                        'map_matid_data' : map.map_matid_data,
+                        'map_matid_vertex_groups_name_contains' : map.map_matid_vertex_groups_name_contains,
+                        'map_matid_algorithm' : map.map_matid_algorithm,
+
+                        'map_MASK_prefix' : map.map_MASK_prefix,
+                        'map_MASK_use_preview' : map.map_MASK_use_preview,
+                        'map_mask_data' : map.map_mask_data,
+                        'map_mask_vertex_groups_name_contains' : map.map_mask_vertex_groups_name_contains,
+                        'map_mask_materials_name_contains' : map.map_mask_materials_name_contains,
+                        'map_mask_color1' : map.map_mask_color1,
+                        'map_mask_color2' : map.map_mask_color2,
+                        'map_mask_use_invert' : map.map_mask_use_invert,
+
+                        'map_XYZMASK_prefix' : map.map_XYZMASK_prefix,
+                        'map_XYZMASK_use_preview' : map.map_XYZMASK_use_preview,
+                        'map_xyzmask_use_default' : map.map_xyzmask_use_default,
+                        'map_xyzmask_use_x' : map.map_xyzmask_use_x,
+                        'map_xyzmask_use_y' : map.map_xyzmask_use_y,
+                        'map_xyzmask_use_z' : map.map_xyzmask_use_z,
+                        'map_xyzmask_coverage' : map.map_xyzmask_coverage,
+                        'map_xyzmask_saturation' : map.map_xyzmask_saturation,
+                        'map_xyzmask_opacity' : map.map_xyzmask_opacity,
+                        'map_xyzmask_use_invert' : map.map_xyzmask_use_invert,
+
+                        'map_GRADIENT_prefix' : map.map_GRADIENT_prefix,
+                        'map_GRADIENT_use_preview' : map.map_GRADIENT_use_preview,
+                        'map_gmask_use_default' : map.map_gmask_use_default,
+                        'map_gmask_type' : map.map_gmask_type,
+                        'map_gmask_location_x' : map.map_gmask_location_x,
+                        'map_gmask_location_y' : map.map_gmask_location_y,
+                        'map_gmask_location_z' : map.map_gmask_location_z,
+                        'map_gmask_rotation_x' : map.map_gmask_rotation_x,
+                        'map_gmask_rotation_y' : map.map_gmask_rotation_y,
+                        'map_gmask_rotation_z' : map.map_gmask_rotation_z,
+                        'map_gmask_scale_x' : map.map_gmask_scale_x,
+                        'map_gmask_scale_y' : map.map_gmask_scale_y,
+                        'map_gmask_scale_z' : map.map_gmask_scale_z,
+                        'map_gmask_coverage' : map.map_gmask_coverage,
+                        'map_gmask_contrast' : map.map_gmask_contrast,
+                        'map_gmask_saturation' : map.map_gmask_saturation,
+                        'map_gmask_opacity' : map.map_gmask_opacity,
+                        'map_gmask_use_invert' : map.map_gmask_use_invert,
+
+                        'map_EDGE_prefix' : map.map_EDGE_prefix,
+                        'map_EDGE_use_preview' : map.map_EDGE_use_preview,
+                        'map_edgemask_use_default' : map.map_edgemask_use_default,
+                        'map_edgemask_samples' : map.map_edgemask_samples,
+                        'map_edgemask_radius' : map.map_edgemask_radius,
+                        'map_edgemask_edge_contrast' : map.map_edgemask_edge_contrast,
+                        'map_edgemask_body_contrast' : map.map_edgemask_body_contrast,
+                        'map_edgemask_use_invert' : map.map_edgemask_use_invert,
+
+                        'map_WIREFRAME_prefix' : map.map_WIREFRAME_prefix,
+                        'map_WIREFRAME_use_preview' : map.map_WIREFRAME_use_preview,
+                        'map_wireframemask_line_thickness' : map.map_wireframemask_line_thickness,
+                        'map_wireframemask_use_invert' : map.map_wireframemask_use_invert,
+                    }
+
+                    for map_key in map_data:
+                        setattr(new_map, map_key, map_data[map_key])
 
 ###############################################################
 ### Texture Sets Funcs ###
