@@ -403,6 +403,10 @@ def BM_SCENE_PROPS_global_use_name_matching_Update(self, context):
                         new_item.nm_item_local_container_master_index = local_index
                         new_item.nm_is_expanded = True
                         # setattr(new_item, prefix_props[local_index], True)
+
+            # auto configure decals, highpolies, and cages
+            universal_container.nm_uni_container_is_global = True
+
         # adding detached as regular items
         last_uni_c_index += 1
         for index, object_name in enumerate(detached):
@@ -467,7 +471,6 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                 BM_ITEM_PROPS_hl_use_unique_per_map_Update_TrashHighpolies(object, object, context)
                 object.hl_is_lowpoly = False
                 object.decal_is_decal = False
-
 
         _, roots, _ = BM_Table_of_Objects_NameMatching_Construct(context, container_objects)
         GetChunks = BM_Table_of_Objects_NameMatching_GenerateNameChunks

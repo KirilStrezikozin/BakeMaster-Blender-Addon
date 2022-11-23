@@ -585,6 +585,10 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                                 new_item.nm_is_expanded = True
                                 # setattr(new_item, prefix_props[local_index], True)
                                 # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
+
+                    # auto configure decals, highpolies, and cages
+                    universal_container.nm_uni_container_is_global = True
+
                 # adding detached as regular items
                 for object_name in detached:
                     # remove None all highpolies
