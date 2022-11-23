@@ -472,13 +472,27 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                 object.hl_is_lowpoly = False
                 object.decal_is_decal = False
 
-        _, roots, _ = BM_Table_of_Objects_NameMatching_Construct(context, container_objects)
+        _, roots, detached = BM_Table_of_Objects_NameMatching_Construct(context, container_objects)
         GetChunks = BM_Table_of_Objects_NameMatching_GenerateNameChunks
         # get prefixes
         lowpoly_prefix_raw = context.scene.bm_props.global_lowpoly_tag
         highpoly_prefix_raw = context.scene.bm_props.global_highpoly_tag
         cage_prefix_raw = context.scene.bm_props.global_cage_tag
         decal_prefix_raw = context.scene.bm_props.global_decal_tag
+
+        # decal objects are likely to drop into detached
+        for detached_name in detached:
+            detached_sources = [index for index, object in enumerate(context.scene.bm_table_of_objects) if object.global_object_name == detached_name]
+            detached_object = None
+            if len(detached_sources):
+                detached_object = context.scene.bm_table_of_objects[detached_sources[0]]
+                context.scene.bm_props.global_active_index = detached_sources[0]
+            else:
+                continue
+
+            # set object as decal object
+            if decal_prefix_raw in GetChunks(detached):
+                detached_object.decal_is_decal = True
 
         for root in roots:
             # root[0] - root_name chunks
@@ -547,7 +561,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
 
     else:
         data = {
-            'decal_is_decal' : self.decal_is_decal,
+            # 'decal_is_decal' : self.decal_is_decal,
             'decal_use_custom_camera' : self.decal_use_custom_camera,
             'decal_custom_camera' : self.decal_custom_camera,
             'decal_upper_coordinate' : self.decal_upper_coordinate,
