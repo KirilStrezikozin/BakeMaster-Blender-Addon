@@ -305,7 +305,7 @@ def BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context):
             local_index = -1
             item_index = -1
             object.nm_master_index = uni_index
-        
+
 # NameMatching Update
 def BM_SCENE_PROPS_global_use_name_matching_Update(self, context):
     if len(context.scene.bm_table_of_objects) == 0:
@@ -327,6 +327,13 @@ def BM_SCENE_PROPS_global_use_name_matching_Update(self, context):
         context.scene.bm_props.global_texturesets_table.remove(index)
 
     if self.global_use_name_matching is True:
+        # trash all highpolies and unset cages
+        for object in context.scene.bm_table_of_objects:
+            object.hl_use_cage = False
+            object.hl_use_unique_per_map = False
+            BM_ITEM_PROPS_hl_use_unique_per_map_Update_TrashHighpolies(object, object, context)
+            object.hl_is_lowpoly = False
+            
         BM_Table_of_Objects_NameMatching_Deconstruct(context)
 
         # get groups, roots, detached from construct
@@ -430,6 +437,12 @@ def BM_SCENE_PROPS_global_use_name_matching_Update(self, context):
                 object.nm_container_name = BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, object.nm_container_name, index)
 
     else:
+        # trash all highpolies and unset cages
+        for object in context.scene.bm_table_of_objects:
+            object.hl_use_cage = False
+            object.hl_use_unique_per_map = False
+            BM_ITEM_PROPS_hl_use_unique_per_map_Update_TrashHighpolies(object, object, context)
+            object.hl_is_lowpoly = False
         BM_Table_of_Objects_NameMatching_Deconstruct(context)
 
 def BM_ITEM_PROPS_nm_container_name_Update(self, context):
