@@ -105,6 +105,8 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="If on, High, Lowpoly, and Cage objects will be grouped by their matched names.\nProperties like Highpoly object and Cage will be set automatically if possible, maps and other settings can be configured by the top-parent container",
         default=False,
         update=BM_SCENE_PROPS_global_use_name_matching_Update)
+
+    global_last_edited_prop : bpy.props.StringProperty(default="")
     
 # Global Panels Props
     global_is_decal_panel_expanded : bpy.props.BoolProperty(
