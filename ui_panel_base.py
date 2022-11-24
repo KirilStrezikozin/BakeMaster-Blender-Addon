@@ -190,7 +190,7 @@ class BM_UL_Table_of_Objects_Item(bpy.types.UIList):
 class BM_UL_Table_of_Objects_Item_Highpoly(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         index_value = item.global_item_index
-        layout.emboss = 'NONE'
+        layout.emboss = 'PULLDOWN_MENU'
         row = layout.row()
         split = row.split(factor=0.1*len(str(index_value)))
         index_column = split.column()
@@ -207,7 +207,7 @@ class BM_UL_Table_of_Objects_Item_Highpoly(bpy.types.UIList):
 class BM_UL_Table_of_Maps_Item(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         index_value = item.global_map_index
-        layout.emboss = 'NONE'
+        layout.emboss = 'PULLDOWN_MENU'
         row = layout.row()
         split = row.split(factor=0.1*len(str(index_value)))
         index_column = split.column()
@@ -238,7 +238,7 @@ class BM_UL_Table_of_Maps_Item(bpy.types.UIList):
 class BM_UL_Table_of_Maps_Item_Highpoly(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         index_value = item.global_item_index
-        layout.emboss = 'NONE'
+        layout.emboss = 'PULLDOWN_MENU'
         row = layout.row()
         split = row.split(factor=0.1*len(str(index_value)))
         index_column = split.column()
@@ -313,7 +313,7 @@ class BM_UL_TextureSets_Objects_Table_Item(bpy.types.UIList):
             if object.global_use_bake is False or object.decal_is_decal:
                 layout.active = False
 
-        layout.emboss = 'NONE'
+        layout.emboss = 'PULLDOWN_MENU'
         row = layout.row()
         split = row.split(factor=split_factor)
         split.column().prop(item, 'global_object_name', text="", icon=icon)
