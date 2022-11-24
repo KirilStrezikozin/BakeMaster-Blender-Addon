@@ -35,6 +35,57 @@ class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
         layout.prop(bm_props, 'global_cage_tag')
         layout.prop(bm_props, 'global_decal_tag')
 
+class BM_ALEP_UL_Objects_Item(bpy.types.UIList):
+    def draw_item(self, context, layout, data, item, active_data, active_propname, index):
+        source_object = [object for object in context.scene.bm_table_of_objects if object.global_object_name == item.object_name]
+        if len(source_object) == 0:
+            icon = 'TRIA_RIGHT'
+        else:
+            object = source_object[0]
+            try:
+                context.scene.objects[object.global_object_name]
+            except (KeyError, AttributeError, UnboundLocalError):
+                icon = 'GHOST_DISABLED'
+            else:
+                icon = 'OUTLINER_OB_MESH'
+
+            if object.hl_is_lowpoly:
+                icon = 'MESH_PLANE'
+            if object.decal_is_decal:
+                icon = 'XRAY'
+
+        row = layout.row()
+        split = row.split(factor=0.1)
+        column = split.row()
+        column.prop(item, 'use_affect', text="")
+        row.emboss = 'NONE'
+        column = split.row()
+        column.label(text=item.object_name, icon=icon)
+        row.active = item.use_affect
+
+    def invoke(self, context, event):
+        pass
+
+    def draw_filter(self, context, layout):
+        pass
+
+class BM_ALEP_UL_Maps_Item(bpy.types.UIList):
+    def draw_item(self, context, layout, data, item, active_data, active_propname, index):
+        row = layout.row()
+        split = row.split(factor=0.1)
+        column = split.row()
+        column.prop(item, 'use_affect', text="")
+        row.emboss = 'NONE'
+        column = split.row()
+        column.label(text=item.map_name, icon='IMAGE_DATA')
+        row.active = item.use_affect
+
+    def invoke(self, context, event):
+        pass
+
+    def draw_filter(self, context, layout):
+        pass
+
 class BM_UL_Table_of_Objects_Item(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         row = layout.row()   
