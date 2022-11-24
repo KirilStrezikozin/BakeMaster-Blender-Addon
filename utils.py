@@ -1447,7 +1447,7 @@ def BM_Table_of_Objects_GetFTL(context, items, bitflag_filter_item):
 ### decal Props Funcs ###
 ###############################################################
 def BM_ITEM_PROPS_decal_is_decal_Update(self, context):
-    BM_LastEditedProp_Write("decal_is_decal", False)
+    BM_LastEditedProp_Write(context, "Object Decal: Is Decal", "decal_is_decal", getattr(self, "decal_is_decal"), False)
     if self.decal_is_decal:
         self.hl_use_cage = False
         self.hl_use_unique_per_map = False
@@ -2143,7 +2143,7 @@ def BM_MAP_PROPS_out_file_format_Update(self, context):
     BM_LastEditedProp_Write(context, name, "out_file_format", getattr(self, "out_file_format"), True)
 def BM_MAP_PROPS_out_exr_codec_Update(self, context):
     name = "Map Format: Exr codec"
-    BM_LastEditedProp_Write(context, name, "out_exr_codex", getattr(self, "out_exr_codex"), True)
+    BM_LastEditedProp_Write(context, name, "out_exr_codec", getattr(self, "out_exr_codec"), True)
 def BM_MAP_PROPS_out_compression_Update(self, context):
     name = "Map Format: Compression"
     BM_LastEditedProp_Write(context, name, "out_compression", getattr(self, "out_compression"), True)
@@ -2558,9 +2558,9 @@ def BM_MAP_PROPS_map_gmask_scale_x_Update(self, context):
 def BM_MAP_PROPS_map_gmask_scale_y_Update(self, context):
     name = "Map: Gradient Mask scale y"
     BM_LastEditedProp_Write(context, name, "map_gmask_scale_y", getattr(self, "map_gmask_scale_y"), True)
-def BM_MAP_PROPS_map_gmask_scaly_z_Update(self, context):
+def BM_MAP_PROPS_map_gmask_scale_z_Update(self, context):
     name = "Map: Gradient Mask scale z"
-    BM_LastEditedProp_Write(context, name, "map_gmask_scaly_z", getattr(self, "map_gmask_scaly_z"), True)
+    BM_LastEditedProp_Write(context, name, "map_gmask_scale_z", getattr(self, "map_gmask_scale_z"), True)
 def BM_MAP_PROPS_map_gmask_coverage_Update(self, context):
     name = "Map: Gradient Mask coverage"
     BM_LastEditedProp_Write(context, name, "map_gmask_coverage", getattr(self, "map_gmask_coverage"), True)
@@ -2600,12 +2600,12 @@ def BM_MAP_PROPS_map_edgemask_use_invert_Update(self, context):
 def BM_MAP_PROPS_map_WIREFRAME_prefix_Update(self, context):
     name = "Map: Wireframe prefix"
     BM_LastEditedProp_Write(context, name, "map_WIREFRAME_prefix", getattr(self, "map_WIREFRAME_prefix"), True)
-def BM_MAP_PROPS_map_wireframe_line_thickness_Update(self, context):
-    name = "Map: Wireframe line thickness"
-    BM_LastEditedProp_Write(context, name, "map_wireframe_line_thickness", getattr(self, "map_wireframe_line_thickness"), True)
-def BM_MAP_PROPS_map_wireframe_use_invert_Update(self, context):
-    name = "Map: Wireframe invert"
-    BM_LastEditedProp_Write(context, name, "map_wireframe_use_invert", getattr(self, "map_wireframe_use_invert"), True)
+def BM_MAP_PROPS_map_wireframemask_line_thickness_Update(self, context):
+    name = "Map: Wireframe Mask line thickness"
+    BM_LastEditedProp_Write(context, name, "map_wireframemask_line_thickness", getattr(self, "map_wireframemask_line_thickness"), True)
+def BM_MAP_PROPS_map_wireframemask_use_invert_Update(self, context):
+    name = "Map: Wireframe Mask invert"
+    BM_LastEditedProp_Write(context, name, "map_wireframemask_use_invert", getattr(self, "map_wireframemask_use_invert"), True)
 
 def BM_ITEM_PROPS_global_use_bake_Update(self, context):
     name = "Object: Use in bake"
@@ -2619,9 +2619,9 @@ def BM_ITEM_PROPS_decal_custom_camera_Update(self, context):
 def BM_ITEM_PROPS_decal_upper_coordinate_Update(self, context):
     name = "Object Decal: Upper coordinate"
     BM_LastEditedProp_Write(context, name, "decal_upper_coordinate", getattr(self, "decal_upper_coordinate"), False)
-def BM_ITEM_PROPS_decal_boundary_offsest_Update(self, context):
+def BM_ITEM_PROPS_decal_boundary_offset_Update(self, context):
     name = "Object Decal: Boundary offset"
-    BM_LastEditedProp_Write(context, name, "decal_boundary_offsest", getattr(self, "decal_boundary_offsest"), False)
+    BM_LastEditedProp_Write(context, name, "decal_boundary_offset", getattr(self, "decal_boundary_offset"), False)
 def BM_ITEM_PROPS_hl_decals_use_separate_texset_Update(self, context):
     name = "Object High to Lowpoly: Use separate texset for decals"
     BM_LastEditedProp_Write(context, name, "hl_decals_use_separate_texset", getattr(self, "hl_decals_use_separate_texset"), False)
@@ -2633,7 +2633,7 @@ def BM_ITEM_PROPS_hl_cage_extrusion_Update(self, context):
     BM_LastEditedProp_Write(context, name, "hl_cage_extrusion", getattr(self, "hl_cage_extrusion"), False)
 def BM_ITEM_PROPS_hl_max_ray_distance(self, context):
     name = "Object High to Lowpoly: Max ray distance"
-    BM_LastEditedProp_Write(context, name, "hl_max_ray_d", getattr(self, "hl_max_ray_d"), False)
+    BM_LastEditedProp_Write(context, name, "hl_max_ray_distance", getattr(self, "hl_max_ray_distance"), False)
 def BM_ITEM_PROPS_uv_bake_data_Update(self, context):
     name = "Object UVs & Layers: Bake data"
     BM_LastEditedProp_Write(context, name, "uv_bake_data", getattr(self, "uv_bake_data"), False)
@@ -2652,9 +2652,9 @@ def BM_ITEM_PROPS_uv_use_auto_unwrap_Update(self, context):
 def BM_ITEM_PROPS_uv_auto_unwrap_angle_limit_Update(self, context):
     name = "Object UVs & Layers: Auto unwrap angle limit"
     BM_LastEditedProp_Write(context, name, "uv_auto_unwrap_angle_limit", getattr(self, "uv_auto_unwrap_angle_limit"), False)
-def BM_ITEM_PROPS_uv_auto_unwrap_islands_margin_Update(self, context):
+def BM_ITEM_PROPS_uv_auto_unwrap_island_margin_Update(self, context):
     name = "Object UVs & Layers: Auto unwrap islands margin"
-    BM_LastEditedProp_Write(context, name, "uv_auto_unwrap_islands_margin", getattr(self, "uv_auto_unwrap_islands_margin"), False)
+    BM_LastEditedProp_Write(context, name, "uv_auto_unwrap_island_margin", getattr(self, "uv_auto_unwrap_island_margin"), False)
 def BM_ITEM_PROPS_uv_auto_unwrap_use_scale_to_bounds_Update(self, context):
     name = "Object UVs & Layers: Auto unwrap scale to bounds"
     BM_LastEditedProp_Write(context, name, "uv_auto_unwrap_use_scale_to_bounds", getattr(self, "uv_auto_unwrap_use_scale_to_bounds"), False)
@@ -2669,7 +2669,7 @@ def BM_ITEM_PROPS_out_exr_codec_Update(self, context):
     BM_LastEditedProp_Write(context, name, "out_exr_codec", getattr(self, "out_exr_codec"), False)
 def BM_ITEM_PROPS_out_compression_Update(self, context):
     name = "Object Format: Compression"
-    BM_LastEditedProp_Write(context, name, "out_compressio", getattr(self, "out_compressio"), False)
+    BM_LastEditedProp_Write(context, name, "out_compression", getattr(self, "out_compression"), False)
 def BM_ITEM_PROPS_out_res_Update(self, context):
     name = "Object Format: Resolution"
     BM_LastEditedProp_Write(context, name, "out_res", getattr(self, "out_res"), False)
@@ -2705,7 +2705,7 @@ def BM_ITEM_PROPS_out_super_sampling_aa_Update(self, context):
     BM_LastEditedProp_Write(context, name, "out_super_sampling_aa", getattr(self, "out_super_sampling_aa"), False)
 def BM_ITEM_PROPS_out_samples(self, context):
     name = "Object Format: Bake samples"
-    BM_LastEditedProp_Write(context, name, "out_", getattr(self, "out_"), False)
+    BM_LastEditedProp_Write(context, name, "out_samples", getattr(self, "out_samples"), False)
 def BM_ITEM_PROPS_out_use_adaptive_sampling_Update(self, context):
     name = "Object Format: Adaptive sampling"
     BM_LastEditedProp_Write(context, name, "out_use_adaptive_sampling", getattr(self, "out_use_adaptive_sampling"), False)
@@ -2733,15 +2733,15 @@ def BM_ITEM_PROPS_csh_lowpoly_smoothing_groups_angle_Update(self, context):
 def BM_ITEM_PROPS_csh_lowpoly_smoothing_groups_name_contains_Update(self, context):
     name = "Object Shading: Lowpoly vertex groups name contains"
     BM_LastEditedProp_Write(context, name, "csh_lowpoly_smoothing_groups_name_contains", getattr(self, "csh_lowpoly_smoothing_groups_name_contains"), False)
-def BM_ITEM_PROPS_use_highpoly_reset_normals_Update(self, context):
+def BM_ITEM_PROPS_csh_use_highpoly_reset_normals_Update(self, context):
     name = "Object Shading: Reset highpoly normals"
-    BM_LastEditedProp_Write(context, name, "use_highpoly_reset_normals", getattr(self, "use_highpoly_reset_normals"), False)
+    BM_LastEditedProp_Write(context, name, "csh_use_highpoly_reset_normals", getattr(self, "csh_use_highpoly_reset_normals"), False)
 def BM_ITEM_PROPS_csh_highpoly_use_smooth_Update(self, context):
     name = "Object Shading: Smooth highpoly"
     BM_LastEditedProp_Write(context, name, "csh_highpoly_use_smooth", getattr(self, "csh_highpoly_use_smooth"), False)
-def BM_ITEM_PROPS_csh_highpoly_smoothing_grousp_enum_Update(self, context):
+def BM_ITEM_PROPS_csh_highpoly_smoothing_groups_enum_Update(self, context):
     name = "Object Shading: Highpoly smoothing type"
-    BM_LastEditedProp_Write(context, name, "csh_highpoly_smoothing_grousp_enum", getattr(self, "csh_highpoly_smoothing_grousp_enum"), False)
+    BM_LastEditedProp_Write(context, name, "csh_highpoly_smoothing_groups_enum", getattr(self, "csh_highpoly_smoothing_groups_enum"), False)
 def BM_ITEM_PROPS_csh_highpoly_smoothing_groups_angle_Update(self, context):
     name = "Object Shading: Highpoly auto smooth angle"
     BM_LastEditedProp_Write(context, name, "csh_highpoly_smoothing_groups_angle", getattr(self, "csh_highpoly_smoothing_groups_angle"), False)
