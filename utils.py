@@ -1422,6 +1422,12 @@ def BM_LastEditedProp_Write(context, name: str, prop: str, value: any, is_map: b
         context.scene.bm_props.global_last_edited_prop_type = "float"
     elif type(value) == str:
         context.scene.bm_props.global_last_edited_prop_type = "str"
+    elif type(value) == tuple:
+        real_value = ""
+        for x in value:
+            real_value += str(x)
+        context.scene.bm_props.global_last_edited_prop_value = real_value
+
 
 def BM_Table_of_Objects_GetFTL(context, items, bitflag_filter_item):
         # default return values
@@ -2503,16 +2509,10 @@ def BM_MAP_PROPS_map_mask_materials_name_contains_Update(self, context):
     BM_LastEditedProp_Write(context, name, "map_mask_materials_name_contains", getattr(self, "map_mask_materials_name_contains"), True)
 def BM_MAP_PROPS_map_mask_color1_Update(self, context):
     name = "Map: Mask color1"
-    value = ""
-    for x in getattr(self, "map_mask_color1"):
-        value += str(x)
-    BM_LastEditedProp_Write(context, name, "map_mask_color1", value, "map_mask_color1"), True)
+    BM_LastEditedProp_Write(context, name, "map_mask_color1", getattr(self, "map_mask_color1"), "map_mask_color1"), True)
 def BM_MAP_PROPS_map_mask_color2_Update(self, context):
     name = "Map: Mask color2"
-    value = ""
-    for x in getattr(self, "map_mask_color2"):
-        value += str(x)
-    BM_LastEditedProp_Write(context, name, "map_mask_color2", value, "map_mask_color2"), True)
+    BM_LastEditedProp_Write(context, name, "map_mask_color2", getattr(self, "map_mask_color2"), "map_mask_color2"), True)
 def BM_MAP_PROPS_map_mask_use_invert_Update(self, context):
     name = "Map: Mask invert"
     BM_LastEditedProp_Write(context, name, "map_mask_use_invert", getattr(self, "map_mask_use_invert"), True)
