@@ -1401,9 +1401,16 @@ def BM_ActiveIndexUpdate(self, context):
             source_object.select_set(True)
             context.view_layer.objects.active = source_object
 
-def BM_LastEditedProp_Write(context, value: str, is_map: bool):
-    context.scene.bm_props.global_last_edited_prop = value
+def BM_LastEditedProp_Write(context, name: str, value: any, is_map: bool):
+    context.scene.bm_props.global_last_edited_prop_name = name
     context.scene.bm_props.global_last_edited_prop_is_map = is_map
+    context.scene.bm_props.global_last_edited_prop_value = str(value)
+    if type(value) == int:
+        context.scene.bm_props.global_last_edited_prop_type = "int"
+    elif type(value) == float:
+        context.scene.bm_props.global_last_edited_prop_type = "float"
+    elif type(value) == str:
+        context.scene.bm_props.global_last_edited_prop_type = "str"
 
 def BM_Table_of_Objects_GetFTL(context, items, bitflag_filter_item):
         # default return values
