@@ -493,6 +493,9 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                 object.hl_use_unique_per_map = False
                 BM_ITEM_PROPS_hl_use_unique_per_map_Update_TrashHighpolies(object, object, context)
                 object.hl_is_lowpoly = False
+                object.hl_is_cage = False
+                object.hl_is_highpoly = False
+                object.hl_is_decal = False
                 object.decal_is_decal = False
 
         _, roots, detached = BM_Table_of_Objects_NameMatching_Construct(context, container_objects)
@@ -594,6 +597,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'hl_cage_type' : self.hl_cage_type,
             'hl_cage_extrusion' : self.hl_cage_extrusion,
             'hl_max_ray_distance' : self.hl_max_ray_distance,
+            # 'hl_use_unique_per_map' : self.hl_use_unique_per_map,
             'uv_bake_data' : self.uv_bake_data,
             'uv_bake_target' : self.uv_bake_target,
             'uv_type' : self.uv_type,
@@ -602,6 +606,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'uv_auto_unwrap_angle_limit' : self.uv_auto_unwrap_angle_limit,
             'uv_auto_unwrap_island_margin' : self.uv_auto_unwrap_island_margin,
             'uv_auto_unwrap_use_scale_to_bounds' : self.uv_auto_unwrap_use_scale_to_bounds,
+            'uv_use_unique_per_map' : self.uv_use_unique_per_map,
             'out_use_denoise' : self.out_use_denoise,
             'out_file_format' : self.out_file_format,
             'out_exr_codec' : self.out_exr_codec,
@@ -621,6 +626,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'out_use_adaptive_sampling' : self.out_use_adaptive_sampling,
             'out_adaptive_threshold' : self.out_adaptive_threshold,
             'out_min_samples' : self.out_min_samples,
+            'out_use_unique_per_map' : self.out_use_unique_per_map,
             'csh_use_triangulate_lowpoly' : self.csh_use_triangulate_lowpoly,
             'csh_use_lowpoly_reset_normals' : self.csh_use_lowpoly_reset_normals,
             'csh_lowpoly_use_smooth' : self.csh_lowpoly_use_smooth,
@@ -648,12 +654,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             if object.nm_item_uni_container_master_index == self.nm_master_index and object.nm_is_lowpoly_container:
                 local_c_master_index = object.nm_master_index
 
-            if object.nm_item_uni_container_master_index == self.nm_master_index and object.nm_is_local_container is False and object.nm_item_local_container_master_index == local_c_master_index:
-                # object
-                # set
-                for key in data:
-                    setattr(object, key, data[key])
-                
+            if object.nm_item_uni_container_master_index == self.nm_master_index and object.nm_is_local_container is False and object.nm_item_local_container_master_index == local_c_master_index: 
                 # maps
                 # trash
                 BM_ITEM_RemoveLocalPreviews(object, context)
@@ -679,7 +680,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                         'global_map_type' : map.global_map_type,
                         'global_affect_by_hl' : map.global_affect_by_hl,
 
-                        'hl_use_cage' : map.hl_use_cage,
+                        # 'hl_use_cage' : map.hl_use_cage,
                         'hl_cage_type' : map.hl_cage_type,
                         'hl_cage_extrusion' : map.hl_cage_extrusion,
                         'hl_max_ray_distance' : map.hl_max_ray_distance,
@@ -951,6 +952,11 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                     new_channelpack = object.chnlp_channelpacking_table.add()
                     for chnlp_key in channelpack_data:
                         setattr(new_channelpack, chnlp_key, channelpack_data[chnlp_key])
+
+                # object
+                # set
+                for key in data:
+                    setattr(object, key, data[key])
 
 ###############################################################
 ### Texture Sets Funcs ###
@@ -1481,6 +1487,8 @@ def BM_ITEM_PROPS_hl_use_unique_per_map_Update(self, context):
         for map_index, map in enumerate(object.global_maps):
             object.global_maps_active_index = map_index
             for key in data:
+                if key == 'hl_cage' and map.hl_use_cage is False:
+                    continue
                 setattr(map, key, data[key])
 
             if set_highpoly:

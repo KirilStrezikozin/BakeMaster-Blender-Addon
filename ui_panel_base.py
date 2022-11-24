@@ -581,7 +581,8 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
 
         # hl body
         if scene.bm_props.global_is_hl_panel_expanded:
-            hl_box.prop(object, 'hl_use_unique_per_map')
+            if object.nm_uni_container_is_global is False:
+                hl_box.prop(object, 'hl_use_unique_per_map')
 
             if object.hl_use_unique_per_map is False:
                 # highpoly
