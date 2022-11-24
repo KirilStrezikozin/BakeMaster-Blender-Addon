@@ -23,6 +23,29 @@ from .utils import *
 from .labels import BM_Labels
 
 #################################################
+### Apply Lastly Edited Prop Props ###
+#################################################
+class BM_ALEP_Object(bpy.types.PropertyGroup):
+    object_name : bpy.props.StringProperty(
+        name="Object name",
+        default="")
+    
+    use_affect : bpy.props.BoolProperty(
+        name="Apply",
+        description="Apply property for this object",
+        default=True)
+
+class BM_ALEP_Map(bpy.types.PropertyGroup):
+    map_name : bpy.props.StringProperty(
+        name="Map name",
+        default="")
+    
+    use_affect : bpy.props.BoolProperty(
+        name="Apply",
+        description="Apply property for this map",
+        default=True)
+
+#################################################
 ### GLOBAL SCENE PROPS ###
 #################################################
 class BM_SceneProps_TextureSet_Object_SubObject(bpy.types.PropertyGroup):
@@ -111,6 +134,24 @@ class BM_SceneProps(bpy.types.PropertyGroup):
     global_last_edited_prop_value : bpy.props.StringProperty(default="")
     global_last_edited_prop_type : bpy.props.StringProperty(default="")
     global_last_edited_prop_is_map : bpy.props.BoolProperty(default=False)
+
+# Apply Lastly Edited Prop Props
+    global_alep_objects : bpy.props.CollectionProperty(type=BM_ALEP_Object)
+
+    global_alep_objects_active_index : bpy.props.IntProperty(
+        name="Object",
+        default=0)
+
+    global_alep_maps : bpy.props.CollectionProperty(type=BM_ALEP_Map)
+
+    global_alep_maps_active_index : bpy.props.IntProperty(
+        name="Map",
+        default=0)
+
+    global_alep_affect_objects : bpy.props.BoolProperty(
+        name="Affect Objects",
+        description="Apply property to all maps of chosen objects",
+        default=False)
     
 # Global Panels Props
     global_is_decal_panel_expanded : bpy.props.BoolProperty(
@@ -1643,7 +1684,7 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Smoothness. Gradient scale by the local axis Z",
         default=1,
         precision=3,
-        update=BM_MAP_PROPS_map_gmask_scaly_z_Update)
+        update=BM_MAP_PROPS_map_gmask_scale_z_Update)
     
     map_gmask_coverage : bpy.props.FloatProperty(
         name="Range of coverage",
@@ -1751,7 +1792,7 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Thickness of uv edge",
         default=0.02,
         min=0.001,
-        update=BM_MAP_PROPS_map_wireframe_line_thickness_Update)
+        update=BM_MAP_PROPS_map_wireframemask_line_thickness_Update)
 
     map_wireframemask_use_invert : bpy.props.FloatProperty(
         name="Invert",
@@ -1760,7 +1801,7 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_PROPS_map_wireframe_use_invert_Update)
+        update=BM_MAP_PROPS_map_wireframemask_use_invert_Update)
 
 ###################################################################
 ### OBJECT PROPS ###
@@ -1994,7 +2035,7 @@ class BM_Object(bpy.types.PropertyGroup):
         default=0.1,
         min=0,
         max=1,
-        update=BM_ITEM_PROPS_decal_boundary_offsest_Update)
+        update=BM_ITEM_PROPS_decal_boundary_offset_Update)
 
 # Item High to Lowpoly props:
     hl_use_unique_per_map : bpy.props.BoolProperty(
@@ -2126,7 +2167,7 @@ class BM_Object(bpy.types.PropertyGroup):
         default=0.01,
         min=0,
         max=1,
-        update=BM_ITEM_PROPS_uv_auto_unwrap_islands_margin_Update)
+        update=BM_ITEM_PROPS_uv_auto_unwrap_island_margin_Update)
     
     uv_auto_unwrap_use_scale_to_bounds : bpy.props.BoolProperty(
         name="Scale to Bounds",
@@ -2377,7 +2418,7 @@ class BM_Object(bpy.types.PropertyGroup):
         name="Reset Highpoly Normals",
         description="Reset all highpoly mesh normals direction and recalculate them outside",
         default=False,
-        update=BM_ITEM_PROPS_use_highpoly_reset_normals_Update)
+        update=BM_ITEM_PROPS_csh_use_highpoly_reset_normals_Update)
 
     csh_highpoly_use_smooth : bpy.props.BoolProperty(
         name="Smooth Highpoly",
@@ -2392,7 +2433,7 @@ class BM_Object(bpy.types.PropertyGroup):
         items=[('STANDARD', "Standard", "Apply default Shade Smooth to whole object"),
                ('AUTO', "Auto Smooth", "Apply Auto Shade Smooth based on angle between faces or mesh split normals data"),
                ('VERTEX_GROUPS', "Vertex Groups", "Apply smooth shading to created mesh vertex groups. Correct smooth shading technique")],
-        update=BM_ITEM_PROPS_csh_highpoly_smoothing_grousp_enum_Update)
+        update=BM_ITEM_PROPS_csh_highpoly_smoothing_groups_enum_Update)
     
     csh_highpoly_smoothing_groups_angle : bpy.props.IntProperty(
         name="Angle",
