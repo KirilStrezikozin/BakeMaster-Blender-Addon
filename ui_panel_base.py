@@ -331,16 +331,24 @@ class BM_UL_TextureSets_Objects_Table_Item_SubItem(bpy.types.UIList):
         index_value = item.global_object_index
         split_factor = 1-0.05*3 if len(str(index_value)) < 4 else len(str(index_value))
         
-        # icon = 'MESH_PLANE'
         source_object = [object for object in context.scene.bm_table_of_objects if object.global_object_name == item.global_object_name][0]
+
+        icon = ''
+        if source_object.hl_is_lowpoly:
+            icon = 'MESH_PLANE'
+        if source_object.decal_is_decal:
+            icon = 'XRAY'
 
         if source_object.global_use_bake is False or source_object.decal_is_decal:
             layout.active = False
         try:
             context.scene.objects[source_object.global_object_name]
         except (KeyError, AttributeError, UnboundLocalError):
-            # icon = 'GHOST_DISABLED'
+            icon = 'GHOST_DISABLED'
             layout.active = False
+
+        if icon == '':
+            icon = 'OUTLINER_OB_MESH'
 
         row = layout.row()
         split = row.split(factor=split_factor)
@@ -348,7 +356,7 @@ class BM_UL_TextureSets_Objects_Table_Item_SubItem(bpy.types.UIList):
         name_column.prop(item, 'global_object_include_in_texset', text="")
         row.emboss = 'NONE'
         name_column_row = name_column.row()
-        name_column_row.label(text=item.global_object_name)
+        name_column_row.label(text=item.global_object_name, icon=icon)
         index_column = split.column()
         index_column.label(text=str(index_value))
         row.active = item.global_object_include_in_texset
