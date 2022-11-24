@@ -218,21 +218,23 @@ class BM_Map_Highpoly(bpy.types.PropertyGroup):
 
 class BM_Map(bpy.types.PropertyGroup):
     global_use_bake : bpy.props.BoolProperty(
-        name = "Include/exclude map in the bake",
-        default = True)
+        name="Include/exclude map in the bake",
+        default=True,
+        update=BM_MAP_PROPS_global_use_bake_Update)
 
     global_map_type : bpy.props.EnumProperty(
-        name = "Choose Map Type",
-        description = "Set map type for the current pass",
-        items = BM_MAP_PROPS_map_type_Items,
-        update = BM_ITEM_RemoveLocalPreviews)
+        name="Choose Map Type",
+        description="Set map type for the current pass",
+        items=BM_MAP_PROPS_map_type_Items,
+        update=BM_MAP_PROPS_global_map_type_Update)
     
     global_map_index : bpy.props.IntProperty()
 
     global_affect_by_hl : bpy.props.BoolProperty(
         name="Affect by High to Lowpoly Settings",
         description="Use High to Lowpoly Settigns for baking this map. If checked, bake will be performed from highpoly to lowpoly, otherwise just bake lowpoly",
-        default=True)
+        default=True,
+        update=BM_MAP_PROPS_global_affect_by_hl_Update)
     
 # Map High to Lowpoly props:
     hl_highpoly_table : bpy.props.CollectionProperty(type=BM_Map_Highpoly)
@@ -252,32 +254,32 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Type of Cage properties to use",
         items=[('STANDARD', "Standard", "Standard Cage properties of Cycles Bake.\nSet extrusion, ray distance, and choose cage object"),
                ('SMART', "Smart", "Auto cage creation using lowpoly mesh displace. Saves time with simple cage")],
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
+        update=BM_MAP_PROPS_hl_cage_type_Update)
 
     hl_cage_extrusion : bpy.props.FloatProperty(
-        name = "Cage Extrusion",
-        description = "Inflate by the specified distance to create cage",
-        default = 0,
-        min = 0,
-        max = 1,
-        precision = 2,
-        subtype = 'DISTANCE',
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
+        name="Cage Extrusion",
+        description="Inflate by the specified distance to create cage",
+        default=0,
+        min=0,
+        max=1,
+        precision=2,
+        subtype='DISTANCE',
+        update=BM_MAP_PROPS_hl_cage_extrusion_Update)
     
     hl_max_ray_distance : bpy.props.FloatProperty(
-        name = "Max Ray Distance",
-        description = "The maximum ray distance for matching points between the high and lowpoly. If zero, there is no limit",
-        default = 0,
-        min = 0,
-        max = 1,
-        precision = 2,
-        subtype = 'DISTANCE',
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
+        name="Max Ray Distance",
+        description="The maximum ray distance for matching points between the high and lowpoly. If zero, there is no limit",
+        default=0,
+        min=0,
+        max=1,
+        precision=2,
+        subtype='DISTANCE',
+        update=BM_MAP_PROPS_hl_max_ray_distance_Update)
 
     hl_cage : bpy.props.EnumProperty(
-        name = "Cage Object",
-        description = "Object to use as cage instead of calculating with cage extrusion",
-        items = BM_ITEM_PROPS_hl_cage_Items,
+        name="Cage Object",
+        description="Object to use as cage instead of calculating with cage extrusion",
+        items=BM_ITEM_PROPS_hl_cage_Items,
         update=BM_ITEM_PROPS_hl_cage_Update)
 
     hl_cage_name_old : bpy.props.StringProperty()
@@ -288,35 +290,34 @@ class BM_Map(bpy.types.PropertyGroup):
 
 # Map UV Props:
     uv_bake_data : bpy.props.EnumProperty(
-        name = "Bake Data",
-        description = "Choose data type to use for baking",
-        default = 'OBJECT_MATERIALS',
-        items = [('OBJECT_MATERIALS', "Object/Materials", "Use Object and Materials data for baking regular maps"),
+        name="Bake Data",
+        description="Choose data type to use for baking",
+        default='OBJECT_MATERIALS',
+        items=[('OBJECT_MATERIALS', "Object/Materials", "Use Object and Materials data for baking regular maps"),
                  ('VERTEX_COLORS', "Vertex Colors", "Bake VertexColor Layers to Image Textures")],
-        update = BM_ITEM_PROPS_UVSettings_Update)
+        update=BM_MAP_PROPS_uv_bake_data_Update)
 
     uv_bake_target : bpy.props.EnumProperty(
-        name = "Bake Target",
-        description = "Choose Baked Maps output target",
-        items = BM_ITEM_PROPS_uv_bake_target_Items,
-        update = BM_ITEM_PROPS_UVSettings_Update)
+        name="Bake Target",
+        description="Choose Baked Maps output target",
+        items=BM_ITEM_PROPS_uv_bake_target_Items,
+        update=BM_MAP_PROPS_uv_bake_target_Update)
 
     uv_active_layer : bpy.props.EnumProperty(
-        name = "Active UV Map",
-        description = "Choose active UVMap layer to use in the bake.\nIf mesh has got no UV layers and at least one map to be baked to image texture, auto UV unwrap will be proceeded",
-        items = BM_ITEM_PROPS_uv_active_layer_Items,
-        update=BM_ITEM_PROPS_UVSettings_Update)
+        name="Active UV Map",
+        description="Choose active UVMap layer to use in the bake.\nIf mesh has got no UV layers and at least one map to be baked to image texture, auto UV unwrap will be proceeded",
+        items=BM_ITEM_PROPS_uv_active_layer_Items)
 
     uv_type : bpy.props.EnumProperty(
         name = "UV Map Type",
         description = "UVMap type is set automatically when changing Active UV Map. Change if it's not correct",
         items = BM_ITEM_PROPS_uv_type_Items,
-        update=BM_ITEM_PROPS_UVSettings_Update)
+        update=BM_MAP_PROPS_uv_type_Update)
 
     uv_snap_islands_to_pixels : bpy.props.BoolProperty(
         name="Snap to pixels",
         description="Snap UVMap islands to pixel edges for clearer result",
-        update=BM_ITEM_PROPS_UVSettings_Update)
+        update=BM_MAP_PROPS_uv_snap_islands_to_pixels_Update)
 
     # uv_use_auto_unwrap : bpy.props.BoolProperty(
     #     name="Auto Unwrap",
@@ -348,22 +349,22 @@ class BM_Map(bpy.types.PropertyGroup):
 
 # Map Output Props:
     out_use_denoise : bpy.props.BoolProperty(
-        name = "Denoise",
-        description = "Denoise and Discpeckle baked maps as a post-process filter",
-        default = False,
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="Denoise",
+        description="Denoise and Discpeckle baked maps as a post-process filter",
+        default=False,
+        update=BM_MAP_PROPS_out_use_denoise_Update)
 
     out_file_format : bpy.props.EnumProperty(
-        name = "File Format",
-        description = "File format of output image files",
-        default = 'PNG',
-        items = [('BMP', "BMP", "Output image in bitmap format"),
-                 ('PNG', "PNG", "Output image in common PNG format. Best file format for true-color images that need perfect tone balance. Default Blender image format.\n\Pros: can contain Alpha Channel"),
-                 ('JPEG', "JPEG", "Output image in JPEG format. Uncompressed file format and takes the most amount of data and is the exact representation of the image. \n\nCons: With every edit and resave the image quality will deteriorate.\nPros: lightweight"),
-                 ('TIFF', "TIFF", "Output image in TIFF format. Photographic file standard in print"),
-                 ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps"),
-                 ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps with PSD set as file format for current Object will be saved to a single .psd file")],
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="File Format",
+        description="File format of output image files",
+        default='PNG',
+        items=[('BMP', "BMP", "Output image in bitmap format"),
+               ('PNG', "PNG", "Output image in common PNG format. Best file format for true-color images that need perfect tone balance. Default Blender image format.\n\Pros: can contain Alpha Channel"),
+               ('JPEG', "JPEG", "Output image in JPEG format. Uncompressed file format and takes the most amount of data and is the exact representation of the image. \n\nCons: With every edit and resave the image quality will deteriorate.\nPros: lightweight"),
+               ('TIFF', "TIFF", "Output image in TIFF format. Photographic file standard in print"),
+               ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps"),
+               ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps with PSD set as file format for current Object will be saved to a single .psd file")],
+        update=BM_MAP_PROPS_out_file_format_Update)
 
     # out_psd_include : bpy.props.EnumProperty(
         # name="PSD includes",
@@ -384,7 +385,7 @@ class BM_Map(bpy.types.PropertyGroup):
                ('ZIPS', "ZIPS (lossless)", ""),
                ('DWAA', "DWAA (lossy)", ""),
                ('DWAB', "DWAB (lossy)", "")],
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        update=BM_MAP_PROPS_out_exr_codex_Update)
 
     out_compression : bpy.props.IntProperty(
         name="Compression",
@@ -393,38 +394,38 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0,
         max=100,
         subtype='PERCENTAGE',
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        update=BM_MAP_PROPS_out_compression_Update)
 
     out_res : bpy.props.EnumProperty(
-        name = "Map Texture Resolution",
-        description = "Choose map resolution in pixels from the common ones or set custom",
-        default = '1024',
-        items = [('512', "1/2K (512x512)", ""),
-                 ('1024', "1K (1024x1024)", ""),
-                 ('2048', "2K (2048x2048)", ""),
-                 ('4096', "4K (4096x4096)", ""),
-                 ('8192', "8K (8192x8192)", ""),
-                 ('CUSTOM', "Custom", "Enter custom height and width")],
-                 #('TEXEL', "Texel Density defined", "Define image resolution based on object's texel density")],
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="Map Texture Resolution",
+        description="Choose map resolution in pixels from the common ones or set custom",
+        default='1024',
+        items=[('512', "1/2K (512x512)", ""),
+               ('1024', "1K (1024x1024)", ""),
+               ('2048', "2K (2048x2048)", ""),
+               ('4096', "4K (4096x4096)", ""),
+               ('8192', "8K (8192x8192)", ""),
+               ('CUSTOM', "Custom", "Enter custom height and width")],
+               #('TEXEL', "Texel Density defined", "Define image resolution based on object's texel density")],
+        update=BM_MAP_PROPS_out_res_Update)
 
     out_res_height : bpy.props.IntProperty(
-        name = "Height",
-        description = "Custom height resolution",
-        default = 1000,
-        min = 1,
-        max = 65536,
-        subtype = 'PIXEL',
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="Height",
+        description="Custom height resolution",
+        default=1000,
+        min=1,
+        max=65536,
+        subtype='PIXEL',
+        update=BM_MAP_PROPS_out_res_height_Update)
 
     out_res_width : bpy.props.IntProperty(
-        name = "Width",
-        description = "Custom height resolution",
-        default = 1000,
-        min = 1,
-        max = 65536,
-        subtype = 'PIXEL',
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="Width",
+        description="Custom height resolution",
+        default=1000,
+        min=1,
+        max=65536,
+        subtype='PIXEL',
+        update=BM_MAP_PROPS_out_res_width_Update)
 
     # out_texel_density_value : bpy.props.IntProperty(
         # name="Texel Density",
@@ -441,55 +442,55 @@ class BM_Map(bpy.types.PropertyGroup):
         # default=True)
 
     out_margin : bpy.props.IntProperty(
-        name = "Margin",
-        description = "Padding. Extend bake result by specified number of pixels as a post-process filter.\nImproves baking quality by reducing hard edges visibility",
-        default = 16,
-        min = 0,
-        max = 64,
-        subtype = 'PIXEL',
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="Margin",
+        description="Padding. Extend bake result by specified number of pixels as a post-process filter.\nImproves baking quality by reducing hard edges visibility",
+        default=16,
+        min=0,
+        max=64,
+        subtype='PIXEL',
+        update=BM_MAP_PROPS_out_margin_Update)
     
     out_margin_type : bpy.props.EnumProperty(
-        name = "Margin Type",
-        description = "Algorithm for margin",
-        default = 'ADJACENT_FACES',
-        items = [('ADJACENT_FACES', "Adjacent Faces", "Use pixels from adjacent faces across UV seams"),
-                 ('EXTEND', "Extend", "Extend face border pixels outwards")],
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="Margin Type",
+        description="Algorithm for margin",
+        default='ADJACENT_FACES',
+        items=[('ADJACENT_FACES', "Adjacent Faces", "Use pixels from adjacent faces across UV seams"),
+               ('EXTEND', "Extend", "Extend face border pixels outwards")],
+        update=BM_MAP_PROPS_out_margin_type_Update)
 
     out_use_32bit : bpy.props.BoolProperty(
-        name = "32bit",
-        description = "Create image texture with 32 bit floating point depth.\nStores more color data in the image this way",
-        default = False,
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="32bit",
+        description="Create image texture with 32 bit floating point depth.\nStores more color data in the image this way",
+        default=False,
+        update=BM_MAP_PROPS_out_use_32bit_Update)
 
     out_use_alpha : bpy.props.BoolProperty(
-        name = "Alpha",
-        description = "Create image texture with Alpha color channel",
-        default = False,
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="Alpha",
+        description="Create image texture with Alpha color channel",
+        default=False,
+        update=BM_MAP_PROPS_out_use_alpha_Update)
 
     out_use_transbg : bpy.props.BoolProperty(
-        name = "Transparent BG",
-        description = "Create image texture with transparent background instead of solid black",
-        default = False,
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="Transparent BG",
+        description="Create image texture with transparent background instead of solid black",
+        default=False,
+        update=BM_MAP_PROPS_out_use_transbg_Update)
     
     out_udim_start_tile : bpy.props.IntProperty(
-        name = "UDIM Start Tile Index",
-        description = "UDIM tile index of UDIM tiles baking range.\nUDIMs baking range is used for defining UDIM tiles baking boundaries. Bake result will only affect specified range of tiles (Start Tile Index - End Tile Index)",
-        default = 1001,
-        min = 1001,
-        max = 2000,
-        update=BM_ITEM_PROPS_OutputSettings_Update)
+        name="UDIM Start Tile Index",
+        description="UDIM tile index of UDIM tiles baking range.\nUDIMs baking range is used for defining UDIM tiles baking boundaries. Bake result will only affect specified range of tiles (Start Tile Index - End Tile Index)",
+        default=1001,
+        min=1001,
+        max=2000,
+        update=BM_MAP_PROPS_out_udim_start_tile_Update)
 
     out_udim_end_tile : bpy.props.IntProperty(
-        name = "UDIM End Tile Index",
-        description = "UDIM tile index of UDIM tiles baking range.\nUDIMs baking range is used for defining UDIM tiles baking boundaries. Bake result will only affect specified range of tiles (Start Tile Index - End Tile Index)",
-        default = 1001,
-        min = 1001,
-        max = 2000,
-        update=BM_ITEM_PROPS_OutputSettings_Update)
+        name="UDIM End Tile Index",
+        description="UDIM tile index of UDIM tiles baking range.\nUDIMs baking range is used for defining UDIM tiles baking boundaries. Bake result will only affect specified range of tiles (Start Tile Index - End Tile Index)",
+        default=1001,
+        min=1001,
+        max=2000,
+        update=BM_MAP_PROPS_out_udim_end_tile_Update)
 
     out_super_sampling_aa : bpy.props.EnumProperty(
         name="SuperSampling AA",
@@ -500,7 +501,7 @@ class BM_Map(bpy.types.PropertyGroup):
                ('4X4', "4x4", "Bake at 4x the chosen resolution and then downscale"),
                ('8X8', "8x8", "Bake at 8x the chosen resolution and then downscale"),
                ('16X16', "16x16", "Bake at 16x the chosen resolution and then downscale")],
-        update=BM_ITEM_PROPS_OutputSettings_Update)
+        update=BM_MAP_PROPS_out_super_sampling_aa_Update)
 
     out_samples : bpy.props.IntProperty(
         name="Bake Samples",
@@ -508,13 +509,13 @@ class BM_Map(bpy.types.PropertyGroup):
         default=128,
         min=1,
         max=16777216,
-        update=BM_ITEM_PROPS_OutputSettings_Update)
+        update=BM_MAP_PROPS_out_samples_Update)
     
     out_use_adaptive_sampling : bpy.props.BoolProperty(
         name="Adaptive Sampling",
         description="Automatically reduce the number of samples per pixel based on estimated noise level",
         default=False,
-        update=BM_ITEM_PROPS_OutputSettings_Update)
+        update=BM_MAP_PROPS_out_use_adaptive_sampling_Update)
 
     out_adaptive_threshold : bpy.props.FloatProperty(
         name="Noise Threshold",
@@ -525,7 +526,7 @@ class BM_Map(bpy.types.PropertyGroup):
         soft_min=0.001,
         step=3,
         precision=4,
-        update=BM_ITEM_PROPS_OutputSettings_Update)
+        update=BM_MAP_PROPS_out_adaptive_threshold_Update)
 
     out_min_samples : bpy.props.IntProperty(
         name="Bake Min Samples",
@@ -533,13 +534,14 @@ class BM_Map(bpy.types.PropertyGroup):
         default=0,
         min=0,
         max=4096,
-        update=BM_ITEM_PROPS_OutputSettings_Update)
+        update=BM_MAP_PROPS_out_min_samples_Update)
 
 # Albedo Map Props
     map_ALBEDO_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ALBEDO")
+        default="ALBEDO",
+        update=BM_MAP_PROPS_map_ALBEDO_prefix_Update)
 
     # map_ALBEDO_use_preview : bpy.props.BoolProperty(
         # name="Preview",
@@ -551,7 +553,8 @@ class BM_Map(bpy.types.PropertyGroup):
     map_METALNESS_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="METAL")
+        default="METAL",
+        update=BM_MAP_PROPS_map_METALNESS_prefix_Update)
 
     # map_METALNESS_use_preview : bpy.props.BoolProperty(
         # name="Preview",
@@ -563,7 +566,8 @@ class BM_Map(bpy.types.PropertyGroup):
     map_ROUGHNESS_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ROUGH")
+        default="ROUGH",
+        update=BM_MAP_PROPS_map_ROUGHNESS_prefix_Update)
 
     # map_ROUGHNESS_use_preview : bpy.props.BoolProperty(
         # name="Preview",
@@ -575,7 +579,8 @@ class BM_Map(bpy.types.PropertyGroup):
     map_DIFFUSE_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="DIFFUSE")
+        default="DIFFUSE",
+        update=BM_MAP_PROPS_map_DIFFUSE_prefix_Update)
 
     # map_DIFFUSE_use_preview : bpy.props.BoolProperty(
         # name="Preview",
@@ -587,7 +592,8 @@ class BM_Map(bpy.types.PropertyGroup):
     map_SPECULAR_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="SPECULAR")
+        default="SPECULAR",
+        update=BM_MAP_PROPS_map_SPECULAR_prefix_Update)
 
     # map_SPECULAR_use_preview : bpy.props.BoolProperty(
         # name="Preview",
@@ -599,7 +605,8 @@ class BM_Map(bpy.types.PropertyGroup):
     map_GLOSSINESS_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="GLOSS")
+        default="GLOSS",
+        update=BM_MAP_PROPS_map_GLOSSINESS_prefix_Update)
 
     # map_GLOSSINESS_use_preview : bpy.props.BoolProperty(
         # name="Preview",
@@ -611,7 +618,8 @@ class BM_Map(bpy.types.PropertyGroup):
     map_OPACITY_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="OPACITY")
+        default="OPACITY",
+        update=BM_MAP_PROPS_map_OPACITY_prefix_Update)
 
     # map_OPACITY_use_preview : bpy.props.BoolProperty(
         # name="Preview",
@@ -623,7 +631,8 @@ class BM_Map(bpy.types.PropertyGroup):
     map_EMISSION_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="EMISSION")
+        default="EMISSION",
+        update=BM_MAP_PROPS_map_EMISSION_prefix_Update)
 
     # map_EMISSION_use_preview : bpy.props.BoolProperty(
         # name="Preview",
@@ -635,7 +644,8 @@ class BM_Map(bpy.types.PropertyGroup):
     map_PASS_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="BSDFPASS")
+        default="BSDFPASS",
+        update=BM_MAP_PROPS_map_PASS_prefix_Update)
 
     map_PASS_use_preview : bpy.props.BoolProperty(
         name="Preview",
@@ -659,13 +669,15 @@ class BM_Map(bpy.types.PropertyGroup):
                ('TRANSMISSION', "Transmission", ""),
                ('EMISSION', "Emission", ""),
                ('ALPHA', "Alpha", ""),
-               ('NORMAL', "Normal", "")])
+               ('NORMAL', "Normal", "")],
+        update=BM_MAP_PROPS_map_pass_type_Update)
 
 # Decal Pass Map Props
     map_DECAL_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="DECAL")
+        default="DECAL",
+        update=BM_MAP_PROPS_map_DECAL_prefix_Update)
 
     map_DECAL_use_preview : bpy.props.BoolProperty(
         name="Preview",
@@ -679,12 +691,14 @@ class BM_Map(bpy.types.PropertyGroup):
         default='NORMAL',
         items=[('NORMAL', "Normal", "Normals Pass using MatCap"),
                ('HEIGHT', "Height", "How high mesh parts are from the world ground level"),
-               ('OPACITY', "Opacity", "Decal Object - white, empty space - black")])
+               ('OPACITY', "Opacity", "Decal Object - white, empty space - black")],
+        update=BM_MAP_PROPS_map_decal_pass_type_Update)
 
     map_decal_height_opacity_invert : bpy.props.BoolProperty(
         name="Invert",
         description="Invert colors of the map",
-        default=False)
+        default=False,
+        update=BM_MAP_PROPS_map_decal_height_opacity_invert_Update)
 
     map_decal_normal_preset : bpy.props.EnumProperty(
         name="Preset",
@@ -706,7 +720,8 @@ class BM_Map(bpy.types.PropertyGroup):
                ('REDSHIFT', "Redshift", "Redshift uses OpenGL format"),
                ('UNITY', "Unity", "Unity uses OpenGL format"),
                ('VRAY', "VRay", "VRay uses OpenGL format"),
-               ('ZBRUSH', "ZBrush", "ZBrush uses OpenGL format")])
+               ('ZBRUSH', "ZBrush", "ZBrush uses OpenGL format")],
+        update=BM_MAP_PROPS_map_decal_normal_preset_Update)
     
     map_decal_normal_custom_preset : bpy.props.EnumProperty(
         name="Custom Format",
@@ -714,46 +729,51 @@ class BM_Map(bpy.types.PropertyGroup):
         default='OPEN_GL',
         items=[('OPEN_GL', "OpenGL", "OpenGL Normal Map format. Green Channel Axis is +Y"),
                ('DIRECTX', "DirectX", "DirectX Normal Map format. Green Channel Axis is -Y"),
-               ('CUSTOM', "Custom", "Set custom axes for channels")])
+               ('CUSTOM', "Custom", "Set custom axes for channels")],
+        update=BM_MAP_PROPS_map_decal_normal_custom_preset_Update)
 
     map_decal_normal_r : bpy.props.EnumProperty(
-        name = "Normal Space",
-        description = "Axis to bake in %s channel" % "red",
-        default = 'POS_X',
-        items = [('POS_X', "+X", ""),
-                 ('POS_Y', "+Y", ""),
-                 ('POS_Z', "+Z", ""),
-                 ('NEG_X', "-X", ""),
-                 ('NEG_Y', "-Y", ""),
-                 ('NEG_Z', "-Z", "")])
+        name="Normal Space",
+        description="Axis to bake in %s channel" % "red",
+        default='POS_X',
+        items=[('POS_X', "+X", ""),
+               ('POS_Y', "+Y", ""),
+               ('POS_Z', "+Z", ""),
+               ('NEG_X', "-X", ""),
+               ('NEG_Y', "-Y", ""),
+               ('NEG_Z', "-Z", "")],
+        update=BM_MAP_PROPS_map_decal_normal_r_Update)
 
     map_decal_normal_g : bpy.props.EnumProperty(
-        name = "Normal Space",
-        description = "Axis to bake in %s channel" % "green",
-        default = 'POS_Y',
-        items = [('POS_X', "+X", ""),
-                 ('POS_Y', "+Y", ""),
-                 ('POS_Z', "+Z", ""),
-                 ('NEG_X', "-X", ""),
-                 ('NEG_Y', "-Y", ""),
-                 ('NEG_Z', "-Z", "")])
+        name="Normal Space",
+        description="Axis to bake in %s channel" % "green",
+        default='POS_Y',
+        items=[('POS_X', "+X", ""),
+               ('POS_Y', "+Y", ""),
+               ('POS_Z', "+Z", ""),
+               ('NEG_X', "-X", ""),
+               ('NEG_Y', "-Y", ""),
+               ('NEG_Z', "-Z", "")],
+        update=BM_MAP_PROPS_map_decal_normal_g_Update)
 
     map_decal_normal_b : bpy.props.EnumProperty(
-        name = "Normal Space",
-        description = "Axis to bake in %s channel" % "blue",
-        default = 'POS_Z',
-        items = [('POS_X', "+X", ""),
-                 ('POS_Y', "+Y", ""),
-                 ('POS_Z', "+Z", ""),
-                 ('NEG_X', "-X", ""),
-                 ('NEG_Y', "-Y", ""),
-                 ('NEG_Z', "-Z", "")])
+        name="Normal Space",
+        description="Axis to bake in %s channel" % "blue",
+        default='POS_Z',
+        items=[('POS_X', "+X", ""),
+               ('POS_Y', "+Y", ""),
+               ('POS_Z', "+Z", ""),
+               ('NEG_X', "-X", ""),
+               ('NEG_Y', "-Y", ""),
+               ('NEG_Z', "-Z", "")],
+        update=BM_MAP_PROPS_map_decal_normal_b_Update)
 
 # Vertex Color Layer Map Props
     map_VERTEX_COLOR_LAYER_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="VERTEXCOLOR")
+        default="VERTEXCOLOR",
+        update=BM_MAP_PROPS_map_VERTEX_COLOR_LAYER_prefix_Update)
 
     map_VERTEX_COLOR_LAYER_use_preview : bpy.props.BoolProperty(
         name="Preview",
@@ -770,103 +790,123 @@ class BM_Map(bpy.types.PropertyGroup):
     map_C_COMBINED_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="COMBINED")
+        default="COMBINED",
+        update=BM_MAP_PROPS_map_C_COMBINED_prefix_Update)
 
     map_C_AO_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="AO")
+        default="AO",
+        update=BM_MAP_PROPS_map_C_AO_prefix_Update)
 
     map_C_SHADOW_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="SHADOW")
+        default="SHADOW",
+        update=BM_MAP_PROPS_map_C_SHADOW_prefix_Update)
 
     map_C_NORMAL_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="NORMAL")
+        default="NORMAL",
+        update=BM_MAP_PROPS_map_C_NORMAL_prefix_Update)
 
     map_C_UV_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="UV")
+        default="UV",
+        update=BM_MAP_PROPS_map_C_UV_prefix_Update)
 
     map_C_ROUGHNESS_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ROUGH")
+        default="ROUGH",
+        update=BM_MAP_PROPS_map_C_ROUGHNESS_prefix_Update)
 
     map_C_EMIT_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="EMIT")
+        default="EMIT",
+        update=BM_MAP_PROPS_map_C_EMIT_prefix_Update)
 
     map_C_ENVIRONMENT_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ENV")
+        default="ENV",
+        update=BM_MAP_PROPS_map_C_ENVIRONMENT_prefix_Update)
 
     map_C_DIFFUSE_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="DIFFUSE")
+        default="DIFFUSE",
+        update=BM_MAP_PROPS_map_C_DIFFUSE_prefix_Update)
 
     map_C_GLOSSY_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="GLOSS")
+        default="GLOSS",
+        update=BM_MAP_PROPS_map_C_GLOSSY_prefix_Update)
 
     map_C_TRANSMISSION_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="TRANS")
+        default="TRANS",
+        update=BM_MAP_PROPS_map_C_TRANSMISSION_prefix_Update)
 
     map_cycles_use_pass_direct : bpy.props.BoolProperty(
-        name = "Direct",
-        description = "Add direct lighting contribution",
-        default = True)
+        name="Direct",
+        description="Add direct lighting contribution",
+        default=True,
+        update=BM_MAP_PROPS_map_cycles_use_pass_direct_Update)
     
     map_cycles_use_pass_indirect : bpy.props.BoolProperty(
-        name = "Indirect",
-        description = "Add indirect lighting contribution",
-        default = True)
+        name="Indirect",
+        description="Add indirect lighting contribution",
+        default=True,
+        update=BM_MAP_PROPS_map_cycles_use_pass_indirect_Update)
 
     map_cycles_use_pass_color : bpy.props.BoolProperty(
-        name = "Color",
-        description = "Color the pass",
-        default = True)
+        name="Color",
+        description="Color the pass",
+        default=True,
+        update=BM_MAP_PROPS_map_cycles_use_pass_color_Update)
     
     map_cycles_use_pass_diffuse : bpy.props.BoolProperty(
-        name = "Diffuse",
-        description = "Add %s contribution" % "Diffuse",
-        default = True)
+        name="Diffuse",
+        description="Add %s contribution" % "Diffuse",
+        default=True,
+        update=BM_MAP_PROPS_map_cycles_use_pass_diffuse_Update)
 
     map_cycles_use_pass_glossy : bpy.props.BoolProperty(
-        name = "Glossy",
-        description = "Add %s contribution" % "Glossy",
-        default = True)
+        name="Glossy",
+        description="Add %s contribution" % "Glossy",
+        default=True,
+        update=BM_MAP_PROPS_map_cycles_use_pass_glossy_Update)
 
     map_cycles_use_pass_transmission : bpy.props.BoolProperty(
-        name = "Transmission",
-        description = "Add %s contribution" % "Transmission",
-        default = True)
+        name="Transmission",
+        description="Add %s contribution" % "Transmission",
+        default=True,
+        update=BM_MAP_PROPS_map_cycles_use_pass_transmission_Update)
 
     map_cycles_use_pass_ambient_occlusion : bpy.props.BoolProperty(
-        name = "Ambient Occlusion",
-        description = "Add %s contribution" % "Ambient Occlusion",
-        default = True)
+        name="Ambient Occlusion",
+        description="Add %s contribution" % "Ambient Occlusion",
+        default=True,
+        update=BM_MAP_PROPS_map_cycles_use_pass_ambient_occlusion_Update)
 
     map_cycles_use_pass_emit : bpy.props.BoolProperty(
-        name = "Emit",
-        description = "Add %s contribution" % "Emit",
-        default = True)
+        name="Emit",
+        description="Add %s contribution" % "Emit",
+        default=True,
+        update=BM_MAP_PROPS_map_cycles_use_pass_emit_Update)
 
 # Normal Map Props
     map_NORMAL_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="NORMAL")
+        default="NORMAL",
+        update=BM_MAP_PROPS_map_NORMAL_prefix_Update)
 
     map_NORMAL_use_preview : bpy.props.BoolProperty(
         name="Preview",
@@ -877,14 +917,16 @@ class BM_Map(bpy.types.PropertyGroup):
     map_normal_data : bpy.props.EnumProperty(
         name="Data",
         description="Data for Normal map",
-        items=BM_MAP_PROPS_map_normal_data_Items)
+        items=BM_MAP_PROPS_map_normal_data_Items,
+        update=BM_MAP_PROPS_map_normal_data_Update)
 
     map_normal_space : bpy.props.EnumProperty(
-        name = "Normal Space",
-        description = "Choose normal space for baking",
-        default = 'TANGENT',
-        items = [('TANGENT', "Tangent", "Blue colors. Tangent space normal map"),
-                 ('OBJECT', "Object", "Rainbow colors. Object space normal map with local coordinates")])
+        name="Normal Space",
+        description="Choose normal space for baking",
+        default='TANGENT',
+        items=[('TANGENT', "Tangent", "Blue colors. Tangent space normal map"),
+               ('OBJECT', "Object", "Rainbow colors. Object space normal map with local coordinates")],
+        update=BM_MAP_PROPS_map_normal_space_Update)
 
     map_normal_preset : bpy.props.EnumProperty(
         name="Preset",
@@ -906,7 +948,8 @@ class BM_Map(bpy.types.PropertyGroup):
                ('REDSHIFT', "Redshift", "Redshift uses OpenGL format"),
                ('UNITY', "Unity", "Unity uses OpenGL format"),
                ('VRAY', "VRay", "VRay uses OpenGL format"),
-               ('ZBRUSH', "ZBrush", "ZBrush uses OpenGL format")])
+               ('ZBRUSH', "ZBrush", "ZBrush uses OpenGL format")],
+        update=BM_MAP_PROPS_map_normal_preset_Update)
     
     map_normal_custom_preset : bpy.props.EnumProperty(
         name="Custom Format",
@@ -914,46 +957,51 @@ class BM_Map(bpy.types.PropertyGroup):
         default='OPEN_GL',
         items=[('OPEN_GL', "OpenGL", "OpenGL Normal Map format. Green Channel Axis is +Y"),
                ('DIRECTX', "DirectX", "DirectX Normal Map format. Green Channel Axis is -Y"),
-               ('CUSTOM', "Custom", "Set custom axes for channels")])
+               ('CUSTOM', "Custom", "Set custom axes for channels")],
+        update=BM_MAP_PROPS_map_normal_custom_preset_Update)
 
     map_normal_r : bpy.props.EnumProperty(
-        name = "Normal Space",
-        description = "Axis to bake in %s channel" % "red",
-        default = 'POS_X',
-        items = [('POS_X', "+X", ""),
-                 ('POS_Y', "+Y", ""),
-                 ('POS_Z', "+Z", ""),
-                 ('NEG_X', "-X", ""),
-                 ('NEG_Y', "-Y", ""),
-                 ('NEG_Z', "-Z", "")])
+        name="Normal Space",
+        description="Axis to bake in %s channel" % "red",
+        default='POS_X',
+        items=[('POS_X', "+X", ""),
+               ('POS_Y', "+Y", ""),
+               ('POS_Z', "+Z", ""),
+               ('NEG_X', "-X", ""),
+               ('NEG_Y', "-Y", ""),
+               ('NEG_Z', "-Z", "")],
+        update=BM_MAP_PROPS_map_normal_r_Update)
 
     map_normal_g : bpy.props.EnumProperty(
-        name = "Normal Space",
-        description = "Axis to bake in %s channel" % "green",
-        default = 'POS_Y',
-        items = [('POS_X', "+X", ""),
-                 ('POS_Y', "+Y", ""),
-                 ('POS_Z', "+Z", ""),
-                 ('NEG_X', "-X", ""),
-                 ('NEG_Y', "-Y", ""),
-                 ('NEG_Z', "-Z", "")])
+        name="Normal Space",
+        description="Axis to bake in %s channel" % "green",
+        default='POS_Y',
+        items=[('POS_X', "+X", ""),
+               ('POS_Y', "+Y", ""),
+               ('POS_Z', "+Z", ""),
+               ('NEG_X', "-X", ""),
+               ('NEG_Y', "-Y", ""),
+               ('NEG_Z', "-Z", "")],
+        update=BM_MAP_PROPS_map_normal_g_Update)
 
     map_normal_b : bpy.props.EnumProperty(
-        name = "Normal Space",
-        description = "Axis to bake in %s channel" % "blue",
-        default = 'POS_Z',
-        items = [('POS_X', "+X", ""),
-                 ('POS_Y', "+Y", ""),
-                 ('POS_Z', "+Z", ""),
-                 ('NEG_X', "-X", ""),
-                 ('NEG_Y', "-Y", ""),
-                 ('NEG_Z', "-Z", "")])
+        name="Normal Space",
+        description="Axis to bake in %s channel" % "blue",
+        default='POS_Z',
+        items=[('POS_X', "+X", ""),
+               ('POS_Y', "+Y", ""),
+               ('POS_Z', "+Z", ""),
+               ('NEG_X', "-X", ""),
+               ('NEG_Y', "-Y", ""),
+               ('NEG_Z', "-Z", "")],
+        update=BM_MAP_PROPS_map_normal_b_Update)
 
 # Displacement Map Props
     map_DISPLACEMENT_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="DISP")
+        default="DISP",
+        update=BM_MAP_PROPS_map_DISPLACEMENT_prefix_Update)
 
     map_DISPLACEMENT_use_preview : bpy.props.BoolProperty(
         name="Preview",
@@ -964,27 +1012,31 @@ class BM_Map(bpy.types.PropertyGroup):
     map_displacement_data : bpy.props.EnumProperty(
         name="Data",
         description="Data for Displacement map",
-        items=BM_MAP_PROPS_map_displacement_data_Items)
+        items=BM_MAP_PROPS_map_displacement_data_Items,
+        update=BM_MAP_PROPS_map_displacement_data_Update)
     
     map_displacement_result : bpy.props.EnumProperty(
         name="Result to",
         description="How to apply baked displacement map",
         default="MODIFIER",
         items=[('MODIFIER', "Modifiers", "Add displace modifier to the object with bake displacement displace texture"),
-               ('MATERIAL', "Material Displacement", "Add baked displacement to every object material displacement socket")])
+               ('MATERIAL', "Material Displacement", "Add baked displacement to every object material displacement socket")],
+        update=BM_MAP_PROPS_map_displacement_result_Update)
 
     map_displacement_subdiv_levels : bpy.props.IntProperty(
         name="Subdivision Levels",
         description="The subdivision level defines the level of details.\nThe lower - the faster, but less details",
         default=1,
         min=1,
-        max=10)
+        max=10,
+        update=BM_MAP_PROPS_map_displacement_subdiv_levels_Update)
     
 # Vector Displacement Map Props
     map_VECTOR_DISPLACEMENT_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="VD")
+        default="VD",
+        update=BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_prefix_Update)
 
     map_VECTOR_DISPLACEMENT_use_preview : bpy.props.BoolProperty(
         name="Preview",
@@ -995,32 +1047,37 @@ class BM_Map(bpy.types.PropertyGroup):
     map_vector_displacement_use_default : bpy.props.BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
-        default=True)
+        default=True,
+        update=BM_MAP_PROPS_map_vector_displacement_use_default_Update)
     
     map_vector_displacement_use_negative : bpy.props.BoolProperty(
         name="Include Negative",
         description="Remap color values to include negative values for displacement",
-        default=False)
+        default=False,
+        update=BM_MAP_PROPS_map_vector_displacement_use_negative_Update)
 
     map_vector_displacement_result : bpy.props.EnumProperty(
         name="Result to",
         description="How to apply baked displacement map",
         default="MODIFIER",
         items=[('MODIFIER', "Modifiers", "Add displace modifier to the object with bake vector displacement displace texture"),
-               ('MATERIAL', "Material Displacement", "Add baked vector displacement to every object material displacement socket")])
+               ('MATERIAL', "Material Displacement", "Add baked vector displacement to every object material displacement socket")],
+        update=BM_MAP_PROPS_map_vector_displacement_result_Update)
 
     map_vector_displacement_subdiv_levels : bpy.props.IntProperty(
         name="Subdivision Levels",
         description="The subdivision level defines the level of details.\nThe lower - the faster, but less details",
         default=1,
         min=1,
-        max=10)
+        max=10,
+        update=BM_MAP_PROPS_map_vector_displacement_subdiv_levels_Update)
 
 # Position Map Props
     map_POSITION_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="POS")
+        default="POS",
+        update=BM_MAP_PROPS_map_POSITION_prefix_Update)
 
     map_POSITION_use_preview : bpy.props.BoolProperty(
         name="Preview",
@@ -1032,7 +1089,8 @@ class BM_Map(bpy.types.PropertyGroup):
     map_AO_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="AO")
+        default="AO",
+        update=BM_MAP_PROPS_map_AO_prefix_Update)
 
     map_AO_use_preview : bpy.props.BoolProperty(
         name="Preview",
@@ -1044,7 +1102,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_AO_MaterialUpdate)    
+        update=BM_MAP_PROPS_map_ao_use_default_Update)
     
     map_ao_samples: bpy.props.IntProperty(
         name="Samples",
@@ -1052,14 +1110,14 @@ class BM_Map(bpy.types.PropertyGroup):
         default=16,
         min=1,
         max=128,
-        update=BM_MAP_AO_MaterialUpdate)
+        update=BM_MAP_PROPS_map_ao_samples_Update)
 
     map_ao_distance : bpy.props.FloatProperty(
         name="Distance",
         description="Distance up to which other objects are considered to occlude the shading point",
         default=1,
         min=0,
-        update=BM_MAP_AO_MaterialUpdate)
+        update=BM_MAP_PROPS_map_ao_distance_Update)
 
     map_ao_black_point : bpy.props.FloatProperty(
         name="Blacks",
@@ -1068,7 +1126,7 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_AO_MaterialUpdate)
+        update=BM_MAP_PROPS_map_ao_black_point_Update)
 
     map_ao_white_point : bpy.props.FloatProperty(
         name="Whites",
@@ -1077,34 +1135,34 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_AO_MaterialUpdate)
+        update=BM_MAP_PROPS_map_ao_white_point_Update)
 
     map_ao_brightness : bpy.props.FloatProperty(
         name="Brightness",
         default=-0.3,
         min=-100.0,
         max=100.0,
-        update=BM_MAP_AO_MaterialUpdate)
+        update=BM_MAP_PROPS_map_ao_brightness_Update)
 
     map_ao_contrast : bpy.props.FloatProperty(
         name="Contrast", 
         default=0.3,
         min=-100.0,
         max=100.0,
-        update=BM_MAP_AO_MaterialUpdate)
+        update=BM_MAP_PROPS_map_ao_contrast_Update)
 
     map_ao_opacity : bpy.props.FloatProperty(
         name="Opacity", 
         default=0.67,
         min=0.0,
         max=1.0,
-        update=BM_MAP_AO_MaterialUpdate)
+        update=BM_MAP_PROPS_map_ao_opacity_Update)
 
     map_ao_use_local : bpy.props.BoolProperty(
         name="Only Local",
         description="Only detect occlusion from the object itself, and not others",
         default=False,
-        update=BM_MAP_AO_MaterialUpdate)
+        update=BM_MAP_PROPS_map_ao_use_local_Update)
 
     map_ao_use_invert : bpy.props.FloatProperty(
         name="Invert",
@@ -1113,13 +1171,14 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_AO_MaterialUpdate)
+        update=BM_MAP_PROPS_map_ao_use_invert_Update)
 
 # Cavity Map Props
     map_CAVITY_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="CAV")
+        default="CAV",
+        update=BM_MAP_PROPS_map_CAVITY_prefix_Update)
 
     map_CAVITY_use_preview : bpy.props.BoolProperty(
         name="Preview",
@@ -1131,7 +1190,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_Cavity_MaterialUpdate)   
+        update=BM_MAP_PROPS_map_cavity_use_default_Update)
 
     map_cavity_black_point : bpy.props.FloatProperty(
         name="Blacks",
@@ -1140,7 +1199,7 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0.0,
         max=1.0,
         precision=3,
-        update=BM_MAP_Cavity_MaterialUpdate)
+        update=BM_MAP_PROPS_map_cavity_black_point_Update)
     
     map_cavity_white_point : bpy.props.FloatProperty(
         name="Whites",
@@ -1149,13 +1208,13 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0.0,
         max=1.0,
         precision=3,
-        update=BM_MAP_Cavity_MaterialUpdate)
+        update=BM_MAP_PROPS_map_cavity_white_point_Update)
     
     map_cavity_power : bpy.props.FloatProperty(
         name="Power",
         description="Cavity map power value", 
         default=2.5,
-        update=BM_MAP_Cavity_MaterialUpdate)
+        update=BM_MAP_PROPS_map_cavity_power_Update)
         
     map_cavity_use_invert : bpy.props.FloatProperty(
         name="Invert",
@@ -1164,13 +1223,14 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_Cavity_MaterialUpdate)
+        update=BM_MAP_PROPS_map_cavity_use_invert_Update)
 
 # Curvature Map Props
     map_CURVATURE_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="CURV")
+        default="CURV",
+        update=BM_MAP_PROPS_map_CURVATURE_prefix_Update)
 
     map_CURVATURE_use_preview : bpy.props.BoolProperty(
         name="Preview",
@@ -1182,7 +1242,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_Curvature_MaterialUpdate)    
+        update=BM_MAP_PROPS_map_curv_use_default_Update)
     
     map_curv_samples: bpy.props.IntProperty(
         name="Samples",
@@ -1190,14 +1250,14 @@ class BM_Map(bpy.types.PropertyGroup):
         default=4,
         min=2,
         max=16,
-        update=BM_MAP_Curvature_MaterialUpdate)
+        update=BM_MAP_PROPS_map_curv_samples_Update)
     
     map_curv_radius : bpy.props.FloatProperty(
         name="Radius",
         default=1,
         min=0,
         precision=3,
-        update=BM_MAP_Curvature_MaterialUpdate)
+        update=BM_MAP_PROPS_map_curv_radius_Update)
 
     map_curv_black_point : bpy.props.FloatProperty(
         name="Blacks",
@@ -1206,7 +1266,7 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0.0,
         max=1.0,
         precision=3,
-        update=BM_MAP_Curvature_MaterialUpdate)
+        update=BM_MAP_PROPS_map_curv_black_point_Update)
     
     map_curv_mid_point : bpy.props.FloatProperty(
         name="Greys",
@@ -1215,7 +1275,7 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0.0,
         max=1.0,
         precision=3,
-        update=BM_MAP_Curvature_MaterialUpdate)
+        update=BM_MAP_PROPS_map_curv_mid_point_Update)
 
     map_curv_white_point : bpy.props.FloatProperty(
         name="Whites",
@@ -1224,7 +1284,7 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0.0,
         max=1.0,
         precision=3,
-        update=BM_MAP_Curvature_MaterialUpdate)
+        update=BM_MAP_PROPS_map_curv_white_point_Update)
 
     map_curv_body_gamma : bpy.props.FloatProperty(
         name="Gamma",
@@ -1232,7 +1292,7 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0.001,
         max=10,
         precision=3,
-        update=BM_MAP_Curvature_MaterialUpdate)
+        update=BM_MAP_PROPS_map_curv_body_gamma_Update)
 
     map_curv_use_invert : bpy.props.FloatProperty(
         name="Invert",
@@ -1241,13 +1301,14 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_Curvature_MaterialUpdate)
+        update=BM_MAP_PROPS_map_curv_use_invert_Update)
 
 # Thickness Map Props
     map_THICKNESS_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="THICK")
+        default="THICK",
+        update=BM_MAP_PROPS_map_THICKNESS_prefix_Update)
 
     map_THICKNESS_use_preview : bpy.props.BoolProperty(
         name="Preview",
@@ -1259,7 +1320,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_Thickness_MaterialUpdate)    
+        update=BM_MAP_PROPS_map_thick_use_default_Update)
     
     map_thick_samples : bpy.props.IntProperty(
         name="Samples",
@@ -1267,14 +1328,14 @@ class BM_Map(bpy.types.PropertyGroup):
         default=16,
         min=1,
         max=128,
-        update=BM_MAP_Thickness_MaterialUpdate)
+        update=BM_MAP_PROPS_map_thick_samples_Update)
 
     map_thick_distance : bpy.props.FloatProperty(
         name="Distance",
         description="Distance up to which other objects are considered to occlude the shading point",
         default=1,
         min=0,
-        update=BM_MAP_Thickness_MaterialUpdate)
+        update=BM_MAP_PROPS_map_thick_distance_Update)
 
     map_thick_black_point : bpy.props.FloatProperty(
         name="Blacks",
@@ -1283,7 +1344,7 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_Thickness_MaterialUpdate)
+        update=BM_MAP_PROPS_map_thick_black_point_Update)
 
     map_thick_white_point : bpy.props.FloatProperty(
         name="Whites",
@@ -1292,17 +1353,17 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_Thickness_MaterialUpdate)
+        update=BM_MAP_PROPS_map_thick_white_point_Update)
 
     map_thick_brightness : bpy.props.FloatProperty(
         name="Brightness", 
         default=1,
-        update=BM_MAP_Thickness_MaterialUpdate)
+        update=BM_MAP_PROPS_map_thick_brightness_Update)
 
     map_thick_contrast : bpy.props.FloatProperty(
         name="Contrast", 
         default=0,
-        update=BM_MAP_Thickness_MaterialUpdate)
+        update=BM_MAP_PROPS_map_thick_contrast_Update)
 
     map_thick_use_invert : bpy.props.FloatProperty(
         name="Invert",
@@ -1311,13 +1372,14 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_Thickness_MaterialUpdate)
+        update=BM_MAP_PROPS_map_thick_use_invert_Update)
 
 # Material ID Map Props
     map_ID_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="ID")
+        default="ID",
+        update=BM_MAP_PROPS_map_ID_prefix_Update)
 
     map_ID_use_preview : bpy.props.BoolProperty(
         name="Preview",
@@ -1331,12 +1393,14 @@ class BM_Map(bpy.types.PropertyGroup):
         default='MATERIALS',
         items=[('VERTEX_GROUPS', "Vertex Groups", "Color each mesh Vertex Groups differently"),
                ('MATERIALS', "Materials", "Color each mesh part each material assigned to differently"),
-               ('MESH_ISLANDS', "Mesh Islands", "Color each mesh part differently")])
+               ('MESH_ISLANDS', "Mesh Islands", "Color each mesh part differently")],
+        update=BM_MAP_PROPS_map_matid_data_Update)
 
     map_matid_vertex_groups_name_contains : bpy.props.StringProperty(
         name="Name Contains",
         description="Use only those vertex groups which name contains this. Leave empty to use all vertex groups",
-        default="_id")
+        default="_id",
+        update=BM_MAP_PROPS_map_matid_vertex_groups_name_contains_Update)
     
     map_matid_algorithm : bpy.props.EnumProperty(
         name="Algorithm",
@@ -1344,13 +1408,15 @@ class BM_Map(bpy.types.PropertyGroup):
         default='RANDOM',
         items=[('RANDOM', "Random", "Color each group by unique Random Color"),
                ('HUE', "Hue Shift", "Color each group by unique Hue"),
-               ('GRAYSCALE', "Grayscale", "Color each group by unique Grayscale Color")])
+               ('GRAYSCALE', "Grayscale", "Color each group by unique Grayscale Color")],
+        update=BM_MAP_PROPS_map_matid_algorithm_Update)
 
 # Mask Map Props
     map_MASK_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="MASK")
+        default="MASK",
+        update=BM_MAP_PROPS_map_MASK_prefix_Update)
 
     map_MASK_use_preview : bpy.props.BoolProperty(
         name="Preview",
@@ -1364,17 +1430,20 @@ class BM_Map(bpy.types.PropertyGroup):
         default='SELECTION',
         items=[('SELECTION', "Selection", "Color selected mesh faces in one color, unselected in another"),
                ('VERTEX_GROUPS', "Vertex Groups", "Color specified vertex groups in one color, other in another"),
-               ('MATERIALS', "Materials", "Color specified object materials in one color, other in another")])
+               ('MATERIALS', "Materials", "Color specified object materials in one color, other in another")],
+        update=BM_MAP_PROPS_map_mask_data_Update)
     
     map_mask_vertex_groups_name_contains : bpy.props.StringProperty(
         name="Name Contains",
         description="Use only those vertex groups which names contain this. Leave empty to use all vertex groups",
-        default="_mask")
+        default="_mask",
+        update=BM_MAP_PROPS_map_mask_vertex_groups_name_contains_Update)
 
     map_mask_materials_name_contains : bpy.props.StringProperty(
         name="Name Contains",
         description="Use only those object materials which names contain this. Leave empty to use all vertex groups",
-        default="_mask")
+        default="_mask",
+        update=BM_MAP_PROPS_map_mask_materials_name_contains_Update)
     
     map_mask_color1 : bpy.props.FloatVectorProperty(
         name="Color1",
@@ -1384,7 +1453,8 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        subtype='COLOR')
+        subtype='COLOR',
+        update=BM_MAP_PROPS_map_mask_color1_Update)
 
     map_mask_color2 : bpy.props.FloatVectorProperty(
         name="Color2",
@@ -1394,7 +1464,8 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        subtype='COLOR')
+        subtype='COLOR',
+        update=BM_MAP_PROPS_map_mask_color2_Update)
         
     map_mask_use_invert : bpy.props.FloatProperty(
         name="Invert",
@@ -1402,13 +1473,15 @@ class BM_Map(bpy.types.PropertyGroup):
         default=0,
         min=0,
         max=1,
-        precision=3)
+        precision=3,
+        update=BM_MAP_PROPS_map_mask_use_invert_Update)
 
 # XYZMask Map Props
     map_XYZMASK_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="XYZ")
+        default="XYZ",
+        update=BM_MAP_PROPS_map_XYZMASK_prefix_Update)
 
     map_XYZMASK_use_preview : bpy.props.BoolProperty(
         name="Preview",
@@ -1420,37 +1493,37 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_XYZMask_MaterialUpdate) 
+        update=BM_MAP_PROPS_map_xyzmask_use_default_Update)
 
     map_xyzmask_use_x : bpy.props.BoolProperty(
         name="X",
         description="Enable/disable X coordinate mask filter",
         default=False,
-        update=BM_MAP_XYZMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_xyzmask_use_x_Update)
 
     map_xyzmask_use_y : bpy.props.BoolProperty(
         name="Y",
         description="Enable/disable Y coordinate mask filter",
         default=False,
-        update=BM_MAP_XYZMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_xyzmask_use_y_Update)
 
     map_xyzmask_use_z : bpy.props.BoolProperty(
         name="Z",
         description="Enable/disable Z coordinate mask filter",
         default=False,
-        update=BM_MAP_XYZMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_xyzmask_use_z_Update)
 
     map_xyzmask_coverage : bpy.props.FloatProperty(
         name="Coverage",
         default=0,
         precision=3,
-        update=BM_MAP_XYZMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_xyzmask_coverage_Update)
 
     map_xyzmask_saturation : bpy.props.FloatProperty(
         name="Saturation",
         default=1,
         precision=3,
-        update=BM_MAP_XYZMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_xyzmask_saturation_Update)
 
     map_xyzmask_opacity : bpy.props.FloatProperty(
         name="Opacity",
@@ -1458,7 +1531,7 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_XYZMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_xyzmask_opacity_Update)
 
     map_xyzmask_use_invert : bpy.props.FloatProperty(
         name="Invert",
@@ -1467,13 +1540,14 @@ class BM_Map(bpy.types.PropertyGroup):
         min=-1,
         max=1,
         precision=3,
-        update=BM_MAP_XYZMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_xyzmask_use_invert_Update)
 
 # GradientMask Map Props
     map_GRADIENT_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="GRADIENT")
+        default="GRADIENT",
+        update=BM_MAP_PROPS_map_GRADIENT_prefix_Update)
 
     map_GRADIENT_use_preview : bpy.props.BoolProperty(
         name="Preview",
@@ -1485,7 +1559,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_GradientMask_MaterialUpdate) 
+        update=BM_MAP_PROPS_map_gmask_use_default_Update)
 
     map_gmask_type : bpy.props.EnumProperty(
         name="Type",
@@ -1497,7 +1571,7 @@ class BM_Map(bpy.types.PropertyGroup):
                  ("SPHERICAL", "Spherical", "Create a spherical progression"),
                  ("QUADRATIC_SPHERE", "Quadratic Sphere", "Create a quadratic progression in the shape of a sphere"),
                  ("RADIAL", "Radial", "Create a radial progression")],
-        update=BM_MAP_GradientMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_gmask_type_Update)
     
     map_gmask_location_x : bpy.props.FloatProperty(
         name="X Location",
@@ -1505,7 +1579,7 @@ class BM_Map(bpy.types.PropertyGroup):
         default=0,
         precision=3,
         subtype="DISTANCE",
-        update=BM_MAP_GradientMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_gmask_location_x_Update)
 
     map_gmask_location_y : bpy.props.FloatProperty(
         name="Y Location",
@@ -1513,7 +1587,7 @@ class BM_Map(bpy.types.PropertyGroup):
         default=0,
         precision=3,
         subtype="DISTANCE",
-        update=BM_MAP_GradientMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_gmask_location_y_Update)
 
     map_gmask_location_z : bpy.props.FloatProperty(
         name="Z Location",
@@ -1521,7 +1595,7 @@ class BM_Map(bpy.types.PropertyGroup):
         default=0, 
         precision=3,
         subtype="DISTANCE",
-        update=BM_MAP_GradientMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_gmask_location_z_Update)
 
     map_gmask_rotation_x : bpy.props.FloatProperty(
         name="X Rotation",
@@ -1529,7 +1603,7 @@ class BM_Map(bpy.types.PropertyGroup):
         default=0,
         precision=2,
         subtype="ANGLE",
-        update=BM_MAP_GradientMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_gmask_rotation_x_Update)
 
     map_gmask_rotation_y : bpy.props.FloatProperty(
         name="Y Rotation",
@@ -1537,7 +1611,7 @@ class BM_Map(bpy.types.PropertyGroup):
         default=0,
         precision=2,
         subtype="ANGLE",
-        update=BM_MAP_GradientMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_gmask_rotation_y_Update)
 
     map_gmask_rotation_z : bpy.props.FloatProperty(
         name="Z Rotation",
@@ -1545,52 +1619,52 @@ class BM_Map(bpy.types.PropertyGroup):
         default=0,
         precision=2,
         subtype="ANGLE",
-        update=BM_MAP_GradientMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_gmask_rotation_z_Update)
 
     map_gmask_scale_x : bpy.props.FloatProperty(
         name="X Scale",
         description="Smoothness. Gradient scale by the local axis X",
         default=1,
         precision=3,
-        update=BM_MAP_GradientMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_gmask_scale_x_Update)
 
     map_gmask_scale_y : bpy.props.FloatProperty(
         name="Y Scale",
         description="Smoothness. Gradient scale by the local axis Y",
         default=1,
         precision=3,
-        update=BM_MAP_GradientMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_gmask_scale_y_Update)
 
     map_gmask_scale_z : bpy.props.FloatProperty(
         name="Z Scale",
         description="Smoothness. Gradient scale by the local axis Z",
         default=1,
         precision=3,
-        update=BM_MAP_GradientMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_gmask_scaly_z_Update)
     
     map_gmask_coverage : bpy.props.FloatProperty(
         name="Range of coverage",
         default=0,
         precision=3,
-        update=BM_MAP_GradientMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_gmask_coverage_Update)
 
     map_gmask_contrast : bpy.props.FloatProperty(
         name="Contrast",
         default=1,
         precision=3,
-        update=BM_MAP_GradientMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_gmask_contrast_Update)
 
     map_gmask_saturation : bpy.props.FloatProperty(
         name="Saturation", 
         default=1,
-        update=BM_MAP_GradientMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_gmask_saturation_Update)
 
     map_gmask_opacity : bpy.props.FloatProperty(
         name="Opacity", 
         default=1,
         min=0,
         max=1,
-        update=BM_MAP_GradientMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_gmask_opacity_Update)
 
     map_gmask_use_invert : bpy.props.FloatProperty(
         name="Invert",
@@ -1599,67 +1673,69 @@ class BM_Map(bpy.types.PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_GradientMask_MaterialUpdate)
+        update=BM_MAP_PROPS_map_gmask_use_invert_Update)
 
 # Edge Map Props
     map_EDGE_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="EDGE")
+        default="EDGE",
+        update=BM_MAP_PROPS_map_EDGE_prefix_Update)
 
     map_EDGE_use_preview : bpy.props.BoolProperty(
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
-        default = False,
-        update = BM_MAP_Preview_Curvature)
+        default=False,
+        update=BM_MAP_Preview_Curvature)
 
     map_edgemask_use_default : bpy.props.BoolProperty(
-        name = "Default",
-        description = "Bake texture map using default settings",
-        default = True,
-        update = BM_MAP_Curvature_MaterialUpdate)    
+        name="Default",
+        description="Bake texture map using default settings",
+        default=True,
+        update=BM_MAP_PROPS_map_edgemask_use_default_Update)
     
     map_edgemask_samples: bpy.props.IntProperty(
-        name = "Samples",
-        description = "Tracing samples count. Affects the quality.\nKeep as low as possible for optimal performance",
-        default = 4,
-        min = 2,
-        max = 16,
-        update = BM_MAP_Curvature_MaterialUpdate)
-    
+        name="Samples",
+        description="Tracing samples count. Affects the quality.\nKeep as low as possible for optimal performance",
+        default=4,
+        min=2,
+        max=16,
+        update=BM_MAP_PROPS_map_edgemask_samples_Update)
+
     map_edgemask_radius : bpy.props.FloatProperty(
-        name = "Radius",
-        default = 0.02,
-        min = 0,
-        precision = 3,
-        update = BM_MAP_Curvature_MaterialUpdate)
+        name="Radius",
+        default=0.02,
+        min=0,
+        precision=3,
+        update=BM_MAP_PROPS_map_edgemask_radius_Update)
 
     map_edgemask_edge_contrast : bpy.props.FloatProperty(
-        name = "Edge Contrast",
-        default = 0,
-        precision = 3,
-        update = BM_MAP_Curvature_MaterialUpdate)
+        name="Edge Contrast",
+        default=0,
+        precision=3,
+        update=BM_MAP_PROPS_map_edgemask_edge_contrast_Update)
 
     map_edgemask_body_contrast : bpy.props.FloatProperty(
-        name = "Body Contrast",
-        default = 1,
-        precision = 3,
-        update = BM_MAP_Curvature_MaterialUpdate)
+        name="Body Contrast",
+        default=1,
+        precision=3,
+        update=BM_MAP_PROPS_map_edgemask_body_contrast_Update)
 
     map_edgemask_use_invert : bpy.props.FloatProperty(
-        name = "Invert",
-        description = "Invert colors of the map", 
-        default = 1,
-        min = 0,
-        max = 1,
-        precision = 3,
-        update = BM_MAP_Curvature_MaterialUpdate)
+        name="Invert",
+        description="Invert colors of the map", 
+        default=1,
+        min=0,
+        max=1,
+        precision=3,
+        update=BM_MAP_PROPS_map_edgemask_use_invert_Update)
 
 # WireframeMask Map Props
     map_WIREFRAME_prefix : bpy.props.StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
-        default="WIRE")
+        default="WIRE",
+        update=BM_MAP_PROPS_map_WIREFRAME_prefix_Update)
 
     map_WIREFRAME_use_preview : bpy.props.BoolProperty(
         name="Preview",
@@ -1671,15 +1747,17 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Thickness",
         description="Thickness of uv edge",
         default=0.02,
-        min=0.001)
+        min=0.001,
+        update=BM_MAP_PROPS_map_wireframe_line_thickness_Update)
 
     map_wireframemask_use_invert : bpy.props.FloatProperty(
-        name = "Invert",
-        description = "Invert colors of the map", 
-        default = 0,
-        min = 0,
-        max = 1,
-        precision = 3)
+        name="Invert",
+        description="Invert colors of the map", 
+        default=0,
+        min=0,
+        max=1,
+        precision=3,
+        update=BM_MAP_PROPS_map_wireframe_use_invert_Update)
 
 ###################################################################
 ### OBJECT PROPS ###
@@ -1850,7 +1928,8 @@ class BM_Object(bpy.types.PropertyGroup):
 
     global_use_bake : bpy.props.BoolProperty(
         name="Include/Exclude the object for bake",
-        default=True)
+        default=True,
+        update=BM_ITEM_PROPS_global_use_bake_Update)
 
     global_is_included_in_texset : bpy.props.BoolProperty()
     
@@ -1885,12 +1964,14 @@ class BM_Object(bpy.types.PropertyGroup):
     decal_use_custom_camera : bpy.props.BoolProperty(
         name="Use Custom Camera",
         description="Use Custom Camera Object for capturing and baking decal maps",
-        default=False)
+        default=False,
+        update=BM_ITEM_PROPS_decal_use_custom_camera_Update)
     
     decal_custom_camera : bpy.props.PointerProperty(
         name="Camera",
         description="Choose Camera Object",
-        type=bpy.types.Camera)
+        type=bpy.types.Camera,
+        update=BM_ITEM_PROPS_decal_custom_camera_Update)
 
     decal_upper_coordinate : bpy.props.EnumProperty(
         name="Upper Coordinate",
@@ -1901,14 +1982,16 @@ class BM_Object(bpy.types.PropertyGroup):
                ('+Z', "+Z", ""),
                ('-X', "-X", ""),
                ('-Y', "-Y", ""),
-               ('-Z', "-Z", "")])
+               ('-Z', "-Z", "")],
+        update=BM_ITEM_PROPS_decal_upper_coordinate_Update)
 
     decal_boundary_offset : bpy.props.FloatProperty(
         name="Boundary Offset",
         description="Distance to use between decal object's bounds and captured image area bounds",
         default=0.1,
         min=0,
-        max=1)
+        max=1,
+        update=BM_ITEM_PROPS_decal_boundary_offsest_Update)
 
 # Item High to Lowpoly props:
     hl_use_unique_per_map : bpy.props.BoolProperty(
@@ -1917,23 +2000,14 @@ class BM_Object(bpy.types.PropertyGroup):
         default=False,
         update=BM_ITEM_PROPS_hl_use_unique_per_map_Update)
     
-    hl_is_highpoly : bpy.props.BoolProperty(
-        default=False,
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
-
-    hl_is_lowpoly : bpy.props.BoolProperty(
-        default=False,
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
-
-    hl_is_cage : bpy.props.BoolProperty(
-        default=False,
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
+    hl_is_highpoly : bpy.props.BoolProperty(default=False)
+    hl_is_lowpoly : bpy.props.BoolProperty(default=False)
+    hl_is_cage : bpy.props.BoolProperty(default=False)
 
     hl_is_decal : bpy.props.BoolProperty(
         name="Decal",
         description="Mark the current Highpoly as a Decal Object for the Lowpoly",
-        default=False,
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
+        default=False)
 
     hl_highpoly_table : bpy.props.CollectionProperty(type=BM_Object_Highpoly)
 
@@ -1944,7 +2018,8 @@ class BM_Object(bpy.types.PropertyGroup):
     hl_decals_use_separate_texset : bpy.props.BoolProperty(
         name="Separate Decals",
         description="If checked, all specified decals will be baked to a separate texture set for the Object,\notherwise, decals map passes will be baked to Object's textures",
-        default=False)
+        default=False,
+        update=BM_ITEM_PROPS_hl_decals_use_separate_texset_Update)
 
     hl_use_cage : bpy.props.BoolProperty(
         name="Use Cage Object",
@@ -1957,32 +2032,32 @@ class BM_Object(bpy.types.PropertyGroup):
         description="Type of Cage properties to use",
         items=[('STANDARD', "Standard", "Standard Cage properties of Cycles Bake.\nSet extrusion, ray distance, and choose cage object"),
                ('SMART', "Smart", "Auto cage creation using lowpoly mesh displace. Saves time with simple cage")],
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
+        update=BM_ITEM_PROPS_hl_cage_type_Update)
 
     hl_cage_extrusion : bpy.props.FloatProperty(
-        name = "Cage Extrusion",
-        description = "Inflate by the specified distance to create cage",
-        default = 0,
-        min = 0,
-        max = 1,
-        precision = 2,
-        subtype = 'DISTANCE',
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
+        name="Cage Extrusion",
+        description="Inflate by the specified distance to create cage",
+        default=0,
+        min=0,
+        max=1,
+        precision=2,
+        subtype='DISTANCE',
+        update=BM_ITEM_PROPS_hl_cage_extrusion_Update)
     
     hl_max_ray_distance : bpy.props.FloatProperty(
-        name = "Max Ray Distance",
-        description = "The maximum ray distance for matching points between the high and lowpoly. If zero, there is no limit",
-        default = 0,
-        min = 0,
-        max = 1,
-        precision = 2,
-        subtype = 'DISTANCE',
-        update=BM_ITEM_PROPS_HighLowSettings_Update)
+        name="Max Ray Distance",
+        description="The maximum ray distance for matching points between the high and lowpoly. If zero, there is no limit",
+        default=0,
+        min=0,
+        max=1,
+        precision=2,
+        subtype='DISTANCE',
+        update=BM_ITEM_PROPS_hl_max_ray_distance)
 
     hl_cage : bpy.props.EnumProperty(
-        name = "Cage Object",
-        description = "Object to use as cage instead of calculating with cage extrusion",
-        items = BM_ITEM_PROPS_hl_cage_Items,
+        name="Cage Object",
+        description="Object to use as cage instead of calculating with cage extrusion",
+        items=BM_ITEM_PROPS_hl_cage_Items,
         update=BM_ITEM_PROPS_hl_cage_Update)
     
     hl_cage_name_old : bpy.props.StringProperty()
@@ -1999,40 +2074,39 @@ class BM_Object(bpy.types.PropertyGroup):
         update=BM_ITEM_PROPS_uv_use_unique_per_map_Update)
 
     uv_bake_data : bpy.props.EnumProperty(
-        name = "Bake Data",
-        description = "Choose data type to use for baking",
-        default = 'OBJECT_MATERIALS',
-        items = [('OBJECT_MATERIALS', "Object/Materials", "Use Object and Materials data for baking regular maps"),
-                 ('VERTEX_COLORS', "Vertex Colors", "Bake VertexColor Layers to Image Textures")],
-        update = BM_ITEM_PROPS_UVSettings_Update)
+        name="Bake Data",
+        description="Choose data type to use for baking",
+        default='OBJECT_MATERIALS',
+        items=[('OBJECT_MATERIALS', "Object/Materials", "Use Object and Materials data for baking regular maps"),
+               ('VERTEX_COLORS', "Vertex Colors", "Bake VertexColor Layers to Image Textures")],
+        update=BM_ITEM_PROPS_uv_bake_data_Update)
 
     uv_bake_target : bpy.props.EnumProperty(
-        name = "Bake Target",
-        description = "Choose Baked Maps output target",
-        items = BM_ITEM_PROPS_uv_bake_target_Items,
-        update = BM_ITEM_PROPS_UVSettings_Update)
+        name="Bake Target",
+        description="Choose Baked Maps output target",
+        items=BM_ITEM_PROPS_uv_bake_target_Items,
+        update=BM_ITEM_PROPS_uv_bake_target_Update)
 
     uv_active_layer : bpy.props.EnumProperty(
-        name = "Active UV Map",
-        description = "Choose active UVMap layer to use in the bake.\nIf mesh has got no UV layers and at least one map to be baked to image texture, auto UV unwrap will be proceeded",
-        items = BM_ITEM_PROPS_uv_active_layer_Items,
-        update=BM_ITEM_PROPS_UVSettings_Update)
+        name="Active UV Map",
+        description="Choose active UVMap layer to use in the bake.\nIf mesh has got no UV layers and at least one map to be baked to image texture, auto UV unwrap will be proceeded",
+        items=BM_ITEM_PROPS_uv_active_layer_Items)
 
     uv_type : bpy.props.EnumProperty(
-        name = "UV Map Type",
-        description = "UVMap type is set automatically when changing Active UV Map. Change if it's not correct",
-        items = BM_ITEM_PROPS_uv_type_Items,
-        update=BM_ITEM_PROPS_UVSettings_Update)
+        name="UV Map Type",
+        description="UVMap type is set automatically when changing Active UV Map. Change if it's not correct",
+        items=BM_ITEM_PROPS_uv_type_Items,
+        update=BM_ITEM_PROPS_uv_type_Update)
 
     uv_snap_islands_to_pixels : bpy.props.BoolProperty(
         name="Snap to pixels",
         description="Snap UVMap islands to pixel edges for clearer result",
-        update=BM_ITEM_PROPS_UVSettings_Update)
+        update=BM_ITEM_PROPS_uv_snap_islands_to_pixels_Update)
 
     uv_use_auto_unwrap : bpy.props.BoolProperty(
         name="Auto Unwrap",
         description="Auto UV Unwrap object using smart project. If UV Type is UDIMs, enabling Auto Unwrap will ignore it",
-        update=BM_ITEM_PROPS_UVSettings_Update)
+        update=BM_ITEM_PROPS_uv_use_auto_unwrap_Update)
 
     uv_auto_unwrap_angle_limit : bpy.props.IntProperty(
         name="Angle Limit",
@@ -2041,7 +2115,7 @@ class BM_Object(bpy.types.PropertyGroup):
         min=0,
         max=89,
         subtype='ANGLE',
-        update=BM_ITEM_PROPS_UVSettings_Update)
+        update=BM_ITEM_PROPS_uv_auto_unwrap_angle_limit_Update)
 
     uv_auto_unwrap_island_margin : bpy.props.FloatProperty(
         name="Island Margin",
@@ -2049,13 +2123,13 @@ class BM_Object(bpy.types.PropertyGroup):
         default=0.01,
         min=0,
         max=1,
-        update=BM_ITEM_PROPS_UVSettings_Update)
+        update=BM_ITEM_PROPS_uv_auto_unwrap_islands_margin_Update)
     
     uv_auto_unwrap_use_scale_to_bounds : bpy.props.BoolProperty(
         name="Scale to Bounds",
         description="Scale UV coordinates to bounds to fill the whole UV tile area",
         default=True,
-        update=BM_ITEM_PROPS_UVSettings_Update)
+        update=BM_ITEM_PROPS_uv_auto_unwrap_use_scale_to_bounds_Update)
 
 # Item Output Props:
     out_use_unique_per_map : bpy.props.BoolProperty(
@@ -2065,22 +2139,22 @@ class BM_Object(bpy.types.PropertyGroup):
         update=BM_ITEM_PROPS_out_use_unique_per_map_Update)
     
     out_use_denoise : bpy.props.BoolProperty(
-        name = "Denoise",
-        description = "Denoise and Discpeckle baked maps as a post-process filter",
-        default = False,
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="Denoise",
+        description="Denoise and Discpeckle baked maps as a post-process filter",
+        default=False,
+        update=BM_ITEM_PROPS_out_use_denoise_Update)
 
     out_file_format : bpy.props.EnumProperty(
-        name = "File Format",
-        description = "File format of output image files",
-        default = 'PNG',
-        items = [('BMP', "BMP", "Output image in bitmap format"),
-                 ('PNG', "PNG", "Output image in common PNG format. Best file format for true-color images that need perfect tone balance. Default Blender image format.\n\Pros: can contain Alpha Channel"),
-                 ('JPEG', "JPEG", "Output image in JPEG format. Uncompressed file format and takes the most amount of data and is the exact representation of the image. \n\nCons: With every edit and resave the image quality will deteriorate.\nPros: lightweight"),
-                 ('TIFF', "TIFF", "Output image in TIFF format. Photographic file standard in print"),
-                 ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps"),
-                 ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps for current Object will be saved to a single .psd file")],
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="File Format",
+        description="File format of output image files",
+        default='PNG',
+        items=[('BMP', "BMP", "Output image in bitmap format"),
+               ('PNG', "PNG", "Output image in common PNG format. Best file format for true-color images that need perfect tone balance. Default Blender image format.\n\Pros: can contain Alpha Channel"),
+               ('JPEG', "JPEG", "Output image in JPEG format. Uncompressed file format and takes the most amount of data and is the exact representation of the image. \n\nCons: With every edit and resave the image quality will deteriorate.\nPros: lightweight"),
+               ('TIFF', "TIFF", "Output image in TIFF format. Photographic file standard in print"),
+               ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps"),
+               ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps for current Object will be saved to a single .psd file")],
+        update=BM_ITEM_PROPS_out_file_format_Update)
 
     # out_psd_include : bpy.props.EnumProperty(
         # name="PSD includes",
@@ -2102,7 +2176,7 @@ class BM_Object(bpy.types.PropertyGroup):
                ('ZIPS', "ZIPS (lossless)", ""),
                ('DWAA', "DWAA (lossy)", ""),
                ('DWAB', "DWAB (lossy)", "")],
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        update=BM_ITEM_PROPS_out_exr_codec_Update)
 
     out_compression : bpy.props.IntProperty(
         name="Compression",
@@ -2111,38 +2185,38 @@ class BM_Object(bpy.types.PropertyGroup):
         min=0,
         max=100,
         subtype='PERCENTAGE',
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        update=BM_ITEM_PROPS_out_compressio_Update)
 
     out_res : bpy.props.EnumProperty(
-        name = "Map Texture Resolution",
-        description = "Choose map resolution in pixels from the common ones or set custom",
-        default = '1024',
-        items = [('512', "1/2K (512x512)", ""),
-                 ('1024', "1K (1024x1024)", ""),
-                 ('2048', "2K (2048x2048)", ""),
-                 ('4096', "4K (4096x4096)", ""),
-                 ('8192', "8K (8192x8192)", ""),
-                 ('CUSTOM', "Custom", "Enter custom height and width")],
-                 # ('TEXEL', "Texel Density defined", "Define image resolution based on object's texel density")],
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="Map Texture Resolution",
+        description="Choose map resolution in pixels from the common ones or set custom",
+        default='1024',
+        items=[('512', "1/2K (512x512)", ""),
+               ('1024', "1K (1024x1024)", ""),
+               ('2048', "2K (2048x2048)", ""),
+               ('4096', "4K (4096x4096)", ""),
+               ('8192', "8K (8192x8192)", ""),
+               ('CUSTOM', "Custom", "Enter custom height and width")],
+               # ('TEXEL', "Texel Density defined", "Define image resolution based on object's texel density")],
+        update=BM_ITEM_PROPS_out_res_Update)
 
     out_res_height : bpy.props.IntProperty(
-        name = "Height",
-        description = "Custom height resolution",
-        default = 1000,
-        min = 1,
-        max = 65536,
-        subtype = 'PIXEL',
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="Height",
+        description="Custom height resolution",
+        default=1000,
+        min=1,
+        max=65536,
+        subtype='PIXEL',
+        update=BM_ITEM_PROPS_out_res_height_Update)
 
     out_res_width : bpy.props.IntProperty(
-        name = "Width",
-        description = "Custom height resolution",
-        default = 1000,
-        min = 1,
-        max = 65536,
-        subtype = 'PIXEL',
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="Width",
+        description="Custom height resolution",
+        default=1000,
+        min=1,
+        max=65536,
+        subtype='PIXEL',
+        update=BM_ITEM_PROPS_out_res_width_Update)
 
     # out_texel_density_value : bpy.props.IntProperty(
         # name="Texel Density",
@@ -2159,55 +2233,55 @@ class BM_Object(bpy.types.PropertyGroup):
         # default=True)
 
     out_margin : bpy.props.IntProperty(
-        name = "Margin",
-        description = "Padding. Extend bake result by specified number of pixels as a post-process filter.\nImproves baking quality by reducing hard edges visibility",
-        default = 16,
-        min = 0,
-        max = 64,
-        subtype = 'PIXEL',
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="Margin",
+        description="Padding. Extend bake result by specified number of pixels as a post-process filter.\nImproves baking quality by reducing hard edges visibility",
+        default=16,
+        min=0,
+        max=64,
+        subtype='PIXEL',
+        update=BM_ITEM_PROPS_out_margin_Update)
     
     out_margin_type : bpy.props.EnumProperty(
-        name = "Margin Type",
-        description = "Algorithm for margin",
-        default = 'ADJACENT_FACES',
-        items = [('ADJACENT_FACES', "Adjacent Faces", "Use pixels from adjacent faces across UV seams"),
-                 ('EXTEND', "Extend", "Extend face border pixels outwards")],
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="Margin Type",
+        description="Algorithm for margin",
+        default='ADJACENT_FACES',
+        items=[('ADJACENT_FACES', "Adjacent Faces", "Use pixels from adjacent faces across UV seams"),
+               ('EXTEND', "Extend", "Extend face border pixels outwards")],
+        update=BM_ITEM_PROPS_out_margin_type_Update)
 
     out_use_32bit : bpy.props.BoolProperty(
-        name = "32bit",
-        description = "Create image texture with 32 bit floating point depth.\nStores more color data in the image this way",
-        default = False,
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="32bit",
+        description="Create image texture with 32 bit floating point depth.\nStores more color data in the image this way",
+        default=False,
+        update=BM_ITEM_PROPS_out_use_32bit_Update)
 
     out_use_alpha : bpy.props.BoolProperty(
-        name = "Alpha",
-        description = "Create image texture with Alpha color channel",
-        default = False,
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="Alpha",
+        description="Create image texture with Alpha color channel",
+        default=False,
+        update=BM_ITEM_PROPS_out_use_alpha_Update)
 
     out_use_transbg : bpy.props.BoolProperty(
-        name = "Transparent BG",
-        description = "Create image texture with transparent background instead of solid black",
-        default = False,
-        update = BM_ITEM_PROPS_OutputSettings_Update)
+        name="Transparent BG",
+        description="Create image texture with transparent background instead of solid black",
+        default=False,
+        update=BM_ITEM_PROPS_out_use_transbg_Update)
     
     out_udim_start_tile : bpy.props.IntProperty(
-        name = "UDIM Start Tile Index",
-        description = "UDIM tile index of UDIM tiles baking range.\nUDIMs baking range is used for defining UDIM tiles baking boundaries. Bake result will only affect specified range of tiles (Start Tile Index - End Tile Index)",
-        default = 1001,
-        min = 1001,
-        max = 2000,
-        update=BM_ITEM_PROPS_OutputSettings_Update)
+        name="UDIM Start Tile Index",
+        description="UDIM tile index of UDIM tiles baking range.\nUDIMs baking range is used for defining UDIM tiles baking boundaries. Bake result will only affect specified range of tiles (Start Tile Index - End Tile Index)",
+        default=1001,
+        min=1001,
+        max=2000,
+        update=BM_ITEM_PROPS_out_udim_start_tile_Update)
 
     out_udim_end_tile : bpy.props.IntProperty(
-        name = "UDIM End Tile Index",
-        description = "UDIM tile index of UDIM tiles baking range.\nUDIMs baking range is used for defining UDIM tiles baking boundaries. Bake result will only affect specified range of tiles (Start Tile Index - End Tile Index)",
-        default = 1001,
-        min = 1001,
-        max = 2000,
-        update=BM_ITEM_PROPS_OutputSettings_Update)
+        name="UDIM End Tile Index",
+        description="UDIM tile index of UDIM tiles baking range.\nUDIMs baking range is used for defining UDIM tiles baking boundaries. Bake result will only affect specified range of tiles (Start Tile Index - End Tile Index)",
+        default=1001,
+        min=1001,
+        max=2000,
+        update=BM_ITEM_PROPS_out_udim_end_tile_Update)
 
     out_super_sampling_aa : bpy.props.EnumProperty(
         name="SuperSampling AA",
@@ -2218,7 +2292,7 @@ class BM_Object(bpy.types.PropertyGroup):
                ('4X4', "4x4", "Bake at 4x the chosen resolution and then downscale"),
                ('8X8', "8x8", "Bake at 8x the chosen resolution and then downscale"),
                ('16X16', "16x16", "Bake at 16x the chosen resolution and then downscale")],
-        update=BM_ITEM_PROPS_OutputSettings_Update)
+        update=BM_ITEM_PROPS_out_super_sampling_aa_Update)
 
     out_samples : bpy.props.IntProperty(
         name="Bake Samples",
@@ -2226,13 +2300,13 @@ class BM_Object(bpy.types.PropertyGroup):
         default=128,
         min=1,
         max=16777216,
-        update=BM_ITEM_PROPS_OutputSettings_Update)
+        update=BM_ITEM_PROPS_out_samples)
     
     out_use_adaptive_sampling : bpy.props.BoolProperty(
         name="Adaptive Sampling",
         description="Automatically reduce the number of samples per pixel based on estimated noise level",
         default=False,
-        update=BM_ITEM_PROPS_OutputSettings_Update)
+        update=BM_ITEM_PROPS_out_use_adaptive_sampling_Update)
 
     out_adaptive_threshold : bpy.props.FloatProperty(
         name="Noise Threshold",
@@ -2243,7 +2317,7 @@ class BM_Object(bpy.types.PropertyGroup):
         soft_min=0.001,
         step=3,
         precision=4,
-        update=BM_ITEM_PROPS_OutputSettings_Update)
+        update=BM_ITEM_PROPS_out_adaptive_threshold_Update)
 
     out_min_samples : bpy.props.IntProperty(
         name="Bake Min Samples",
@@ -2251,23 +2325,26 @@ class BM_Object(bpy.types.PropertyGroup):
         default=0,
         min=0,
         max=4096,
-        update=BM_ITEM_PROPS_OutputSettings_Update)
+        update=BM_ITEM_PROPS_out_min_samples_Update)
 
 # Item Shading Correction Props
     csh_use_triangulate_lowpoly : bpy.props.BoolProperty(
         name="Triangulate Lowpoly",
         description="Triangulate Lowpoly mesh n-gons. Takes time but improves shading of Lowpoly mesh with redundant uv stretches",
-        default=False)
+        default=False,
+        update=BM_ITEM_PROPS_csh_use_triangulate_lowpoly_Update)
     
     csh_use_lowpoly_reset_normals : bpy.props.BoolProperty(
         name="Reset Lowpoly Normals",
         description="Reset all lowpoly mesh normals direction and recalculate them outside",
-        default=False)
+        default=False,
+        update=BM_ITEM_PROPS_csh_use_lowpoly_reset_normals_Update)
 
     csh_lowpoly_use_smooth : bpy.props.BoolProperty(
         name="Smooth Lowpoly",
         description="Use smooth-shaded Lowpoly for baking. Can be kept unchecked if you've set shading on your own",
-        default=False)
+        default=False,
+        update=BM_ITEM_PROPS_csh_lowpoly_use_smooth_Update)
 
     csh_lowpoly_smoothing_groups_enum : bpy.props.EnumProperty(
         name="Lowpoly Smoothing groups",
@@ -2275,7 +2352,8 @@ class BM_Object(bpy.types.PropertyGroup):
         default='STANDARD',
         items=[('STANDARD', "Standard", "Apply default Shade Smooth to whole object"),
                ('AUTO', "Auto Smooth", "Apply Auto Shade Smooth based on angle between faces or mesh split normals data"),
-               ('VERTEX_GROUPS', "Vertex Groups", "Apply smooth shading to created mesh vertex groups. Correct smooth shading technique")])
+               ('VERTEX_GROUPS', "Vertex Groups", "Apply smooth shading to created mesh vertex groups. Correct smooth shading technique")],
+        update=BM_ITEM_PROPS_csh_lowpoly_smoothing_groups_enum_Update)
     
     csh_lowpoly_smoothing_groups_angle : bpy.props.IntProperty(
         name="Angle",
@@ -2283,22 +2361,26 @@ class BM_Object(bpy.types.PropertyGroup):
         default=30,
         min=0,
         max=180,
-        subtype='ANGLE')
+        subtype='ANGLE',
+        update=BM_ITEM_PROPS_csh_lowpoly_smoothing_groups_angle_Update)
 
     csh_lowpoly_smoothing_groups_name_contains : bpy.props.StringProperty(
         name="Name Contains",
         description="Apply smooth shading only to vertex groups which names contain this value. Leave empty to apply to all vertex groups",
-        default="_smooth")
+        default="_smooth",
+        update=BM_ITEM_PROPS_csh_lowpoly_smoothing_groups_name_contains_Update)
 
     csh_use_highpoly_reset_normals : bpy.props.BoolProperty(
         name="Reset Highpoly Normals",
         description="Reset all highpoly mesh normals direction and recalculate them outside",
-        default=False)
+        default=False,
+        update=BM_ITEM_PROPS_use_highpoly_reset_normals_Update)
 
     csh_highpoly_use_smooth : bpy.props.BoolProperty(
         name="Smooth Highpoly",
         description="Use smooth-shaded Highpoly for baking. Can be kept unchecked if you've set shading on your own",
-        default=False)
+        default=False,
+        update=BM_ITEM_PROPS_csh_highpoly_use_smooth_Update)
 
     csh_highpoly_smoothing_groups_enum : bpy.props.EnumProperty(
         name="Highpoly Smoothing groups",
@@ -2306,7 +2388,8 @@ class BM_Object(bpy.types.PropertyGroup):
         default='STANDARD',
         items=[('STANDARD', "Standard", "Apply default Shade Smooth to whole object"),
                ('AUTO', "Auto Smooth", "Apply Auto Shade Smooth based on angle between faces or mesh split normals data"),
-               ('VERTEX_GROUPS', "Vertex Groups", "Apply smooth shading to created mesh vertex groups. Correct smooth shading technique")])
+               ('VERTEX_GROUPS', "Vertex Groups", "Apply smooth shading to created mesh vertex groups. Correct smooth shading technique")],
+        update=BM_ITEM_PROPS_csh_highpoly_smoothing_grousp_enum_Update)
     
     csh_highpoly_smoothing_groups_angle : bpy.props.IntProperty(
         name="Angle",
@@ -2314,12 +2397,14 @@ class BM_Object(bpy.types.PropertyGroup):
         default=30,
         min=0,
         max=180,
-        subtype='ANGLE')
+        subtype='ANGLE',
+        update=BM_ITEM_PROPS_csh_highpoly_smoothing_groups_angle_Update)
 
     csh_highpoly_smoothing_groups_name_contains : bpy.props.StringProperty(
         name="Name Contains",
         description="Apply smooth shading only to vertex groups which names contain this value",
-        default="_smooth")
+        default="_smooth",
+        update=BM_ITEM_PROPS_csh_highpoly_smoothing_groups_name_contains_Update)
 
 # Item Maps Collection Props
     global_maps_active_index : bpy.props.IntProperty(
@@ -2340,23 +2425,27 @@ class BM_Object(bpy.types.PropertyGroup):
     bake_save_internal : bpy.props.BoolProperty(
         name="Internal",
         description="Saved baked maps into the current Blender file",
-        default=True)
+        default=True,
+        update=BM_ITEM_PROPS_bake_save_internal_Update)
 
     bake_output_filepath : bpy.props.StringProperty(
         name="Output Path",
         description="Directory path on your disk to save bake maps to. \\\\ means relative to this Blender file",
         default="\\\\",
-        subtype='DIR_PATH')
+        subtype='DIR_PATH',
+        update=BM_ITEM_PROPS_bake_output_filepath_Update)
 
     bake_create_subfolder : bpy.props.BoolProperty(
         name="Create Subfolder",
         description="Create subfolder in the Output Path directory and save baked maps there",
-        default=False)
+        default=False,
+        update=BM_ITEM_PROPS_bake_create_subfolder_Update)
 
     bake_subfolder_name : bpy.props.StringProperty(
         name="Subfolder Name",
         description="How to name the subfolder",
-        default="Maps")
+        default="Maps",
+        update=BM_ITEM_PROPS_bake_subfolder_name_Update)
 
     # bake_batch_name_table : bpy.props.CollectionProperty(type=BM_Object_BatchNamingKeyword)
 
@@ -2371,7 +2460,8 @@ class BM_Object(bpy.types.PropertyGroup):
     bake_batchname : bpy.props.StringProperty(
         name="Batch Name",
         description=BM_Labels.PROP_ITEM_bake_batchname_custom_Description,
-        default="$objectindex_$objectname_$mapname")
+        default="$objectindex_$objectname_$mapname",
+        update=BM_ITEM_PROPS_bake_batchname_Update)
 
     bake_batchname_use_caps : bpy.props.BoolProperty(
         name="Use Caps",
@@ -2386,11 +2476,13 @@ class BM_Object(bpy.types.PropertyGroup):
     bake_create_material : bpy.props.BoolProperty(
         name="Create Material",
         description="Assign a new material to the object after bake with all baked maps inlcuded",
-        default=False)
+        default=False,
+        update=BM_ITEM_PROPS_bake_create_material_Update)
 
     bake_device : bpy.props.EnumProperty(
         name="Bake Device",
         description="Device to use for baking",
         default='CPU',
         items=[('GPU', "GPU", "Use GPU compute device for baking, configured in the system tab in the user preferences"),
-               ('CPU', "CPU", "Use CPU for baking")])
+               ('CPU', "CPU", "Use CPU for baking")],
+        update=BM_ITEM_PROPS_bake_device_Update)
