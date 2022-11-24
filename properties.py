@@ -1730,8 +1730,8 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
     R1G1B_map_G : bpy.props.EnumProperty(
         name="Channel Map",
         description="Choose a map for the Green channel among added to the table of maps",
-        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B_B,
-        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B_B)
+        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B_G,
+        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B_G)
     R1G1B_map_G_index : bpy.props.IntProperty(default=-1)
         
     R1G1B_use_B : bpy.props.BoolProperty(
@@ -1740,8 +1740,8 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
     R1G1B_map_B : bpy.props.EnumProperty(
         name="Channel Map",
         description="Choose a map for the Blue channel among added to the table of maps",
-        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B_G,
-        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B_G)
+        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B_B,
+        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B_B)
     R1G1B_map_B_index : bpy.props.IntProperty(default=-1)
 
     # RGB+A
