@@ -136,6 +136,7 @@ classes = (
     BM_OT_ITEM_BatchNaming_Preview,
     BM_OT_ITEM_Maps,
     BM_OT_ITEM_Bake,
+    BM_OT_ApplyLastEditedProp,
     BM_OT_Help,
 
     BM_OT_ObjectConfigutator_Preset_Add,
