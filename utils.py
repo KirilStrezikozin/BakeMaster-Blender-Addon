@@ -1379,7 +1379,7 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context):
     return preview
 
 def BM_ITEM_PROPS_bake_batchname_use_caps_Update(self, context):
-    BM_LastEditedProp_Write("bake_batchname_use_caps", False)
+    BM_LastEditedProp_Write(context, "Object Bake Output: Batch name use caps", "bake_batchname_use_caps", getattr(self, "bake_batchname_use_caps"), False)
     # upper-case batch name if true else lower-case
     self.bake_batchname = self.bake_batchname.upper() if self.bake_batchname_use_caps else self.bake_batchname.lower()
 
@@ -1401,7 +1401,8 @@ def BM_ActiveIndexUpdate(self, context):
             source_object.select_set(True)
             context.view_layer.objects.active = source_object
 
-def BM_LastEditedProp_Write(context, name: str, value: any, is_map: bool):
+def BM_LastEditedProp_Write(context, name: str, prop: str, value: any, is_map: bool):
+    context.scene.bm_props.global_last_edited_prop = prop
     context.scene.bm_props.global_last_edited_prop_name = name
     context.scene.bm_props.global_last_edited_prop_is_map = is_map
     context.scene.bm_props.global_last_edited_prop_value = str(value)
@@ -1456,7 +1457,7 @@ def BM_ITEM_PROPS_decal_is_decal_Update(self, context):
 ### hl Props Funcs ###
 ###############################################################
 def BM_ITEM_PROPS_hl_use_unique_per_map_Update(self, context):
-    BM_LastEditedProp_Write("hl_use_unique_per_map", False)
+    BM_LastEditedProp_Write(context, "Object High to Lowpoly: Unique per map", "hl_use_unique_per_map", getattr(self, "hl_use_unique_per_map"), False)
     object = self
     if object.hl_use_unique_per_map:
         data = {
@@ -1909,7 +1910,7 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context):
 ### uv Props Funcs ###
 ###############################################################
 def BM_ITEM_PROPS_uv_use_unique_per_map_Update(self, context):
-    BM_LastEditedProp_Write("uv_use_unique_per_map", False)
+    BM_LastEditedProp_Write(context, "Object UVs & Layers: Unique per map", "uv_use_unique_per_map", getattr(self, "uv_use_unique_per_map"), False)
     object = self
     if object.uv_use_unique_per_map:
         data = {
@@ -1965,7 +1966,7 @@ def BM_ITEM_PROPS_uv_bake_target_Items(self, context):
 ### out Props Funcs ###
 ###############################################################
 def BM_ITEM_PROPS_out_use_unique_per_map_Update(self, context):
-    BM_LastEditedProp_Write("out_use_unique_per_map", False)
+    BM_LastEditedProp_Write(context, "Object Format: Unique per map", "out_use_unique_per_map", getattr(self, "out_use_unique_per_map"), False)
     object = self
     if object.out_use_unique_per_map:
         data = {
@@ -2105,448 +2106,669 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
 ### Update Funcs for global_last_edited_prop ###
 ###############################################################
 def BM_MAP_PROPS_global_use_bake_Update(self, context):
-    BM_LastEditedProp_Write(context, "global_use_bake", getattr(self, "global_use_bake"), True)
+    name = "Map: Use in bake"
+    BM_LastEditedProp_Write(context, name, "global_use_bake", getattr(self, "global_use_bake"), True)
 def BM_MAP_PROPS_global_map_type_Update(self, context):
-    BM_LastEditedProp_Write(context, "global_map_type", getattr(self, "global_map_type"), True)
+    name = "Map: Map type"
+    BM_LastEditedProp_Write(context, name, "global_map_type", getattr(self, "global_map_type"), True)
 def BM_MAP_PROPS_global_affect_by_hl_Update(self, context):
-    BM_LastEditedProp_Write(context, "global_affect_by_hl", getattr(self, "global_affect_by_hl"), True)
+    name = "Map: Affect by Highpoly"
+    BM_LastEditedProp_Write(context, name, "global_affect_by_hl", getattr(self, "global_affect_by_hl"), True)
 def BM_MAP_PROPS_hl_cage_type_Update(self, context):
-    BM_LastEditedProp_Write(context, "hl_cage_type", getattr(self, "hl_cage_type"), True)
+    name = "Map High to Lowpoly: Cage type"
+    BM_LastEditedProp_Write(context, name, "hl_cage_type", getattr(self, "hl_cage_type"), True)
 def BM_MAP_PROPS_hl_cage_extrusion_Update(self, context):
-    BM_LastEditedProp_Write(context, "hl_cage_extrusion", getattr(self, "hl_cage_extrusion"), True)
+    name = "Map High to Lowpoly: Cage extrusion"
+    BM_LastEditedProp_Write(context, name, "hl_cage_extrusion", getattr(self, "hl_cage_extrusion"), True)
 def BM_MAP_PROPS_hl_max_ray_distance_Update(self, context):
-    BM_LastEditedProp_Write(context, "hl_max_ray_distance", getattr(self, "hl_max_ray_distance"), True)
+    name = "Map High to Lowpoly: Max ray distance"
+    BM_LastEditedProp_Write(context, name, "hl_max_ray_distance", getattr(self, "hl_max_ray_distance"), True)
 def BM_MAP_PROPS_uv_bake_data_Update(self, context):
-    BM_LastEditedProp_Write(context, "uv_bake_data", getattr(self, "uv_bake_data"), True)
+    name = "Map UVs & Layers: Bake Data"
+    BM_LastEditedProp_Write(context, name, "uv_bake_data", getattr(self, "uv_bake_data"), True)
 def BM_MAP_PROPS_uv_bake_target_Update(self, context):
-    BM_LastEditedProp_Write(context, "uv_bake_target", getattr(self, "uv_bake_target"), True)
+    name = "Map UVs & Layers: Bake Target"
+    BM_LastEditedProp_Write(context, name, "uv_bake_target", getattr(self, "uv_bake_target"), True)
 def BM_MAP_PROPS_uv_type_Update(self, context):
-    BM_LastEditedProp_Write(context, "uv_type", getattr(self, "uv_type"), True)
+    name = "Map UVs & Layers: UV type"
+    BM_LastEditedProp_Write(context, name, "uv_type", getattr(self, "uv_type"), True)
 def BM_MAP_PROPS_uv_snap_islands_to_pixels_Update(self, context):
-    BM_LastEditedProp_Write(context, "uv_snap_islands_to_pixels", getattr(self, "uv_snap_islands_to_pixels"), True)
+    name = "Map UVs & Layers: Snap UV islands to pixels"
+    BM_LastEditedProp_Write(context, name, "uv_snap_islands_to_pixels", getattr(self, "uv_snap_islands_to_pixels"), True)
 def BM_MAP_PROPS_out_use_denoise_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_use_denoise", getattr(self, "out_use_denoise"), True)
+    name = "Map Format: Denoise"
+    BM_LastEditedProp_Write(context, name, "out_use_denoise", getattr(self, "out_use_denoise"), True)
 def BM_MAP_PROPS_out_file_format_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_file_format", getattr(self, "out_file_format"), True)
-def BM_MAP_PROPS_out_exr_codex_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_exr_codex", getattr(self, "out_exr_codex"), True)
+    name = "Map Format: File Format"
+    BM_LastEditedProp_Write(context, name, "out_file_format", getattr(self, "out_file_format"), True)
+def BM_MAP_PROPS_out_exr_codec_Update(self, context):
+    name = "Map Format: Exr codec"
+    BM_LastEditedProp_Write(context, name, "out_exr_codex", getattr(self, "out_exr_codex"), True)
 def BM_MAP_PROPS_out_compression_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_compression", getattr(self, "out_compression"), True)
+    name = "Map Format: Compression"
+    BM_LastEditedProp_Write(context, name, "out_compression", getattr(self, "out_compression"), True)
 def BM_MAP_PROPS_out_res_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_res", getattr(self, "out_res"), True)
+    name = "Map Format: Resolution"
+    BM_LastEditedProp_Write(context, name, "out_res", getattr(self, "out_res"), True)
 def BM_MAP_PROPS_out_res_height_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_res_height", getattr(self, "out_res_height"), True)
+    name = "Map Format: Custom Height"
+    BM_LastEditedProp_Write(context, name, "out_res_height", getattr(self, "out_res_height"), True)
 def BM_MAP_PROPS_out_res_width_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_res_width", getattr(self, "out_res_width"), True)
+    name = "Map Format: Custom Width"
+    BM_LastEditedProp_Write(context, name, "out_res_width", getattr(self, "out_res_width"), True)
 def BM_MAP_PROPS_out_margin_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_margin", getattr(self, "out_margin"), True)
+    name = "Map Format: Margin"
+    BM_LastEditedProp_Write(context, name, "out_margin", getattr(self, "out_margin"), True)
 def BM_MAP_PROPS_out_margin_type_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_margin_type", getattr(self, "out_margin_type"), True)
+    name = "Map Format: Margin type"
+    BM_LastEditedProp_Write(context, name, "out_margin_type", getattr(self, "out_margin_type"), True)
 def BM_MAP_PROPS_out_use_32bit_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_use_32bit", getattr(self, "out_use_32bit"), True)
+    name = "Map Format: 32bit Float"
+    BM_LastEditedProp_Write(context, name, "out_use_32bit", getattr(self, "out_use_32bit"), True)
 def BM_MAP_PROPS_out_use_alpha_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_use_alpha", getattr(self, "out_use_alpha"), True)
+    name = "Map Format: Alpha"
+    BM_LastEditedProp_Write(context, name, "out_use_alpha", getattr(self, "out_use_alpha"), True)
 def BM_MAP_PROPS_out_use_transbg_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_use_transbg", getattr(self, "out_use_transbg"), True)
+    name = "Map Format: Transparent bg"
+    BM_LastEditedProp_Write(context, name, "out_use_transbg", getattr(self, "out_use_transbg"), True)
 def BM_MAP_PROPS_out_udim_start_tile_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_udim_start_tile", getattr(self, "out_udim_start_tile"), True)
+    name = "Map Format: UDIM start tile"
+    BM_LastEditedProp_Write(context, name, "out_udim_start_tile", getattr(self, "out_udim_start_tile"), True)
 def BM_MAP_PROPS_out_udim_end_tile_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_udim_end_tile", getattr(self, "out_udim_end_tile"), True)
+    name = "Map Format: UDIM end tile"
+    BM_LastEditedProp_Write(context, name, "out_udim_end_tile", getattr(self, "out_udim_end_tile"), True)
 def BM_MAP_PROPS_out_super_sampling_aa_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_super_sampling_aa", getattr(self, "out_super_sampling_aa"), True)
+    name = "Map Format: SuperSampling AA"
+    BM_LastEditedProp_Write(context, name, "out_super_sampling_aa", getattr(self, "out_super_sampling_aa"), True)
 def BM_MAP_PROPS_out_samples_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_samples", getattr(self, "out_samples"), True)
+    name = "Map Format: Bake Samples"
+    BM_LastEditedProp_Write(context, name, "out_samples", getattr(self, "out_samples"), True)
 def BM_MAP_PROPS_out_use_adaptive_sampling_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_use_adaptive_sampling", getattr(self, "out_use_adaptive_sampling"), True)
+    name = "Map Format: Adaptive Sampling"
+    BM_LastEditedProp_Write(context, name, "out_use_adaptive_sampling", getattr(self, "out_use_adaptive_sampling"), True)
 def BM_MAP_PROPS_out_adaptive_threshold_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_adaptive_threshold", getattr(self, "out_adaptive_threshold"), True)
+    name = "Map Format: Adaptive Threshold"
+    BM_LastEditedProp_Write(context, name, "out_adaptive_threshold", getattr(self, "out_adaptive_threshold"), True)
 def BM_MAP_PROPS_out_min_samples_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_min_samples", getattr(self, "out_min_samples"), True)
+    name = "Map Format: Min Bake Samples"
+    BM_LastEditedProp_Write(context, name, "out_min_samples", getattr(self, "out_min_samples"), True)
 def BM_MAP_PROPS_map_ALBEDO_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_ALBEDO_prefix", getattr(self, "map_ALBEDO_prefix"), True)
+    name = "Map: Albedo prefix"
+    BM_LastEditedProp_Write(context, name, "map_ALBEDO_prefix", getattr(self, "map_ALBEDO_prefix"), True)
 def BM_MAP_PROPS_map_METALNESS_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_METALNESS_prefix", getattr(self, "map_METALNESS_prefix"), True)
+    name = "Map: Metalness prefix"
+    BM_LastEditedProp_Write(context, name, "map_METALNESS_prefix", getattr(self, "map_METALNESS_prefix"), True)
 def BM_MAP_PROPS_map_ROUGHNESS_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_ROUGHNESS_prefix", getattr(self, "map_ROUGHNESS_prefix"), True)
+    name = "Map: Roughness prefix"
+    BM_LastEditedProp_Write(context, name, "map_ROUGHNESS_prefix", getattr(self, "map_ROUGHNESS_prefix"), True)
 def BM_MAP_PROPS_map_DIFFUSE_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_DIFFUSE_prefix", getattr(self, "map_DIFFUSE_prefix"), True)
+    name = "Map: Diffuse prefix"
+    BM_LastEditedProp_Write(context, name, "map_DIFFUSE_prefix", getattr(self, "map_DIFFUSE_prefix"), True)
 def BM_MAP_PROPS_map_SPECULAR_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_SPECULAR_prefix", getattr(self, "map_SPECULAR_prefix"), True)
+    name = "Map: Specular prefix"
+    BM_LastEditedProp_Write(context, name, "map_SPECULAR_prefix", getattr(self, "map_SPECULAR_prefix"), True)
 def BM_MAP_PROPS_map_GLOSSINESS_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_GLOSSINESS_prefix", getattr(self, "map_GLOSSINESS_prefix"), True)
+    name = "Map: Glossiness prefix"
+    BM_LastEditedProp_Write(context, name, "map_GLOSSINESS_prefix", getattr(self, "map_GLOSSINESS_prefix"), True)
 def BM_MAP_PROPS_map_OPACITY_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_OPACITY_prefix", getattr(self, "map_OPACITY_prefix"), True)
+    name = "Map: Opacity prefix"
+    BM_LastEditedProp_Write(context, name, "map_OPACITY_prefix", getattr(self, "map_OPACITY_prefix"), True)
 def BM_MAP_PROPS_map_EMISSION_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_EMISSION_prefix", getattr(self, "map_EMISSION_prefix"), True)
+    name = "Map: Emission prefix"
+    BM_LastEditedProp_Write(context, name, "map_EMISSION_prefix", getattr(self, "map_EMISSION_prefix"), True)
 def BM_MAP_PROPS_map_PASS_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_PASS_prefix", getattr(self, "map_PASS_prefix"), True)
+    name = "Map: BSDF Pass prefix"
+    BM_LastEditedProp_Write(context, name, "map_PASS_prefix", getattr(self, "map_PASS_prefix"), True)
 def BM_MAP_PROPS_map_pass_type_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_pass_type", getattr(self, "map_pass_type"), True)
+    name = "Map: BSDF Pass type"
+    BM_LastEditedProp_Write(context, name, "map_pass_type", getattr(self, "map_pass_type"), True)
 def BM_MAP_PROPS_map_DECAL_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_DECAL_prefix", getattr(self, "map_DECAL_prefix"), True)
+    name = "Map: Decal Pass prefix"
+    BM_LastEditedProp_Write(context, name, "map_DECAL_prefix", getattr(self, "map_DECAL_prefix"), True)
 def BM_MAP_PROPS_map_decal_pass_type_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_decal_pass_type", getattr(self, "map_decal_pass_type"), True)
+    name = "Map: Decal Pass type"
+    BM_LastEditedProp_Write(context, name, "map_decal_pass_type", getattr(self, "map_decal_pass_type"), True)
 def BM_MAP_PROPS_map_decal_height_opacity_invert_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_decal_height_opacity_invert", getattr(self, "map_decal_height_opacity_invert"), True)
+    name = "Map: Decal Pass invert"
+    BM_LastEditedProp_Write(context, name, "map_decal_height_opacity_invert", getattr(self, "map_decal_height_opacity_invert"), True)
 def BM_MAP_PROPS_map_decal_normal_preset_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_decal_normal_preset", getattr(self, "map_decal_normal_preset"), True)
+    name = "Map: Decal Pass preset"
+    BM_LastEditedProp_Write(context, name, "map_decal_normal_preset", getattr(self, "map_decal_normal_preset"), True)
 def BM_MAP_PROPS_map_decal_normal_custom_preset_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_decal_normal_custom_preset", getattr(self, "map_decal_normal_custom_preset"), True)
+    name = "Map: Decal Pass custom preset"
+    BM_LastEditedProp_Write(context, name, "map_decal_normal_custom_preset", getattr(self, "map_decal_normal_custom_preset"), True)
 def BM_MAP_PROPS_map_decal_normal_r_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_decal_normal_r", getattr(self, "map_decal_normal_r"), True)
+    name = "Map: Decal Pass Swizzle R"
+    BM_LastEditedProp_Write(context, name, "map_decal_normal_r", getattr(self, "map_decal_normal_r"), True)
 def BM_MAP_PROPS_map_decal_normal_g_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_decal_normal_g", getattr(self, "map_decal_normal_g"), True)
+    name = "Map: Decal Pass G"
+    BM_LastEditedProp_Write(context, name, "map_decal_normal_g", getattr(self, "map_decal_normal_g"), True)
 def BM_MAP_PROPS_map_decal_normal_b_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_decal_normal_b", getattr(self, "map_decal_normal_b"), True)
+    name = "Map: Decal Pass B"
+    BM_LastEditedProp_Write(context, name, "map_decal_normal_b", getattr(self, "map_decal_normal_b"), True)
 def BM_MAP_PROPS_map_VERTEX_COLOR_LAYER_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_VERTEX_COLOR_LAYER_prefix", getattr(self, "map_VERTEX_COLOR_LAYER_prefix"), True)
+    name = "Map: VertexColor Layer prefix"
+    BM_LastEditedProp_Write(context, name, "map_VERTEX_COLOR_LAYER_prefix", getattr(self, "map_VERTEX_COLOR_LAYER_prefix"), True)
 def BM_MAP_PROPS_map_C_COMBINED_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_C_COMBINED_prefix", getattr(self, "map_C_COMBINED_prefix"), True)
+    name = "Map: Cycles Combined prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_COMBINED_prefix", getattr(self, "map_C_COMBINED_prefix"), True)
 def BM_MAP_PROPS_map_C_AO_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_C_AO_prefix", getattr(self, "map_C_AO_prefix"), True)
+    name = "Map: Cycles AO prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_AO_prefix", getattr(self, "map_C_AO_prefix"), True)
 def BM_MAP_PROPS_map_C_SHADOW_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_C_SHADOW_prefix", getattr(self, "map_C_SHADOW_prefix"), True)
+    name = "Map: Cycles Shadown prefix "
+    BM_LastEditedProp_Write(context, name, "map_C_SHADOW_prefix", getattr(self, "map_C_SHADOW_prefix"), True)
 def BM_MAP_PROPS_map_C_NORMAL_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_C_NORMAL_prefix", getattr(self, "map_C_NORMAL_prefix"), True)
+    name = "Map: Cycles Normal prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_NORMAL_prefix", getattr(self, "map_C_NORMAL_prefix"), True)
 def BM_MAP_PROPS_map_C_UV_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_C_UV_prefix", getattr(self, "map_C_UV_prefix"), True)
+    name = "Map: Cycles UV prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_UV_prefix", getattr(self, "map_C_UV_prefix"), True)
 def BM_MAP_PROPS_map_C_ROUGHNESS_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_C_ROUGHNESS_prefix", getattr(self, "map_C_ROUGHNESS_prefix"), True)
+    name = "Map: Cycles Roughness prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_ROUGHNESS_prefix", getattr(self, "map_C_ROUGHNESS_prefix"), True)
 def BM_MAP_PROPS_map_C_EMIT_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_C_EMIT_prefix", getattr(self, "map_C_EMIT_prefix"), True)
+    name = "Map: Cycles Emit prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_EMIT_prefix", getattr(self, "map_C_EMIT_prefix"), True)
 def BM_MAP_PROPS_map_C_ENVIRONMENT_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_C_ENVIRONMENT_prefix", getattr(self, "map_C_ENVIRONMENT_prefix"), True)
+    name = "Map: Cycles Environment prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_ENVIRONMENT_prefix", getattr(self, "map_C_ENVIRONMENT_prefix"), True)
 def BM_MAP_PROPS_map_C_DIFFUSE_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_C_DIFFUSE_prefix", getattr(self, "map_C_DIFFUSE_prefix"), True)
+    name = "Map: Cycles Diffuse prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_DIFFUSE_prefix", getattr(self, "map_C_DIFFUSE_prefix"), True)
 def BM_MAP_PROPS_map_C_GLOSSY_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_C_GLOSSY_prefix", getattr(self, "map_C_GLOSSY_prefix"), True)
+    name = "Map: Cycles Glossy prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_GLOSSY_prefix", getattr(self, "map_C_GLOSSY_prefix"), True)
 def BM_MAP_PROPS_map_C_TRANSMISSION_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_C_TRANSMISSION_prefix", getattr(self, "map_C_TRANSMISSION_prefix"), True)
+    name = "Map: Cycles Transmission prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_TRANSMISSION_prefix", getattr(self, "map_C_TRANSMISSION_prefix"), True)
 def BM_MAP_PROPS_map_cycles_use_pass_direct_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_cycles_use_pass_direct", getattr(self, "map_cycles_use_pass_direct"), True)
+    name = "Map: Cycles use direct"
+    BM_LastEditedProp_Write(context, name, "map_cycles_use_pass_direct", getattr(self, "map_cycles_use_pass_direct"), True)
 def BM_MAP_PROPS_map_cycles_use_pass_indirect_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_cycles_use_pass_indirect", getattr(self, "map_cycles_use_pass_indirect"), True)
+    name = "Map: Cycles use indirect"
+    BM_LastEditedProp_Write(context, name, "map_cycles_use_pass_indirect", getattr(self, "map_cycles_use_pass_indirect"), True)
 def BM_MAP_PROPS_map_cycles_use_pass_color_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_cycles_use_pass_color", getattr(self, "map_cycles_use_pass_color"), True)
+    name = "Map: Cycles use color pass"
+    BM_LastEditedProp_Write(context, name, "map_cycles_use_pass_color", getattr(self, "map_cycles_use_pass_color"), True)
 def BM_MAP_PROPS_map_cycles_use_pass_diffuse_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_cycles_use_pass_diffuse", getattr(self, "map_cycles_use_pass_diffuse"), True)
+    name = "Map: Cycles use diffuse pass"
+    BM_LastEditedProp_Write(context, name, "map_cycles_use_pass_diffuse", getattr(self, "map_cycles_use_pass_diffuse"), True)
 def BM_MAP_PROPS_map_cycles_use_pass_glossy_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_cycles_use_pass_glossy", getattr(self, "map_cycles_use_pass_glossy"), True)
+    name = "Map: Cycles use glossy pass"
+    BM_LastEditedProp_Write(context, name, "map_cycles_use_pass_glossy", getattr(self, "map_cycles_use_pass_glossy"), True)
 def BM_MAP_PROPS_map_cycles_use_pass_transmission_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_cycles_use_pass_transmission", getattr(self, "map_cycles_use_pass_transmission"), True)
+    name = "Map: Cycles use transmission pass"
+    BM_LastEditedProp_Write(context, name, "map_cycles_use_pass_transmission", getattr(self, "map_cycles_use_pass_transmission"), True)
 def BM_MAP_PROPS_map_cycles_use_pass_ambient_occlusion_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_cycles_use_pass_ambient_occlusion", getattr(self, "map_cycles_use_pass_ambient_occlusion"), True)
+    name = "Map: Cycles use ao pass"
+    BM_LastEditedProp_Write(context, name, "map_cycles_use_pass_ambient_occlusion", getattr(self, "map_cycles_use_pass_ambient_occlusion"), True)
 def BM_MAP_PROPS_map_cycles_use_pass_emit_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_cycles_use_pass_emit", getattr(self, "map_cycles_use_pass_emit"), True)
+    name = "Map: Cycles use emit pass"
+    BM_LastEditedProp_Write(context, name, "map_cycles_use_pass_emit", getattr(self, "map_cycles_use_pass_emit"), True)
 def BM_MAP_PROPS_map_NORMAL_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_NORMAL_prefix", getattr(self, "map_NORMAL_prefix"), True)
+    name = "Map: Normal prefix"
+    BM_LastEditedProp_Write(context, name, "map_NORMAL_prefix", getattr(self, "map_NORMAL_prefix"), True)
 def BM_MAP_PROPS_map_normal_data_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_normal_data", getattr(self, "map_normal_data"), True)
+    name = "Map: Normal data"
+    BM_LastEditedProp_Write(context, name, "map_normal_data", getattr(self, "map_normal_data"), True)
 def BM_MAP_PROPS_map_normal_space_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_normal_space", getattr(self, "map_normal_space"), True)
+    name = "Map: Normal space"
+    BM_LastEditedProp_Write(context, name, "map_normal_space", getattr(self, "map_normal_space"), True)
 def BM_MAP_PROPS_map_normal_preset_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_normal_preset", getattr(self, "map_normal_preset"), True)
+    name = "Map: Normal preset"
+    BM_LastEditedProp_Write(context, name, "map_normal_preset", getattr(self, "map_normal_preset"), True)
 def BM_MAP_PROPS_map_normal_custom_preset_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_normal_custom_preset", getattr(self, "map_normal_custom_preset"), True)
+    name = "Map: Normal custom preset"
+    BM_LastEditedProp_Write(context, name, "map_normal_custom_preset", getattr(self, "map_normal_custom_preset"), True)
 def BM_MAP_PROPS_map_normal_r_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_normal_r", getattr(self, "map_normal_r"), True)
+    name = "Map: Normal Swizzle R"
+    BM_LastEditedProp_Write(context, name, "map_normal_r", getattr(self, "map_normal_r"), True)
 def BM_MAP_PROPS_map_normal_g_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_normal_g", getattr(self, "map_normal_g"), True)
+    name = "Map: Normal G"
+    BM_LastEditedProp_Write(context, name, "map_normal_g", getattr(self, "map_normal_g"), True)
 def BM_MAP_PROPS_map_normal_b_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_normal_b", getattr(self, "map_normal_b"), True)
+    name = "Map: Normal B"
+    BM_LastEditedProp_Write(context, name, "map_normal_b", getattr(self, "map_normal_b"), True)
 def BM_MAP_PROPS_map_DISPLACEMENT_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_DISPLACEMENT_prefix", getattr(self, "map_DISPLACEMENT_prefix"), True)
+    name = "Map: Displacement prefix"
+    BM_LastEditedProp_Write(context, name, "map_DISPLACEMENT_prefix", getattr(self, "map_DISPLACEMENT_prefix"), True)
 def BM_MAP_PROPS_map_displacement_data_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_displacement_data", getattr(self, "map_displacement_data"), True)
+    name = "Map: Displacement data"
+    BM_LastEditedProp_Write(context, name, "map_displacement_data", getattr(self, "map_displacement_data"), True)
 def BM_MAP_PROPS_map_displacement_result_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_displacement_result", getattr(self, "map_displacement_result"), True)
+    name = "Map: Displacement result"
+    BM_LastEditedProp_Write(context, name, "map_displacement_result", getattr(self, "map_displacement_result"), True)
 def BM_MAP_PROPS_map_displacement_subdiv_levels_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_displacement_subdiv_levels", getattr(self, "map_displacement_subdiv_levels"), True)
+    name = "Map: Displacement subdiv levels"
+    BM_LastEditedProp_Write(context, name, "map_displacement_subdiv_levels", getattr(self, "map_displacement_subdiv_levels"), True)
 def BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_VECTOR_DISPLACEMENT_prefix", getattr(self, "map_VECTOR_DISPLACEMENT_prefix"), True)
+    name = "Map: Vector Displacement prefix"
+    BM_LastEditedProp_Write(context, name, "map_VECTOR_DISPLACEMENT_prefix", getattr(self, "map_VECTOR_DISPLACEMENT_prefix"), True)
 def BM_MAP_PROPS_map_vector_displacement_use_default_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_vector_displacement_use_default", getattr(self, "map_vector_displacement_use_default"), True)
+    name = "Map: Vector Displacement default"
+    BM_LastEditedProp_Write(context, name, "map_vector_displacement_use_default", getattr(self, "map_vector_displacement_use_default"), True)
 def BM_MAP_PROPS_map_vector_displacement_use_negative_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_vector_displacement_use_negative", getattr(self, "map_vector_displacement_use_negative"), True)
+    name = "Map: Vector Displacement include negative"
+    BM_LastEditedProp_Write(context, name, "map_vector_displacement_use_negative", getattr(self, "map_vector_displacement_use_negative"), True)
 def BM_MAP_PROPS_map_vector_displacement_result_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_vector_displacement_result", getattr(self, "map_vector_displacement_result"), True)
+    name = "Map: Vector Displacement result"
+    BM_LastEditedProp_Write(context, name, "map_vector_displacement_result", getattr(self, "map_vector_displacement_result"), True)
 def BM_MAP_PROPS_map_vector_displacement_subdiv_levels_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_vector_displacement_subdiv_levels", getattr(self, "map_vector_displacement_subdiv_levels"), True)
+    name = "Map: Vector Displacement subdiv levels"
+    BM_LastEditedProp_Write(context, name, "map_vector_displacement_subdiv_levels", getattr(self, "map_vector_displacement_subdiv_levels"), True)
 def BM_MAP_PROPS_map_POSITION_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_POSITION_prefix", getattr(self, "map_POSITION_prefix"), True)
+    name = "Map: Position prefix"
+    BM_LastEditedProp_Write(context, name, "map_POSITION_prefix", getattr(self, "map_POSITION_prefix"), True)
 def BM_MAP_PROPS_map_AO_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_AO_prefix", getattr(self, "map_AO_prefix"), True)
+    name = "Map: AO prefix"
+    BM_LastEditedProp_Write(context, name, "map_AO_prefix", getattr(self, "map_AO_prefix"), True)
 def BM_MAP_PROPS_map_ao_use_default_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_ao_use_default", getattr(self, "map_ao_use_default"), True)
+    name = "Map: AO default"
+    BM_LastEditedProp_Write(context, name, "map_ao_use_default", getattr(self, "map_ao_use_default"), True)
 def BM_MAP_PROPS_map_ao_samples_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_ao_samples", getattr(self, "map_ao_samples"), True)
+    name = "Map: AO samples"
+    BM_LastEditedProp_Write(context, name, "map_ao_samples", getattr(self, "map_ao_samples"), True)
 def BM_MAP_PROPS_map_ao_distance_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_ao_distance", getattr(self, "map_ao_distance"), True)
+    name = "Map: AO distance"
+    BM_LastEditedProp_Write(context, name, "map_ao_distance", getattr(self, "map_ao_distance"), True)
 def BM_MAP_PROPS_map_ao_black_point_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_ao_black_point", getattr(self, "map_ao_black_point"), True)
+    name = "Map: AO black point"
+    BM_LastEditedProp_Write(context, name, "map_ao_black_point", getattr(self, "map_ao_black_point"), True)
 def BM_MAP_PROPS_map_ao_white_point_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_ao_white_point", getattr(self, "map_ao_white_point"), True)
+    name = "Map: AO white point"
+    BM_LastEditedProp_Write(context, name, "map_ao_white_point", getattr(self, "map_ao_white_point"), True)
 def BM_MAP_PROPS_map_ao_brightness_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_ao_brightness", getattr(self, "map_ao_brightness"), True)
+    name = "Map: AO brightness"
+    BM_LastEditedProp_Write(context, name, "map_ao_brightness", getattr(self, "map_ao_brightness"), True)
 def BM_MAP_PROPS_map_ao_contrast_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_ao_contrast", getattr(self, "map_ao_contrast"), True)
+    name = "Map: AO contrast"
+    BM_LastEditedProp_Write(context, name, "map_ao_contrast", getattr(self, "map_ao_contrast"), True)
 def BM_MAP_PROPS_map_ao_opacity_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_ao_opacity", getattr(self, "map_ao_opacity"), True)
+    name = "Map: AO opacity"
+    BM_LastEditedProp_Write(context, name, "map_ao_opacity", getattr(self, "map_ao_opacity"), True)
 def BM_MAP_PROPS_map_ao_use_local_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_ao_use_local", getattr(self, "map_ao_use_local"), True)
+    name = "Map: AO only local"
+    BM_LastEditedProp_Write(context, name, "map_ao_use_local", getattr(self, "map_ao_use_local"), True)
 def BM_MAP_PROPS_map_ao_use_invert_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_ao_use_invert", getattr(self, "map_ao_use_invert"), True)
+    name = "Map: AO invert"
+    BM_LastEditedProp_Write(context, name, "map_ao_use_invert", getattr(self, "map_ao_use_invert"), True)
 def BM_MAP_PROPS_map_CAVITY_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_CAVITY_prefix", getattr(self, "map_CAVITY_prefix"), True)
+    name = "Map: Cavity prefix"
+    BM_LastEditedProp_Write(context, name, "map_CAVITY_prefix", getattr(self, "map_CAVITY_prefix"), True)
 def BM_MAP_PROPS_map_cavity_use_default_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_cavity_use_default", getattr(self, "map_cavity_use_default"), True)
+    name = "Map: Cavity default"
+    BM_LastEditedProp_Write(context, name, "map_cavity_use_default", getattr(self, "map_cavity_use_default"), True)
 def BM_MAP_PROPS_map_cavity_black_point_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_cavity_black_point", getattr(self, "map_cavity_black_point"), True)
+    name = "Map: Cavity black point"
+    BM_LastEditedProp_Write(context, name, "map_cavity_black_point", getattr(self, "map_cavity_black_point"), True)
 def BM_MAP_PROPS_map_cavity_white_point_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_cavity_white_point", getattr(self, "map_cavity_white_point"), True)
+    name = "Map: Cavity white point"
+    BM_LastEditedProp_Write(context, name, "map_cavity_white_point", getattr(self, "map_cavity_white_point"), True)
 def BM_MAP_PROPS_map_cavity_power_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_cavity_power", getattr(self, "map_cavity_power"), True)
+    name = "Map: Cavity power"
+    BM_LastEditedProp_Write(context, name, "map_cavity_power", getattr(self, "map_cavity_power"), True)
 def BM_MAP_PROPS_map_cavity_use_invert_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_cavity_use_invert", getattr(self, "map_cavity_use_invert"), True)
+    name = "Map: Cavity invert"
+    BM_LastEditedProp_Write(context, name, "map_cavity_use_invert", getattr(self, "map_cavity_use_invert"), True)
 def BM_MAP_PROPS_map_CURVATURE_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_CURVATURE_prefix", getattr(self, "map_CURVATURE_prefix"), True)
+    name = "Map: Curvature prefix"
+    BM_LastEditedProp_Write(context, name, "map_CURVATURE_prefix", getattr(self, "map_CURVATURE_prefix"), True)
 def BM_MAP_PROPS_map_curv_use_default_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_curv_use_default", getattr(self, "map_curv_use_default"), True)
+    name = "Map: Curvature default"
+    BM_LastEditedProp_Write(context, name, "map_curv_use_default", getattr(self, "map_curv_use_default"), True)
 def BM_MAP_PROPS_map_curv_samples_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_curv_samples", getattr(self, "map_curv_samples"), True)
+    name = "Map: Curvature samples"
+    BM_LastEditedProp_Write(context, name, "map_curv_samples", getattr(self, "map_curv_samples"), True)
 def BM_MAP_PROPS_map_curv_radius_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_curv_radius", getattr(self, "map_curv_radius"), True)
+    name = "Map: Curvature radius"
+    BM_LastEditedProp_Write(context, name, "map_curv_radius", getattr(self, "map_curv_radius"), True)
 def BM_MAP_PROPS_map_curv_black_point_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_curv_black_point", getattr(self, "map_curv_black_point"), True)
+    name = "Map: Curvature black point"
+    BM_LastEditedProp_Write(context, name, "map_curv_black_point", getattr(self, "map_curv_black_point"), True)
 def BM_MAP_PROPS_map_curv_mid_point_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_curv_mid_point", getattr(self, "map_curv_mid_point"), True)
+    name = "Map: Curvature mid point"
+    BM_LastEditedProp_Write(context, name, "map_curv_mid_point", getattr(self, "map_curv_mid_point"), True)
 def BM_MAP_PROPS_map_curv_white_point_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_curv_white_point", getattr(self, "map_curv_white_point"), True)
+    name = "Map: Curvature white point"
+    BM_LastEditedProp_Write(context, name, "map_curv_white_point", getattr(self, "map_curv_white_point"), True)
 def BM_MAP_PROPS_map_curv_body_gamma_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_curv_body_gamma", getattr(self, "map_curv_body_gamma"), True)
+    name = "Map: Curvature body gamma"
+    BM_LastEditedProp_Write(context, name, "map_curv_body_gamma", getattr(self, "map_curv_body_gamma"), True)
 def BM_MAP_PROPS_map_curv_use_invert_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_curv_use_invert", getattr(self, "map_curv_use_invert"), True)
+    name = "Map: Curvature invert"
+    BM_LastEditedProp_Write(context, name, "map_curv_use_invert", getattr(self, "map_curv_use_invert"), True)
 def BM_MAP_PROPS_map_THICKNESS_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_THICKNESS_prefix", getattr(self, "map_THICKNESS_prefix"), True)
+    name = "Map: Thickness prefix"
+    BM_LastEditedProp_Write(context, name, "map_THICKNESS_prefix", getattr(self, "map_THICKNESS_prefix"), True)
 def BM_MAP_PROPS_map_thick_use_default_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_thick_use_default", getattr(self, "map_thick_use_default"), True)
+    name = "Map: Thickness default"
+    BM_LastEditedProp_Write(context, name, "map_thick_use_default", getattr(self, "map_thick_use_default"), True)
 def BM_MAP_PROPS_map_thick_samples_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_thick_samples", getattr(self, "map_thick_samples"), True)
+    name = "Map: Thickness samples"
+    BM_LastEditedProp_Write(context, name, "map_thick_samples", getattr(self, "map_thick_samples"), True)
 def BM_MAP_PROPS_map_thick_distance_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_thick_distance", getattr(self, "map_thick_distance"), True)
+    name = "Map: Thickness distance"
+    BM_LastEditedProp_Write(context, name, "map_thick_distance", getattr(self, "map_thick_distance"), True)
 def BM_MAP_PROPS_map_thick_black_point_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_thick_black_point", getattr(self, "map_thick_black_point"), True)
+    name = "Map: Thickness black point"
+    BM_LastEditedProp_Write(context, name, "map_thick_black_point", getattr(self, "map_thick_black_point"), True)
 def BM_MAP_PROPS_map_thick_white_point_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_thick_white_point", getattr(self, "map_thick_white_point"), True)
+    name = "Map: Thickness white point"
+    BM_LastEditedProp_Write(context, name, "map_thick_white_point", getattr(self, "map_thick_white_point"), True)
 def BM_MAP_PROPS_map_thick_brightness_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_thick_brightness", getattr(self, "map_thick_brightness"), True)
+    name = "Map: Thickness brightness"
+    BM_LastEditedProp_Write(context, name, "map_thick_brightness", getattr(self, "map_thick_brightness"), True)
 def BM_MAP_PROPS_map_thick_contrast_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_thick_contrast", getattr(self, "map_thick_contrast"), True)
+    name = "Map: Thickness contrast"
+    BM_LastEditedProp_Write(context, name, "map_thick_contrast", getattr(self, "map_thick_contrast"), True)
 def BM_MAP_PROPS_map_thick_use_invert_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_thick_use_invert", getattr(self, "map_thick_use_invert"), True)
+    name = "Map: Thickness invert"
+    BM_LastEditedProp_Write(context, name, "map_thick_use_invert", getattr(self, "map_thick_use_invert"), True)
 def BM_MAP_PROPS_map_ID_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_ID_prefix", getattr(self, "map_ID_prefix"), True)
+    name = "Map: ID prefix"
+    BM_LastEditedProp_Write(context, name, "map_ID_prefix", getattr(self, "map_ID_prefix"), True)
 def BM_MAP_PROPS_map_matid_data_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_matid_data", getattr(self, "map_matid_data"), True)
+    name = "Map: ID data"
+    BM_LastEditedProp_Write(context, name, "map_matid_data", getattr(self, "map_matid_data"), True)
 def BM_MAP_PROPS_map_matid_vertex_groups_name_contains_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_matid_vertex_groups_name_contains", getattr(self, "map_matid_vertex_groups_name_contains"), True)
+    name = "Map: ID vertex groups name contains"
+    BM_LastEditedProp_Write(context, name, "map_matid_vertex_groups_name_contains", getattr(self, "map_matid_vertex_groups_name_contains"), True)
 def BM_MAP_PROPS_map_matid_algorithm_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_matid_algorithm", getattr(self, "map_matid_algorithm"), True)
+    name = "Map: ID algorithm"
+    BM_LastEditedProp_Write(context, name, "map_matid_algorithm", getattr(self, "map_matid_algorithm"), True)
 def BM_MAP_PROPS_map_MASK_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_MASK_prefix", getattr(self, "map_MASK_prefix"), True)
+    name = "Map: Mask prefix"
+    BM_LastEditedProp_Write(context, name, "map_MASK_prefix", getattr(self, "map_MASK_prefix"), True)
 def BM_MAP_PROPS_map_mask_data_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_mask_data", getattr(self, "map_mask_data"), True)
+    name = "Map: Mask data"
+    BM_LastEditedProp_Write(context, name, "map_mask_data", getattr(self, "map_mask_data"), True)
 def BM_MAP_PROPS_map_mask_vertex_groups_name_contains_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_mask_vertex_groups_name_contains", getattr(self, "map_mask_vertex_groups_name_contains"), True)
+    name = "Map: Mask vertex groups name contains"
+    BM_LastEditedProp_Write(context, name, "map_mask_vertex_groups_name_contains", getattr(self, "map_mask_vertex_groups_name_contains"), True)
 def BM_MAP_PROPS_map_mask_materials_name_contains_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_mask_materials_name_contains", getattr(self, "map_mask_materials_name_contains"), True)
+    name = "Map: Mask materials name contains"
+    BM_LastEditedProp_Write(context, name, "map_mask_materials_name_contains", getattr(self, "map_mask_materials_name_contains"), True)
 def BM_MAP_PROPS_map_mask_color1_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_mask_color1", getattr(self, "map_mask_color1"), True)
+    name = "Map: Mask color1"
+    BM_LastEditedProp_Write(context, name, "map_mask_color1", getattr(self, "map_mask_color1"), True)
 def BM_MAP_PROPS_map_mask_color2_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_mask_color2", getattr(self, "map_mask_color2"), True)
+    name = "Map: Mask color2"
+    BM_LastEditedProp_Write(context, name, "map_mask_color2", getattr(self, "map_mask_color2"), True)
 def BM_MAP_PROPS_map_mask_use_invert_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_mask_use_invert", getattr(self, "map_mask_use_invert"), True)
+    name = "Map: Mask invert"
+    BM_LastEditedProp_Write(context, name, "map_mask_use_invert", getattr(self, "map_mask_use_invert"), True)
 def BM_MAP_PROPS_map_XYZMASK_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_XYZMASK_prefix", getattr(self, "map_XYZMASK_prefix"), True)
+    name = "Map: XYZ Mask prefix"
+    BM_LastEditedProp_Write(context, name, "map_XYZMASK_prefix", getattr(self, "map_XYZMASK_prefix"), True)
 def BM_MAP_PROPS_map_xyzmask_use_default_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_xyzmask_use_default", getattr(self, "map_xyzmask_use_default"), True)
+    name = "Map: XYZ Mask default"
+    BM_LastEditedProp_Write(context, name, "map_xyzmask_use_default", getattr(self, "map_xyzmask_use_default"), True)
 def BM_MAP_PROPS_map_xyzmask_use_x_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_xyzmask_use_x", getattr(self, "map_xyzmask_use_x"), True)
+    name = "Map: XYZ Mask X"
+    BM_LastEditedProp_Write(context, name, "map_xyzmask_use_x", getattr(self, "map_xyzmask_use_x"), True)
 def BM_MAP_PROPS_map_xyzmask_use_y_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_xyzmask_use_y", getattr(self, "map_xyzmask_use_y"), True)
+    name = "Map: XYZ Mask Y"
+    BM_LastEditedProp_Write(context, name, "map_xyzmask_use_y", getattr(self, "map_xyzmask_use_y"), True)
 def BM_MAP_PROPS_map_xyzmask_use_z_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_xyzmask_use_z", getattr(self, "map_xyzmask_use_z"), True)
+    name = "Map: XYZ Mask Z"
+    BM_LastEditedProp_Write(context, name, "map_xyzmask_use_z", getattr(self, "map_xyzmask_use_z"), True)
 def BM_MAP_PROPS_map_xyzmask_coverage_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_xyzmask_coverage", getattr(self, "map_xyzmask_coverage"), True)
+    name = "Map: XYZ Mask coverage"
+    BM_LastEditedProp_Write(context, name, "map_xyzmask_coverage", getattr(self, "map_xyzmask_coverage"), True)
 def BM_MAP_PROPS_map_xyzmask_saturation_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_xyzmask_saturation", getattr(self, "map_xyzmask_saturation"), True)
+    name = "Map: XYZ Mask saturation"
+    BM_LastEditedProp_Write(context, name, "map_xyzmask_saturation", getattr(self, "map_xyzmask_saturation"), True)
 def BM_MAP_PROPS_map_xyzmask_opacity_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_xyzmask_opacity", getattr(self, "map_xyzmask_opacity"), True)
+    name = "Map: XYZ Mask opacity"
+    BM_LastEditedProp_Write(context, name, "map_xyzmask_opacity", getattr(self, "map_xyzmask_opacity"), True)
 def BM_MAP_PROPS_map_xyzmask_use_invert_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_xyzmask_use_invert", getattr(self, "map_xyzmask_use_invert"), True)
+    name = "Map: XYZ Mask invert"
+    BM_LastEditedProp_Write(context, name, "map_xyzmask_use_invert", getattr(self, "map_xyzmask_use_invert"), True)
 def BM_MAP_PROPS_map_GRADIENT_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_GRADIENT_prefix", getattr(self, "map_GRADIENT_prefix"), True)
+    name = "Map: Gradient Mask prefix"
+    BM_LastEditedProp_Write(context, name, "map_GRADIENT_prefix", getattr(self, "map_GRADIENT_prefix"), True)
 def BM_MAP_PROPS_map_gmask_use_default_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_gmask_use_default", getattr(self, "map_gmask_use_default"), True)
+    name = "Map: Gradient Mask default"
+    BM_LastEditedProp_Write(context, name, "map_gmask_use_default", getattr(self, "map_gmask_use_default"), True)
 def BM_MAP_PROPS_map_gmask_type_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_gmask_type", getattr(self, "map_gmask_type"), True)
+    name = "Map: Gradient Mask type"
+    BM_LastEditedProp_Write(context, name, "map_gmask_type", getattr(self, "map_gmask_type"), True)
 def BM_MAP_PROPS_map_gmask_location_x_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_gmask_location_x", getattr(self, "map_gmask_location_x"), True)
+    name = "Map: Gradient Mask location x"
+    BM_LastEditedProp_Write(context, name, "map_gmask_location_x", getattr(self, "map_gmask_location_x"), True)
 def BM_MAP_PROPS_map_gmask_location_y_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_gmask_location_y", getattr(self, "map_gmask_location_y"), True)
+    name = "Map: Gradient Mask location y"
+    BM_LastEditedProp_Write(context, name, "map_gmask_location_y", getattr(self, "map_gmask_location_y"), True)
 def BM_MAP_PROPS_map_gmask_location_z_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_gmask_location_z", getattr(self, "map_gmask_location_z"), True)
+    name = "Map: Gradient Mask location z"
+    BM_LastEditedProp_Write(context, name, "map_gmask_location_z", getattr(self, "map_gmask_location_z"), True)
 def BM_MAP_PROPS_map_gmask_rotation_x_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_gmask_rotation_x", getattr(self, "map_gmask_rotation_x"), True)
+    name = "Map: Gradient Mask rotation x"
+    BM_LastEditedProp_Write(context, name, "map_gmask_rotation_x", getattr(self, "map_gmask_rotation_x"), True)
 def BM_MAP_PROPS_map_gmask_rotation_y_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_gmask_rotation_y", getattr(self, "map_gmask_rotation_y"), True)
+    name = "Map: Gradient Mask rotation y"
+    BM_LastEditedProp_Write(context, name, "map_gmask_rotation_y", getattr(self, "map_gmask_rotation_y"), True)
 def BM_MAP_PROPS_map_gmask_rotation_z_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_gmask_rotation_z", getattr(self, "map_gmask_rotation_z"), True)
+    name = "Map: Gradient Mask rotation z"
+    BM_LastEditedProp_Write(context, name, "map_gmask_rotation_z", getattr(self, "map_gmask_rotation_z"), True)
 def BM_MAP_PROPS_map_gmask_scale_x_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_gmask_scale_x", getattr(self, "map_gmask_scale_x"), True)
+    name = "Map: Gradient Mask scale x"
+    BM_LastEditedProp_Write(context, name, "map_gmask_scale_x", getattr(self, "map_gmask_scale_x"), True)
 def BM_MAP_PROPS_map_gmask_scale_y_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_gmask_scale_y", getattr(self, "map_gmask_scale_y"), True)
+    name = "Map: Gradient Mask scale y"
+    BM_LastEditedProp_Write(context, name, "map_gmask_scale_y", getattr(self, "map_gmask_scale_y"), True)
 def BM_MAP_PROPS_map_gmask_scaly_z_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_gmask_scaly_z", getattr(self, "map_gmask_scaly_z"), True)
+    name = "Map: Gradient Mask scale z"
+    BM_LastEditedProp_Write(context, name, "map_gmask_scaly_z", getattr(self, "map_gmask_scaly_z"), True)
 def BM_MAP_PROPS_map_gmask_coverage_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_gmask_coverage", getattr(self, "map_gmask_coverage"), True)
+    name = "Map: Gradient Mask coverage"
+    BM_LastEditedProp_Write(context, name, "map_gmask_coverage", getattr(self, "map_gmask_coverage"), True)
 def BM_MAP_PROPS_map_gmask_contrast_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_gmask_contrast", getattr(self, "map_gmask_contrast"), True)
+    name = "Map: Gradient Mask contrast"
+    BM_LastEditedProp_Write(context, name, "map_gmask_contrast", getattr(self, "map_gmask_contrast"), True)
 def BM_MAP_PROPS_map_gmask_saturation_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_gmask_saturation", getattr(self, "map_gmask_saturation"), True)
+    name = "Map: Gradient Mask saturation"
+    BM_LastEditedProp_Write(context, name, "map_gmask_saturation", getattr(self, "map_gmask_saturation"), True)
 def BM_MAP_PROPS_map_gmask_opacity_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_gmask_opacity", getattr(self, "map_gmask_opacity"), True)
+    name = "Map: Gradient Mask opacity"
+    BM_LastEditedProp_Write(context, name, "map_gmask_opacity", getattr(self, "map_gmask_opacity"), True)
 def BM_MAP_PROPS_map_gmask_use_invert_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_gmask_use_invert", getattr(self, "map_gmask_use_invert"), True)
+    name = "Map: Gradient Mask invert"
+    BM_LastEditedProp_Write(context, name, "map_gmask_use_invert", getattr(self, "map_gmask_use_invert"), True)
 def BM_MAP_PROPS_map_EDGE_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_EDGE_prefix", getattr(self, "map_EDGE_prefix"), True)
+    name = "Map: Edge Mask prefix"
+    BM_LastEditedProp_Write(context, name, "map_EDGE_prefix", getattr(self, "map_EDGE_prefix"), True)
 def BM_MAP_PROPS_map_edgemask_use_default_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_edgemask_use_default", getattr(self, "map_edgemask_use_default"), True)
+    name = "Map: Edge Mask default"
+    BM_LastEditedProp_Write(context, name, "map_edgemask_use_default", getattr(self, "map_edgemask_use_default"), True)
 def BM_MAP_PROPS_map_edgemask_samples_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_edgemask_samples", getattr(self, "map_edgemask_samples"), True)
+    name = "Map: Edge Mask samples"
+    BM_LastEditedProp_Write(context, name, "map_edgemask_samples", getattr(self, "map_edgemask_samples"), True)
 def BM_MAP_PROPS_map_edgemask_radius_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_edgemask_radius", getattr(self, "map_edgemask_radius"), True)
+    name = "Map: Edge Mask radius"
+    BM_LastEditedProp_Write(context, name, "map_edgemask_radius", getattr(self, "map_edgemask_radius"), True)
 def BM_MAP_PROPS_map_edgemask_edge_contrast_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_edgemask_edge_contrast", getattr(self, "map_edgemask_edge_contrast"), True)
+    name = "Map: Edge Mask edge contrast"
+    BM_LastEditedProp_Write(context, name, "map_edgemask_edge_contrast", getattr(self, "map_edgemask_edge_contrast"), True)
 def BM_MAP_PROPS_map_edgemask_body_contrast_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_edgemask_body_contrast", getattr(self, "map_edgemask_body_contrast"), True)
+    name = "Map: Edge Mask body contrast"
+    BM_LastEditedProp_Write(context, name, "map_edgemask_body_contrast", getattr(self, "map_edgemask_body_contrast"), True)
 def BM_MAP_PROPS_map_edgemask_use_invert_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_edgemask_use_invert", getattr(self, "map_edgemask_use_invert"), True)
+    name = "Map: Edge Mask invert"
+    BM_LastEditedProp_Write(context, name, "map_edgemask_use_invert", getattr(self, "map_edgemask_use_invert"), True)
 def BM_MAP_PROPS_map_WIREFRAME_prefix_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_WIREFRAME_prefix", getattr(self, "map_WIREFRAME_prefix"), True)
+    name = "Map: Wireframe prefix"
+    BM_LastEditedProp_Write(context, name, "map_WIREFRAME_prefix", getattr(self, "map_WIREFRAME_prefix"), True)
 def BM_MAP_PROPS_map_wireframe_line_thickness_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_wireframe_line_thickness", getattr(self, "map_wireframe_line_thickness"), True)
+    name = "Map: Wireframe line thickness"
+    BM_LastEditedProp_Write(context, name, "map_wireframe_line_thickness", getattr(self, "map_wireframe_line_thickness"), True)
 def BM_MAP_PROPS_map_wireframe_use_invert_Update(self, context):
-    BM_LastEditedProp_Write(context, "map_wireframe_use_invert", getattr(self, "map_wireframe_use_invert"), True)
+    name = "Map: Wireframe invert"
+    BM_LastEditedProp_Write(context, name, "map_wireframe_use_invert", getattr(self, "map_wireframe_use_invert"), True)
 
 def BM_ITEM_PROPS_global_use_bake_Update(self, context):
-    BM_LastEditedProp_Write(context, "global_use_bake", getattr(self, "global_use_bake"), False)
+    name = "Object: Use in bake"
+    BM_LastEditedProp_Write(context, name, "global_use_bake", getattr(self, "global_use_bake"), False)
 def BM_ITEM_PROPS_decal_use_custom_camera_Update(self, context):
-    BM_LastEditedProp_Write(context, "decal_use_custom_camera", getattr(self, "decal_use_custom_camera"), False)
+    name = "Object Decal: Use custom camera"
+    BM_LastEditedProp_Write(context, name, "decal_use_custom_camera", getattr(self, "decal_use_custom_camera"), False)
 def BM_ITEM_PROPS_decal_custom_camera_Update(self, context):
-    BM_LastEditedProp_Write(context, "decal_custom_camera", getattr(self, "decal_custom_camera"), False)
+    name = "Object Decal: Custom camera"
+    BM_LastEditedProp_Write(context, name, "decal_custom_camera", getattr(self, "decal_custom_camera"), False)
 def BM_ITEM_PROPS_decal_upper_coordinate_Update(self, context):
-    BM_LastEditedProp_Write(context, "decal_upper_coordinate", getattr(self, "decal_upper_coordinate"), False)
+    name = "Object Decal: Upper coordinate"
+    BM_LastEditedProp_Write(context, name, "decal_upper_coordinate", getattr(self, "decal_upper_coordinate"), False)
 def BM_ITEM_PROPS_decal_boundary_offsest_Update(self, context):
-    BM_LastEditedProp_Write(context, "decal_boundary_offsest", getattr(self, "decal_boundary_offsest"), False)
+    name = "Object Decal: Boundary offset"
+    BM_LastEditedProp_Write(context, name, "decal_boundary_offsest", getattr(self, "decal_boundary_offsest"), False)
 def BM_ITEM_PROPS_hl_decals_use_separate_texset_Update(self, context):
-    BM_LastEditedProp_Write(context, "hl_decals_use_separate_texset", getattr(self, "hl_decals_use_separate_texset"), False)
+    name = "Object High to Lowpoly: Use separate texset for decals"
+    BM_LastEditedProp_Write(context, name, "hl_decals_use_separate_texset", getattr(self, "hl_decals_use_separate_texset"), False)
 def BM_ITEM_PROPS_hl_cage_type_Update(self, context):
-    BM_LastEditedProp_Write(context, "hl_cage_type", getattr(self, "hl_cage_type"), False)
+    name = "Object High to Lowpoly: Cage type"
+    BM_LastEditedProp_Write(context, name, "hl_cage_type", getattr(self, "hl_cage_type"), False)
 def BM_ITEM_PROPS_hl_cage_extrusion_Update(self, context):
-    BM_LastEditedProp_Write(context, "hl_cage_extrusion", getattr(self, "hl_cage_extrusion"), False)
+    name = "Object High to Lowpoly: Cage extrusion"
+    BM_LastEditedProp_Write(context, name, "hl_cage_extrusion", getattr(self, "hl_cage_extrusion"), False)
 def BM_ITEM_PROPS_hl_max_ray_distance(self, context):
-    BM_LastEditedProp_Write(context, "hl_max_ray_d", getattr(self, "hl_max_ray_d"), False)
+    name = "Object High to Lowpoly: Max ray distance"
+    BM_LastEditedProp_Write(context, name, "hl_max_ray_d", getattr(self, "hl_max_ray_d"), False)
 def BM_ITEM_PROPS_uv_bake_data_Update(self, context):
-    BM_LastEditedProp_Write(context, "uv_bake_data", getattr(self, "uv_bake_data"), False)
+    name = "Object UVs & Layers: Bake data"
+    BM_LastEditedProp_Write(context, name, "uv_bake_data", getattr(self, "uv_bake_data"), False)
 def BM_ITEM_PROPS_uv_bake_target_Update(self, context):
-    BM_LastEditedProp_Write(context, "uv_bake_target", getattr(self, "uv_bake_target"), False)
+    name = "Object UVs & Layers: Bake target"
+    BM_LastEditedProp_Write(context, name, "uv_bake_target", getattr(self, "uv_bake_target"), False)
 def BM_ITEM_PROPS_uv_type_Update(self, context):
-    BM_LastEditedProp_Write(context, "uv_type", getattr(self, "uv_type"), False)
+    name = "Object UVs & Layers: UV type"
+    BM_LastEditedProp_Write(context, name, "uv_type", getattr(self, "uv_type"), False)
 def BM_ITEM_PROPS_uv_snap_islands_to_pixels_Update(self, context):
-    BM_LastEditedProp_Write(context, "uv_snap_islands_to_pixels", getattr(self, "uv_snap_islands_to_pixels"), False)
+    name = "Object UVs & Layers: Snap UV islands to pixels"
+    BM_LastEditedProp_Write(context, name, "uv_snap_islands_to_pixels", getattr(self, "uv_snap_islands_to_pixels"), False)
 def BM_ITEM_PROPS_uv_use_auto_unwrap_Update(self, context):
-    BM_LastEditedProp_Write(context, "uv_use_auto_unwrap", getattr(self, "uv_use_auto_unwrap"), False)
+    name = "Object UVs & Layers: Auto unwrap"
+    BM_LastEditedProp_Write(context, name, "uv_use_auto_unwrap", getattr(self, "uv_use_auto_unwrap"), False)
 def BM_ITEM_PROPS_uv_auto_unwrap_angle_limit_Update(self, context):
-    BM_LastEditedProp_Write(context, "uv_auto_unwrap_angle_limit", getattr(self, "uv_auto_unwrap_angle_limit"), False)
+    name = "Object UVs & Layers: Auto unwrap angle limit"
+    BM_LastEditedProp_Write(context, name, "uv_auto_unwrap_angle_limit", getattr(self, "uv_auto_unwrap_angle_limit"), False)
 def BM_ITEM_PROPS_uv_auto_unwrap_islands_margin_Update(self, context):
-    BM_LastEditedProp_Write(context, "uv_auto_unwrap_islands_margin", getattr(self, "uv_auto_unwrap_islands_margin"), False)
+    name = "Object UVs & Layers: Auto unwrap islands margin"
+    BM_LastEditedProp_Write(context, name, "uv_auto_unwrap_islands_margin", getattr(self, "uv_auto_unwrap_islands_margin"), False)
 def BM_ITEM_PROPS_uv_auto_unwrap_use_scale_to_bounds_Update(self, context):
-    BM_LastEditedProp_Write(context, "uv_auto_unwrap_use_scale_to_bounds", getattr(self, "uv_auto_unwrap_use_scale_to_bounds"), False)
+    name = "Object UVs & Layers: Auto unwrap scale to bounds"
+    BM_LastEditedProp_Write(context, name, "uv_auto_unwrap_use_scale_to_bounds", getattr(self, "uv_auto_unwrap_use_scale_to_bounds"), False)
 def BM_ITEM_PROPS_out_use_denoise_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_use_denoise", getattr(self, "out_use_denoise"), False)
+    name = "Object Format: Denoise"
+    BM_LastEditedProp_Write(context, name, "out_use_denoise", getattr(self, "out_use_denoise"), False)
 def BM_ITEM_PROPS_out_file_format_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_file_format", getattr(self, "out_file_format"), False)
+    name = "Object Format: File Format"
+    BM_LastEditedProp_Write(context, name, "out_file_format", getattr(self, "out_file_format"), False)
 def BM_ITEM_PROPS_out_exr_codec_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_exr_codec", getattr(self, "out_exr_codec"), False)
-def BM_ITEM_PROPS_out_compressio_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_compressio", getattr(self, "out_compressio"), False)
+    name = "Object Format: Exr codec"
+    BM_LastEditedProp_Write(context, name, "out_exr_codec", getattr(self, "out_exr_codec"), False)
+def BM_ITEM_PROPS_out_compression_Update(self, context):
+    name = "Object Format: Compression"
+    BM_LastEditedProp_Write(context, name, "out_compressio", getattr(self, "out_compressio"), False)
 def BM_ITEM_PROPS_out_res_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_res", getattr(self, "out_res"), False)
+    name = "Object Format: Resolution"
+    BM_LastEditedProp_Write(context, name, "out_res", getattr(self, "out_res"), False)
 def BM_ITEM_PROPS_out_res_height_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_res_height", getattr(self, "out_res_height"), False)
+    name = "Object Format: Custom height"
+    BM_LastEditedProp_Write(context, name, "out_res_height", getattr(self, "out_res_height"), False)
 def BM_ITEM_PROPS_out_res_width_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_res_width", getattr(self, "out_res_width"), False)
+    name = "Object Format: Custom width"
+    BM_LastEditedProp_Write(context, name, "out_res_width", getattr(self, "out_res_width"), False)
 def BM_ITEM_PROPS_out_margin_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_margin", getattr(self, "out_margin"), False)
+    name = "Object Format: Margin"
+    BM_LastEditedProp_Write(context, name, "out_margin", getattr(self, "out_margin"), False)
 def BM_ITEM_PROPS_out_margin_type_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_margin_type", getattr(self, "out_margin_type"), False)
+    name = "Object Format: Margin type"
+    BM_LastEditedProp_Write(context, name, "out_margin_type", getattr(self, "out_margin_type"), False)
 def BM_ITEM_PROPS_out_use_32bit_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_use_32bit", getattr(self, "out_use_32bit"), False)
+    name = "Object Format: 32bit float"
+    BM_LastEditedProp_Write(context, name, "out_use_32bit", getattr(self, "out_use_32bit"), False)
 def BM_ITEM_PROPS_out_use_alpha_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_use_alpha", getattr(self, "out_use_alpha"), False)
+    name = "Object Format: Alpha"
+    BM_LastEditedProp_Write(context, name, "out_use_alpha", getattr(self, "out_use_alpha"), False)
 def BM_ITEM_PROPS_out_use_transbg_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_use_transbg", getattr(self, "out_use_transbg"), False)
+    name = "Object Format: Transparent bg"
+    BM_LastEditedProp_Write(context, name, "out_use_transbg", getattr(self, "out_use_transbg"), False)
 def BM_ITEM_PROPS_out_udim_start_tile_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_udim_start_tile", getattr(self, "out_udim_start_tile"), False)
+    name = "Object Format: UDIM start tile"
+    BM_LastEditedProp_Write(context, name, "out_udim_start_tile", getattr(self, "out_udim_start_tile"), False)
 def BM_ITEM_PROPS_out_udim_end_tile_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_udim_end_tile", getattr(self, "out_udim_end_tile"), False)
+    name = "Object Format: UDIM end tile"
+    BM_LastEditedProp_Write(context, name, "out_udim_end_tile", getattr(self, "out_udim_end_tile"), False)
 def BM_ITEM_PROPS_out_super_sampling_aa_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_super_sampling_aa", getattr(self, "out_super_sampling_aa"), False)
+    name = "Object Format: SuperSampling AA"
+    BM_LastEditedProp_Write(context, name, "out_super_sampling_aa", getattr(self, "out_super_sampling_aa"), False)
 def BM_ITEM_PROPS_out_samples(self, context):
-    BM_LastEditedProp_Write(context, "out_", getattr(self, "out_"), False)
+    name = "Object Format: Bake samples"
+    BM_LastEditedProp_Write(context, name, "out_", getattr(self, "out_"), False)
 def BM_ITEM_PROPS_out_use_adaptive_sampling_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_use_adaptive_sampling", getattr(self, "out_use_adaptive_sampling"), False)
+    name = "Object Format: Adaptive sampling"
+    BM_LastEditedProp_Write(context, name, "out_use_adaptive_sampling", getattr(self, "out_use_adaptive_sampling"), False)
 def BM_ITEM_PROPS_out_adaptive_threshold_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_adaptive_threshold", getattr(self, "out_adaptive_threshold"), False)
+    name = "Object Format: Adaptive threshold"
+    BM_LastEditedProp_Write(context, name, "out_adaptive_threshold", getattr(self, "out_adaptive_threshold"), False)
 def BM_ITEM_PROPS_out_min_samples_Update(self, context):
-    BM_LastEditedProp_Write(context, "out_min_samples", getattr(self, "out_min_samples"), False)
+    name = "Object Format: Bake min samples"
+    BM_LastEditedProp_Write(context, name, "out_min_samples", getattr(self, "out_min_samples"), False)
 def BM_ITEM_PROPS_csh_use_triangulate_lowpoly_Update(self, context):
-    BM_LastEditedProp_Write(context, "csh_use_triangulate_lowpoly", getattr(self, "csh_use_triangulate_lowpoly"), False)
+    name = "Object Shading: Triangulate lowpoly"
+    BM_LastEditedProp_Write(context, name, "csh_use_triangulate_lowpoly", getattr(self, "csh_use_triangulate_lowpoly"), False)
 def BM_ITEM_PROPS_csh_use_lowpoly_reset_normals_Update(self, context):
-    BM_LastEditedProp_Write(context, "csh_use_lowpoly_reset_normals", getattr(self, "csh_use_lowpoly_reset_normals"), False)
+    name = "Object Shading: Reset lowpoly normals"
+    BM_LastEditedProp_Write(context, name, "csh_use_lowpoly_reset_normals", getattr(self, "csh_use_lowpoly_reset_normals"), False)
 def BM_ITEM_PROPS_csh_lowpoly_use_smooth_Update(self, context):
-    BM_LastEditedProp_Write(context, "csh_lowpoly_use_smooth", getattr(self, "csh_lowpoly_use_smooth"), False)
+    name = "Object Shading: Smooth lowpoly"
+    BM_LastEditedProp_Write(context, name, "csh_lowpoly_use_smooth", getattr(self, "csh_lowpoly_use_smooth"), False)
 def BM_ITEM_PROPS_csh_lowpoly_smoothing_groups_enum_Update(self, context):
-    BM_LastEditedProp_Write(context, "csh_lowpoly_smoothing_groups_enum", getattr(self, "csh_lowpoly_smoothing_groups_enum"), False)
+    name = "Object Shading: Lowpoly smoothing type"
+    BM_LastEditedProp_Write(context, name, "csh_lowpoly_smoothing_groups_enum", getattr(self, "csh_lowpoly_smoothing_groups_enum"), False)
 def BM_ITEM_PROPS_csh_lowpoly_smoothing_groups_angle_Update(self, context):
-    BM_LastEditedProp_Write(context, "csh_lowpoly_smoothing_groups_angle", getattr(self, "csh_lowpoly_smoothing_groups_angle"), False)
+    name = "Object Shading: Lowpoly auto smooth angle"
+    BM_LastEditedProp_Write(context, name, "csh_lowpoly_smoothing_groups_angle", getattr(self, "csh_lowpoly_smoothing_groups_angle"), False)
 def BM_ITEM_PROPS_csh_lowpoly_smoothing_groups_name_contains_Update(self, context):
-    BM_LastEditedProp_Write(context, "csh_lowpoly_smoothing_groups_name_contains", getattr(self, "csh_lowpoly_smoothing_groups_name_contains"), False)
+    name = "Object Shading: Lowpoly vertex groups name contains"
+    BM_LastEditedProp_Write(context, name, "csh_lowpoly_smoothing_groups_name_contains", getattr(self, "csh_lowpoly_smoothing_groups_name_contains"), False)
 def BM_ITEM_PROPS_use_highpoly_reset_normals_Update(self, context):
-    BM_LastEditedProp_Write(context, "use_highpoly_reset_normals", getattr(self, "use_highpoly_reset_normals"), False)
+    name = "Object Shading: Reset highpoly normals"
+    BM_LastEditedProp_Write(context, name, "use_highpoly_reset_normals", getattr(self, "use_highpoly_reset_normals"), False)
 def BM_ITEM_PROPS_csh_highpoly_use_smooth_Update(self, context):
-    BM_LastEditedProp_Write(context, "csh_highpoly_use_smooth", getattr(self, "csh_highpoly_use_smooth"), False)
+    name = "Object Shading: Smooth highpoly"
+    BM_LastEditedProp_Write(context, name, "csh_highpoly_use_smooth", getattr(self, "csh_highpoly_use_smooth"), False)
 def BM_ITEM_PROPS_csh_highpoly_smoothing_grousp_enum_Update(self, context):
-    BM_LastEditedProp_Write(context, "csh_highpoly_smoothing_grousp_enum", getattr(self, "csh_highpoly_smoothing_grousp_enum"), False)
+    name = "Object Shading: Highpoly smoothing type"
+    BM_LastEditedProp_Write(context, name, "csh_highpoly_smoothing_grousp_enum", getattr(self, "csh_highpoly_smoothing_grousp_enum"), False)
 def BM_ITEM_PROPS_csh_highpoly_smoothing_groups_angle_Update(self, context):
-    BM_LastEditedProp_Write(context, "csh_highpoly_smoothing_groups_angle", getattr(self, "csh_highpoly_smoothing_groups_angle"), False)
+    name = "Object Shading: Highpoly auto smooth angle"
+    BM_LastEditedProp_Write(context, name, "csh_highpoly_smoothing_groups_angle", getattr(self, "csh_highpoly_smoothing_groups_angle"), False)
 def BM_ITEM_PROPS_csh_highpoly_smoothing_groups_name_contains_Update(self, context):
-    BM_LastEditedProp_Write(context, "csh_highpoly_smoothing_groups_name_contains", getattr(self, "csh_highpoly_smoothing_groups_name_contains"), False)
+    name = "Object Shading: Highpoly vertex groups name contains"
+    BM_LastEditedProp_Write(context, name, "csh_highpoly_smoothing_groups_name_contains", getattr(self, "csh_highpoly_smoothing_groups_name_contains"), False)
 def BM_ITEM_PROPS_bake_save_internal_Update(self, context):
-    BM_LastEditedProp_Write(context, "bake_save_internal", getattr(self, "bake_save_internal"), False)
+    name = "Object Bake Output: Save internally"
+    BM_LastEditedProp_Write(context, name, "bake_save_internal", getattr(self, "bake_save_internal"), False)
 def BM_ITEM_PROPS_bake_output_filepath_Update(self, context):
-    BM_LastEditedProp_Write(context, "bake_output_filepath", getattr(self, "bake_output_filepath"), False)
+    name = "Object Bake Output: Filepath"
+    BM_LastEditedProp_Write(context, name, "bake_output_filepath", getattr(self, "bake_output_filepath"), False)
 def BM_ITEM_PROPS_bake_create_subfolder_Update(self, context):
-    BM_LastEditedProp_Write(context, "bake_create_subfolder", getattr(self, "bake_create_subfolder"), False)
+    name = "Object Bake Output: Create subfolder"
+    BM_LastEditedProp_Write(context, name, "bake_create_subfolder", getattr(self, "bake_create_subfolder"), False)
 def BM_ITEM_PROPS_bake_subfolder_name_Update(self, context):
-    BM_LastEditedProp_Write(context, "bake_subfolder_name", getattr(self, "bake_subfolder_name"), False)
+    name = "Object Bake Output: Subfolder name"
+    BM_LastEditedProp_Write(context, name, "bake_subfolder_name", getattr(self, "bake_subfolder_name"), False)
 def BM_ITEM_PROPS_bake_batchname_Update(self, context):
-    BM_LastEditedProp_Write(context, "bake_batchname", getattr(self, "bake_batchname"), False)
+    name = "Object Bake Output: Batch name"
+    BM_LastEditedProp_Write(context, name, "bake_batchname", getattr(self, "bake_batchname"), False)
 def BM_ITEM_PROPS_bake_create_material_Update(self, context):
-    BM_LastEditedProp_Write(context, "bake_create_material", getattr(self, "bake_create_material"), False)
+    name = "Object Bake Output: Create material"
+    BM_LastEditedProp_Write(context, name, "bake_create_material", getattr(self, "bake_create_material"), False)
 def BM_ITEM_PROPS_bake_device_Update(self, context):
-    BM_LastEditedProp_Write(context, "bake_device", getattr(self, "bake_device"), False)
+    name = "Object Bake Output: Device"
+    BM_LastEditedProp_Write(context, name, "bake_device", getattr(self, "bake_device"), False)
 
 ###############################################################
 ###############################################################
