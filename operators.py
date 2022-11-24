@@ -1314,21 +1314,63 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
 
         return {'FINISHED'}
 
+class BM_OT_ApplyLastEditedProp_SelectAll(bpy.types.Operator):
+    bl_label = "Select All"
+    bl_idname = "bakemaster.apply_proprety_selectall"
+    bl_description = "Select all Items"
+    bl_options = {'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        bm_props = context.scene.bm_props
+        object = BM_Object_Get(context)[0]
+        prop_is_map = context.scene.bm_props.global_last_edited_prop_is_map
+        
+        # invert selection of maps
+        if prop_is_map and bm_props.global_alep_affect_objects is False and len(object.global_maps):
+            for map_item in bm_props.global_alep_maps:
+                map_item.use_affect = True
+            
+        # invert selection of objects
+        if (prop_is_map and bm_props.global_alep_affect_objects) or prop_is_map is False:
+            for object_item in bm_props.global_alep_objects:
+                object_item.use_affect = True
+
+        return {'FINISHED'}
+
+class BM_OT_ApplyLastEditedProp_InvertSelection(bpy.types.Operator):
+    bl_label = "Invert"
+    bl_idname = "bakemaster.apply_proprety_invert"
+    bl_description = "Invert selection of Items"
+    bl_options = {'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        bm_props = context.scene.bm_props
+        object = BM_Object_Get(context)[0]
+        prop_is_map = context.scene.bm_props.global_last_edited_prop_is_map
+        
+        # invert selection of maps
+        if prop_is_map and bm_props.global_alep_affect_objects is False and len(object.global_maps):
+            for map_item in bm_props.global_alep_maps:
+                map_item.use_affect = False if map_item.use_affect else True
+            
+        # invert selection of objects
+        if (prop_is_map and bm_props.global_alep_affect_objects) or prop_is_map is False:
+            for object_item in bm_props.global_alep_objects:
+                object_item.use_affect = False if object_item.use_affect else True
+
+        return {'FINISHED'}
+
 class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
     bl_label = "Apply Lastly Edited Property"
     bl_idname = "bakemaster.apply_proprety"
     bl_description = "Select maps or objects to apply value of lastly edited property for"
     bl_options = {'UNDO'}
 
-    global_affect_objects : bpy.props.BoolProperty(
-        name="Affect Objects",
-        description="Apply property to all maps of chosen objects",
-        default=False)
-
     def execute(self, context):
         return {'FINISHED'}
 
     def draw(self, context):
+        bm_props = context.scene.bm_props
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False
@@ -1339,26 +1381,136 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
         prop_is_map = context.scene.bm_props.global_last_edited_prop_is_map
 
         object = BM_Object_Get(context)[0]
-        if prop_is_map:
-            if len(object.global_maps):
-                container = BM_Map_Get(object)
-            else:
-                container = None
-        else:
-            container = object
 
         column = layout.column(align=True)
         column.label(text="Proprety:")
         column.label(text=prop_name)
-        #column.label(text=prop_value)
 
-        column = layout.column()
         if prop_is_map:
-            column.prop(self, "global_affect_objects")
+            layout.prop(bm_props, "global_alep_affect_objects")
+
+        items_box = layout.box()
+        items_box.use_property_split = True
+        items_box.use_property_decorate = False
+        if prop_is_map:
+            if bm_props.global_alep_affect_objects is False and len(object.global_maps):
+                rows = len(bm_props.global_alep_maps)
+
+                #items_box.template_list('BM_ALEP_UL_Maps_Item', "", bm_props, 'global_alep_maps', bm_props, 'global_alep_maps_active_index', rows=rows)
+                table = items_box.column().row()
+                table.template_list('BM_ALEP_UL_Maps_Item', "", bm_props, 'global_alep_maps', bm_props, 'global_alep_maps_active_index', rows=rows)
+                column = table.column(align=True)
+                column.operator(BM_OT_ApplyLastEditedProp_SelectAll.bl_idname, text="", icon='WORLD')
+                column.operator(BM_OT_ApplyLastEditedProp_InvertSelection.bl_idname, text="", icon='CHECKBOX_HLT')
+
+            elif len(object.global_maps) == 0:
+                items_box.label(text="Object has no maps")
+
+        if (prop_is_map and bm_props.global_alep_affect_objects) or prop_is_map is False:
+            rows = len(bm_props.global_alep_objects)
+
+            #items_box.template_list('BM_ALEP_UL_Objects_Item', "", bm_props, 'global_alep_objects', bm_props, 'global_alep_objects_active_index', rows=rows)
+            table = items_box.column().row()
+            table.template_list('BM_ALEP_UL_Objects_Item', "", bm_props, 'global_alep_objects', bm_props, 'global_alep_objects_active_index', rows=rows)
+            column = table.column(align=True)
+            column.operator(BM_OT_ApplyLastEditedProp_SelectAll.bl_idname, text="", icon='WORLD')
+            column.operator(BM_OT_ApplyLastEditedProp_InvertSelection.bl_idname, text="", icon='CHECKBOX_HLT')
+
 
     def invoke(self, context, event):
+        bm_props = context.scene.bm_props
+        prop = context.scene.bm_props.global_last_edited_prop
+        prop_name = context.scene.bm_props.global_last_edited_prop_name
+        prop_value = context.scene.bm_props.global_last_edited_prop_value
+        prop_is_map = context.scene.bm_props.global_last_edited_prop_is_map
+
+        # trash all maps and objects items
+        bm_props.global_alep_maps_active_index = 0
+        to_remove = []
+        for index, _ in enumerate(bm_props.global_alep_maps):
+            to_remove.append(index)
+        for index in sorted(to_remove, reverse=True):
+            bm_props.global_alep_maps.remove(index)
+
+        bm_props.global_alep_objects_active_index = 0
+        to_remove = []
+        for index, _ in enumerate(bm_props.global_alep_objects):
+            to_remove.append(index)
+        for index in sorted(to_remove, reverse=True):
+            bm_props.global_alep_objects.remove(index)
+
+        # construct maps and objects items
+        maps_names = {
+            'ALBEDO' : "Albedo",
+            'METALNESS' : "Metalness",
+            'ROUGHNESS' : "Roughness",
+            'DIFFUSE' : "Diffuse",
+            'SPECULAR' : "Specular",
+            'GLOSSINESS' : "Glossiness",
+            'OPACITY' : "Opacity",
+            'EMISSION' : "Emission/Lightmap",
+
+            'NORMAL' : "Normal",
+            'DISPLACEMENT' : "Displacement",
+            'VECTOR_DISPLACEMENT' : "Vector Displacement",
+            'POSITION' : "Position",
+            'AO' : "AO",
+            'CAVITY' : "Cavity",
+            'CURVATURE' : "Curvature",
+            'THICKNESS' : "Thickness",
+            'ID' : "Material ID",
+            'MASK' : "Mask",
+            'XYZMASK' : "XYZ Mask",  
+            'GRADIENT' : "Gradient Mask",
+            'EDGE' : "Edge Mask",
+            'WIREFRAME' : "Wireframe Mask",
+
+            'PASS' : "BSDF Pass",
+            'VERTEX_COLOR_LAYER' : "VertexColor Layer",
+            'C_COMBINED' : "Combined",
+            'C_AO' : "Ambient Occlusion",
+            'C_SHADOW' : "Shadow",  
+            'C_NORMAL' : "Normal",
+            'C_UV' : "UV",
+            'C_ROUGHNESS' : "Roughness",
+            'C_EMIT' : "Emit",
+            'C_ENVIRONMENT' : "Environment",
+            'C_DIFFUSE' : "Diffuse",
+            'C_GLOSSY' : "Glossy",
+            'C_TRANSMISSION' : "Transmission",
+        }                  
+        
+        object = BM_Object_Get(context)[0]
+        for map in object.global_maps:
+            new_map = bm_props.global_alep_maps.add()
+            new_map.map_name = "{} {}".format(map.global_map_index, maps_names[map.global_map_type])
+
+        global_uni_c_master_index = -1
+        for object1 in context.scene.bm_table_of_objects:
+            add_object = False
+            if context.scene.bm_props.global_use_name_matching:
+                if object1.nm_is_universal_container and object1.nm_uni_container_is_global is False:
+                    global_uni_c_master_index = -1
+                if object1.nm_is_detached:
+                    add_object = True
+                elif object1.nm_is_universal_container and object1.nm_uni_container_is_global:
+                    add_object = True
+                    global_uni_c_master_index = object1.nm_master_index
+                elif not any([object1.hl_is_highpoly, object1.hl_is_cage, object1.nm_item_uni_container_master_index == global_uni_c_master_index, object1.nm_is_local_container]) and object1.nm_item_uni_container_master_index != -1:
+                    add_object = True
+            elif not any([object1.hl_is_highpoly, object1.hl_is_cage]):
+                add_object = True
+            
+            if add_object:
+                new_object = bm_props.global_alep_objects.add()
+                if object1.nm_is_universal_container:
+                    new_object_name = object1.nm_container_name + " Container"
+                else:
+                    new_object_name = object1.global_object_name
+                new_object.object_name = new_object_name
+
         wm = context.window_manager
-        return wm.invoke_props_dialog(self)
+        return wm.invoke_props_dialog(self, width=300)
 
 class BM_OT_Help(bpy.types.Operator):
     bl_label = "BakeMaster Help"
