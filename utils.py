@@ -1400,6 +1400,9 @@ def BM_ActiveIndexUpdate(self, context):
             source_object.select_set(True)
             context.view_layer.objects.active = source_object
 
+def BM_LastEditedProp_Write(context, value):
+    context.scene.bm_props.global_last_edited_prop = value
+
 def BM_Table_of_Objects_GetFTL(context, items, bitflag_filter_item):
         # default return values
         ftl_flags = []
