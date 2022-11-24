@@ -1367,6 +1367,80 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
     bl_options = {'UNDO'}
 
     def execute(self, context):
+        bm_props = context.scene.bm_props
+
+        prop = context.scene.bm_props.global_last_edited_prop
+        prop_value = context.scene.bm_props.global_last_edited_prop_value
+        prop_type = context.scene.bm_props.global_last_edited_prop_type
+        prop_is_map = context.scene.bm_props.global_last_edited_prop_is_map
+
+
+        if prop_type == "int":
+            prop_value_real = int(prop_value)
+        elif prop_type == "float":
+            prop_value_real = float(prop_value)
+        elif prop_type == "bool":
+            prop_value_real = bool(int(prop_value))
+        elif prop_type == "tuple":
+            prop_value_real_array = []
+            for x in prop_value:
+                prop_value_real_array.append(float(x))
+            prop_value_real = tuple(prop_value_real_array)
+        else:
+            prop_value_real = prop_value
+
+        object = BM_Object_Get(context)[0]
+
+        # apply to maps
+        if prop_is_map:
+            # apply to object's maps
+            if bm_props.global_alep_affect_objects is False:
+                for index, map in enumerate(object.global_maps):
+                    if bm_props.global_alep_maps[index].use_affect is False:
+                        continue
+                    try:
+                        setattr(map, prop, prop_value_real)
+                    except TypeError:
+                        self.report({'ERROR'}, "Cannot apply property, aborting")
+                        return {'FINISHED'}
+
+            # apply to all chosen object's maps
+            else:
+                for object1 in context.scene.bm_table_of_objects:
+                    if object1.nm_is_universal_container:
+                        items = [item for item in bm_props.global_alep_objects if item.object_name == object1.nm_container_name]
+                    else:
+                        items = [item for item in bm_props.global_alep_objects if item.object_name == object1.global_object_name]
+                    if len(items) == 0:
+                        continue
+                    if items[0].use_affect is False:
+                        continue
+
+                    for index, map in enumerate(object1.global_maps):
+                        try:
+                            setattr(map, prop, prop_value_real)
+                        except TypeError:
+                            self.report({'ERROR'}, "Cannot apply property, aborting")
+                            return {'FINISHED'}
+
+        # apply to selected objects
+        else:
+            for object1 in context.scene.bm_table_of_objects:
+                if object1.nm_is_universal_container:
+                    items = [item for item in bm_props.global_alep_objects if item.object_name == object1.nm_container_name]
+                else:
+                    items = [item for item in bm_props.global_alep_objects if item.object_name == object1.global_object_name]
+                if len(items) == 0:
+                    continue
+                if items[0].use_affect is False:
+                    continue
+
+                try:
+                    setattr(object1, prop, prop_value_real)
+                except TypeError:
+                    self.report({'ERROR'}, "Cannot apply property, aborting")
+                    return {'FINISHED'}
+
         return {'FINISHED'}
 
     def draw(self, context):
@@ -1375,9 +1449,7 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        prop = context.scene.bm_props.global_last_edited_prop
         prop_name = context.scene.bm_props.global_last_edited_prop_name
-        prop_value = context.scene.bm_props.global_last_edited_prop_value
         prop_is_map = context.scene.bm_props.global_last_edited_prop_is_map
 
         object = BM_Object_Get(context)[0]
