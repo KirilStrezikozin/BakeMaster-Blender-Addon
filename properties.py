@@ -106,6 +106,7 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         default=False,
         update=BM_SCENE_PROPS_global_use_name_matching_Update)
 
+    global_last_edited_prop : bpy.props.StringProperty(default="")
     global_last_edited_prop_name : bpy.props.StringProperty(default="")
     global_last_edited_prop_value : bpy.props.StringProperty(default="")
     global_last_edited_prop_type : bpy.props.StringProperty(default="")
@@ -387,7 +388,7 @@ class BM_Map(bpy.types.PropertyGroup):
                ('ZIPS', "ZIPS (lossless)", ""),
                ('DWAA', "DWAA (lossy)", ""),
                ('DWAB', "DWAB (lossy)", "")],
-        update=BM_MAP_PROPS_out_exr_codex_Update)
+        update=BM_MAP_PROPS_out_exr_codec_Update)
 
     out_compression : bpy.props.IntProperty(
         name="Compression",
@@ -2187,7 +2188,7 @@ class BM_Object(bpy.types.PropertyGroup):
         min=0,
         max=100,
         subtype='PERCENTAGE',
-        update=BM_ITEM_PROPS_out_compressio_Update)
+        update=BM_ITEM_PROPS_out_compression_Update)
 
     out_res : bpy.props.EnumProperty(
         name="Map Texture Resolution",
