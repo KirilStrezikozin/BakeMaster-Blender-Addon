@@ -106,7 +106,9 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         default=False,
         update=BM_SCENE_PROPS_global_use_name_matching_Update)
 
-    global_last_edited_prop : bpy.props.StringProperty(default="")
+    global_last_edited_prop_name : bpy.props.StringProperty(default="")
+    global_last_edited_prop_value : bpy.props.StringProperty(default="")
+    global_last_edited_prop_type : bpy.props.StringProperty(default="")
     global_last_edited_prop_is_map : bpy.props.BoolProperty(default=False)
     
 # Global Panels Props
