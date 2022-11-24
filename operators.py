@@ -1314,6 +1314,52 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
 
         return {'FINISHED'}
 
+class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
+    bl_label = "Apply Lastly Edited Property"
+    bl_idname = "bakemaster.apply_proprety"
+    bl_description = "Select maps or objects to apply value of lastly edited property for"
+    bl_options = {'UNDO'}
+
+    global_affect_objects : bpy.props.BoolProperty(
+        name="Affect Objects",
+        description="Apply property to all maps of chosen objects",
+        default=False)
+
+    def execute(self, context):
+        return {'FINISHED'}
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        prop = context.scene.bm_props.global_last_edited_prop
+        prop_name = context.scene.bm_props.global_last_edited_prop_name
+        prop_value = context.scene.bm_props.global_last_edited_prop_value
+        prop_is_map = context.scene.bm_props.global_last_edited_prop_is_map
+
+        object = BM_Object_Get(context)[0]
+        if prop_is_map:
+            if len(object.global_maps):
+                container = BM_Map_Get(object)
+            else:
+                container = None
+        else:
+            container = object
+
+        column = layout.column(align=True)
+        column.label(text="Proprety:")
+        column.label(text=prop_name)
+        #column.label(text=prop_value)
+
+        column = layout.column()
+        if prop_is_map:
+            column.prop(self, "global_affect_objects")
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
 class BM_OT_Help(bpy.types.Operator):
     bl_label = "BakeMaster Help"
     bl_idname = "bakemaster.help"
