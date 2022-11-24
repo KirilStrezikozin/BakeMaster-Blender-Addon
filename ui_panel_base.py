@@ -926,7 +926,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
             elif map.global_map_type == 'VECTOR_DISPLACEMENT':
                 map_settings_column.prop(map, 'map_vector_displacement_use_default')
                 if map.map_vector_displacement_use_default is False:
-                    map_settings_column.prop(map, 'map_vector_diplacement_use_negative')
+                    map_settings_column.prop(map, 'map_vector_displacement_use_negative')
                     map_settings_column.prop(map, 'map_vector_displacement_result')
                     if map.map_vector_displacement_result == 'MODIFIER':
                         map_settings_column.prop(map, 'map_vector_displacement_subdiv_levels')
