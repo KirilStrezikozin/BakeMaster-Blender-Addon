@@ -107,6 +107,7 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         update=BM_SCENE_PROPS_global_use_name_matching_Update)
 
     global_last_edited_prop : bpy.props.StringProperty(default="")
+    global_last_edited_prop_is_map : bpy.props.BoolProperty(default=False)
     
 # Global Panels Props
     global_is_decal_panel_expanded : bpy.props.BoolProperty(

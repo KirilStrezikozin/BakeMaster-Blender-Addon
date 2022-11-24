@@ -1400,8 +1400,9 @@ def BM_ActiveIndexUpdate(self, context):
             source_object.select_set(True)
             context.view_layer.objects.active = source_object
 
-def BM_LastEditedProp_Write(context, value):
+def BM_LastEditedProp_Write(context, value: str, is_map: bool):
     context.scene.bm_props.global_last_edited_prop = value
+    context.scene.bm_props.global_last_edited_prop_is_map = is_map
 
 def BM_Table_of_Objects_GetFTL(context, items, bitflag_filter_item):
         # default return values
@@ -1980,15 +1981,9 @@ def BM_ITEM_PROPS_out_use_unique_per_map_Update(self, context):
             for key in data:
                 setattr(map, key, data[key])
 
-def BM_ITEM_PROPS_UVSettings_Update(self, context):
-    pass
-
-def BM_ITEM_PROPS_HighLowSettings_Update(self, context):
-    pass
-
-def BM_ITEM_PROPS_OutputSettings_Update(self, context):
-    pass
-
+###############################################################
+### Map Props Funcs ###
+###############################################################
 def BM_MAP_PROPS_map_type_Items(self, context):
     # if self.uv_bake_data == 'VERTEX_COLORS':
     #     return [('VERTEX_COLOR_LAYER', "VertexColor Layer", "Bake VertexColor Layer")]
@@ -2039,7 +2034,6 @@ def BM_MAP_PROPS_map_type_Items(self, context):
         ('C_GLOSSY', "Glossy", "Bakes the glossiness pass of a material"),
         ('C_TRANSMISSION', "Transmission", "Bakes the transmission pass of a material")
     ]
-
     return items
 
 def BM_MAP_PROPS_map_vertexcolor_layer_Items(self, context):
@@ -2094,6 +2088,19 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
     if object.decal_is_decal:
         items = [('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
     return items
+
+###############################################################
+### End ###
+###############################################################
+
+
+
+
+
+
+
+
+
 
 def BM_ITEM_UseTargetUpdate(self, context):
     return
