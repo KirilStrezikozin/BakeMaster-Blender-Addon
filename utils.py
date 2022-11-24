@@ -2503,10 +2503,16 @@ def BM_MAP_PROPS_map_mask_materials_name_contains_Update(self, context):
     BM_LastEditedProp_Write(context, name, "map_mask_materials_name_contains", getattr(self, "map_mask_materials_name_contains"), True)
 def BM_MAP_PROPS_map_mask_color1_Update(self, context):
     name = "Map: Mask color1"
-    BM_LastEditedProp_Write(context, name, "map_mask_color1", getattr(self, "map_mask_color1"), True)
+    value = ""
+    for x in getattr(self, "map_mask_color1"):
+        value += str(x)
+    BM_LastEditedProp_Write(context, name, "map_mask_color1", value, "map_mask_color1"), True)
 def BM_MAP_PROPS_map_mask_color2_Update(self, context):
     name = "Map: Mask color2"
-    BM_LastEditedProp_Write(context, name, "map_mask_color2", getattr(self, "map_mask_color2"), True)
+    value = ""
+    for x in getattr(self, "map_mask_color2"):
+        value += str(x)
+    BM_LastEditedProp_Write(context, name, "map_mask_color2", value, "map_mask_color2"), True)
 def BM_MAP_PROPS_map_mask_use_invert_Update(self, context):
     name = "Map: Mask invert"
     BM_LastEditedProp_Write(context, name, "map_mask_use_invert", getattr(self, "map_mask_use_invert"), True)
