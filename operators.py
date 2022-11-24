@@ -1252,6 +1252,7 @@ class BM_OT_ITEM_BatchNaming_Preview(bpy.types.Operator):
     bl_idname = 'bakemaster.item_batchnaming_preview'
     bl_label = "Preview Batch Name"
     bl_description = "Preview how the configured batch naming convention will look in the output image filename.\n(Demo, values for each keyword might be different for each baked map's image file)"
+    bl_options = {'INTERNAL'}
     
     def execute(self, context):
         object = BM_Object_Get(context)[0]
@@ -1263,6 +1264,7 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
     bl_idname = 'bakemaster.item_maps_table'
     bl_label = ""
     bl_description = "Add/Remove map passes from the list"
+    bl_options = {'INTERNAL', 'UNDO'}
 
     control : bpy.props.EnumProperty(
         items = [('ADD', "Add", ""), ('REMOVE', "Remove", ""), ('TRASH', "Trash", "")])

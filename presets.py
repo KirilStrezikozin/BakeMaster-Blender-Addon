@@ -899,10 +899,10 @@ def data_insert_configurator_affectall(data):
 # original from https://developer.blender.org/diffusion/B/browse/master/release/scripts/startup/bl_operators/presets.py%24213
 # for bakemaster presets modified execution
 class BM_OT_ExecutePreset(bpy.types.Operator):
-    """Execute a BakeMaster preset"""
+    """Execute BakeMaster preset"""
     bl_idname = "script.execute_preset_bakemaster"
     bl_label = "Load BakeMaster Preset"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
 
     filepath: bpy.props.StringProperty(
         subtype='FILE_PATH',
