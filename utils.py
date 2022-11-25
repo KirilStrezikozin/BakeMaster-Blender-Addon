@@ -333,6 +333,9 @@ def BM_SCENE_PROPS_global_use_name_matching_Update(self, context):
             object.hl_use_unique_per_map = False
             BM_ITEM_PROPS_hl_use_unique_per_map_Update_TrashHighpolies(object, object, context)
             object.hl_is_lowpoly = False
+            object.hl_is_cage = False
+            object.hl_is_highpoly = False
+            object.hl_is_decal = False
             
         BM_Table_of_Objects_NameMatching_Deconstruct(context)
 
@@ -443,6 +446,9 @@ def BM_SCENE_PROPS_global_use_name_matching_Update(self, context):
             object.hl_use_unique_per_map = False
             BM_ITEM_PROPS_hl_use_unique_per_map_Update_TrashHighpolies(object, object, context)
             object.hl_is_lowpoly = False
+            object.hl_is_cage = False
+            object.hl_is_highpoly = False
+            object.hl_is_decal = False
         BM_Table_of_Objects_NameMatching_Deconstruct(context)
 
 def BM_ITEM_PROPS_nm_container_name_Update(self, context):
