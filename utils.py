@@ -2802,6 +2802,19 @@ def BM_ITEM_PROPS_bake_device_Update(self, context):
 ###############################################################
 ### Update Funcs for global_cauc_objects object ###
 ###############################################################
+def BM_CAUC_Object_UnsetBoolsUpdate(self, props):
+    for prop in props:
+        setattr(self, prop, False)
+
+def BM_CAUC_Object_use_include_Update(self, context):
+    if self.use_include:
+        BM_CAUC_Object_UnsetBoolsUpdate(self, ["is_highpoly", "is_cage"])
+def BM_CAUC_Object_is_highpoly_Update(self, context):
+    if self.is_highpoly:
+        BM_CAUC_Object_UnsetBoolsUpdate(self, ["use_include", "is_cage"])
+def BM_CAUC_Object_is_cage_Update(self, context):
+    if self.is_cage:
+        BM_CAUC_Object_UnsetBoolsUpdate(self, ["use_include", "is_highpoly"])
 
 ###############################################################
 ###############################################################
