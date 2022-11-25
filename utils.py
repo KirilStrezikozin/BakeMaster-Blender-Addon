@@ -1961,14 +1961,18 @@ def BM_ITEM_PROPS_uv_active_layer_Items(self, context):
     if object[1] is False:
         return [('NONE', "None", "Current Object doesn't support UV Layers")]
     source_object = context.scene.objects[object[0].global_object_name].data
-    uv_layers = []
+    uv_layers_bake = []
+    uv_layers_other = []
 
     if len(source_object.uv_layers):
         for uv_layer in source_object.uv_layers:
-            uv_layers.append((str(uv_layer.name), uv_layer.name, "UV Layer to use for baking current Object's maps"))
+            if context.scene.bm_props.global_bake_uv_layer_tag in uv_layer.name:
+                uv_layers_bake.append((str(uv_layer.name), uv_layer.name, "UV Layer to use for baking current Object's maps"))
+            else:
+                uv_layers_other.append((str(uv_layer.name), uv_layer.name, "UV Layer to use for baking current Object's maps"))
     else:
-        uv_layers.append(('NONE_AUTO_CREATE', "Auto Unwrap", "Object has got no UV Layers, Auto UV Unwrap will be proceeded"))
-    return uv_layers
+        uv_layers_other.append(('NONE_AUTO_CREATE', "Auto Unwrap", "Object has got no UV Layers, Auto UV Unwrap will be proceeded"))
+    return uv_layers_bake + uv_layers_other
 
 def BM_ITEM_PROPS_uv_type_Items(self, context):
     items = [('AUTO', "Automatic", "Automatically detect UVMap type. If UDIMs detected, UDIM tiles range will be set automatically for each map"),
