@@ -2520,10 +2520,10 @@ def BM_MAP_PROPS_map_mask_materials_name_contains_Update(self, context):
     BM_LastEditedProp_Write(context, name, "map_mask_materials_name_contains", getattr(self, "map_mask_materials_name_contains"), True)
 def BM_MAP_PROPS_map_mask_color1_Update(self, context):
     name = "Map: Mask color1"
-    BM_LastEditedProp_Write(context, name, "map_mask_color1", getattr(self, "map_mask_color1"), "map_mask_color1", True)
+    BM_LastEditedProp_Write(context, name, "map_mask_color1", getattr(self, "map_mask_color1"), True)
 def BM_MAP_PROPS_map_mask_color2_Update(self, context):
     name = "Map: Mask color2"
-    BM_LastEditedProp_Write(context, name, "map_mask_color2", getattr(self, "map_mask_color2"), "map_mask_color2", True)
+    BM_LastEditedProp_Write(context, name, "map_mask_color2", getattr(self, "map_mask_color2"), True)
 def BM_MAP_PROPS_map_mask_use_invert_Update(self, context):
     name = "Map: Mask invert"
     BM_LastEditedProp_Write(context, name, "map_mask_use_invert", getattr(self, "map_mask_use_invert"), True)
@@ -2798,6 +2798,10 @@ def BM_ITEM_PROPS_bake_create_material_Update(self, context):
 def BM_ITEM_PROPS_bake_device_Update(self, context):
     name = "Object Bake Output: Device"
     BM_LastEditedProp_Write(context, name, "bake_device", getattr(self, "bake_device"), False)
+
+###############################################################
+### Update Funcs for global_cauc_objects object ###
+###############################################################
 
 ###############################################################
 ###############################################################
