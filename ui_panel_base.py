@@ -468,43 +468,48 @@ class BM_PT_ItemBase(bpy.types.Panel):
 
     def draw(self, context):
         object = BM_Object_Get(context)
+        label = ""
+        icon = ''
+        draw_label = False
         if context.scene.bm_props.global_use_name_matching and object[0].nm_is_universal_container:
             if object[0].nm_uni_container_is_global:
                 return
             label = "Universal Container"
             icon = 'TRIA_RIGHT'
-            self.layout.label(text=label, icon=icon)
+            draw_label = True
         elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_local_container:
             label = "Local Container"
             icon = 'TRIA_RIGHT'
-            self.layout.label(text=label, icon=icon)
+            draw_label = True
         elif object[1] is False:
             label = "Object cannot be found"
             icon = 'GHOST_DISABLED'
-            self.layout.label(text=label, icon=icon)
-        elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_detached is False:
-            container_name = ""
-            draw_label = False
-            for object1 in context.scene.bm_table_of_objects:
-                if object1.nm_is_universal_container and object1.nm_master_index == object[0].nm_item_uni_container_master_index:
-                    container_name = object1.nm_container_name
-                    draw_label = object1.nm_uni_container_is_global
-                    break
-            if draw_label:
-                label = "Settings configured by %s" % container_name
-                self.layout.label(text=label)
+            draw_label = True
         elif object[0].hl_is_highpoly and object[0].hl_is_decal:
             label = "Decal Object"
             icon = 'XRAY'
-            self.layout.label(text=label, icon=icon)
+            draw_label = True
         elif object[0].hl_is_highpoly:
             label = "Highpoly Object" 
             icon = 'VIEW_ORTHO'
-            self.layout.label(text=label, icon=icon)
+            draw_label = True
         elif object[0].hl_is_cage:
             label = "Cage Object" 
             icon = 'SELECT_SET'
-            self.layout.label(text=label, icon=icon)
+            draw_label = True
+        if context.scene.bm_props.global_use_name_matching and object[0].nm_is_detached is False:
+            container_name = ""
+            draw_configured = False
+            for object1 in context.scene.bm_table_of_objects:
+                if object1.nm_is_universal_container and object1.nm_master_index == object[0].nm_item_uni_container_master_index:
+                    container_name = object1.nm_container_name
+                    draw_configured = object1.nm_uni_container_is_global
+                    break
+            if draw_configured:
+                label = "Settings configured by %s" % container_name
+                draw_label = True
+        if draw_label:
+            self.layout.label(text=label)
 
 class BM_PT_Item_ObjectBase(bpy.types.Panel):
     bl_label = " "
