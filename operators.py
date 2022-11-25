@@ -1634,6 +1634,24 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
         column.operator(BM_OT_CreateArtificialUniContainer_DeselectAll.bl_idname, text="", icon='CHECKBOX_HLT')
 
     def invoke(self, context, event):
+        bm_props = context.scene.bm_props
+
+        # trash
+        to_remove = []
+        for index, _ in enumerate(bm_props.global_cauc_objects):
+            to_remove.append(index)
+        for index in sorted(to_remove, reverse=True):
+            bm_props.global_cauc_objects.remove(index)
+
+        # add
+        if bm_props.global_use_name_matching is False:
+            return wm.invoke_props_dialog(self, width=300)
+        
+        for object in context.scene.bm_table_of_objects:
+            if object.nm_is_detached:
+                new_item = bm_props.global_cauc_objects.add()
+                new_item.object_name = object.global_object_name
+
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
