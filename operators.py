@@ -1627,6 +1627,9 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
             return
         layout.label(text="Choose Objects to create new Container with:")
 
+        items_box = layout.box()
+        items_box.use_property_split = True
+        items_box.use_property_decorate = False
         rows = len(bm_props.global_cauc_objects)
         table = items_box.column().row()
         table.template_list('BM_CAUC_UL_Objects_Item', "", bm_props, 'global_cauc_objects', bm_props, 'global_cauc_objects_active_index', rows=rows)
