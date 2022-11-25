@@ -105,12 +105,24 @@ class BM_CAUC_UL_Objects_Item(bpy.types.UIList):
         row = layout.row()
         split = row.split(factor=0.3)
         column = split.row()
-        column.prop(item, 'use_include', text="", icon='MESH_PLANE')
-        column.prop(item, 'is_highpoly', text="", icon='VIEW_ORTHO')
-        column.prop(item, 'is_cage', text="", icon='SELECT_SET')
-        row.emboss = 'NONE'
+        low = column.row()
+        low.prop(item, 'use_include', text="", icon='MESH_PLANE')
+        high = column.row()
+        high.prop(item, 'is_highpoly', text="", icon='VIEW_ORTHO')
+        cage = column.row()
+        cage.prop(item, 'is_cage', text="", icon='SELECT_SET')
         column = split.row()
         column.label(text=item.object_name)
+
+        if item.use_include:
+            high.active = False
+            cage.active = False
+        elif item.is_highpoly:
+            low.active = False
+            cage.active = False
+        elif item.is_cage:
+            low.active = False
+            high.active = False
 
         if active:
             layout.active = any([item.use_include, item.is_highpoly, item.is_cage])
