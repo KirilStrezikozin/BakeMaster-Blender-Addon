@@ -45,6 +45,26 @@ class BM_ALEP_Map(bpy.types.PropertyGroup):
         description="Apply property for this map",
         default=True)
 
+class BM_CAUC_Object(bpy.types.PropertyGroup):
+    object_name : bpy.props.StringProperty(
+        name="Object name",
+        default="")
+    
+    use_include : bpy.props.BoolProperty(
+        name="Inlcude as Lowpoly",
+        description="Include this object as a regular or Lowpoly Object in new Artificial Container",
+        default=False)
+
+    is_highpoly : bpy.props.BoolProperty(
+        name="Include as Highpoly",
+        description="Include this object as a Highpoly Object in new Artificial Container",
+        default=False)
+
+    is_cage : bpy.props.BoolProperty(
+        name="Include as Cage",
+        description="Include this object as a Highpoly Object in new Artificial Container",
+        default=False)
+
 #################################################
 ### GLOBAL SCENE PROPS ###
 #################################################
@@ -152,6 +172,13 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Affect Objects",
         description="Apply property to all maps of chosen objects",
         default=False)
+
+# Create Artificial Universal Container Props
+    global_cauc_objects : bpy.props.CollectionProperty(type=BM_CAUC_Object)
+
+    global_cauc_objects_active_index : bpy.props.IntProperty(
+        name="Detached Object",
+        default=0)
     
 # Global Panels Props
     global_is_decal_panel_expanded : bpy.props.BoolProperty(
