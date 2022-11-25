@@ -1222,7 +1222,6 @@ class BM_MT_OUT_Presets(bpy.types.Menu):
     
     draw = bpy.types.Menu.draw_preset
 
-
 class BM_PT_FULL_MAP_Presets(PresetPanel, bpy.types.Panel):
     bl_label = "Full Maps Preset"
     preset_subdir = 'bakemaster_presets\\PRESETS_FULL_MAP_maps_hl_uv_out\\'
@@ -1282,7 +1281,6 @@ class BM_MT_BAKE_Presets(bpy.types.Menu):
     preset_operator = "script.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
-
 
 ###########################################################
 ### Execute Preset ###
