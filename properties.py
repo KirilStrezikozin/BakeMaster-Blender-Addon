@@ -241,6 +241,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="What keyword to search for in Object name to determine if it's a Decal Object",
         default="decal")
 
+    global_bake_uv_layer_tag : bpy.props.StringProperty(
+        name="UVMap Tag",
+        description="What UVMap name should include for BakeMaster to see it as UVMap for bake",
+        default="decal")
+
 ##################################################
 ### MAP PROPS ###
 ##################################################
