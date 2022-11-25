@@ -34,7 +34,9 @@ class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
         layout.prop(bm_props, 'global_highpoly_tag')
         layout.prop(bm_props, 'global_cage_tag')
         layout.prop(bm_props, 'global_decal_tag')
-
+        layout = self.layout.column(align=True)
+        layout.prop(bm_props, 'global_bake_uv_layer_tag')
+        
 class BM_ALEP_UL_Objects_Item(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, active_data, active_propname, index):
         source_object = [object for object in context.scene.bm_table_of_objects if object.global_object_name == item.object_name]
