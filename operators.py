@@ -1441,6 +1441,7 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
                     self.report({'ERROR'}, "Cannot apply property, aborting")
                     return {'FINISHED'}
 
+        self.report({'INFO'}, "Property succesfully applied")
         return {'FINISHED'}
 
     def draw(self, context):
@@ -1612,8 +1613,88 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
         bm_props = context.scene.bm_props
 
         if bm_props.global_use_name_matching is False:
+            self.report({'WARNING'}, "Turn on Name Matching to create artificial container")
             return {'FINISHED'}
 
+        # collect chosen lows, highs, cages
+        lowpolies = []
+        highpolies = []
+        cages = []
+        has_any_selected = False
+        for object_item in bm_props.global_cauc_objects:
+            if object_item.use_include:
+                lowpolies.append(object_item.object_name)
+                has_any_selected = True
+            elif object_item.is_highpoly:
+                highpolies.append(object_item.object_name)
+                has_any_selected = True
+            elif object_item.is_cage:
+                cages.append(object_item.object_name)
+                has_any_selected = True
+
+        if has_any_selected is False:
+            self.report({'INFO'}, "No Objects were selected")
+            return {'FINISHED'}
+
+        # trash collected from bm_table_of_objects
+        all_chosen_names = lowpolies + highpolies + cages
+        to_remove = []
+        for index, object in enumerate(context.scene.bm_table_of_objects):
+            if object.nm_is_detached and object.global_object_name in all_chosen_names:
+                to_remove.append(index)
+        for index in sorted(to_remove, reverse=True):
+            context.scene.bm_table_of_objects.remove(index)
+
+        last_uni_c_index = -1
+        # adding universal container to the bm_table_of_objects
+        universal_container = context.scene.bm_table_of_objects.add()
+        universal_container.nm_master_index = last_uni_c_index + 1
+        # name is set to the root_name of the first object in the shell
+        universal_container.nm_container_name_old = BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, "Bake Job")
+        universal_container.nm_container_name = universal_container.nm_container_name_old
+        universal_container.nm_this_indent = 0
+        universal_container.nm_is_universal_container = True
+        universal_container.nm_is_expanded = True
+
+        # objs[] : 0 - lowpolies, 1 - highpolies, 2 - cages
+        object_names = [lowpolies, highpolies, cages]
+        # adding local containers to the bm_table_of_objects if needed
+        # and adding all object_name in object_names to the bm_table_of_objects
+        names_starters = ["Lowpolies", "Highpolies", "Cages"]
+        prefix_props = ["hl_is_lowpoly", "hl_is_highpoly", "hl_is_cage"]
+        container_types_props = ["nm_is_lowpoly_container", "nm_is_highpoly_container", "nm_is_cage_container"]
+        local_containers_index = -1
+        for local_index, local_names in enumerate(object_names):
+
+            if len(local_names):
+                local_containers_index += 1
+                local_container = context.scene.bm_table_of_objects.add()
+                local_container.nm_master_index = local_containers_index
+                local_container.nm_container_name_old = names_starters[local_index]
+                local_container.nm_container_name = names_starters[local_index]
+                local_container.nm_this_indent = 1
+                local_container.nm_is_local_container = True
+                local_container.nm_item_uni_container_master_index = last_uni_c_index + 1
+                local_container.nm_is_expanded = True
+                setattr(local_container, container_types_props[local_index], True)
+
+                for obj_index, object_name in enumerate(local_names):
+                    new_item = context.scene.bm_table_of_objects.add()
+                    new_item.global_object_name = object_name
+                    new_item.nm_master_index = obj_index
+                    new_item.nm_this_indent = 2
+                    new_item.nm_item_uni_container_master_index = last_uni_c_index + 1
+                    new_item.nm_item_local_container_master_index = local_index
+                    new_item.nm_is_expanded = True
+                    # setattr(new_item, prefix_props[local_index], True)
+
+        # auto configure decals, highpolies, and cages
+        universal_container.nm_uni_container_is_global = True
+
+        # update all nm indexes
+        BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)
+        
+        self.report({'INFO'}, "Container succesfully created")
         return {'FINISHED'}
     
     def draw(self, context):
