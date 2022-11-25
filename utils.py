@@ -693,7 +693,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
 
                         'uv_bake_data' : map.uv_bake_data,
                         'uv_bake_target' : map.uv_bake_target,
-                        'uv_active_layer' : map.uv_active_layer,
+                        # 'uv_active_layer' : map.uv_active_layer,
                         'uv_type' : map.uv_type,
                         'uv_snap_islands_to_pixels' : map.uv_snap_islands_to_pixels,
 
