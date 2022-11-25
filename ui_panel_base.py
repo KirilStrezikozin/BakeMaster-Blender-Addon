@@ -835,8 +835,9 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
         maps_table_column.operator(BM_OT_ITEM_Maps.bl_idname, text="", icon='ADD').control = 'ADD'
         maps_table_column.operator(BM_OT_ITEM_Maps.bl_idname, text="", icon='REMOVE').control = 'REMOVE'
         maps_table_column.separator(factor=1.0)
-        BM_PT_MapsConfigurator_Presets.draw_panel_header(maps_table_column)
-        maps_table_column.separator(factor=1.0)
+        if len(object.global_maps):
+            BM_PT_MapsConfigurator_Presets.draw_panel_header(maps_table_column)
+            maps_table_column.separator(factor=1.0)
         maps_table_column.operator(BM_OT_ITEM_Maps.bl_idname, text="", icon='TRASH').control = 'TRASH'
 
         # map settings
