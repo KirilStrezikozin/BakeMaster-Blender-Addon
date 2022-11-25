@@ -65,6 +65,7 @@ classes = (
 
     BM_ALEP_UL_Objects_Item,
     BM_ALEP_UL_Maps_Item,
+    BM_CAUC_UL_Objects_Item,
     BM_UL_Table_of_Objects_Item,
     BM_UL_Table_of_Objects_Item_Highpoly,
     BM_UL_Table_of_Maps_Item,
@@ -141,6 +142,7 @@ classes = (
     BM_OT_ApplyLastEditedProp_SelectAll,
     BM_OT_ApplyLastEditedProp_InvertSelection,
     BM_OT_ApplyLastEditedProp,
+    BM_OT_CreateArtificialUniContainer,
     BM_OT_Help,
 
     BM_OT_ObjectConfigutator_Preset_Add,
@@ -155,6 +157,7 @@ classes = (
 
     BM_ALEP_Object,
     BM_ALEP_Map,
+    BM_CAUC_Object,
     BM_Map_Highpoly,
     BM_Map,
     BM_Object_Highpoly,
