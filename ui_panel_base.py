@@ -526,9 +526,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
         elif any([object[0].hl_is_highpoly, object[0].hl_is_cage]):
             return False
         elif context.scene.bm_props.global_use_name_matching and object[0].nm_is_detached is False:
-            for object1 in context.scene.bm_table_of_objects:
-                if object1.nm_is_universal_container and object1.nm_master_index == object[0].nm_item_uni_container_master_index:
-                    return not object1.nm_uni_container_is_global
+            return True
         return object[1]
 
     def draw_header(self, context):
@@ -547,35 +545,43 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
         scene = context.scene
         object = BM_Object_Get(context)[0]
 
-        # decal
-        decal_box = layout.box()
-        decal_box.use_property_split = True
-        decal_box.use_property_decorate = False
-        
-        # decal header
-        decal_box_header = decal_box.row(align=True)
-        decal_box_header.use_property_split = False
-        decal_box_header.emboss = 'NONE'
-        icon = 'TRIA_DOWN' if scene.bm_props.global_is_decal_panel_expanded else 'TRIA_RIGHT'
-        decal_box_header.prop(scene.bm_props, 'global_is_decal_panel_expanded', text="", icon=icon)
-        decal_box_header.emboss = 'NORMAL'
-        decal_box_header.label(text="Decal")
-        BM_PT_MapsConfigurator_Presets.draw_panel_header(decal_box_header)
+        draw_all = True
+        for object1 in context.scene.bm_table_of_objects:
+            if object1.nm_is_universal_container and object1.nm_master_index == object.nm_item_uni_container_master_index:
+                draw_all = not object1.nm_uni_container_is_global
 
-        # decal body
-        if scene.bm_props.global_is_decal_panel_expanded:
-            if object.nm_uni_container_is_global is False:
-                decal_box.prop(object, 'decal_is_decal')
-            if object.decal_is_decal or object.nm_uni_container_is_global:
-                decal_box_column = decal_box.column(align=True)
-                decal_box_column.prop(object, 'decal_use_custom_camera')
-                if object.decal_use_custom_camera:
-                    decal_box_column.prop(object, 'decal_custom_camera')
-                decal_box.prop(object, 'decal_upper_coordinate')
-                decal_box.prop(object, 'decal_boundary_offset')
+        # decal
+        if draw_all:
+            decal_box = layout.box()
+            decal_box.use_property_split = True
+            decal_box.use_property_decorate = False
+            
+            # decal header
+            decal_box_header = decal_box.row(align=True)
+            decal_box_header.use_property_split = False
+            decal_box_header.emboss = 'NONE'
+            icon = 'TRIA_DOWN' if scene.bm_props.global_is_decal_panel_expanded else 'TRIA_RIGHT'
+            decal_box_header.prop(scene.bm_props, 'global_is_decal_panel_expanded', text="", icon=icon)
+            decal_box_header.emboss = 'NORMAL'
+            decal_box_header.label(text="Decal")
+            BM_PT_MapsConfigurator_Presets.draw_panel_header(decal_box_header)
+
+            # decal body
+            if scene.bm_props.global_is_decal_panel_expanded:
+                if object.nm_uni_container_is_global is False:
+                    decal_box.prop(object, 'decal_is_decal')
+                if object.decal_is_decal or object.nm_uni_container_is_global:
+                    decal_box_column = decal_box.column(align=True)
+                    decal_box_column.prop(object, 'decal_use_custom_camera')
+                    if object.decal_use_custom_camera:
+                        decal_box_column.prop(object, 'decal_custom_camera')
+                    decal_box.prop(object, 'decal_upper_coordinate')
+                    decal_box.prop(object, 'decal_boundary_offset')
 
         # skip drawing hl, uv, csh subpanels
         if object.decal_is_decal and object.nm_uni_container_is_global is False:
+            if draw_all is False:
+                layout.label(text="No settings available")
             return
 
         # hl
@@ -596,10 +602,10 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
 
         # hl body
         if scene.bm_props.global_is_hl_panel_expanded:
-            if object.nm_uni_container_is_global is False:
+            if object.nm_uni_container_is_global is False and draw_all:
                 hl_box.prop(object, 'hl_use_unique_per_map')
 
-            if object.hl_use_unique_per_map is False:
+            if object.hl_use_unique_per_map is False or draw_all is False:
                 # highpoly
                 if len(object.hl_highpoly_table) > 1:
                     rows = len(object.hl_highpoly_table)
@@ -626,9 +632,10 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                     if highpoly_object_index != -1:
                         source_object = scene.bm_table_of_objects[highpoly_object_index]
                         hl_box_decal.prop(source_object, 'hl_is_decal')
-                    hl_box_decal.prop(object, 'hl_decals_use_separate_texset')
+                    if draw_all:
+                        hl_box_decal.prop(object, 'hl_decals_use_separate_texset')
                 # cage
-                if len(object.hl_highpoly_table) or hl_draw is False:
+                if len(object.hl_highpoly_table) and draw_all:
                     hl_box_cage = hl_box.column(align=True)
                     hl_box_cage.prop(object, 'hl_cage_type')
                     if object.hl_cage_type == 'STANDARD':
@@ -649,6 +656,11 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                     else:
                         hl_box_cage.prop(object, 'hl_cage_extrusion', text="Extrusion")
         
+        # highs and cage are drawn for global uni_c objects
+        # everything else not
+        if draw_all is False:
+            return
+
         # uv
         uv_box = layout.box()
         uv_box.use_property_split = True
