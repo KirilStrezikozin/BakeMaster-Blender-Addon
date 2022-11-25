@@ -23,12 +23,14 @@ import os
 from bl_operators.presets import AddPresetBase
 from bl_ui.utils import PresetPanel
 
+###########################################################
+### Presets Directory Setup ###
+###########################################################
 def presets_makedir(path: str, name: str):
     path_dir = os.path.join(path, name)
     if not os.path.exists(path_dir):
         os.makedirs(path_dir)
 
-# directory setup for presets
 def BM_Presets_FolderSetup():
     bm_presets_subdir = "bakemaster_presets"
     bm_presets_dir_path = os.path.join(bpy.utils.user_resource('SCRIPTS'), "presets", bm_presets_subdir)
@@ -50,8 +52,9 @@ def BM_Presets_FolderSetup():
     presets_makedir(bm_presets_dir_path, "PRESETS_CHNLP_chnlp")
     presets_makedir(bm_presets_dir_path, "PRESETS_BAKE_bake")
 
-### PRESET BASES ###
-
+###########################################################
+### Presets Bases ###
+###########################################################
 # AddPresetBase script
 # original from https://developer.blender.org/diffusion/B/browse/master/release/scripts/startup/bl_operators/presets.py%2424
 # modified for bakemaster preset base
@@ -238,323 +241,186 @@ class BM_Configurator_AddPresetBase():
         return self.execute(context)
 
 ###########################################################
-# object configurator preset base
-class BM_OT_ObjectConfigutator_Preset_Add(BM_Configurator_AddPresetBase, bpy.types.Operator):
-    bl_idname = "bakemaster.objectconfigurator_preset_add"
-    bl_label = "Add Object Configuration Preset"
-    bl_description = "Add or Remove Object Configuration Preset"
+class BM_OT_FULL_OBJECT_Preset_Add(BM_Configurator_AddPresetBase, bpy.types.Operator):
+    bl_idname = "bakemaster.full_object_preset_add"
+    bl_label = "Full Object Preset"
+    bl_description = "Add or Remove Full Object Preset"
     bl_opetions = {'REGISTER', 'UNDO', 'INTERNAL'}
-    preset_menu = 'BM_MT_ObjectConfigurator_Presets'
-    preset_subdir = 'bakemaster_presets\\object_configurator_presets\\'
+    preset_menu = 'BM_MT_FULL_OBJECT_Presets'
+    preset_subdir = 'bakemaster_presets\\PRESETS_FULL_OBJECT_decal_hl_uv_csh_out_maps_chnlp_bake\\'
 
     preset_defines = [
-        "bm_item = bpy.context.scene.bm_aol[bpy.context.scene.bm_props.active_index]"
+        "bm_item = bpy.context.scene.bm_table_of_objects[bpy.context.scene.bm_props.global_active_index]"
     ]
 
     preset_values = [
-        # all object settings props
-        "bm_item.use_bake",
-        "bm_item.use_target",
-        "bm_item.use_source",
-        "bm_item.source",
-        "bm_item.source_name",
-        "bm_item.use_cage",
-        "bm_item.cage_extrusion",
-        "bm_item.max_ray_distance",
-        "bm_item.cage_object",
-        "bm_item.active_uv",
-        "bm_item.uv_type",
-        "bm_item.use_islands_pack",
-        "bm_item.use_overwrite",
-        "bm_item.overwrite_bake_target",
-        "bm_item.overwrite_use_denoise",
-        "bm_item.overwrite_file_format",
-        "bm_item.overwrite_res_enum",
-        "bm_item.overwrite_res_height",
-        "bm_item.overwrite_res_width",
-        "bm_item.overwrite_margin",
-        "bm_item.overwrite_margin_type",
-        "bm_item.overwrite_use_32bit",
-        "bm_item.overwrite_use_alpha",
-        "bm_item.overwrite_udim_start_tile",
-        "bm_item.overwrite_udim_end_tile",
-        #all bake settings props
-        "bm_item.use_internal",
-        "bm_item.output_filepath",
-        "bm_item.use_subfolder",
-        "bm_item.subfolder_name",
-        "bm_item.batch_name",
-        "bm_item.use_material",
-        "bm_item.bake_samples",
-        "bm_item.bake_use_adaptive_sampling",
-        "bm_item.bake_adaptive_threshold",
-        "bm_item.bake_min_samples",
-        "bm_item.bake_device"
+        #TODO
     ]
 
-# object settings preset base
-class BM_OT_ObjectSettings_Preset_Add(AddPresetBase, bpy.types.Operator):
-    bl_idname = "bakemaster.objectsettings_preset_add"
-    bl_label = "Add Object Settings Preset"
-    bl_description = "Add or Remove Object Settings Preset"
+class BM_OT_OBJECT_Preset_Add(AddPresetBase, bpy.types.Operator):
+    bl_idname = "bakemaster.object_preset_add"
+    bl_label = "Object Preset"
+    bl_description = "Add or Remove Decal, High to Lowpoly, UVs & Layers, Shading Preset"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-    preset_menu = 'BM_MT_ObjectSettings_Presets'
-    preset_subdir = 'bakemaster_presets\\object_settings_presets\\'
+    preset_menu = 'BM_MT_OBJECT_Presets'
+    preset_subdir = 'bakemaster_presets\\PRESETS_OBJECT_decal_hl_uv_csh\\'
 
     preset_defines = [
-        "bm_item = bpy.context.scene.bm_aol[bpy.context.scene.bm_props.active_index]"
+        "bm_item = bpy.context.scene.bm_table_of_objects[bpy.context.scene.bm_props.global_active_index]"
     ]
 
     preset_values = [
-        "bm_item.use_target",
-        "bm_item.use_source",
-        "bm_item.source",
-        "bm_item.source_name",
-        "bm_item.use_cage",
-        "bm_item.cage_extrusion",
-        "bm_item.max_ray_distance",
-        "bm_item.cage_object",
-        "bm_item.active_uv",
-        "bm_item.uv_type",
-        "bm_item.use_islands_pack",
-        "bm_item.use_overwrite",
-        "bm_item.overwrite_bake_target",
-        "bm_item.overwrite_use_denoise",
-        "bm_item.overwrite_file_format",
-        "bm_item.overwrite_res_enum",
-        "bm_item.overwrite_res_height",
-        "bm_item.overwrite_res_width",
-        "bm_item.overwrite_margin",
-        "bm_item.overwrite_margin_type",
-        "bm_item.overwrite_use_32bit",
-        "bm_item.overwrite_use_alpha",
-        "bm_item.overwrite_udim_start_tile",
-        "bm_item.overwrite_udim_end_tile"
+        #TODO
     ]
 
-# stt settings preset base
-class BM_OT_STTSettings_Preset_Add(AddPresetBase, bpy.types.Operator):
-    bl_idname = "bakemaster.sttsettings_preset_add"
-    bl_label = "Add Source to Target Settings Preset"
-    bl_description = "Add or Remove Source to Target Settings Preset"
+class BM_OT_DECAL_Preset_Add(AddPresetBase, bpy.types.Operator):
+    bl_idname = "bakemaster.decal_preset_add"
+    bl_label = "Decal Preset"
+    bl_description = "Add or Remove Decal Preset"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-    preset_menu = 'BM_MT_STTSettings_Presets'
-    preset_subdir = 'bakemaster_presets\\stt_settings_presets\\'
+    preset_menu = 'BM_MT_DECAL_Presets'
+    preset_subdir = 'bakemaster_presets\\PRESETS_DECAL_decal\\'
 
     preset_defines = [
-        "bm_item = bpy.context.scene.bm_aol[bpy.context.scene.bm_props.active_index]"
+        "bm_item = bpy.context.scene.bm_table_of_objects[bpy.context.scene.bm_props.global_active_index]"
     ]
 
     preset_values = [
-        "bm_item.use_target",
-        "bm_item.use_source",
-        "bm_item.source",
-        "bm_item.source_name",
-        "bm_item.use_cage",
-        "bm_item.cage_extrusion",
-        "bm_item.max_ray_distance",
-        "bm_item.cage_object"
+        #TODO
     ]
 
-# uv settings preset base
-class BM_OT_UVSettings_Preset_Add(AddPresetBase, bpy.types.Operator):
-    bl_idname = "bakemaster.uvsettings_preset_add"
-    bl_label = "Add UV Settings Preset"
-    bl_description = "Add or Remove UV Settings Preset"
+class BM_OT_HL_Preset_Add(AddPresetBase, bpy.types.Operator):
+    bl_idname = "bakemaster.hl_preset_add"
+    bl_label = "High to Lowpoly Preset"
+    bl_description = "Add or Remove High to Lowpoly Preset"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-    preset_menu = 'BM_MT_UVSettings_Presets'
-    preset_subdir = 'bakemaster_presets\\uv_settings_presets'
+    preset_menu = 'BM_MT_HL_Presets'
+    preset_subdir = 'bakemaster_presets\\PRESETS_HL_hl\\'
 
     preset_defines = [
-        "bm_item = bpy.context.scene.bm_aol[bpy.context.scene.bm_props.active_index]"
+        "bm_item = bpy.context.scene.bm_table_of_objects[bpy.context.scene.bm_props.global_active_index]"
     ]
 
     preset_values = [
-        "bm_item.active_uv",
-        "bm_item.uv_type",
-        "bm_item.use_islands_pack",
-        "bm_item.use_overwrite",
-    ]    
+        #TODO
+    ]
 
-# output settings preset base
-class BM_OT_OutputSettings_Preset_Add(AddPresetBase, bpy.types.Operator):
-    bl_idname = "bakemaster.outputsettings_preset_add"
-    bl_label = "Add Output Settings Preset"
-    bl_description = "Add or Remove Output Settings Preset"
+class BM_OT_UV_Preset_Add(AddPresetBase, bpy.types.Operator):
+    bl_idname = "bakemaster.uv_preset_add"
+    bl_label = "UVs & Layers Preset"
+    bl_description = "Add or Remove UVs & Layers Preset"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-    preset_menu = 'BM_MT_OutputSettings_Presets'
-    preset_subdir = 'bakemaster_presets\\output_settings_presets\\'
+    preset_menu = 'BM_MT_UV_Presets'
+    preset_subdir = 'bakemaster_presets\\PRESETS_UV_uv\\'
 
     preset_defines = [
-        "bm_item = bpy.context.scene.bm_aol[bpy.context.scene.bm_props.active_index]"
+        "bm_item = bpy.context.scene.bm_table_of_objects[bpy.context.scene.bm_props.global_active_index]"
     ]
 
     preset_values = [
-        "bm_item.use_overwrite",
-        "bm_item.overwrite_bake_target",
-        "bm_item.overwrite_use_denoise",
-        "bm_item.overwrite_file_format",
-        "bm_item.overwrite_res_enum",
-        "bm_item.overwrite_res_height",
-        "bm_item.overwrite_res_width",
-        "bm_item.overwrite_margin",
-        "bm_item.overwrite_margin_type",
-        "bm_item.overwrite_use_32bit",
-        "bm_item.overwrite_use_alpha",
-        "bm_item.overwrite_udim_start_tile",
-        "bm_item.overwrite_udim_end_tile"
+        #TODO
+    ]
+
+class BM_OT_CSH_Preset_Add(AddPresetBase, bpy.types.Operator):
+    bl_idname = "bakemaster.csh_preset_add"
+    bl_label = "Shading Preset"
+    bl_description = "Add or Remove Shading Preset"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    preset_menu = 'BM_MT_CSH_Presets'
+    preset_subdir = 'bakemaster_presets\\PRESETS_CSH_csh\\'
+
+    preset_defines = [
+        "bm_item = bpy.context.scene.bm_table_of_objects[bpy.context.scene.bm_props.global_active_index]"
+    ]
+
+    preset_values = [
+        #TODO
+    ]
+
+class BM_OT_OUT_Preset_Add(AddPresetBase, bpy.types.Operator):
+    bl_idname = "bakemaster.out_preset_add"
+    bl_label = "Format Preset"
+    bl_description = "Add or Remove Format Preset"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    preset_menu = 'BM_MT_OUT_Presets'
+    preset_subdir = 'bakemaster_presets\\PRESETS_OUT_out\\'
+
+    preset_defines = [
+        "bm_item = bpy.context.scene.bm_table_of_objects[bpy.context.scene.bm_props.global_active_index]"
+    ]
+
+    preset_values = [
+        #TODO
+    ]
+
+class BM_OT_FULL_MAP_Preset_Add(AddPresetBase, bpy.types.Operator):
+    bl_idname = "bakemaster.full_map_preset_add"
+    bl_label = "Full Maps Preset"
+    bl_description = "Add or Remove Full Maps Preset"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    preset_menu = 'BM_MT_FULL_MAP_Presets'
+    preset_subdir = 'bakemaster_presets\\PRESETS_FULL_MAP_maps_hl_uv_out\\'
+
+    preset_defines = [
+        "bm_item = bpy.context.scene.bm_table_of_objects[bpy.context.scene.bm_props.global_active_index]"
+    ]
+
+    preset_values = [
+        #TODO
+    ]
+
+class BM_OT_MAP_Preset_Add(AddPresetBase, bpy.types.Operator):
+    bl_idname = "bakemaster.map_preset_add"
+    bl_label = "Map Preset"
+    bl_description = "Add or Remove Map Preset"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    preset_menu = 'BM_MT_MAP_Presets'
+    preset_subdir = 'bakemaster_presets\\PRESETS_MAP_map\\'
+
+    preset_defines = [
+        "bm_item = bpy.context.scene.bm_table_of_objects[bpy.context.scene.bm_props.global_active_index]"
+    ]
+
+    preset_values = [
+        #TODO
+    ]
+
+class BM_OT_CHNLP_Preset_Add(AddPresetBase, bpy.types.Operator):
+    bl_idname = "bakemaster.chnlp_preset_add"
+    bl_label = "Channel Pack Preset"
+    bl_description = "Add or Remove Channel Pack Preset"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    preset_menu = 'BM_MT_CHNLP_Presets'
+    preset_subdir = 'bakemaster_presets\\PRESETS_CHNLP_chnlp\\'
+
+    preset_defines = [
+        "bm_item = bpy.context.scene.bm_table_of_objects[bpy.context.scene.bm_props.global_active_index]"
+    ]
+
+    preset_values = [
+        #TODO
+    ]
+
+class BM_OT_BAKE_Preset_Add(AddPresetBase, bpy.types.Operator):
+    bl_idname = "bakemaster.bake_preset_add"
+    bl_label = "Bake Output Preset"
+    bl_description = "Add or Remove Bake Output Preset"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    preset_menu = 'BM_MT_BAKE_Presets'
+    preset_subdir = 'bakemaster_presets\\PRESETS_BAKE_bake\\'
+
+    preset_defines = [
+        "bm_item = bpy.context.scene.bm_table_of_objects[bpy.context.scene.bm_props.global_active_index]"
+    ]
+
+    preset_values = [
+        #TODO
     ]
 
 ###########################################################
-# map configurator preset base
-class BM_OT_MapsConfigutator_Preset_Add(BM_Configurator_AddPresetBase, bpy.types.Operator):
-    bl_idname = "bakemaster.mapsconfigurator_preset_add"
-    bl_label = "Add Maps Configuration Preset"
-    bl_description = "Add or Remove Maps Configuration Preset"
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-    preset_menu = 'BM_MT_MapsConfigurator_Presets'
-    preset_subdir = 'bakemaster_presets\\maps_configurator_presets\\'
-
-    preset_defines = [
-        "bm_item = bpy.context.scene.bm_aol[bpy.context.scene.bm_props.active_index]"
-    ]
-
-    preset_values = []
-
-# map settings preset base
-class BM_OT_MapSettings_Preset_Add(AddPresetBase, bpy.types.Operator):
-    bl_idname = "bakemaster.mapsettings_preset_add"
-    bl_label = "Add Map Settings Preset"
-    bl_description = "Add or Remove Map Settings Preset"
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-    preset_menu = 'BM_MT_MapSettings_Presets'
-    preset_subdir = 'bakemaster_presets\\map_settings_presets\\'
-
-    preset_defines = [
-        "bm_map = bpy.context.scene.bm_aol[bpy.context.scene.bm_props.active_index].maps[bpy.context.scene.bm_aol[bpy.context.scene.bm_props.active_index].maps_active_index]"
-    ]
-
-    preset_values = [
-        "bm_map.bake_target",
-        "bm_map.use_denoise",
-        "bm_map.file_format",
-        "bm_map.res_enum",
-        "bm_map.res_height",
-        "bm_map.res_width",
-        "bm_map.margin",
-        "bm_map.margin_type",
-        "bm_map.use_32bit",
-        "bm_map.use_alpha",
-        "bm_map.use_source_target",
-        "bm_map.udim_start_tile",
-        "bm_map.udim_end_tile",
-        "bm_map.cycles_use_pass_direct",
-        "bm_map.cycles_use_pass_indirect",
-        "bm_map.cycles_use_pass_color",
-        "bm_map.cycles_use_pass_diffuse",
-        "bm_map.cycles_use_pass_glossy",
-        "bm_map.cycles_use_pass_transmission",
-        "bm_map.cycles_use_pass_ambient_occlusion",
-        "bm_map.cycles_use_pass_emit",
-        "bm_map.normal_space",
-        "bm_map.normal_r",
-        "bm_map.normal_g",
-        "bm_map.normal_b",
-        "bm_map.use_smooth_normals",
-        "bm_map.normal_cage",
-        "bm_map.displacement_subdiv_levels",
-        "bm_map.ao_use_preview",
-        "bm_map.ao_use_default",
-        "bm_map.ao_sample",
-        "bm_map.ao_distance",
-        "bm_map.ao_black_point",
-        "bm_map.ao_white_point",
-        "bm_map.ao_brightness",
-        "bm_map.ao_contrast",
-        "bm_map.ao_opacity",
-        "bm_map.ao_use_local",
-        "bm_map.ao_use_invert",
-        "bm_map.cavity_use_preview",
-        "bm_map.cavity_use_default",
-        "bm_map.cavity_black_point",
-        "bm_map.cavity_white_point",
-        "bm_map.cavity_power",
-        "bm_map.cavity_use_invert",
-        "bm_map.curv_use_preview",
-        "bm_map.curv_use_default",
-        "bm_map.curv_sample",
-        "bm_map.curv_radius",
-        "bm_map.curv_edge_contrast",
-        "bm_map.curv_body_contrast",
-        "bm_map.curv_use_invert",
-        "bm_map.thick_use_preview",
-        "bm_map.thick_use_default",
-        "bm_map.thick_samples",
-        "bm_map.thick_distance",
-        "bm_map.thick_black_point",
-        "bm_map.thick_white_point",
-        "bm_map.thick_brightness",
-        "bm_map.thick_contrast",
-        "bm_map.thick_use_invert",
-        "bm_map.xyzmask_use_preview",
-        "bm_map.xyzmask_use_default",
-        "bm_map.xyzmask_use_x",
-        "bm_map.xyzmask_use_y",
-        "bm_map.xyzmask_use_z",
-        "bm_map.xyzmask_coverage",
-        "bm_map.xyzmask_saturation",
-        "bm_map.xyzmask_opacity",
-        "bm_map.xyzmask_use_invert",
-        "bm_map.gmask_use_preview",
-        "bm_map.gmask_use_default",
-        "bm_map.gmask_type",
-        "bm_map.gmask_location_x",
-        "bm_map.gmask_location_y",
-        "bm_map.gmask_location_z",
-        "bm_map.gmask_rotation_x",
-        "bm_map.gmask_rotation_y",
-        "bm_map.gmask_rotation_z",
-        "bm_map.gmask_scale_x",
-        "bm_map.gmask_scale_y",
-        "bm_map.gmask_scale_z",
-        "bm_map.gmask_coverage",
-        "bm_map.gmask_contrast",
-        "bm_map.gmask_saturation",
-        "bm_map.gmask_opacity",
-        "bm_map.gmask_use_invert"
-    ]
-
+### UI Presets Panels and Menus ###
 ###########################################################
-# bake settings preset base
-class BM_OT_BakeSettings_Preset_Add(AddPresetBase, bpy.types.Operator):
-    bl_idname = "bakemaster.bakesettings_preset_add"
-    bl_label = "Add Bake Settings Preset"
-    bl_description = "Add or Remove Bake Settings Preset"
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-    preset_menu = 'BM_MT_BakeSettings_Presets'
-    preset_subdir = 'bakemaster_presets\\bake_settings_presets\\'
 
-    preset_defines = [
-        "bm_item = bpy.context.scene.bm_aol[bpy.context.scene.bm_props.active_index]"
-    ]
-
-    preset_values = [
-        "bm_item.use_internal",
-        "bm_item.output_filepath",
-        "bm_item.use_subfolder",
-        "bm_item.subfolder_name",
-        "bm_item.batch_name",
-        "bm_item.use_material",
-        "bm_item.bake_samples",
-        "bm_item.bake_use_adaptive_sampling",
-        "bm_item.bake_adaptive_threshold",
-        "bm_item.bake_min_samples",
-        "bm_item.bake_device"
-    ]
-
-### UI ###
-
-###########################################################
 # object configurator preset panel and menu
 class BM_PT_ObjectConfigurator_Presets(PresetPanel, bpy.types.Panel):
     bl_label = "Object Configuration Preset"
