@@ -1584,6 +1584,24 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
+class BM_OT_CreateArtificialUniContainer_DeselectAll(bpy.types.Operator):
+    bl_label = "Deselect All"
+    bl_idname = "bakemaster.artificial_container_deselect_all"
+    bl_description = "Deselect all chosen objects"
+    bl_options = {'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        bm_props = context.scene.bm_props
+        data = {
+            'use_include' : False,
+            'is_highpoly' : False,
+            'is_cage' : False,
+        }
+        for object_item in bm_props.global_cauc_objects:
+            for key in data:
+                setattr(object_item, key, data[key])
+        return {'FINISHED'}
+
 class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
     bl_label = "Artificial Container"
     bl_idname = "bakemaster.artificial_container"
@@ -1601,10 +1619,19 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
     def draw(self, context):
         bm_props = context.scene.bm_props
         layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
 
         if bm_props.global_use_name_matching is False:
             layout.label(text="Cannot create. Enable Name Matching")
             return
+        layout.label(text="Choose Objects to create new Container with:")
+
+        rows = len(bm_props.global_cauc_objects)
+        table = items_box.column().row()
+        table.template_list('BM_CAUC_UL_Objects_Item', "", bm_props, 'global_cauc_objects', bm_props, 'global_cauc_objects_active_index', rows=rows)
+        column = table.column(align=True)
+        column.operator(BM_OT_CreateArtificialUniContainer_DeselectAll.bl_idname, text="", icon='CHECKBOX_HLT')
 
     def invoke(self, context, event):
         wm = context.window_manager
