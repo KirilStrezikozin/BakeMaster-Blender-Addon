@@ -88,6 +88,41 @@ class BM_ALEP_UL_Maps_Item(bpy.types.UIList):
     def draw_filter(self, context, layout):
         pass
 
+class BM_CAUC_UL_Objects_Item(bpy.types.UIList):
+    def draw_item(self, context, layout, data, item, active_data, active_propname, index):
+        source_object = [object for object in context.scene.bm_table_of_objects if object.global_object_name == item.object_name]
+        if len(source_object) == 0:
+            layout.label(text="ERROR. Object not found", icon='ERROR')
+            return
+
+        active = True
+        object = source_object[0]
+        try:
+            context.scene.objects[object.global_object_name]
+        except (KeyError, AttributeError, UnboundLocalError):
+            active = False
+
+        row = layout.row()
+        split = row.split(factor=0.3)
+        column = split.row()
+        column.prop(item, 'use_include', text="", icon='MESH_PLANE')
+        column.prop(item, 'is_highpoly', text="", icon='VIEW_ORTHO')
+        column.prop(item, 'is_cage', text="", icon='SELECT_SET')
+        row.emboss = 'NONE'
+        column = split.row()
+        column.label(text=item.object_name)
+
+        if active:
+            layout.active = any([item.use_include, item.is_highpoly, item.is_cage])
+        else:
+            layout.active = False
+
+    def invoke(self, context, event):
+        pass
+
+    def draw_filter(self, context, layout):
+        pass
+
 class BM_UL_Table_of_Objects_Item(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         row = layout.row()   
