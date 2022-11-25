@@ -244,7 +244,7 @@ class BM_SceneProps(bpy.types.PropertyGroup):
     global_bake_uv_layer_tag : bpy.props.StringProperty(
         name="UVMap Tag",
         description="What UVMap name should include for BakeMaster to see it as UVMap for bake",
-        default="decal")
+        default="bake")
 
 ##################################################
 ### MAP PROPS ###
