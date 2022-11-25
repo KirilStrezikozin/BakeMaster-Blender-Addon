@@ -1338,7 +1338,6 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
             chnlpack_box_header.prop(scene.bm_props, 'global_is_chnlpack_panel_expanded', text="", icon=icon)
             chnlpack_box_header.emboss = 'NORMAL'
             chnlpack_box_header.label(text="Channel Packing")
-            BM_PT_MapsConfigurator_Presets.draw_panel_header(chnlpack_box_header)
 
             # channel packing body
             if scene.bm_props.global_is_chnlpack_panel_expanded:
@@ -1355,6 +1354,8 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
                 chnlpack_box_column.operator(BM_OT_ITEM_ChannelPack_Table_Remove.bl_idname, text="", icon='REMOVE')
                 chnlpack_box_column.separator(factor=1.0)
                 chnlpack_box_column.emboss = 'NONE'
+                BM_PT_MapsConfigurator_Presets.draw_panel_header(chnlpack_box_column)
+                chnlpack_box_column.separator(factor=1.0)
                 chnlpack_box_column.operator(BM_OT_ITEM_ChannelPack_Table_Trash.bl_idname, text="", icon='TRASH')
 
                 if len(object.chnlp_channelpacking_table):
