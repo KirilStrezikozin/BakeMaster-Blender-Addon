@@ -1584,6 +1584,32 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
+class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
+    bl_label = "Artificial Container"
+    bl_idname = "bakemaster.artificial_container"
+    bl_description = "Group detached objects into one Container, where all settings can be set at once along other Container pros"
+    bl_options = {'UNDO'}
+
+    def execute(self, context):
+        bm_props = context.scene.bm_props
+
+        if bm_props.global_use_name_matching is False:
+            return {'FINISHED'}
+
+        return {'FINISHED'}
+    
+    def draw(self, context):
+        bm_props = context.scene.bm_props
+        layout = self.layout
+
+        if bm_props.global_use_name_matching is False:
+            layout.label(text="Cannot create. Enable Name Matching")
+            return
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
 class BM_OT_Help(bpy.types.Operator):
     bl_label = "BakeMaster Help"
     bl_idname = "bakemaster.help"
