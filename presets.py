@@ -1117,236 +1117,176 @@ class BM_OT_BAKE_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 ###########################################################
 ### UI Presets Panels and Menus ###
 ###########################################################
-
-# object configurator preset panel and menu
-class BM_PT_ObjectConfigurator_Presets(PresetPanel, bpy.types.Panel):
-    bl_label = "Object Configuration Preset"
-    preset_subdir = 'bakemaster_presets\\object_configurator_presets\\'
+class BM_PT_FULL_OBJECT_Presets(PresetPanel, bpy.types.Panel):
+    bl_label = "Full Object Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_FULL_OBJECT_decal_hl_uv_csh_out_maps_chnlp_bake\\'
     preset_operator = "script.execute_preset_bakemaster"
-    preset_add_operator = "bakemaster.objectconfigurator_preset_add"
+    preset_add_operator = "bakemaster.full_object_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_ObjectConfigurator_Presets'
+        "menu_idname" : 'BM_MT_FULL_OBJECT_Presets'
     }
-class BM_MT_ObjectConfigurator_Presets(bpy.types.Menu):
-    bl_label = "Object Configuration Preset"
-    preset_subdir = 'bakemaster_presets\\object_configurator_presets\\'
+class BM_MT_FULL_OBJECT_Presets(bpy.types.Menu):
+    bl_label = "Full Object Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_FULL_OBJECT_decal_hl_uv_csh_out_maps_chnlp_bake\\'
     preset_operator = "script.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
 
-# object settings preset panel and menu
-class BM_PT_ObjectSettings_Presets(PresetPanel, bpy.types.Panel):
-    bl_label = "Object Settings Preset"
-    preset_subdir = 'bakemaster_presets\\object_settings_presets\\'
+class BM_PT_OBJECT_Presets(PresetPanel, bpy.types.Panel):
+    bl_label = "Object Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_FULL_OBJECT_decal_hl_uv_csh\\'
     preset_operator = "script.execute_preset_bakemaster"
-    preset_add_operator = "bakemaster.objectsettings_preset_add"
+    preset_add_operator = "bakemaster.object_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_ObjectSettings_Presets'
+        "menu_idname" : 'BM_MT_OBJECT_Presets'
     }
-class BM_MT_ObjectSettings_Presets(bpy.types.Menu):
-    bl_label = "Object Settings Preset"
-    preset_subdir = 'bakemaster_presets\\object_settings_presets\\'
+class BM_MT_OBJECT_Presets(bpy.types.Menu):
+    bl_label = "Object Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_FULL_OBJECT_decal_hl_uv_csh\\'
     preset_operator = "script.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
 
-# stt settings preset panel and menu
-class BM_PT_STTSettings_Presets(PresetPanel, bpy.types.Panel):
-    bl_label = "Source to Target Settings Preset"
-    preset_subdir = 'bakemaster_presets\\stt_settings_presets\\'
+class BM_PT_DECAL_Presets(PresetPanel, bpy.types.Panel):
+    bl_label = "Decal Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_DECAL_decal\\'
     preset_operator = "script.execute_preset_bakemaster"
-    preset_add_operator = "bakemaster.sttsettings_preset_add"
+    preset_add_operator = "bakemaster.decal_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_STTSettings_Presets'
+        "menu_idname" : 'BM_MT_DECAL_Presets'
     }
-class BM_MT_STTSettings_Presets(bpy.types.Menu):
-    bl_label = "Source to Target Settings Preset"
-    preset_subdir = 'bakemaster_presets\\stt_settings_presets\\'
+class BM_MT_DECAL_Presets(bpy.types.Menu):
+    bl_label = "Decal Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_DECAL_decal\\'
     preset_operator = "script.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
 
-# uv settings preset panel and menu
-class BM_PT_UVSettings_Presets(PresetPanel, bpy.types.Panel):
-    bl_label = "UV Settings Preset"
-    preset_subdir = 'bakemaster_presets\\uv_settings_presets\\'
+class BM_PT_HL_Presets(PresetPanel, bpy.types.Panel):
+    bl_label = "High to Lowpoly Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_HL_hl\\'
     preset_operator = "script.execute_preset_bakemaster"
-    preset_add_operator = "bakemaster.uvsettings_preset_add"
+    preset_add_operator = "bakemaster.hl_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_UVSettings_Presets'
+        "menu_idname" : 'BM_MT_HL_Presets'
     }
-class BM_MT_UVSettings_Presets(bpy.types.Menu):
-    bl_label = "UV Settings Preset"
-    preset_subdir = 'bakemaster_presets\\uv_settings_presets\\'
+class BM_MT_HL_Presets(bpy.types.Menu):
+    bl_label = "High to Lowpoly Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_HL_hl\\'
     preset_operator = "script.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
 
-# output settings preset panel and menu
-class BM_PT_OutputSettings_Presets(PresetPanel, bpy.types.Panel):
-    bl_label = "Output Settings Preset"
-    preset_subdir = 'bakemaster_presets\\output_settings_presets\\'
+class BM_PT_UV_Presets(PresetPanel, bpy.types.Panel):
+    bl_label = "UVs & Layers Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_UV_uv\\'
     preset_operator = "script.execute_preset_bakemaster"
-    preset_add_operator = "bakemaster.outputsettings_preset_add"
+    preset_add_operator = "bakemaster.uv_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_OutputSettings_Presets'
+        "menu_idname" : 'BM_MT_UV_Presets'
     }
-class BM_MT_OutputSettings_Presets(bpy.types.Menu):
-    bl_label = "Output Settings Preset"
-    preset_subdir = 'bakemaster_presets\\output_settings_presets\\'
+class BM_MT_UV_Presets(bpy.types.Menu):
+    bl_label = "UVs & Layers Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_UV_uv\\'
     preset_operator = "script.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
+
+class BM_PT_CSH_Presets(PresetPanel, bpy.types.Panel):
+    bl_label = "Shading Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_CSH_csh\\'
+    preset_operator = "script.execute_preset_bakemaster"
+    preset_add_operator = "bakemaster.csh_preset_add"
+    preset_operator_defaults = {
+        "menu_idname" : 'BM_MT_CSH_Presets'
+    }
+class BM_MT_CSH_Presets(bpy.types.Menu):
+    bl_label = "Shading Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_CSH_csh\\'
+    preset_operator = "script.execute_preset_bakemaster"
+    
+    draw = bpy.types.Menu.draw_preset
+
+class BM_PT_OUT_Presets(PresetPanel, bpy.types.Panel):
+    bl_label = "Format Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_OUT_out\\'
+    preset_operator = "script.execute_preset_bakemaster"
+    preset_add_operator = "bakemaster.out_preset_add"
+    preset_operator_defaults = {
+        "menu_idname" : 'BM_MT_OUT_Presets'
+    }
+class BM_MT_OUT_Presets(bpy.types.Menu):
+    bl_label = "Format Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_OUT_out\\'
+    preset_operator = "script.execute_preset_bakemaster"
+    
+    draw = bpy.types.Menu.draw_preset
+
+
+class BM_PT_FULL_MAP_Presets(PresetPanel, bpy.types.Panel):
+    bl_label = "Full Maps Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_FULL_MAP_maps_hl_uv_out\\'
+    preset_operator = "script.execute_preset_bakemaster"
+    preset_add_operator = "bakemaster.full_maps_preset_add"
+    preset_operator_defaults = {
+        "menu_idname" : 'BM_MT_FULL_MAPS_Presets'
+    }
+class BM_MT_FULL_MAPS_Presets(bpy.types.Menu):
+    bl_label = "Full Maps Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_FULL_MAP_maps_hl_uv_out\\'
+    preset_operator = "script.execute_preset_bakemaster"
+    
+    draw = bpy.types.Menu.draw_preset
+    
+class BM_PT_MAP_Presets(PresetPanel, bpy.types.Panel):
+    bl_label = "Map Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_MAP_map\\'
+    preset_operator = "script.execute_preset_bakemaster"
+    preset_add_operator = "bakemaster.map_preset_add"
+    preset_operator_defaults = {
+        "menu_idname" : 'BM_MT_MAP_Presets'
+    }
+class BM_MT_MAP_Presets(bpy.types.Menu):
+    bl_label = "Map Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_MAP_map\\'
+    preset_operator = "script.execute_preset_bakemaster"
+    
+    draw = bpy.types.Menu.draw_preset
+
+class BM_PT_CHNLP_Presets(PresetPanel, bpy.types.Panel):
+    bl_label = "Channel Pack Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_CHNLP_chnlp\\'
+    preset_operator = "script.execute_preset_bakemaster"
+    preset_add_operator = "bakemaster.chnlp_preset_add"
+    preset_operator_defaults = {
+        "menu_idname" : 'BM_MT_CHNLP_Presets'
+    }
+class BM_MT_CHNLP_Presets(bpy.types.Menu):
+    bl_label = "Channel Pack Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_CHNLP_chnlp\\'
+    preset_operator = "script.execute_preset_bakemaster"
+    
+    draw = bpy.types.Menu.draw_preset
+
+class BM_PT_BAKE_Presets(PresetPanel, bpy.types.Panel):
+    bl_label = "Bake Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_BAKE_bake\\'
+    preset_operator = "script.execute_preset_bakemaster"
+    preset_add_operator = "bakemaster.chnlp_preset_add"
+    preset_operator_defaults = {
+        "menu_idname" : 'BM_MT_BAKE_Presets'
+    }
+class BM_MT_BAKE_Presets(bpy.types.Menu):
+    bl_label = "Bake Preset"
+    preset_subdir = 'bakemaster_presets\\PRESETS_BAKE_bake\\'
+    preset_operator = "script.execute_preset_bakemaster"
+    
+    draw = bpy.types.Menu.draw_preset
+
 
 ###########################################################
-# map configurator preset panel and menu
-class BM_PT_MapsConfigurator_Presets(PresetPanel, bpy.types.Panel):
-    bl_label = "Maps Configuration Presets"
-    preset_subdir = "bakemaster_presets\\maps_configurator_presets\\"
-    preset_operator = "script.execute_preset_bakemaster"
-    preset_add_operator = "bakemaster.mapsconfigurator_preset_add"
-    preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_MapsConfigurator_Presets'
-    } 
-class BM_MT_MapsConfigurator_Presets(bpy.types.Menu):
-    bl_label = "Maps Configuration Presets"
-    preset_subdir = "bakemaster_presets\\maps_configurator_presets\\"
-    preset_operator = "script.execute_preset_bakemaster"
-   
-    draw = bpy.types.Menu.draw_preset
-
-# map settings preset panel and menu
-class BM_PT_MapSettings_Presets(PresetPanel, bpy.types.Panel):
-    bl_label = "Map Settings Presets"
-    preset_subdir = "bakemaster_presets\\map_settings_presets\\"
-    preset_operator = "script.execute_preset_bakemaster"
-    preset_add_operator = "bakemaster.mapsettings_preset_add"
-    preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_MapSettings_Presets'
-    } 
-class BM_MT_MapSettings_Presets(bpy.types.Menu):
-    bl_label = "Map Settings Presets"
-    preset_subdir = "bakemaster_presets\\map_settings_presets\\"
-    preset_operator = "script.execute_preset_bakemaster"
-   
-    draw = bpy.types.Menu.draw_preset
-
+### Execute Preset ###
 ###########################################################
-# bake settings preset panel and menu
-class BM_PT_BakeSettings_Presets(PresetPanel, bpy.types.Panel):
-    bl_label = "Bake Settings Presets"
-    preset_subdir = "bakemaster_presets\\bake_settings_presets\\"
-    preset_operator = "script.execute_preset_bakemaster"
-    preset_add_operator = "bakemaster.bakesettings_preset_add"
-    preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_BakeSettings_Presets'
-    } 
-class BM_MT_BakeSettings_Presets(bpy.types.Menu):
-    bl_label = "Bake Settings Presets"
-    preset_subdir = "bakemaster_presets\\bake_settings_presets\\"
-    preset_operator = "script.execute_preset_bakemaster"
-
-    draw = bpy.types.Menu.draw_preset
-
-### EXECUTE PRESET ###
-
-def data_insert_smartprops_source_cage(data):
-    # get the preset's source and cage_object value
-    source_line_index = 0
-    source_line = ""
-    for index, line in enumerate(data):
-        if line.find("bm_item.source") != -1:
-            source_line_index = index
-            source_line = line.strip()
-            break
-    source_value = source_line[source_line.find("= ") + 2:]
-
-    cage_line_index = 0
-    cage_line = ""
-    for index, line in enumerate(data):
-        if line.find("bm_item.cage_object") != -1:
-            cage_line_index = index
-            cage_line = line.strip()
-            break
-    cage_value = cage_line[cage_line.find("= ") + 2:]
-
-    # checking if use_source and use_cage is true to write data
-    write_source = False
-    write_cage = False
-    for index, line in enumerate(data):
-        if line.find("bm_item.use_target") != -1:
-            write_source = data[index].strip()[data[index].find("= ") + 2:]
-            break
-    for index, line in enumerate(data):
-        if line.find("bm_item.use_cage") != -1:
-            write_cage = data[index].strip()[data[index].find("= ") + 2:]
-            break
-
-    # writing data
-    if data[source_line_index - 1].strip() != "try:" and write_source == 'True':
-        data[source_line_index] = "\nsource_assigned = False\ntry_sources = ['high', 'hpoly', 'high-poly', 'highpoly', 'source']\nfor index, item in enumerate(bpy.context.scene.bm_aol):\n\tif any(name.lower() in item.object_pointer.name.lower() for name in try_sources):\n\t\ttry:\n\t\t\tbm_item.source = str(index)\n\t\texcept (TypeError, KeyError):\n\t\t\tpass\n\t\telse:\n\t\t\tbm_item.source = str(index)\n\t\t\tsource_assigned = True\n\t\t\tbreak\n"#if source_assigned is False:\n\t\ttry:\n\t\t\tbm_item.source = %s\n\t\texcept (TypeError, KeyError):\n\t\t\tpass\n" % source_value
-
-    if data[cage_line_index - 1].strip() != "try:" and write_cage == 'True':
-        data[cage_line_index] = "\ncage_assinged = False\ntry_cages = ['cage', 'cageobject']\nfor index, obj in enumerate(bpy.context.scene.objects):\n\tif any(name.lower() in obj.name.lower() for name in try_cages):\n\t\ttry:\n\t\t\tbm_item.cage_object = obj\n\t\texcept (TypeError, KeyError):\n\t\t\tpass\n\t\telse:\n\t\t\tbm_item.cage_object = obj\n\t\t\tcage_assinged = True\n\t\t\tbreak\n"#if cage_assinged is False:\n\ttry:\n\t\tbm_item.cage_object = %s\n\texcept (TypeError, KeyError):\n\t\tpass\n" % cage_value
-
-    return data
-
-def data_insert_smartprops_active_uv(data):
-    # get the preset's active_uv value
-    active_uv_line_index = 0
-    active_uv_line = ""
-    for index, line in enumerate(data):
-        if line.find("bm_item.active_uv") != -1:
-            active_uv_line_index = index
-            active_uv_line = line.strip()
-            break
-    active_uv_value = active_uv_line[active_uv_line.find("= ") + 2:]
-
-    # writing data
-    if data[active_uv_line_index - 1].strip() != "try:":
-        data[active_uv_line_index] = "\ntry:\n\t%s\nexcept TypeError:\n\tpass\n\n" % active_uv_line
-
-    return data
-
-def data_insert_smartprops_mapsconfig(data):
-    # get the max index of map = aka length of maps
-    map_index = -1
-    for index, line in enumerate(reversed(data)):
-        if line.find("bm_item.maps[") != -1:
-
-            map_index_temp = int(line.strip()[line.find("bm_item.maps[") + 13:line.find("].")])
-            map_index = map_index_temp if map_index_temp > map_index else map_index
-            break
-    
-    # do not add maps if there are none saved to the preset
-    if map_index == -1:
-        return data
-
-    insert_line_index = 0
-    for index, line in enumerate(data):
-        if line.strip() == "":
-            insert_line_index = index
-            break
-
-    # writing data
-    if data[insert_line_index - 1].find("bm_item.maps_active_index = len(bm_item.maps) - 1") == -1:
-        data[insert_line_index] = "to_remove = []\nfor index, map in enumerate(bm_item.maps):\n\tto_remove.append(index)\nfor index in to_remove[::-1]:\n\tbm_item.maps.remove(index)\nbm_item.maps_active_index = 0\nfor index in range(%d + 1):\n\tnew_pass = bm_item.maps.add()\n\tnew_pass.map_type = 'ALBEDO'\n\tbm_item.maps_active_index = len(bm_item.maps) - 1\n\n" % map_index
-
-    return data
-
-# not used
-def data_insert_configurator_affectall(data):
-    # stupid, but only this line 1 is possible
-    data[1] = "for bm_item in bpy.context.scene.bm_aol:\n\tif bm_item.use_source is True:\n\t\tcontinue\n\ttry:\n\t\tbpy.context.scene.objects[bm_item.object_pointer.name]\n\texcept (KeyError, UnboundLocalError):\n\t\tcontinue\n\telse:\n"
-
-    data_copy = data
-
-    for index, line in enumerate(data):
-        if index >= 2:
-            data_copy[index] = "\t\t" + line
-    
-    return data_copy
-
 # original from https://developer.blender.org/diffusion/B/browse/master/release/scripts/startup/bl_operators/presets.py%24213
 # for bakemaster presets modified execution
 class BM_OT_ExecutePreset(bpy.types.Operator):
@@ -1366,7 +1306,7 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
     )
     affect_all_objects: bpy.props.BoolProperty(
         name="Affect all Objects",
-        description="Load Preset for every object in the List of Objects\n(every object that is not source already and exists in the scene)",
+        description="Load Preset for every Object/Container in the Table of Objects",
         default=False,
         options={'SKIP_SAVE'}
     )
@@ -1389,61 +1329,17 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
             preset_class.reset_cb(context)
 
         if ext == ".py":
-            ### SMART PRESETS ###
-            # adding custom script to presest file
-            # for specific props proper execution
-            ###
-            menus_ids = ["BM_MT_ObjectConfigurator_Presets",
-                         "BM_MT_ObjectSettings_Presets",
-                         "BM_MT_STTSettings_Presets",
-                         "BM_MT_UVSettings_Presets",
-                         "BM_MT_MapsConfigurator_Presets"]
-            if self.menu_idname in menus_ids:
-                with open(filepath, 'r') as preset_file:
-                    data = preset_file.readlines()
-
-                # Object preset uv + stt props
-                if self.menu_idname in ["BM_MT_ObjectSettings_Presets", "BM_MT_ObjectConfigurator_Presets"]:
-                    data = data_insert_smartprops_source_cage(data)
-                    data = data_insert_smartprops_active_uv(data)
-                
-                # STT preset source and cage_object props
-                # try except for TypeError when assigning source
-                # smart source and cage_object assignment
-                if self.menu_idname == "BM_MT_STTSettings_Presets":
-                    data = data_insert_smartprops_source_cage(data)
-
-                # UV preset active_uv prop
-                # try except for avoiding TypeError when assigning active_uv
-                if self.menu_idname == "BM_MT_UVSettings_Presets":
-                    data = data_insert_smartprops_active_uv(data)
-
-                # Maps Configurator prest adding maps and props
-                if self.menu_idname in ["BM_MT_MapsConfigurator_Presets", "BM_MT_ObjectConfigurator_Presets"]:
-                    data = data_insert_smartprops_mapsconfig(data)
-
-                with open(filepath, 'w') as preset_file:
-                    preset_file.writelines(data)
-            ###
-
             try:
-                # load preset for every object in the aol
+                # load preset for every object in bm_table_of_objects
                 # execute preset, change item index, execute again, ...
-                if self.menu_idname == "BM_MT_ObjectConfigurator_Presets" and self.affect_all_objects is True:
-                    for index, bm_item in enumerate(context.scene.bm_aol):
-                        if bm_item.use_source:
-                            continue
-                        try:
-                            context.scene.objects[bm_item.object_pointer.name]
-                        except (KeyError, UnboundLocalError):
-                            continue
-                        else:
-                            context.scene.bm_props.active_index = index
-                            bpy.utils.execfile(filepath)
-                
+                if self.menu_idname == "BM_MT_FULL_OBJECT_Presets" and self.affect_all_objects:
+                    for index, bm_item in enumerate(context.scene.bm_table_of_objects):
+                        context.scene.bm_props.global_active_index = index
+                        bpy.utils.execfile(filepath)
                 else:
                     bpy.utils.execfile(filepath)
 
+            # preset load failed
             except Exception as ex:
                 self.report({'ERROR'}, "Failed to execute the preset: " + repr(ex))
 
@@ -1464,12 +1360,12 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
         layout = self.layout
         layout.label(text="Preset: %s" % basename(self.filepath))
         layout.separator(factor=0.35)
-        if self.menu_idname == "BM_MT_ObjectConfigurator_Presets":
+        if self.menu_idname == "BM_MT_FULL_OBJECT_Presets":
             layout.prop(self, "affect_all_objects")
     
     def invoke(self, context, event):
         wm = context.window_manager
-        if self.menu_idname == "BM_MT_ObjectConfigurator_Presets":
+        if self.menu_idname == "BM_MT_FULL_OBJECT_Presets":
             return wm.invoke_props_dialog(self, width=400)
         else:
             return self.execute(context)
