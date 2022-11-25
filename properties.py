@@ -53,17 +53,20 @@ class BM_CAUC_Object(bpy.types.PropertyGroup):
     use_include : bpy.props.BoolProperty(
         name="Inlcude as Lowpoly",
         description="Include this object as a regular or Lowpoly Object in new Artificial Container",
-        default=False)
+        default=False,
+        update=BM_CAUC_Object_use_include_Update)
 
     is_highpoly : bpy.props.BoolProperty(
         name="Include as Highpoly",
         description="Include this object as a Highpoly Object in new Artificial Container",
-        default=False)
+        default=False,
+        update=BM_CAUC_Object_is_highpoly_Update)
 
     is_cage : bpy.props.BoolProperty(
         name="Include as Cage",
         description="Include this object as a Highpoly Object in new Artificial Container",
-        default=False)
+        default=False,
+        update=BM_CAUC_Object_is_cage_Update)
 
 #################################################
 ### GLOBAL SCENE PROPS ###
