@@ -142,6 +142,7 @@ classes = (
     BM_OT_ApplyLastEditedProp_SelectAll,
     BM_OT_ApplyLastEditedProp_InvertSelection,
     BM_OT_ApplyLastEditedProp,
+    BM_OT_CreateArtificialUniContainer_DeselectAll,
     BM_OT_CreateArtificialUniContainer,
     BM_OT_Help,
 
