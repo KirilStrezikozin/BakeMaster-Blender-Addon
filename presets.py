@@ -34,31 +34,21 @@ def BM_Presets_FolderSetup():
     bm_presets_dir_path = os.path.join(bpy.utils.user_resource('SCRIPTS'), "presets", bm_presets_subdir)
     bm_presets_paths = bpy.utils.preset_paths(bm_presets_subdir)
 
-    ###########################################################
     # bakemaster_presets main dir
     if bm_presets_dir_path not in bm_presets_paths and not os.path.exists(bm_presets_dir_path):
         os.makedirs(bm_presets_dir_path)
 
-    ###########################################################
-    # presets for configuring object(s) fully
-    presets_makedir(bm_presets_dir_path, "global_presets")
-    ###########################################################
-    # presets for configuring hl, uv, out, csh, chnlp, bake
-    presets_makedir(bm_presets_dir_path, "hl_uv_out_presets")
-    presets_makedir(bm_presets_dir_path, "hl_presets")
-    presets_makedir(bm_presets_dir_path, "uv_presets")
-    presets_makedir(bm_presets_dir_path, "out_presets")
-    presets_makedir(bm_presets_dir_path, "csh_presets")
-    presets_makedir(bm_presets_dir_path, "chnlp_presets")
-    presets_makedir(bm_presets_dir_path, "bake_presets")
-    ###########################################################
-    # presets for configuring map(s) fully
-    presets_makedir(bm_presets_dir_path, "global_map_presets")
-    # presets for configuring 
-    presets_makedir(bm_presets_dir_path, "map_settings_presets")
-    ###########################################################
-    # bake settings presets subdir
-    presets_makedir(bm_presets_dir_path, "bake_settings_presets")
+    presets_makedir(bm_presets_dir_path, "PRESETS_FULL_OBJECT_decal_hl_uv_csh_out_maps_chnlp_bake")
+    presets_makedir(bm_presets_dir_path, "PRESETS_OBJECT_decal_hl_uv_csh")
+    presets_makedir(bm_presets_dir_path, "PRESETS_DECAL_decal")
+    presets_makedir(bm_presets_dir_path, "PRESETS_HL_hl")
+    presets_makedir(bm_presets_dir_path, "PRESETS_UV_uv")
+    presets_makedir(bm_presets_dir_path, "PRESETS_CSH_csh")
+    presets_makedir(bm_presets_dir_path, "PRESETS_OUT_out")
+    presets_makedir(bm_presets_dir_path, "PRESETS_FULL_MAP_maps_hl_uv_out")
+    presets_makedir(bm_presets_dir_path, "PRESETS_MAP_map")
+    presets_makedir(bm_presets_dir_path, "PRESETS_CHNLP_chnlp")
+    presets_makedir(bm_presets_dir_path, "PRESETS_BAKE_bake")
 
 ### PRESET BASES ###
 
@@ -523,7 +513,7 @@ class BM_OT_MapsConfigutator_Preset_Add(BM_Configurator_AddPresetBase, bpy.types
     bl_idname = "bakemaster.mapsconfigurator_preset_add"
     bl_label = "Add Maps Configuration Preset"
     bl_description = "Add or Remove Maps Configuration Preset"
-    bl_opetions = {'REGISTER', 'UNDO', 'INTERNAL'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     preset_menu = 'BM_MT_MapsConfigurator_Presets'
     preset_subdir = 'bakemaster_presets\\maps_configurator_presets\\'
 
