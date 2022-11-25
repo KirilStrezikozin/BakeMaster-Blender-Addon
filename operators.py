@@ -1637,6 +1637,7 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
         column.operator(BM_OT_CreateArtificialUniContainer_DeselectAll.bl_idname, text="", icon='CHECKBOX_HLT')
 
     def invoke(self, context, event):
+        wm = context.window_manager
         bm_props = context.scene.bm_props
 
         # trash
@@ -1655,7 +1656,6 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
                 new_item = bm_props.global_cauc_objects.add()
                 new_item.object_name = object.global_object_name
 
-        wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
 class BM_OT_Help(bpy.types.Operator):
