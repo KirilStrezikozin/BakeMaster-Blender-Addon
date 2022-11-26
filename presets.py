@@ -204,7 +204,7 @@ class BM_AddPresetBase():
                             pass
                         else:
                             if getattr(bm_item, "%s_use_unique_per_map" % getattr(self, "preset_tag")) and len(bm_item.global_maps):
-                                define = "bm_map = bm_item.global_maps[bm_item.global_maps_active_index"
+                                define = "bm_map = bm_item.global_maps[bm_item.global_maps_active_index]"
                             else:
                                 define = "bm_map = bm_item"
                             if define not in self.preset_defines:
@@ -736,7 +736,7 @@ class BM_OT_HL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     preset_values = [
         # "bm_map.hl_use_unique_per_map",
         # "bm_map.hl_highpoly_table",
-        "bm_map.hl_decals_use_separate_texset",
+        "bm_item.hl_decals_use_separate_texset",
         # "bm_map.hl_use_cage",
         "bm_map.hl_cage_type",
         "bm_map.hl_cage_extrusion",
