@@ -665,14 +665,14 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.decal_upper_coordinate",
         "bm_item.decal_boundary_offset",
 
-        # "bm_item.hl_use_unique_per_map"
-        # "bm_item.hl_highpoly_table"
-        "bm_item.hl_decals_use_separate_texset"
-        # "bm_item.hl_use_cage"
-        "bm_item.hl_cage_type"
-        "bm_item.hl_cage_extrusion"
-        "bm_item.hl_max_ray_distance"
-        # "bm_item.hl_cage"
+        # "bm_item.hl_use_unique_per_map",
+        # "bm_item.hl_highpoly_table",
+        "bm_item.hl_decals_use_separate_texset",
+        # "bm_item.hl_use_cage",
+        "bm_item.hl_cage_type",
+        "bm_item.hl_cage_extrusion",
+        "bm_item.hl_max_ray_distance",
+        # "bm_item.hl_cage",
 
         "bm_item.uv_use_unique_per_map",
         "bm_item.uv_bake_data",
@@ -734,14 +734,14 @@ class BM_OT_HL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     preset_tag = "hl"
 
     preset_values = [
-        # "bm_map.hl_use_unique_per_map"
-        # "bm_map.hl_highpoly_table"
-        "bm_map.hl_decals_use_separate_texset"
-        # "bm_map.hl_use_cage"
-        "bm_map.hl_cage_type"
-        "bm_map.hl_cage_extrusion"
-        "bm_map.hl_max_ray_distance"
-        # "bm_map.hl_cage"
+        # "bm_map.hl_use_unique_per_map",
+        # "bm_map.hl_highpoly_table",
+        "bm_map.hl_decals_use_separate_texset",
+        # "bm_map.hl_use_cage",
+        "bm_map.hl_cage_type",
+        "bm_map.hl_cage_extrusion",
+        "bm_map.hl_max_ray_distance",
+        # "bm_map.hl_cage",
     ]
 
 class BM_OT_UV_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
