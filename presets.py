@@ -1312,6 +1312,7 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
     def execute(self, context):
         from os.path import basename, splitext
         filepath = self.filepath
+        bm_props = context.scene.bm_props
 
         # change the menu title to the most recently chosen option
         preset_class = getattr(bpy.types, self.menu_idname)
@@ -1328,10 +1329,20 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
 
         if ext == ".py":
             try:
-                # load preset for every object in bm_table_of_objects
+                # load preset for chosen objects in bm_table_of_objects
                 # execute preset, change item index, execute again, ...
-                if self.menu_idname == "BM_MT_FULL_OBJECT_Presets" and self.affect_all_objects:
-                    for index, bm_item in enumerate(context.scene.bm_table_of_objects):
+                if self.menu_idname == "BM_MT_FULL_OBJECT_Presets":
+                    for index, bm_item in context.scene.bm_table_of_objects:
+                        if bm_item.nm_is_universal_container:
+                            items = [item for item in bm_props.global_alep_objects if item.object_name == bm_item.nm_container_name]
+                        else:
+                            items = [item for item in bm_props.global_alep_objects if item.object_name == bm_item.global_object_name]
+                        if len(items) == 0:
+                            continue
+                        if items[0].use_affect is False:
+                            continue
+                        
+                        # load preset
                         context.scene.bm_props.global_active_index = index
                         bpy.utils.execfile(filepath)
                 else:
