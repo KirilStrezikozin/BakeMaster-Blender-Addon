@@ -477,7 +477,7 @@ class BM_PT_MainBase(bpy.types.Panel):
         if len(scene.bm_table_of_objects):
             object = BM_Object_Get(context)
             if (object[1] is True) or (scene.bm_props.global_use_name_matching and any([object[0].nm_is_universal_container, object[0].nm_is_local_container])): # and object[0].use_source is False:
-                BM_PT_ObjectConfigurator_Presets.draw_panel_header(col)
+                BM_PT_FULL_OBJECT_Presets.draw_panel_header(col)
                 col.separator()
 
         col.operator(BM_OT_Table_of_Objects_Trash.bl_idname, text="", icon='TRASH')
@@ -585,7 +585,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
         row = self.layout.row(align=True)
         row.use_property_split = False
         row.label(text=label)
-        BM_PT_MapsConfigurator_Presets.draw_panel_header(row)
+        BM_PT_OBJECT_Presets.draw_panel_header(row)
 
     def draw(self, context):
         layout = self.layout
@@ -611,7 +611,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
             decal_box_header.prop(scene.bm_props, 'global_is_decal_panel_expanded', text="", icon=icon)
             decal_box_header.emboss = 'NORMAL'
             decal_box_header.label(text="Decal")
-            BM_PT_MapsConfigurator_Presets.draw_panel_header(decal_box_header)
+            BM_PT_DECAL_Presets.draw_panel_header(decal_box_header)
 
             # decal body
             if scene.bm_props.global_is_decal_panel_expanded:
@@ -645,7 +645,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
         hl_box_header.prop(scene.bm_props, 'global_is_hl_panel_expanded', text="", icon=icon)
         hl_box_header.emboss = 'NORMAL'
         hl_box_header.label(text="High to Lowpoly")
-        BM_PT_MapsConfigurator_Presets.draw_panel_header(hl_box_header)
+        BM_PT_HL_Presets.draw_panel_header(hl_box_header)
 
         # hl body
         if scene.bm_props.global_is_hl_panel_expanded:
@@ -721,7 +721,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
         uv_box_header.prop(scene.bm_props, 'global_is_uv_panel_expanded', text="", icon=icon)
         uv_box_header.emboss = 'NORMAL'
         uv_box_header.label(text="UVs and Layers")
-        BM_PT_MapsConfigurator_Presets.draw_panel_header(uv_box_header)
+        BM_PT_UV_Presets.draw_panel_header(uv_box_header)
 
         # uv body
         if scene.bm_props.global_is_uv_panel_expanded:
@@ -757,7 +757,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
         csh_box_header.prop(scene.bm_props, 'global_is_csh_panel_expanded', text="", icon=icon)
         csh_box_header.emboss = 'NORMAL'
         csh_box_header.label(text="Shading")
-        BM_PT_MapsConfigurator_Presets.draw_panel_header(csh_box_header)
+        BM_PT_CSH_Presets.draw_panel_header(csh_box_header)
 
         # shading body
         if scene.bm_props.global_is_csh_panel_expanded:
@@ -814,7 +814,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
     def draw_header(self, context):
         label = "Maps"
         self.layout.label(text=label)
-        BM_PT_MapsConfigurator_Presets.draw_panel_header(self.layout)
+        BM_PT_FULL_MAP_Presets.draw_panel_header(self.layout)
 
     def draw(self, context):
         layout = self.layout
@@ -836,7 +836,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
         maps_table_column.operator(BM_OT_ITEM_Maps.bl_idname, text="", icon='REMOVE').control = 'REMOVE'
         maps_table_column.separator(factor=1.0)
         if len(object.global_maps):
-            BM_PT_MapsConfigurator_Presets.draw_panel_header(maps_table_column)
+            BM_PT_MAP_Presets.draw_panel_header(maps_table_column)
             maps_table_column.separator(factor=1.0)
         maps_table_column.operator(BM_OT_ITEM_Maps.bl_idname, text="", icon='TRASH').control = 'TRASH'
 
@@ -860,12 +860,12 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 # draw format for all maps
                 if object.out_use_unique_per_map is False:
                     format_box_header.label(text="Format")
-                    BM_PT_MapsConfigurator_Presets.draw_panel_header(format_box_header)
+                    BM_PT_OUT_Presets.draw_panel_header(format_box_header)
                     format_prop_collection = object
                 # draw format unique per map
                 else:
                     format_box_header.label(text="Map Format")
-                    BM_PT_MapsConfigurator_Presets.draw_panel_header(format_box_header)
+                    BM_PT_OUT_Presets.draw_panel_header(format_box_header)
                     format_prop_collection = map
 
                 # format body
@@ -1209,7 +1209,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 hl_box_header.prop(scene.bm_props, 'local_is_hl_panel_expanded', text="", icon=icon)
                 hl_box_header.emboss = 'NORMAL'
                 hl_box_header.label(text="Map High to Lowpoly")
-                BM_PT_MapsConfigurator_Presets.draw_panel_header(hl_box_header)
+                BM_PT_HL_Presets.draw_panel_header(hl_box_header)
 
                 # hl body
                 if scene.bm_props.local_is_hl_panel_expanded:
@@ -1275,7 +1275,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 uv_box_header.prop(scene.bm_props, 'local_is_uv_panel_expanded', text="", icon=icon)
                 uv_box_header.emboss = 'NORMAL'
                 uv_box_header.label(text="Map UVs and Layers")
-                BM_PT_MapsConfigurator_Presets.draw_panel_header(uv_box_header)
+                BM_PT_UV_Presets.draw_panel_header(uv_box_header)
 
                 # uv body
                 if scene.bm_props.local_is_uv_panel_expanded:
@@ -1354,7 +1354,7 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
                 chnlpack_box_column.operator(BM_OT_ITEM_ChannelPack_Table_Remove.bl_idname, text="", icon='REMOVE')
                 chnlpack_box_column.separator(factor=1.0)
                 chnlpack_box_column.emboss = 'NONE'
-                BM_PT_MapsConfigurator_Presets.draw_panel_header(chnlpack_box_column)
+                BM_PT_CHNLP_Presets.draw_panel_header(chnlpack_box_column)
                 chnlpack_box_column.separator(factor=1.0)
                 chnlpack_box_column.operator(BM_OT_ITEM_ChannelPack_Table_Trash.bl_idname, text="", icon='TRASH')
 
@@ -1402,7 +1402,7 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
         bake_box_header.prop(scene.bm_props, 'global_is_bakeoutput_panel_expanded', text="", icon=icon)
         bake_box_header.emboss = 'NORMAL'
         bake_box_header.label(text="Bake Output")
-        BM_PT_MapsConfigurator_Presets.draw_panel_header(bake_box_header)
+        BM_PT_BAKE_Presets.draw_panel_header(bake_box_header)
 
         # bake output body
         if scene.bm_props.global_is_bakeoutput_panel_expanded:
