@@ -1302,12 +1302,6 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
         description="ID name of the menu this was called from",
         options={'SKIP_SAVE'},
     )
-    affect_all_objects: bpy.props.BoolProperty(
-        name="Affect all Objects",
-        description="Load Preset for every Object/Container in the Table of Objects",
-        default=False,
-        options={'SKIP_SAVE'}
-    )
 
     def execute(self, context):
         from os.path import basename, splitext
