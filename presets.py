@@ -92,7 +92,7 @@ class BM_AddPresetBase():
 
         # lazy init maketrans
         def maketrans_init():
-            cls = AddPresetBase
+            cls = BM_AddPresetBase
             attr = "_as_filename_trans"
 
             trans = getattr(cls, attr, None)
@@ -1228,9 +1228,9 @@ class BM_PT_FULL_MAP_Presets(PresetPanel, bpy.types.Panel):
     preset_operator = "script.execute_preset_bakemaster"
     preset_add_operator = "bakemaster.full_maps_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_FULL_MAPS_Presets'
+        "menu_idname" : 'BM_MT_FULL_MAP_Presets'
     }
-class BM_MT_FULL_MAPS_Presets(bpy.types.Menu):
+class BM_MT_FULL_MAP_Presets(bpy.types.Menu):
     bl_label = "Full Maps Preset"
     preset_subdir = 'bakemaster_presets\\PRESETS_FULL_MAP_maps_hl_uv_out\\'
     preset_operator = "script.execute_preset_bakemaster"
@@ -1354,16 +1354,77 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
 
     def draw(self, context):
         from os.path import basename
+        from .operators import BM_OT_ApplyLastEditedProp_SelectAll, BM_OT_ApplyLastEditedProp_InvertSelection
+        bm_props = context.scene.bm_props
 
         layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
         layout.label(text="Preset: %s" % basename(self.filepath))
-        layout.separator(factor=0.35)
+
         if self.menu_idname == "BM_MT_FULL_OBJECT_Presets":
-            layout.prop(self, "affect_all_objects")
-    
+            items_box = layout.box()
+            items_box.use_property_split = True
+            items_box.use_property_decorate = False
+
+            rows = len(bm_props.global_alep_maps)
+
+            table = items_box.column().row()
+            table.template_list('BM_ALEP_UL_Objects_Item', "", bm_props, 'global_alep_objects', bm_props, 'global_alep_objects_active_index', rows=rows)
+            column = table.column(align=True)
+            column.operator(BM_OT_ApplyLastEditedProp_SelectAll.bl_idname, text="", icon='WORLD')
+            column.operator(BM_OT_ApplyLastEditedProp_InvertSelection.bl_idname, text="", icon='CHECKBOX_HLT')
+
     def invoke(self, context, event):
         wm = context.window_manager
+
+        # draw what objects to affect by preset if full_object preset called
         if self.menu_idname == "BM_MT_FULL_OBJECT_Presets":
-            return wm.invoke_props_dialog(self, width=400)
+            bm_props = context.scene.bm_props
+
+            # trash all maps and objects items
+            bm_props.global_alep_maps_active_index = 0
+            to_remove = []
+            for index, _ in enumerate(bm_props.global_alep_maps):
+                to_remove.append(index)
+            for index in sorted(to_remove, reverse=True):
+                bm_props.global_alep_maps.remove(index)
+
+            bm_props.global_alep_objects_active_index = 0
+            to_remove = []
+            for index, _ in enumerate(bm_props.global_alep_objects):
+                to_remove.append(index)
+            for index in sorted(to_remove, reverse=True):
+                bm_props.global_alep_objects.remove(index)
+
+            # construct objects items
+            global_uni_c_master_index = -1
+            for object1 in context.scene.bm_table_of_objects:
+                add_object = False
+                if context.scene.bm_props.global_use_name_matching:
+                    if object1.nm_is_universal_container and object1.nm_uni_container_is_global is False:
+                        global_uni_c_master_index = -1
+                    if object1.nm_is_detached:
+                        add_object = True
+                    elif object1.nm_is_universal_container and object1.nm_uni_container_is_global:
+                        add_object = True
+                        global_uni_c_master_index = object1.nm_master_index
+                    elif not any([object1.hl_is_highpoly, object1.hl_is_cage, object1.nm_item_uni_container_master_index == global_uni_c_master_index, object1.nm_is_local_container]) and object1.nm_item_uni_container_master_index != -1:
+                        add_object = True
+                elif not any([object1.hl_is_highpoly, object1.hl_is_cage]):
+                    add_object = True
+                
+                if add_object:
+                    new_object = bm_props.global_alep_objects.add()
+                    if object1.nm_is_universal_container:
+                        new_object_name = object1.nm_container_name + " Container"
+                    else:
+                        new_object_name = object1.global_object_name
+                    new_object.object_name = new_object_name
+
+            return wm.invoke_props_dialog(self, width=300)
+        
+        # execute preset
         else:
             return self.execute(context)
