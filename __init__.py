@@ -97,6 +97,8 @@ classes = (
 
     #BM_PT_Main_Help,
 
+    BM_OT_ExecutePreset,
+
     BM_PT_FULL_OBJECT_Presets,
     BM_MT_FULL_OBJECT_Presets,
     BM_PT_OBJECT_Presets,
