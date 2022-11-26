@@ -559,7 +559,7 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_description = "Add or Remove Full Object Preset"
     bl_opetions = {'REGISTER', 'UNDO', 'INTERNAL'}
     preset_menu = 'BM_MT_FULL_OBJECT_Presets'
-    preset_subdir = 'bakemaster_presets\\PRESETS_FULL_OBJECT_decal_hl_uv_csh_out_maps_chnlp_bake\\'
+    preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_FULL_OBJECT_decal_hl_uv_csh_out_maps_chnlp_bake')
 
     preset_defines = [
         "bm_item = bpy.context.scene.bm_table_of_objects[bpy.context.scene.bm_props.global_active_index]",
@@ -646,7 +646,7 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_description = "Add or Remove Decal, High to Lowpoly, UVs & Layers, Shading Preset"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     preset_menu = 'BM_MT_OBJECT_Presets'
-    preset_subdir = 'bakemaster_presets\\PRESETS_OBJECT_decal_hl_uv_csh\\'
+    preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_OBJECT_decal_hl_uv_csh')
 
     preset_defines = [
         "bm_item = bpy.context.scene.bm_table_of_objects[bpy.context.scene.bm_props.global_active_index]",
