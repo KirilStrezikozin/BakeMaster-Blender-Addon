@@ -192,12 +192,17 @@ class BM_AddPresetBase():
 
                     # if item has unique settings per map, append bm_map to preset_defines for hl, uv, out presets
                     preset_defines_bm_item = "bm_item = bpy.context.scene.bm_table_of_objects[bpy.context.scene.bm_props.global_active_index]"
-                    exec(preset_defines_bm_item)
+                    bm_item = bpy.context.scene.bm_table_of_objects[bpy.context.scene.bm_props.global_active_index]
                     if hasattr(self, "preset_tag") and preset_defines_bm_item in self.preset_defines:
-                        if getattr(bm_item, "%s_use_unique_per_map" % getattr(self, "preset_tag")) and len(bm_item.global_maps):
-                            self.preset_defines.append("bm_map = bm_item.global_maps[bm_item.global_maps_active_index")
+                        try:
+                            getattr(bm_item, "%s_use_unique_per_map" % getattr(self, "preset_tag"))
+                        except AttributeError:
+                            pass
                         else:
-                            self.preset_defines.append("bm_map = bm_item")
+                            if getattr(bm_item, "%s_use_unique_per_map" % getattr(self, "preset_tag")) and len(bm_item.global_maps):
+                                self.preset_defines.append("bm_map = bm_item.global_maps[bm_item.global_maps_active_index")
+                            else:
+                                self.preset_defines.append("bm_map = bm_item")
 
                     add_except = False
                     except_type = ""
