@@ -112,7 +112,7 @@ classes = (
     BM_PT_OUT_Presets,
     BM_MT_OUT_Presets,
     BM_PT_FULL_MAP_Presets,
-    BM_MT_FULL_MAPS_Presets,
+    BM_MT_FULL_MAP_Presets,
     BM_PT_MAP_Presets,
     BM_MT_MAP_Presets,
     BM_PT_CHNLP_Presets,
