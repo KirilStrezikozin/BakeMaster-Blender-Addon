@@ -1144,7 +1144,7 @@ class BM_MT_FULL_OBJECT_Presets(bpy.types.Menu):
 
 class BM_PT_OBJECT_Presets(PresetPanel, bpy.types.Panel):
     bl_label = "Object Preset"
-    preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_FULL_OBJECT_decal_hl_uv_csh')
+    preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_OBJECT_decal_hl_uv_csh')
     preset_operator = "script.execute_preset_bakemaster"
     preset_add_operator = "bakemaster.object_preset_add"
     preset_operator_defaults = {
@@ -1152,7 +1152,7 @@ class BM_PT_OBJECT_Presets(PresetPanel, bpy.types.Panel):
     }
 class BM_MT_OBJECT_Presets(bpy.types.Menu):
     bl_label = "Object Preset"
-    preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_FULL_OBJECT_decal_hl_uv_csh')
+    preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_OBJECT_decal_hl_uv_csh')
     preset_operator = "script.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
