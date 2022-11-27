@@ -226,7 +226,6 @@ class BM_AddPresetBase():
                             add_except = True
                             except_type = "TypeError"
                             except_for = "_map_"
-                        
                         # append each channel pack props to preset_values for full_object preset
                         if getattr(self, "preset_tag") == "full_object":
                             for channelpack_index, _ in enumerate(bm_item.chnlp_channelpacking_table):
@@ -255,6 +254,22 @@ class BM_AddPresetBase():
                                 for key in channelpack_data:
                                     self.preset_values.append("bm_item.chnlp_channelpacking_table[%d].%s" % (channelpack_index, key))
 
+                            # write trash, add channel packs for full_object preset
+                            ad_lines = [
+                                "to_remove = []",
+                                "for index, _ in enumerate(bm_item.chnlp_channelpacking_table):",
+                                "\tto_remove.append(index)",
+                                "bm_item.chnlp_channelpacking_table_active_index = 0",
+                                "for index in sorted(to_remove, reverse=True):",
+                                "\tbm_item.chnlp_channelpacking_table.remove(index)",
+                                "for i in range(%s):" % len(bm_item.chnlp_channelpacking_table),
+                                "\tnew_item = bm_item.chnlp_channelpacking_table.add()",
+                                "\tnew_item.global_channelpack_index = len(bm_item.chnlp_channelpacking_table)",
+                                "\tnew_item.global_channelpack_name = 'ChannelPack%d'" % len(bm_item.chnlp_channelpacking_table),
+                                "\tbm_item.chnlp_channelpacking_table_active_index = len(bm_item.chnlp_channelpacking_table) - 1",
+                            ]
+                            for line in ad_lines:
+                                file_preset.write("%s\n" % line)
                         # append each map props to preset_values for full_object, full_map preset
                         if getattr(self, "preset_tag") in ["full_object", "full_map"]:
                             for map_index, _ in enumerate(bm_item.global_maps):
@@ -472,22 +487,20 @@ class BM_AddPresetBase():
                                 for key in map_data:
                                     self.preset_values.append("bm_item.global_maps[%d].%s" % (map_index, key))
 
-                        if hasattr(self, "preset_tag"):
-                            ad_lines = []
-
                             # write trash, add maps for full_object, full_map preset
-                            if getattr(self, "preset_tag") in ["full_object", "full_map"]:
-                                ad_lines = [
-                                    "to_remove = []",
-                                    "for index, _ in enumerate(bm_item.global_maps):",
-                                    "\tto_remove.append(index)",
-                                    "bm_item.global_maps_active_index = 0",
-                                    "for index in sorted(to_remove, reverse=True):",
-                                    "\tbm_item.global_maps.remove(index)",
-                                    "for i in range(%s):" % len(bm_item.global_maps),
-                                    "\tbm_item.global_maps.add()",
-                                ]
-
+                            ad_lines = [
+                                "to_remove = []",
+                                "for index, _ in enumerate(bm_item.global_maps):",
+                                "\tto_remove.append(index)",
+                                "bm_item.global_maps_active_index = 0",
+                                "for index in sorted(to_remove, reverse=True):",
+                                "\tbm_item.global_maps.remove(index)",
+                                "for i in range(%s):" % len(bm_item.global_maps),
+                                "\tnew_pass = bm_item.global_maps.add()",
+                                "\tnew_pass.global_map_type = 'ALBEDO'",
+                                "\tnew_pass.global_map_index = len(bm_item.global_maps)",
+                                "\tbm_item.global_maps_active_index = len(bm_item.global_maps) - 1",
+                            ]
                             for line in ad_lines:
                                 file_preset.write("%s\n" % line)
 
@@ -570,14 +583,14 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.decal_upper_coordinate",
         "bm_item.decal_boundary_offset",
 
-        # "bm_item.hl_use_unique_per_map"
-        # "bm_item.hl_highpoly_table"
-        "bm_item.hl_decals_use_separate_texset"
-        # "bm_item.hl_use_cage"
-        "bm_item.hl_cage_type"
-        "bm_item.hl_cage_extrusion"
-        "bm_item.hl_max_ray_distance"
-        # "bm_item.hl_cage"
+        # "bm_item.hl_use_unique_per_map",
+        # "bm_item.hl_highpoly_table",
+        "bm_item.hl_decals_use_separate_texset",
+        # "bm_item.hl_use_cage",
+        "bm_item.hl_cage_type",
+        "bm_item.hl_cage_extrusion",
+        "bm_item.hl_max_ray_distance",
+        # "bm_item.hl_cage",
 
         "bm_item.uv_use_unique_per_map",
         "bm_item.uv_bake_data",
@@ -1325,7 +1338,7 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
                 # load preset for chosen objects in bm_table_of_objects
                 # execute preset, change item index, execute again, ...
                 if self.menu_idname == "BM_MT_FULL_OBJECT_Presets":
-                    for index, bm_item in context.scene.bm_table_of_objects:
+                    for index, bm_item in enumerate(context.scene.bm_table_of_objects):
                         if bm_item.nm_is_universal_container:
                             items = [item for item in bm_props.global_alep_objects if item.object_name == bm_item.nm_container_name]
                         else:
@@ -1372,7 +1385,7 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
             items_box.use_property_split = True
             items_box.use_property_decorate = False
 
-            rows = len(bm_props.global_alep_maps)
+            rows = len(bm_props.global_alep_objects)
 
             table = items_box.column().row()
             table.template_list('BM_ALEP_UL_Objects_Item', "", bm_props, 'global_alep_objects', bm_props, 'global_alep_objects_active_index', rows=rows)
@@ -1386,15 +1399,9 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
         # draw what objects to affect by preset if full_object preset called
         if self.menu_idname == "BM_MT_FULL_OBJECT_Presets":
             bm_props = context.scene.bm_props
+            context.scene.bm_props.global_last_edited_prop_is_map = False
 
-            # trash all maps and objects items
-            bm_props.global_alep_maps_active_index = 0
-            to_remove = []
-            for index, _ in enumerate(bm_props.global_alep_maps):
-                to_remove.append(index)
-            for index in sorted(to_remove, reverse=True):
-                bm_props.global_alep_maps.remove(index)
-
+            # trash global_alep_objects items
             bm_props.global_alep_objects_active_index = 0
             to_remove = []
             for index, _ in enumerate(bm_props.global_alep_objects):
