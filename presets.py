@@ -479,9 +479,9 @@ class BM_AddPresetBase():
                             if getattr(self, "preset_tag") in ["full_object", "full_map"]:
                                 ad_lines = [
                                     "to_remove = []",
-                                    "for index, _ in bm_item.global_maps:",
+                                    "for index, _ in enumerate(bm_item.global_maps):",
                                     "\tto_remove.append(index)",
-                                    "bm_item.global_maps_active_index = 0"
+                                    "bm_item.global_maps_active_index = 0",
                                     "for index in sorted(to_remove, reverse=True):",
                                     "\tbm_item.global_maps.remove(index)",
                                     "for i in range(%s):" % len(bm_item.global_maps),
@@ -1225,7 +1225,7 @@ class BM_PT_FULL_MAP_Presets(PresetPanel, bpy.types.Panel):
     bl_label = "Full Maps Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_FULL_MAP_maps_hl_uv_out')
     preset_operator = "script.execute_preset_bakemaster"
-    preset_add_operator = "bakemaster.full_maps_preset_add"
+    preset_add_operator = "bakemaster.full_map_preset_add"
     preset_operator_defaults = {
         "menu_idname" : 'BM_MT_FULL_MAP_Presets'
     }
