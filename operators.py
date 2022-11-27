@@ -1286,6 +1286,14 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
                 BM_ITEM_RemoveLocalPreviews(object, context)
 
             if self.control == 'REMOVE':
+                # trash chnlp if removing last map
+                if len(object.global_maps) == 1:
+                    to_remove = []
+                    for index, _ in enumerate(object.chnlp_channelpacking_table):
+                        to_remove.append(index)
+                    for index in sorted(to_remove, reverse=True):
+                        object.chnlp_channelpacking_table.remove(index)
+
                 if object.global_maps_active_index != 0:
                     object.global_maps_active_index -= 1
                 # unset highpolies
@@ -1296,10 +1304,18 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
                 BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
                 
             elif self.control == 'TRASH':
+                # trash chnlp first
                 to_remove = []
-                for index, map in enumerate(object.global_maps):
+                for index, _ in enumerate(object.chnlp_channelpacking_table):
                     to_remove.append(index)
-                for index in to_remove[::-1]:
+                for index in sorted(to_remove, reverse=True):
+                    object.chnlp_channelpacking_table.remove(index)
+
+                # trash maps
+                to_remove = []
+                for index, _ in enumerate(object.global_maps):
+                    to_remove.append(index)
+                for index in sorted(to_remove, reverse=True):
                     # unset highpolies
                     BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, 'MAP', False)
                     # update use_cage
