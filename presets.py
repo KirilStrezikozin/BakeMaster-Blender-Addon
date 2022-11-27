@@ -183,13 +183,18 @@ class BM_AddPresetBase():
                             except:
                                 pass
                             
-                            if add_except and except_type and rna_path_step.find(except_for) != -1:
+                            except_for_in_rna_all = [x for x in except_for if rna_path_step.find(x) != -1]
+                            except_for_in_rna = bool(len(except_for_in_rna_all))
+                            if add_except and except_type and except_for_in_rna:
                                 file_preset.write("try:\n")
                                 file_preset.write("\t%s = %r\n" % (rna_path_step, value))
                                 file_preset.write("except %s:\n" % except_type)
-                                # XXX: stupid
-                                # file_preset.write("\tpass\n")
-                                file_preset.write("\t%s = %r\n" % (rna_path_step, 'NONE'))
+                                # XXX: stupid, probaly should write it better
+                                if "_map_" in except_for_in_rna_all:
+                                    file_preset.write("\t%s = %r\n" % (rna_path_step, 'NONE'))
+                                elif "_data" in except_for_in_rna_all:
+                                    file_preset.write("\tpass\n")
+
                             else:
                                 file_preset.write("%s = %r\n" % (rna_path_step, value))
 
@@ -219,13 +224,14 @@ class BM_AddPresetBase():
 
                     add_except = False
                     except_type = ""
-                    except_for = ""
+                    except_for = []
                     if hasattr(self, "preset_tag"):
                         # add try except TypeError for channel pack maps for chnl preset
                         if getattr(self, "preset_tag") in ["full_object", "chnlp"]:
                             add_except = True
                             except_type = "TypeError"
-                            except_for = "_map_"
+                            except_for.append("_map_")
+
                         # append each channel pack props to preset_values for full_object preset
                         if getattr(self, "preset_tag") == "full_object":
                             for channelpack_index, _ in enumerate(bm_item.chnlp_channelpacking_table):
@@ -272,6 +278,11 @@ class BM_AddPresetBase():
                                 file_preset.write("%s\n" % line)
                         # append each map props to preset_values for full_object, full_map preset
                         if getattr(self, "preset_tag") in ["full_object", "full_map"]:
+                            # for checking if can saved data type for ..._data props
+                            add_except = True
+                            except_type = "TypeError"
+                            except_for.append("_data")
+
                             for map_index, _ in enumerate(bm_item.global_maps):
                                 map_data = {
                                     "global_map_index",
