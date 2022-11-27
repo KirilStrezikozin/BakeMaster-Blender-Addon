@@ -187,7 +187,9 @@ class BM_AddPresetBase():
                                 file_preset.write("try:\n")
                                 file_preset.write("\t%s = %r\n" % (rna_path_step, value))
                                 file_preset.write("except %s:\n" % except_type)
-                                file_preset.write("\npass\n")
+                                # XXX: stupid
+                                # file_preset.write("\tpass\n")
+                                file_preset.write("\t%s = %r\n" % (rna_path_step, 'NONE'))
                             else:
                                 file_preset.write("%s = %r\n" % (rna_path_step, value))
 
@@ -484,19 +486,6 @@ class BM_AddPresetBase():
                                     "\tbm_item.global_maps.remove(index)",
                                     "for i in range(%s):" % len(bm_item.global_maps),
                                     "\tbm_item.global_maps.add()",
-                                ]
-                            
-                            # write trash, add channel packs for full_object preset
-                            if getattr(self, "preset_tag") == "full_object":
-                                ad_lines = [
-                                    "to_remove = []",
-                                    "for index, _ in bm_item.chnlp_channelpacking_table:",
-                                    "\tto_remove.append(index)",
-                                    "bm_item.chnlp_channelpacking_table_active_index = 0",
-                                    "for index in sorted(to_remove, reverse=True):",
-                                    "\tbm_item.chnlp_channelpacking_table.remove(index)",
-                                    "for i in range(%s):" % len(bm_item.chnlp_channelpacking_table),
-                                    "\tbm_item.chnlp_channelpacking_table.add()",
                                 ]
 
                             for line in ad_lines:
