@@ -683,7 +683,7 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.uv_auto_unwrap_angle_limit",
         "bm_item.uv_auto_unwrap_island_margin",
         "bm_item.uv_auto_unwrap_use_scale_to_bounds",
-        "bm_map.uv_use_unique_per_map",
+        "bm_item.uv_use_unique_per_map",
 
         "bm_item.csh_use_triangulate_lowpoly",
         "bm_item.csh_use_lowpoly_reset_normals",
