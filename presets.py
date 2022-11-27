@@ -21,7 +21,7 @@
 import bpy
 import os
 # from bl_operators.presets import AddPresetBase
-from bl_ui.utils import PresetPanel
+from bpy.types import Menu
 
 ###########################################################
 ### Presets Directory Setup ###
@@ -1129,168 +1129,217 @@ class BM_OT_BAKE_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 ###########################################################
 ### UI Presets Panels and Menus ###
 ###########################################################
-class BM_PT_FULL_OBJECT_Presets(PresetPanel, bpy.types.Panel):
+# Panel mix-in class (don't register).
+class BM_PresetPanel:
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'HEADER'
+    bl_label = "Presets"
+    path_menu = Menu.path_menu
+
+    @classmethod
+    def draw_panel_header(cls, layout):
+        layout.emboss = 'NONE'
+        layout.popover(
+            panel=cls.__name__,
+            icon='PRESET',
+            text="",
+        )
+
+    @classmethod
+    def draw_menu(cls, layout, text=None):
+        if text is None:
+            text = cls.bl_label
+
+        layout.popover(
+            panel=cls.__name__,
+            icon='PRESET',
+            text=text,
+        )
+
+    def draw(self, context):
+        layout = self.layout
+        layout.emboss = 'PULLDOWN_MENU'
+        # from https://docs.blender.org/api/current/bpy.ops.html#execution-context
+        # EXEC_DEFAULT is used by default, running only the execute() method,
+        # but you may want the operator to take user interaction with
+        # INVOKE_DEFAULT which will also call invoke() if existing.
+        layout.operator_context = 'INVOKE_DEFAULT'
+
+        Menu.draw_preset(self, context)
+
+class BM_PT_FULL_OBJECT_Presets(BM_PresetPanel, bpy.types.Panel):
     bl_label = "Full Object Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_FULL_OBJECT_decal_hl_uv_csh_out_maps_chnlp_bake')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     preset_add_operator = "bakemaster.full_object_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_FULL_OBJECT_Presets'
+        "menu_idname" : 'BM_MT_FULL_OBJECT_Presets',
+        "preset_label" : bl_label,
     }
 class BM_MT_FULL_OBJECT_Presets(bpy.types.Menu):
     bl_label = "Full Object Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_FULL_OBJECT_decal_hl_uv_csh_out_maps_chnlp_bake')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
 
-class BM_PT_OBJECT_Presets(PresetPanel, bpy.types.Panel):
+class BM_PT_OBJECT_Presets(BM_PresetPanel, bpy.types.Panel):
     bl_label = "Object Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_OBJECT_decal_hl_uv_csh')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     preset_add_operator = "bakemaster.object_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_OBJECT_Presets'
+        "menu_idname" : 'BM_MT_OBJECT_Presets',
+        "preset_label" : bl_label,
     }
 class BM_MT_OBJECT_Presets(bpy.types.Menu):
     bl_label = "Object Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_OBJECT_decal_hl_uv_csh')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
 
-class BM_PT_DECAL_Presets(PresetPanel, bpy.types.Panel):
+class BM_PT_DECAL_Presets(BM_PresetPanel, bpy.types.Panel):
     bl_label = "Decal Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_DECAL_decal')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     preset_add_operator = "bakemaster.decal_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_DECAL_Presets'
+        "menu_idname" : 'BM_MT_DECAL_Presets',
+        "preset_label" : bl_label,
     }
 class BM_MT_DECAL_Presets(bpy.types.Menu):
     bl_label = "Decal Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_DECAL_decal')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
 
-class BM_PT_HL_Presets(PresetPanel, bpy.types.Panel):
+class BM_PT_HL_Presets(BM_PresetPanel, bpy.types.Panel):
     bl_label = "High to Lowpoly Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_HL_hl')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     preset_add_operator = "bakemaster.hl_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_HL_Presets'
+        "menu_idname" : 'BM_MT_HL_Presets',
+        "preset_label" : bl_label,
     }
 class BM_MT_HL_Presets(bpy.types.Menu):
     bl_label = "High to Lowpoly Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_HL_hl')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
 
-class BM_PT_UV_Presets(PresetPanel, bpy.types.Panel):
+class BM_PT_UV_Presets(BM_PresetPanel, bpy.types.Panel):
     bl_label = "UVs & Layers Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_UV_uv')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     preset_add_operator = "bakemaster.uv_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_UV_Presets'
+        "menu_idname" : 'BM_MT_UV_Presets',
+        "preset_label" : bl_label,
     }
 class BM_MT_UV_Presets(bpy.types.Menu):
     bl_label = "UVs & Layers Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_UV_uv')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
 
-class BM_PT_CSH_Presets(PresetPanel, bpy.types.Panel):
+class BM_PT_CSH_Presets(BM_PresetPanel, bpy.types.Panel):
     bl_label = "Shading Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_CSH_csh')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     preset_add_operator = "bakemaster.csh_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_CSH_Presets'
+        "menu_idname" : 'BM_MT_CSH_Presets',
+        "preset_label" : bl_label,
     }
 class BM_MT_CSH_Presets(bpy.types.Menu):
     bl_label = "Shading Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_CSH_csh')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
 
-class BM_PT_OUT_Presets(PresetPanel, bpy.types.Panel):
+class BM_PT_OUT_Presets(BM_PresetPanel, bpy.types.Panel):
     bl_label = "Format Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_OUT_out')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     preset_add_operator = "bakemaster.out_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_OUT_Presets'
+        "menu_idname" : 'BM_MT_OUT_Presets',
+        "preset_label" : bl_label,
     }
 class BM_MT_OUT_Presets(bpy.types.Menu):
     bl_label = "Format Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_OUT_out')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
 
-class BM_PT_FULL_MAP_Presets(PresetPanel, bpy.types.Panel):
+class BM_PT_FULL_MAP_Presets(BM_PresetPanel, bpy.types.Panel):
     bl_label = "Full Maps Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_FULL_MAP_maps_hl_uv_out')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     preset_add_operator = "bakemaster.full_map_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_FULL_MAP_Presets'
+        "menu_idname" : 'BM_MT_FULL_MAP_Presets',
+        "preset_label" : bl_label,
     }
 class BM_MT_FULL_MAP_Presets(bpy.types.Menu):
     bl_label = "Full Maps Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_FULL_MAP_maps_hl_uv_out')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
     
-class BM_PT_MAP_Presets(PresetPanel, bpy.types.Panel):
+class BM_PT_MAP_Presets(BM_PresetPanel, bpy.types.Panel):
     bl_label = "Map Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_MAP_map')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     preset_add_operator = "bakemaster.map_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_MAP_Presets'
+        "menu_idname" : 'BM_MT_MAP_Presets',
+        "preset_label" : bl_label,
     }
 class BM_MT_MAP_Presets(bpy.types.Menu):
     bl_label = "Map Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_MAP_map')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
 
-class BM_PT_CHNLP_Presets(PresetPanel, bpy.types.Panel):
+class BM_PT_CHNLP_Presets(BM_PresetPanel, bpy.types.Panel):
     bl_label = "Channel Pack Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_CHNLP_chnlp')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     preset_add_operator = "bakemaster.chnlp_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_CHNLP_Presets'
+        "menu_idname" : 'BM_MT_CHNLP_Presets',
+        "preset_label" : bl_label,
     }
 class BM_MT_CHNLP_Presets(bpy.types.Menu):
     bl_label = "Channel Pack Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_CHNLP_chnlp')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
 
-class BM_PT_BAKE_Presets(PresetPanel, bpy.types.Panel):
+class BM_PT_BAKE_Presets(BM_PresetPanel, bpy.types.Panel):
     bl_label = "Bake Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_BAKE_bake')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     preset_add_operator = "bakemaster.bake_preset_add"
     preset_operator_defaults = {
-        "menu_idname" : 'BM_MT_BAKE_Presets'
+        "menu_idname" : 'BM_MT_BAKE_Presets',
+        "preset_label" : bl_label,
     }
 class BM_MT_BAKE_Presets(bpy.types.Menu):
     bl_label = "Bake Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_BAKE_bake')
-    preset_operator = "script.execute_preset_bakemaster"
+    preset_operator = "bakemaster.execute_preset_bakemaster"
     
     draw = bpy.types.Menu.draw_preset
 
@@ -1301,7 +1350,7 @@ class BM_MT_BAKE_Presets(bpy.types.Menu):
 # for bakemaster presets modified execution
 class BM_OT_ExecutePreset(bpy.types.Operator):
     """Execute BakeMaster preset"""
-    bl_idname = "script.execute_preset_bakemaster"
+    bl_idname = "bakemaster.execute_preset_bakemaster"
     bl_label = "Load BakeMaster Preset"
     bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
 
@@ -1312,6 +1361,11 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
     menu_idname: bpy.props.StringProperty(
         name="Menu ID Name",
         description="ID name of the menu this was called from",
+        options={'SKIP_SAVE'},
+    )
+    preset_label: bpy.props.StringProperty(
+        name="Menu Label",
+        description="bl_label of the menu this was called from",
         options={'SKIP_SAVE'},
     )
 
@@ -1371,16 +1425,20 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
 
     def draw(self, context):
         from os.path import basename
-        from .operators import BM_OT_ApplyLastEditedProp_SelectAll, BM_OT_ApplyLastEditedProp_InvertSelection
-        bm_props = context.scene.bm_props
 
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        layout.label(text="Preset: %s" % basename(self.filepath))
+        column = layout.column(align=True)
+        column.label(text="%s:" % self.preset_label)
+        column.label(text=basename(self.filepath))
+        layout.label(text="Choose Objects to load preset for:")
 
         if self.menu_idname == "BM_MT_FULL_OBJECT_Presets":
+            from .operators import BM_OT_ApplyLastEditedProp_SelectAll, BM_OT_ApplyLastEditedProp_InvertSelection
+            bm_props = context.scene.bm_props
+
             items_box = layout.box()
             items_box.use_property_split = True
             items_box.use_property_decorate = False
