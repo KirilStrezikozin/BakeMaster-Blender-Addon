@@ -1343,10 +1343,10 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
             if scene.bm_props.global_is_chnlpack_panel_expanded:
                 row = chnlpack_box.row()
 
-                if len(object.chnlp_channelpacking_table) > 3:
+                if len(object.chnlp_channelpacking_table) > 4:
                     rows = len(object.chnlp_channelpacking_table)
                 else:
-                    rows = 3
+                    rows = 4
         
                 row.template_list('BM_UL_Table_of_Objects_Item_ChannelPack', "", object, 'chnlp_channelpacking_table', object, 'chnlp_channelpacking_table_active_index', rows=rows)
                 chnlpack_box_column = row.column(align=True)
