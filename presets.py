@@ -1281,7 +1281,7 @@ class BM_PT_BAKE_Presets(PresetPanel, bpy.types.Panel):
     bl_label = "Bake Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_BAKE_bake')
     preset_operator = "script.execute_preset_bakemaster"
-    preset_add_operator = "bakemaster.chnlp_preset_add"
+    preset_add_operator = "bakemaster.bake_preset_add"
     preset_operator_defaults = {
         "menu_idname" : 'BM_MT_BAKE_Presets'
     }
