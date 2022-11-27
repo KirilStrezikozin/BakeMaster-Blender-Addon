@@ -208,7 +208,16 @@ class BM_UL_Table_of_Objects_Item(bpy.types.UIList):
                 row.enabled = False
             # normal object
             else:
-                row.label(text=item.global_object_name, icon='OUTLINER_OB_MESH')
+                icons = ['MESH_PLANE', 'VIEW_ORTHO', 'SELECT_SET']
+                props = [item.hl_is_lowpoly, item.hl_is_highpoly, item.hl_is_cage]
+                icon_ = [icon for index, icon in enumerate(icons) if props[index] is True]
+                if (len(icon_)):
+                    icon = icon_[0]
+                else:
+                    icon = 'OUTLINER_OB_MESH'
+                if (item.hl_is_highpoly and item.hl_is_decal) or item.decal_is_decal:
+                    icon = 'XRAY'
+                row.label(text=item.global_object_name, icon=icon)
 
                 if item.global_use_bake:
                     icon = 'RESTRICT_RENDER_OFF'
