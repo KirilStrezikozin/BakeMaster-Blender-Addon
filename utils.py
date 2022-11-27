@@ -1544,6 +1544,7 @@ def BM_ITEM_PROPS_hl_cage_Items(self, context):
         items.append(('NONE', "None", "No cage available within the Table of Objects"))
 
     active_object = BM_Object_Get(context)[0]
+    active_index = context.scene.bm_props.global_active_index
     use_nm = context.scene.bm_props.global_use_name_matching
     cage_container_master_index = -1
     include = []
@@ -1563,7 +1564,7 @@ def BM_ITEM_PROPS_hl_cage_Items(self, context):
             added.append(object.global_object_name)
             continue
         # skip the item itself and all cages, lows, high already
-        if any([object.hl_is_cage, object.hl_is_lowpoly, object.hl_is_highpoly]) or index == self.hl_cage_object_index:#object.global_object_name == active_object.global_object_name:
+        if any([object.hl_is_cage, object.hl_is_lowpoly, object.hl_is_highpoly]) or index in [self.hl_cage_object_index, active_index]:#object.global_object_name == active_object.global_object_name:
             continue
         if use_nm:
             if active_object.nm_is_detached:
@@ -1710,6 +1711,7 @@ def BM_ITEM_PROPS_hl_highpoly_Items(self, context):
         items.append(('NONE', "None", "No cage available within the Table of Objects"))
 
     active_object = BM_Object_Get(context)[0]
+    active_index = context.scene.bm_props.global_active_index
     use_nm = context.scene.bm_props.global_use_name_matching
     high_container_master_index = -1
     include = []
@@ -1734,7 +1736,7 @@ def BM_ITEM_PROPS_hl_highpoly_Items(self, context):
             added.append(object.global_object_name)
             continue
         # skip the item itself and all cages, lows, high already
-        if any([object.hl_is_cage, object.hl_is_lowpoly, object.hl_is_highpoly]) or index == self.global_highpoly_object_index:
+        if any([object.hl_is_cage, object.hl_is_lowpoly, object.hl_is_highpoly]) or index in [self.global_highpoly_object_index, active_index]:
             continue
         if use_nm:
             if active_object.nm_is_detached:
