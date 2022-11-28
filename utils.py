@@ -2140,7 +2140,7 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
     return items
 
 # Map Preview Funcs
-def BM_MAP_PROPS_MapPreview_CustomNodes_Add(context, map_tag):
+def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
     object_item = BM_Object_Get(context)
     if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
         return
@@ -2574,18 +2574,16 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(context, map_tag):
                 in_socket = material.node_tree.nodes[map_nodes[link[1]]].outputs[link[3]]
                 material.node_tree.links.new(out_socket, in_socket)
             
-    # if use_preview:
-    #     if context.scene.render.engine != 'CYCLES':
-    #         self.report({'INFO'}, BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
+            if context.scene.render.engine != 'CYCLES':
+                self.report({'INFO'}, BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
 
-    #     for node in nodes:
-    #         if node.type == 'OUTPUT_MATERIAL' and node.name.find('BM_') == -1:
-    #             node.target = 'ALL'
+            material.node_tree.nodes['BM_OutputMaterial'].select = True
+            material.node_tree.nodes.active = nodes['BM_OutputMaterial']
 
-    #     nodes['BM_OutputMaterial'].select = True
-    #     nodes.active = nodes['BM_OutputMaterial']
-
-    # BM_MAP_MaterialUpdate(self, material, map_index)
+    #       for node in nodes:
+    #           if node.type == 'OUTPUT_MATERIAL' and node.name.find('BM_') == -1:
+    #               node.target = 'ALL'
+    #       BM_MAP_MaterialUpdate(self, material, map_index)
 
 def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context):
     object_item = BM_Object_Get(context)
