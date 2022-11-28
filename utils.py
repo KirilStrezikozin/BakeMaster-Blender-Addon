@@ -2304,6 +2304,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(context, map_tag):
                 nodes['BM_Math'].operation = 'MULTIPLY'
                 nodes['BM_AmbientOcclusion'].inside = True
                 nodes['BM_AmbientOcclusion.001'].inside = False
+                nodes['BM_AmbientOcclusion.001'].inputs[0].default_value = (0, 0, 0, 1)
                 nodes['BM_ValToRGB'].color_ramp.elements.new()
             
             # THICKNESS
@@ -2351,69 +2352,113 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(context, map_tag):
                 nodes['BM_MapRange.002'].clamp = False
 
             nodes['BM_OutputMaterial'].target = 'CYCLES'
+
+            # linking added nodes
+            # shell - [node_from, node_to, out_socket, in_socket]
+            links_data = {
+                'AO' : [
+                    [0, 1, 1, 0],
+                    [1, 2, 0, 2],
+                    [2, 3, 0, 0],
+                    [3, 4, 0, 1],
+                    [4, 5, 0, 0],
+                    [5, 6, 0, 0],
+                ],
+                'CAVITY' : [
+                    [0, 1, 7, 0],
+                    [1, 2, 0, 0],
+                    [2, 3, 0, 1],
+                    [3, 4, 0, 0],
+                    [4, 5, 0, 0],
+                ],
+                'CURVATURE' : [
+                    [0, 1, 0, 0],
+                    [1, 2, 0, 1],
+                    [1, 3, 0, 1],
+                    [2, 4, 1, 1],
+                    [4, 5, 0, 1],
+                    [3, 5, 1, 2],
+                    [5, 6, 0, 0],
+                    [6, 7, 0, 0],
+                    [7, 8, 0, 0],
+                    [8, 9, 0, 0],
+                ],
+                'THICKNESS' : [
+                    [0, 1, 1, 0],
+                    [1, 2, 0, 0],
+                    [2, 3, 0, 1],
+                    [3, 4, 0, 0],
+                    [4, 5, 0, 0],
+                ],
+                'XYZMASK' : [
+                    [0, 1, 1, 0],
+                    [2, 3, 0, 0],
+                    [3, 4, 0, 0],
+                    [4, 5, 0, 0],
+                    [5, 6, 0, 2],
+                    [6, 7, 0, 0],
+                    [7, 8, 0, 0],
+                ],
+                'GRADIENT' : [
+                    [0, 1, 0, 0],
+                    [1, 2, 0, 0],
+                    [2, 3, 0, 0],
+                    [3, 4, 0, 2,],
+                    [4, 5, 0, 4],
+                    [5, 6, 0, 1],
+                    [6, 7, 0, 0],
+                    [7, 8, 0, 0],
+                ],
+                'EDGE' : [
+                    [0, 2, 0, 0],
+                    [1, 2, 1, 1],
+                    [2, 3, 1, 0],
+                    [3, 4, 0, 1],
+                    [4, 5, 0, 0],
+                    [5, 6, 0, 0],
+                ],
+                'WIREFRAME' : [
+                    [0, 1, 0, 0],
+                    [1, 2, 0, 0],
+                    [2, 3, 0, 1],
+                    [3, 4, 0, 0],
+                    [4, 5, 0, 0],
+                ],
+                'POSITION' : [
+                    [0, 1, 0, 0],
+                    [1, 3, 0, 0],
+                    [1, 3, 2, 1],
+                    [1, 2, 1, 1],
+                    [2, 3, 0, 2],
+                    [3, 4, 0, 0],
+                    [4, 5, 0, 0],
+                    [5, 6, 0, 0],
+                ],
+                'VERTEX_COLOR_LAYER' : [
+                    [0, 1, 0, 0],
+                    [1, 2, 0, 0],
+                ],
+                'VECTOR_DISPLACEMENT' : [
+                    [0, 1, 2, 0],
+                    [1, 2, 0, 0],
+                    [2, 3, 0, 1],
+                    [0, 3, 2, 0],
+                    [3, 4, 0, 0],
+                    [0, 5, 2, 0],
+                    [6, 7, 0, 1],
+                    [6, 8, 0, 1],
+                    [6, 9, 0, 1],
+                    [4, 7, 0, 0],
+                    [4, 8, 1, 0],
+                    [5, 9, 2, 0],
+                    [7, 10, 0, 0],
+                    [8, 10, 0, 1],
+                    [9, 10, 0, 2],
+                    [10, 11, 0, 0],
+                    [11, 12, 0, 0],
+                ],
+            }
             
-    #     links.new(nodes['BM_AmbientOcclusion'].outputs[1], nodes['BM_ValToRGB'].inputs[0])
-    #     links.new(nodes['BM_ValToRGB'].outputs[0], nodes['BM_MixRGB'].inputs[2])
-    #     links.new(nodes['BM_MixRGB'].outputs[0], nodes['BM_BrightContrast'].inputs[0])
-    #     links.new(nodes['BM_BrightContrast'].outputs[0], nodes['BM_Invert'].inputs[1])
-    #     links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
-    #     links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
-
-    # #Cavity
-    # if map_index == 1:
-
-    #     links.new(nodes['BM_NewGeometry'].outputs[7], nodes['BM_ValToRGB'].inputs[0])
-    #     links.new(nodes['BM_ValToRGB'].outputs[0], nodes['BM_Math'].inputs[0])
-    #     links.new(nodes['BM_Math'].outputs[0], nodes['BM_Invert'].inputs[1])
-    #     links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
-    #     links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
-
-    # #Curvature
-    # if map_index == 2:
-
-
-    #     links.new(nodes['BM_Bevel'].outputs[0], nodes['BM_VectorMath'].inputs[0])
-    #     links.new(nodes['BM_NewGeometry'].outputs[1], nodes['BM_VectorMath'].inputs[1])
-    #     links.new(nodes['BM_VectorMath'].outputs[1], nodes['BM_MapRange'].inputs[0])
-    #     links.new(nodes['BM_MapRange'].outputs[0], nodes['BM_Invert'].inputs[1])
-    #     links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
-    #     links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
-
-    # #Thickness
-    # if map_index == 3:
-
-
-    #     links.new(nodes['BM_AmbientOcclusion'].outputs[1], nodes['BM_MapRange'].inputs[0])
-    #     links.new(nodes['BM_MapRange'].outputs[0], nodes['BM_ValToRGB'].inputs[0])
-    #     links.new(nodes['BM_ValToRGB'].outputs[0], nodes['BM_Invert'].inputs[1])
-    #     links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
-    #     links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
-
-    # #NormalMask
-    # if map_index == 4:
-
-
-    #     links.new(nodes['BM_NewGeometry'].outputs[1], nodes['BM_SeparateXYZ'].inputs[0])
-    #     links.new(nodes['BM_VectorMath'].outputs[0], nodes['BM_VectorMath.001'].inputs[0])
-    #     links.new(nodes['BM_VectorMath.001'].outputs[0], nodes['BM_VectorMath.002'].inputs[0])
-    #     links.new(nodes['BM_VectorMath.002'].outputs[0], nodes['BM_MapRange'].inputs[0])
-    #     links.new(nodes['BM_MapRange'].outputs[0], nodes['BM_MixRGB'].inputs[2])
-    #     links.new(nodes['BM_MixRGB'].outputs[0], nodes['BM_Emission'].inputs[0])
-    #     links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
-
-    # #GradientMask
-    # if map_index == 5:
-
-        
-    #     links.new(nodes['BM_TexCoord'].outputs[0], nodes['BM_Mapping'].inputs[0])
-    #     links.new(nodes['BM_Mapping'].outputs[0], nodes['BM_TexGradient'].inputs[0])
-    #     links.new(nodes['BM_TexGradient'].outputs[0], nodes['BM_MapRange'].inputs[0])
-    #     links.new(nodes['BM_MapRange'].outputs[0], nodes['BM_MixRGB'].inputs[2])
-    #     links.new(nodes['BM_MixRGB'].outputs[0], nodes['BM_HueSaturation'].inputs[4])
-    #     links.new(nodes['BM_HueSaturation'].outputs[0], nodes['BM_Invert'].inputs[1])
-    #     links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
-    #     links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
-
     # if use_preview:
     #     if context.scene.render.engine != 'CYCLES':
     #         self.report({'INFO'}, BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
