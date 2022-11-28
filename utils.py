@@ -2266,7 +2266,166 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(context, map_tag):
         ],
     }
 
+    # adding materials if needed
+    for object in objects:
+        len_of_mats = len(object.data.materials)
+        if len_of_mats == 0 or len([material for material in object.data.materials if material is None]) == len_of_mats:
+            new_mat = bpy.data.materials.new("Bm_CustomMaterial_%s_%s" % (object.name, map_tag))
+            object.data.materials.append(new_mat)
+    
+    # adding nodes to object's materials
+    for object in objects:
+        for material in object.data.materials:
+            if material is None:
+                continue
 
+            material.use_nodes = True
+            location_x = 0
+            for node_type in nodes_data[map_tag]:
+                new_node = material.node_tree.nodes.new(node_type)
+                new_node.name = "BM_%s" % node_type[10:]
+                new_node.location = (location_x, 0)
+                location += 300
+
+            # setting up added nodes defaults
+            nodes = material.node_tree.nodes
+            # AO
+            if map_tag == "AO":
+                nodes['BM_MixRGB'].blend_type = 'MULTIPLY'
+                nodes['BM_MixRGB'].inputs[1].default_value = (1, 1, 1, 1)
+        
+            # CAVITY
+            if map_tag == "CAVITY":
+                nodes['BM_Math'].operation = 'POWER'
+                nodes['BM_OutputMaterial'].target = 'CYCLES'
+
+            # CURVATURE
+            if map_tag == "CURVATURE":
+                nodes['BM_Math'].operation = 'MULTIPLY'
+                nodes['BM_AmbientOcclusion'].inside = True
+                nodes['BM_AmbientOcclusion.001'].inside = False
+                nodes['BM_ValToRGB'].color_ramp.elements.new()
+            
+            # THICKNESS
+            if map_tag == "THICKNESS":
+                nodes['BM_AmbientOcclusion'].inside = True
+
+            # XYZMASK
+            if map_tag == "XYZMASK":
+                nodes['BM_VectorMath.002'].operation = 'MULTIPLY'
+                nodes['BM_MixRGB'].inputs[1].default_value = (0, 0, 0, 0)
+
+            # GRADIENT
+            if map_tag == "GRADIENT":
+                nodes['BM_MixRGB'].inputs[1].default_value = (0, 0, 0, 0)
+
+            # EDGE
+            if map_tag == "EDGE":
+                nodes['BM_VectorMath'].operation = 'DOT_PRODUCT'
+
+            # WIREFRAME
+            if map_tag == "WIREFRAME":
+                nodes['BM_Math'].operation = 'MULTIPLY'
+                nodes['BM_Math'].inputs[1].default_value = 0.01
+
+            # POSITION
+            if map_tag == "POSITION":
+                pass
+
+            # VERTEX_COLOR_LAYER
+            if map_tag == "VERTEX_COLOR_LAYER":
+                pass
+            
+            # VECTOR_DISPLACEMENT
+            if map_tag == "VECTOR_DISPLACEMENT":
+                nodes['BM_VectorMath'].inputs[1].default_value[0] = -0.5
+                nodes['BM_VectorMath'].inputs[1].default_value[1] = -0.5
+                nodes['BM_VectorMath'].inputs[1].default_value[2] = -0.5
+                nodes['BM_VectorMath.001'].operation = 'MULTIPLY'
+                nodes['BM_VectorMath.001'].inputs[1].default_value[0] = 2
+                nodes['BM_VectorMath.001'].inputs[1].default_value[1] = 2
+                nodes['BM_VectorMath.001'].inputs[1].default_value[2] = 2
+                nodes['BM_VectorMath.002'].operation = 'SUBTRACT'
+                nodes['BM_MapRange'].clamp = False
+                nodes['BM_MapRange.001'].clamp = False
+                nodes['BM_MapRange.002'].clamp = False
+
+            nodes['BM_OutputMaterial'].target = 'CYCLES'
+            
+    #     links.new(nodes['BM_AmbientOcclusion'].outputs[1], nodes['BM_ValToRGB'].inputs[0])
+    #     links.new(nodes['BM_ValToRGB'].outputs[0], nodes['BM_MixRGB'].inputs[2])
+    #     links.new(nodes['BM_MixRGB'].outputs[0], nodes['BM_BrightContrast'].inputs[0])
+    #     links.new(nodes['BM_BrightContrast'].outputs[0], nodes['BM_Invert'].inputs[1])
+    #     links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
+    #     links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
+
+    # #Cavity
+    # if map_index == 1:
+
+    #     links.new(nodes['BM_NewGeometry'].outputs[7], nodes['BM_ValToRGB'].inputs[0])
+    #     links.new(nodes['BM_ValToRGB'].outputs[0], nodes['BM_Math'].inputs[0])
+    #     links.new(nodes['BM_Math'].outputs[0], nodes['BM_Invert'].inputs[1])
+    #     links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
+    #     links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
+
+    # #Curvature
+    # if map_index == 2:
+
+
+    #     links.new(nodes['BM_Bevel'].outputs[0], nodes['BM_VectorMath'].inputs[0])
+    #     links.new(nodes['BM_NewGeometry'].outputs[1], nodes['BM_VectorMath'].inputs[1])
+    #     links.new(nodes['BM_VectorMath'].outputs[1], nodes['BM_MapRange'].inputs[0])
+    #     links.new(nodes['BM_MapRange'].outputs[0], nodes['BM_Invert'].inputs[1])
+    #     links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
+    #     links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
+
+    # #Thickness
+    # if map_index == 3:
+
+
+    #     links.new(nodes['BM_AmbientOcclusion'].outputs[1], nodes['BM_MapRange'].inputs[0])
+    #     links.new(nodes['BM_MapRange'].outputs[0], nodes['BM_ValToRGB'].inputs[0])
+    #     links.new(nodes['BM_ValToRGB'].outputs[0], nodes['BM_Invert'].inputs[1])
+    #     links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
+    #     links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
+
+    # #NormalMask
+    # if map_index == 4:
+
+
+    #     links.new(nodes['BM_NewGeometry'].outputs[1], nodes['BM_SeparateXYZ'].inputs[0])
+    #     links.new(nodes['BM_VectorMath'].outputs[0], nodes['BM_VectorMath.001'].inputs[0])
+    #     links.new(nodes['BM_VectorMath.001'].outputs[0], nodes['BM_VectorMath.002'].inputs[0])
+    #     links.new(nodes['BM_VectorMath.002'].outputs[0], nodes['BM_MapRange'].inputs[0])
+    #     links.new(nodes['BM_MapRange'].outputs[0], nodes['BM_MixRGB'].inputs[2])
+    #     links.new(nodes['BM_MixRGB'].outputs[0], nodes['BM_Emission'].inputs[0])
+    #     links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
+
+    # #GradientMask
+    # if map_index == 5:
+
+        
+    #     links.new(nodes['BM_TexCoord'].outputs[0], nodes['BM_Mapping'].inputs[0])
+    #     links.new(nodes['BM_Mapping'].outputs[0], nodes['BM_TexGradient'].inputs[0])
+    #     links.new(nodes['BM_TexGradient'].outputs[0], nodes['BM_MapRange'].inputs[0])
+    #     links.new(nodes['BM_MapRange'].outputs[0], nodes['BM_MixRGB'].inputs[2])
+    #     links.new(nodes['BM_MixRGB'].outputs[0], nodes['BM_HueSaturation'].inputs[4])
+    #     links.new(nodes['BM_HueSaturation'].outputs[0], nodes['BM_Invert'].inputs[1])
+    #     links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
+    #     links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
+
+    # if use_preview:
+    #     if context.scene.render.engine != 'CYCLES':
+    #         self.report({'INFO'}, BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
+
+    #     for node in nodes:
+    #         if node.type == 'OUTPUT_MATERIAL' and node.name.find('BM_') == -1:
+    #             node.target = 'ALL'
+
+    #     nodes['BM_OutputMaterial'].select = True
+    #     nodes.active = nodes['BM_OutputMaterial']
+
+    # BM_MAP_MaterialUpdate(self, material, map_index)
 
 def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context):
     object_item = BM_Object_Get(context)
