@@ -2140,6 +2140,100 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
     return items
 
 # Map Preview Funcs
+def BM_MAP_PROPS_MapPreview_CustomNodes_Add(context, map_tag):
+    object_item = BM_Object_Get(context)
+    if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
+        return
+
+    # collecting objects for which add bm_nodes   
+    source_object = [object for object in context.scene.objects if object.name == object_item[0].global_object_name]
+    if len(source_object) == 0:
+        return
+    highpolies = object_item[0].hl_highpoly_table
+    objects = [source_object[0]] if len(highpolies) == 0 else []
+    for highpoly in highpolies:
+        source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
+        if len(source_highpoly) == 0:
+            continue
+        objects.append(source_highpoly[0])
+
+    # nodes data
+    nodes_data = {
+        'AO' : [
+            'ShaderNodeAmbientOcclusion',
+            'ShaderNodeValToRGB',
+            'ShaderNodeMixRGB',
+            'ShaderNodeBrightContrast',
+            'ShaderNodeInvert',
+            'ShaderNodeEmission',
+            'ShaderNodeOutputMaterial',
+        ],
+        'CAVITY' : [
+            'ShaderNodeNewGeometry',
+            'ShaderNodeValToRGB',
+            'ShaderNodeMath',
+            'ShaderNodeInvert',
+            'ShaderNodeEmission',
+            'ShaderNodeOutputMaterial',
+        ],
+        'CURVATURE' : [
+
+        ],
+        'THICKNESS' : [
+            'ShaderNodeAmbientOcclusion',
+            'ShaderNodeMapRange',
+            'ShaderNodeValToRGB',
+            'ShaderNodeInvert',
+            'ShaderNodeEmission',
+            'ShaderNodeOutputMaterial',
+        ],
+        'XYZMASK' : [
+            'ShaderNodeNewGeometry',
+            'ShaderNodeSeparateXYZ',
+            'ShaderNodeVectorMath',
+            'ShaderNodeVectorMath',
+            'ShaderNodeVectorMath',
+            'ShaderNodeMapRange',
+            'ShaderNodeMixRGB',
+            'ShaderNodeEmission',
+            'ShaderNodeOutputMaterial',
+        ],
+        'GRADIENT' : [
+            'ShaderNodeTexCoord',
+            'ShaderNodeMapping',
+            'ShaderNodeTexGradient',
+            'ShaderNodeMapRange',
+            'ShaderNodeMixRGB',
+            'ShaderNodeHueSaturation',
+            'ShaderNodeInvert',
+            'ShaderNodeEmission',
+            'ShaderNodeOutputMaterial',
+        ],
+        'EDGE' : [
+            'ShaderNodeBevel',
+            'ShaderNodeNewGeometry',
+            'ShaderNodeVectorMath',
+            'ShaderNodeMapRange',
+            'ShaderNodeInvert',
+            'ShaderNodeEmission',
+            'ShaderNodeOutputMaterial',
+        ],
+        'WIREFRAME' : [
+
+        ],
+        'POSITION' : [
+
+        ],
+        'VERTEX_COLOR_LAYER' : [
+
+        ],
+        'VECTOR_DISPLACEMENT' : [
+
+        ],
+    }
+
+
+
 def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context):
     object_item = BM_Object_Get(context)
     if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
@@ -3228,6 +3322,7 @@ def BM_MAP_MaterialUpdate(self, material, map_index):
 
 def BM_MAP_Preview_SetNodes(self, context, material, map_index, use_preview):
     return
+
 
     material.use_nodes = True
     nodes = material.node_tree.nodes
