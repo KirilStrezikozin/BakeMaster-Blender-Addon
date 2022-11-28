@@ -2139,7 +2139,46 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
         items = [('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
     return items
 
-# Map Previews headers
+# Map Preview Funcs
+def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context):
+    object_item = BM_Object_Get(context)
+    if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
+        return
+
+    # collecting objects from which remove bm_nodes   
+    source_object = [object for object in context.scene.objects if object.name == object_item[0].global_object_name]
+    if len(source_object) == 0:
+        return
+    objects = [source_object[0]]
+    highpolies = object_item[0].hl_highpoly_table
+    for highpoly in highpolies:
+        source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
+        if len(source_highpoly) == 0:
+            continue
+        objects.append(source_highpoly[0])
+
+    # removing bm_nodes
+    for object in objects:
+        mats_to_remove = []
+        for mat_index, material in enumerate(object.data.materials):
+            if material is None:
+                continue
+            if material.name.find('BM_CustomMaterial') != -1:
+                mats_to_remove.append(mat_index)
+                continue
+
+            material.use_nodes = True
+            to_remove = []
+            for index, node in enumerate(material.node_tree.nodes):
+                if node.name.find('BM_CustomNode') != -1:
+                    to_remove.append(index)
+            for index in sorted(to_remove, reverse=True):
+                material.node_tree.nodes.remove(material.node_tree.nodes[index])
+        
+        # removing custom bm_materials
+        for mat_index in sorted(mats_to_remove, reverse=True):
+            object.data.materials.pop(index=mat_index)
+
 def BM_MAP_PROPS_map_ALBEDO_use_preview_Update(self, context):
     pass
 def BM_MAP_PROPS_map_METALNESS_use_preview_Update(self, context):
