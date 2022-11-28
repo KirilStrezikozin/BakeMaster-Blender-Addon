@@ -2140,7 +2140,7 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
     return items
 
 # Map Preview Funcs
-def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context):
+def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context):
     object_item = BM_Object_Get(context)
     if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
         return
@@ -2179,6 +2179,63 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context):
         for mat_index in sorted(mats_to_remove, reverse=True):
             object.data.materials.pop(index=mat_index)
 
+# Map previews with custom nodes
+def BM_MAP_PROPS_map_AO_use_preview_Update(self, context):
+    if self.map_AO_use_preview:
+        pass
+    else:
+        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+def BM_MAP_PROPS_map_CAVITY_use_preview_Update(self, context):
+    if self.map_CAVITY_use_preview:
+        pass
+    else:
+        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+def BM_MAP_PROPS_map_CURVATURE_use_preview_Update(self, context):
+    if self.map_CURVATURE_use_preview:
+        pass
+    else:
+        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+def BM_MAP_PROPS_map_THICKNESS_use_preview_Update(self, context):
+    if self.map_THICKNESS_use_preview:
+        pass
+    else:
+        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+def BM_MAP_PROPS_map_XYZMASK_use_preview_Update(self, context):
+    if self.map_XYZMAS_use_preview:
+        pass
+    else:
+        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+def BM_MAP_PROPS_map_GRADIENT_use_preview_Update(self, context):
+    if self.map_GRADIENT_use_preview:
+        pass
+    else:
+        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+def BM_MAP_PROPS_map_EDGE_use_preview_Update(self, context):
+    if self.map_EDGE_use_preview:
+        pass
+    else:
+        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+def BM_MAP_PROPS_map_WIREFRAME_use_preview_Update(self, context):
+    if self.map_WIREFRAME_use_preview:
+        pass
+    else:
+        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+def BM_MAP_PROPS_map_POSITION_use_preview_Update(self, context):
+    if self.map_POSITION_use_preview:
+        pass
+    else:
+        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+def BM_MAP_PROPS_map_VERTEX_COLOR_LAYER_use_preview_Update(self, context):
+    if self.map_VERTEX_COLOR_LAYER_use_preview:
+        pass
+    else:
+        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+def BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_use_preview_Update(self, context):
+    if self.map_VECTOR_DISPLACEMENT_use_preview:
+        pass
+    else:
+        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+
 def BM_MAP_PROPS_map_ALBEDO_use_preview_Update(self, context):
     pass
 def BM_MAP_PROPS_map_METALNESS_use_preview_Update(self, context):
@@ -2199,35 +2256,13 @@ def BM_MAP_PROPS_map_PASS_use_preview_Update(self, context):
     pass
 def BM_MAP_PROPS_map_DECAL_use_preview_Update(self, context):
     pass
-def BM_MAP_PROPS_map_VERTEX_COLOR_LAYER_use_preview_Update(self, context):
-    pass
 def BM_MAP_PROPS_map_NORMAL_use_preview_Update(self, context):
     pass
 def BM_MAP_PROPS_map_DISPLACEMENT_use_preview_Update(self, context):
     pass
-def BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_use_preview_Update(self, context):
-    pass
-def BM_MAP_PROPS_map_POSITION_use_preview_Update(self, context):
-    pass
-def BM_MAP_PROPS_map_AO_use_preview_Update(self, context):
-    pass
-def BM_MAP_PROPS_map_CAVITY_use_preview_Update(self, context):
-    pass
-def BM_MAP_PROPS_map_CURVATURE_use_preview_Update(self, context):
-    pass
-def BM_MAP_PROPS_map_THICKNESS_use_preview_Update(self, context):
-    pass
 def BM_MAP_PROPS_map_ID_use_preview_Update(self, context):
     pass
 def BM_MAP_PROPS_map_MASK_use_preview_Update(self, context):
-    pass
-def BM_MAP_PROPS_map_XYZMASK_use_preview_Update(self, context):
-    pass
-def BM_MAP_PROPS_map_GRADIENT_use_preview_Update(self, context):
-    pass
-def BM_MAP_PROPS_map_EDGE_use_preview_Update(self, context):
-    pass
-def BM_MAP_PROPS_map_WIREFRAME_use_preview_Update(self, context):
     pass
 
 ###############################################################
