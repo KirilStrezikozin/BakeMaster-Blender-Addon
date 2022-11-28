@@ -2177,7 +2177,16 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(context, map_tag):
             'ShaderNodeOutputMaterial',
         ],
         'CURVATURE' : [
-
+            'ShaderNodeValue',
+            'ShaderNodeMath',
+            'ShaderNodeAmbientOcclusion',
+            'ShaderNodeAmbientOcclusion',
+            'ShaderNodeInvert',
+            'ShaderNodeMixRGB',
+            'ShaderNodeValToRGB',
+            'ShaderNodeGamma',
+            'ShaderNodeEmission',
+            'ShaderNodeOutputMaterial',
         ],
         'THICKNESS' : [
             'ShaderNodeAmbientOcclusion',
@@ -2219,16 +2228,41 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(context, map_tag):
             'ShaderNodeOutputMaterial',
         ],
         'WIREFRAME' : [
-
+            'ShaderNodeValue',
+            'ShaderNodeMath',
+            'ShaderNodeWireframe',
+            'ShaderNodeInvert',
+            'ShaderNodeEmission',
+            'ShaderNodeOutputMaterial',
         ],
         'POSITION' : [
-
+            'ShaderNodeTexCoord',
+            'ShaderNodeSeparateRGB',
+            'ShaderNodeInvert',
+            'ShaderNodeCombineRGB',
+            'ShaderNodeGamma',
+            'ShaderNodeEmission',
+            'ShaderNodeOutputMaterial',
         ],
         'VERTEX_COLOR_LAYER' : [
-
+            'ShaderNodeAttribute',
+            'ShaderNodeEmission',
+            'ShaderNodeOutputMaterial',
         ],
         'VECTOR_DISPLACEMENT' : [
-
+            'ShaderNodeTexCoord',
+            'ShaderNodeVectorMath',
+            'ShaderNodeVectorMath',
+            'ShaderNodeVectorMath',
+            'ShaderNodeSeparateXYZ',
+            'ShaderNodeSeparateXYZ',
+            'ShaderNodeValue',
+            'ShaderNodeMapRange',
+            'ShaderNodeMapRange',
+            'ShaderNodeMapRange',
+            'ShaderNodeCombineXYZ',
+            'ShaderNodeEmission',
+            'ShaderNodeOutputMaterial',
         ],
     }
 
