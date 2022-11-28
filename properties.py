@@ -626,7 +626,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_ALBEDO_use_preview_Update)
 
 # Metalness Map Props
     map_METALNESS_prefix : bpy.props.StringProperty(
@@ -639,7 +639,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_METALNESS_use_preview_Update)
 
 # Roughness Map Props
     map_ROUGHNESS_prefix : bpy.props.StringProperty(
@@ -652,7 +652,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_ROUGHNESS_use_preview_Update)
 
 # Diffuse Map Props
     map_DIFFUSE_prefix : bpy.props.StringProperty(
@@ -665,7 +665,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_DIFFUSE_use_preview_Update)
 
 # Specular Map Props
     map_SPECULAR_prefix : bpy.props.StringProperty(
@@ -678,7 +678,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_SPECULAR_use_preview_Update)
 
 # Glossiness Map Props
     map_GLOSSINESS_prefix : bpy.props.StringProperty(
@@ -691,7 +691,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_GLOSSINESS_use_preview_Update)
 
 # Opacity Map Props
     map_OPACITY_prefix : bpy.props.StringProperty(
@@ -704,7 +704,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_OPACITY_use_preview_Update)
 
 # Emission Map Props
     map_EMISSION_prefix : bpy.props.StringProperty(
@@ -717,7 +717,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_EMISSION_use_preview_Update)
 
 # Pass Map Props
     map_PASS_prefix : bpy.props.StringProperty(
@@ -730,7 +730,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_PASS_use_preview_Update)
 
     map_pass_type : bpy.props.EnumProperty(
         name="Pass",
@@ -762,7 +762,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_DECAL_use_preview_Update)
     
     map_decal_pass_type : bpy.props.EnumProperty(
         name="Pass Type",
@@ -858,7 +858,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_VERTEX_COLOR_LAYER_use_preview_Update)
 
     map_vertexcolor_layer : bpy.props.EnumProperty(
         name="Layer",
@@ -991,7 +991,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_NORMAL_use_preview_Update)
 
     map_normal_data : bpy.props.EnumProperty(
         name="Data",
@@ -1086,7 +1086,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_DISPLACEMENT_use_preview_Update)
 
     map_displacement_data : bpy.props.EnumProperty(
         name="Data",
@@ -1121,7 +1121,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_use_preview_Update)
 
     map_vector_displacement_use_default : bpy.props.BoolProperty(
         name="Default",
@@ -1162,7 +1162,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_POSITION_use_preview_Update)
 
 # AO Map Props
     map_AO_prefix : bpy.props.StringProperty(
@@ -1175,7 +1175,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_AO_use_preview_Update)
 
     map_ao_use_default : bpy.props.BoolProperty(
         name="Default",
@@ -1263,7 +1263,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_Cavity)
+        update=BM_MAP_PROPS_map_CAVITY_use_preview_Update)
 
     map_cavity_use_default : bpy.props.BoolProperty(
         name="Default",
@@ -1315,7 +1315,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_Curvature)
+        update=BM_MAP_PROPS_map_CURVATURE_use_preview_Update)
 
     map_curv_use_default : bpy.props.BoolProperty(
         name="Default",
@@ -1393,7 +1393,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_Thickness)
+        update=BM_MAP_PROPS_map_THICKNESS_use_preview_Update)
 
     map_thick_use_default : bpy.props.BoolProperty(
         name="Default",
@@ -1464,7 +1464,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_ID_use_preview_Update)
 
     map_matid_data : bpy.props.EnumProperty(
         name="Data",
@@ -1501,7 +1501,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_MASK_use_preview_Update)
 
     map_mask_data : bpy.props.EnumProperty(
         name="Data",
@@ -1566,7 +1566,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_NormalMask)
+        update=BM_MAP_PROPS_map_XYZMASK_use_preview_Update)
 
     map_xyzmask_use_default : bpy.props.BoolProperty(
         name="Default",
@@ -1632,7 +1632,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_GradientMask)
+        update=BM_MAP_PROPS_map_GRADIENT_use_preview_Update)
 
     map_gmask_use_default : bpy.props.BoolProperty(
         name="Default",
@@ -1765,7 +1765,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_Curvature)
+        update=BM_MAP_PROPS_map_EDGE_use_preview_Update)
 
     map_edgemask_use_default : bpy.props.BoolProperty(
         name="Default",
@@ -1820,7 +1820,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Preview",
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
-        update=BM_MAP_Preview_AO)
+        update=BM_MAP_PROPS_map_WIREFRAME_use_preview_Update)
 
     map_wireframemask_line_thickness : bpy.props.FloatProperty(
         name="Thickness",
