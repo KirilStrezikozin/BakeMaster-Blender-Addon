@@ -2139,6 +2139,58 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
         items = [('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
     return items
 
+# Map Previews headers
+def BM_MAP_PROPS_map_ALBEDO_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_METALNESS_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_ROUGHNESS_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_DIFFUSE_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_SPECULAR_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_GLOSSINESS_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_OPACITY_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_EMISSION_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_PASS_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_DECAL_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_VERTEX_COLOR_LAYER_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_NORMAL_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_DISPLACEMENT_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_POSITION_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_AO_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_CAVITY_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_CURVATURE_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_THICKNESS_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_ID_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_MASK_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_XYZMASK_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_GRADIENT_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_EDGE_use_preview_Update(self, context):
+    pass
+def BM_MAP_PROPS_map_WIREFRAME_use_preview_Update(self, context):
+    pass
+
 ###############################################################
 ### Update Funcs for global_last_edited_prop ###
 ###############################################################
