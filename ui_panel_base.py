@@ -451,7 +451,7 @@ class BM_PT_MainBase(bpy.types.Panel):
         row.scale_y = 1.15
 
         full_len = len(scene.bm_table_of_objects)
-        rows = 5 if full_len > 1 else 4
+        rows = 5 if full_len >= 1 else 4
         refresh = False
         for object in scene.bm_table_of_objects:
             try:
