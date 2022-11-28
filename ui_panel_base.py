@@ -1622,6 +1622,11 @@ class BM_PT_BakeBase(bpy.types.Panel):
         bake_column_bake_all.scale_y = 1.5
         bake_column.enabled = context.scene.bm_props.global_bake_available
 
+        # additional operators
+        ad_column = layout.column(align=True)
+        ad_column.operator(BM_OT_ApplyLastEditedProp.bl_idname, text="Apply Lastly Edited")
+        ad_column.operator(BM_OT_CreateArtificialUniContainer.bl_idname, text="Artificial Container")
+
         # help body
         help_column = layout.column()
         help_column_instruction = help_column.row()
