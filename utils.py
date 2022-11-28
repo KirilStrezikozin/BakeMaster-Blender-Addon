@@ -2266,6 +2266,114 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(context, map_tag):
         ],
     }
 
+    nodes_names_data = {
+        'AO' : [
+            'BM_AmbientOcclusion',
+            'BM_ValToRGB',
+            'BM_MixRGB',
+            'BM_BrightContrast',
+            'BM_Invert',
+            'BM_Emission',
+            'BM_OutputMaterial',
+        ],
+        'CAVITY' : [
+            'BM_NewGeometry',
+            'BM_ValToRGB',
+            'BM_Math',
+            'BM_Invert',
+            'BM_Emission',
+            'BM_OutputMaterial',
+        ],
+        'CURVATURE' : [
+            'BM_Value',
+            'BM_Math',
+            'BM_AmbientOcclusion',
+            'BM_AmbientOcclusion.001',
+            'BM_Invert',
+            'BM_MixRGB',
+            'BM_ValToRGB',
+            'BM_Gamma',
+            'BM_Emission',
+            'BM_OutputMaterial',
+        ],
+        'THICKNESS' : [
+            'BM_AmbientOcclusion',
+            'BM_MapRange',
+            'BM_ValToRGB',
+            'BM_Invert',
+            'BM_Emission',
+            'BM_OutputMaterial',
+        ],
+        'XYZMASK' : [
+            'BM_NewGeometry',
+            'BM_SeparateXYZ',
+            'BM_VectorMath',
+            'BM_VectorMath.001',
+            'BM_VectorMath.002',
+            'BM_MapRange',
+            'BM_MixRGB',
+            'BM_Emission',
+            'BM_OutputMaterial',
+        ],
+        'GRADIENT' : [
+            'BM_TexCoord',
+            'BM_Mapping',
+            'BM_TexGradient',
+            'BM_MapRange',
+            'BM_MixRGB',
+            'BM_HueSaturation',
+            'BM_Invert',
+            'BM_Emission',
+            'BM_OutputMaterial',
+        ],
+        'EDGE' : [
+            'BM_Bevel',
+            'BM_NewGeometry',
+            'BM_VectorMath',
+            'BM_MapRange',
+            'BM_Invert',
+            'BM_Emission',
+            'BM_OutputMaterial',
+        ],
+        'WIREFRAME' : [
+            'BM_Value',
+            'BM_Math',
+            'BM_Wireframe',
+            'BM_Invert',
+            'BM_Emission',
+            'BM_OutputMaterial',
+        ],
+        'POSITION' : [
+            'BM_TexCoord',
+            'BM_SeparateRGB',
+            'BM_Invert',
+            'BM_CombineRGB',
+            'BM_Gamma',
+            'BM_Emission',
+            'BM_OutputMaterial',
+        ],
+        'VERTEX_COLOR_LAYER' : [
+            'BM_Attribute',
+            'BM_Emission',
+            'BM_OutputMaterial',
+        ],
+        'VECTOR_DISPLACEMENT' : [
+            'BM_TexCoord',
+            'BM_VectorMath',
+            'BM_VectorMath.001',
+            'BM_VectorMath.002',
+            'BM_SeparateXYZ',
+            'BM_SeparateXYZ.001',
+            'BM_Value',
+            'BM_MapRange',
+            'BM_MapRange.001',
+            'BM_MapRange.002',
+            'BM_CombineXYZ',
+            'BM_Emission',
+            'BM_OutputMaterial',
+        ],
+    }
+
     # adding materials if needed
     for object in objects:
         len_of_mats = len(object.data.materials)
@@ -2281,9 +2389,9 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(context, map_tag):
 
             material.use_nodes = True
             location_x = 0
-            for node_type in nodes_data[map_tag]:
+            for index, node_type in enumerate(nodes_data[map_tag]):
                 new_node = material.node_tree.nodes.new(node_type)
-                new_node.name = "BM_%s" % node_type[10:]
+                new_node.name = nodes_names_data[map_tag][index]
                 new_node.location = (location_x, 0)
                 location += 300
 
@@ -2458,6 +2566,13 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(context, map_tag):
                     [11, 12, 0, 0],
                 ],
             }
+
+            # linking
+            map_nodes = nodes_names_data[map_tag]
+            for link in links_data[map_tag]:
+                out_socket = material.node_tree.nodes[map_nodes[link[0]]].outputs[link[2]]
+                in_socket = material.node_tree.nodes[map_nodes[link[1]]].outputs[link[3]]
+                material.node_tree.links.new(out_socket, in_socket)
             
     # if use_preview:
     #     if context.scene.render.engine != 'CYCLES':
