@@ -2551,3 +2551,17 @@ class BM_Object(bpy.types.PropertyGroup):
         items=[('GPU', "GPU", "Use GPU compute device for baking, configured in the system tab in the user preferences"),
                ('CPU', "CPU", "Use CPU for baking")],
         update=BM_ITEM_PROPS_bake_device_Update)
+
+    bake_hide_when_inactive : bpy.props.BoolProperty(
+        name="Hide when Inactive",
+        description="If checked, Object's Mesh will not affect any other Objects while baking",
+        default=True,
+        update=BM_ITEM_PROPS_bake_hide_when_inactive_Update)
+
+    bake_vg_index : bpy.props.IntProperty(
+        name="VG Index",
+        description="Object's Mesh will affect other Objects Meshes if their Visibility Group Indexes are equal to the same value.\nThe affect is noticable in areas where Meshes intersact",
+        default=0,
+        min=0,
+        step=1,
+        update=BM_ITEM_PROPS_bake_vg_index_Update)
