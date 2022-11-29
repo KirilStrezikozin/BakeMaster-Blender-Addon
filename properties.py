@@ -1122,12 +1122,6 @@ class BM_Map(bpy.types.PropertyGroup):
         description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
         default=False,
         update=BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_use_preview_Update)
-
-    map_VECTOR_DISPLACEMENT_use_default : bpy.props.BoolProperty(
-        name="Default",
-        description="Bake texture map using default settings",
-        default=True,
-        update=BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_use_default_Update)
     
     map_vector_displacement_use_negative : bpy.props.BoolProperty(
         name="Include Negative",
@@ -1326,14 +1320,14 @@ class BM_Map(bpy.types.PropertyGroup):
     map_curv_samples: bpy.props.IntProperty(
         name="Samples",
         description="Tracing samples count. Affects the quality.\nKeep as low as possible for optimal performance",
-        default=4,
+        default=16,
         min=2,
-        max=16,
+        max=128,
         update=BM_MAP_PROPS_map_curv_samples_Update)
     
     map_curv_radius : bpy.props.FloatProperty(
         name="Radius",
-        default=1,
+        default=2.2,
         min=0,
         precision=3,
         update=BM_MAP_PROPS_map_curv_radius_Update)
@@ -1372,15 +1366,6 @@ class BM_Map(bpy.types.PropertyGroup):
         max=10,
         precision=3,
         update=BM_MAP_PROPS_map_curv_body_gamma_Update)
-
-    map_curv_use_invert : bpy.props.FloatProperty(
-        name="Invert",
-        description="Invert colors of the map", 
-        default=0,
-        min=0,
-        max=1,
-        precision=3,
-        update=BM_MAP_PROPS_map_curv_use_invert_Update)
 
 # Thickness Map Props
     map_THICKNESS_prefix : bpy.props.StringProperty(
@@ -1776,9 +1761,9 @@ class BM_Map(bpy.types.PropertyGroup):
     map_edgemask_samples: bpy.props.IntProperty(
         name="Samples",
         description="Tracing samples count. Affects the quality.\nKeep as low as possible for optimal performance",
-        default=4,
+        default=16,
         min=2,
-        max=16,
+        max=128,
         update=BM_MAP_PROPS_map_edgemask_samples_Update)
 
     map_edgemask_radius : bpy.props.FloatProperty(
@@ -1825,8 +1810,8 @@ class BM_Map(bpy.types.PropertyGroup):
     map_wireframemask_line_thickness : bpy.props.FloatProperty(
         name="Thickness",
         description="Thickness of uv edge",
-        default=0.02,
-        min=0.001,
+        default=0.2,
+        min=0,
         update=BM_MAP_PROPS_map_wireframemask_line_thickness_Update)
 
     map_wireframemask_use_invert : bpy.props.FloatProperty(
