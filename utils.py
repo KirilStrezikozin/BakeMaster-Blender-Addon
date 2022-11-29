@@ -2141,20 +2141,21 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
 
 # Map Preview Funcs
 def BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag):
-    object_item = BM_Object_Get(context)
-    if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
+    object_item_full = BM_Object_Get(context)
+    if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
         return
+    object_item = object_item_full[0]
     if len(object_item.global_maps) == 0:
         return
     if getattr(BM_Map_Get(object_item), "map_%s_use_preview" % map_tag) is False:
         return
 
     # collecting objects for which update bm_nodes   
-    source_object = [object for object in context.scene.objects if object.name == object_item[0].global_object_name]
+    source_object = [object for object in context.scene.objects if object.name == object_item.global_object_name]
     if len(source_object) == 0:
         return
 
-    highpolies = object_item[0].hl_highpoly_table
+    highpolies = object_item.hl_highpoly_table
     objects = [source_object[0]] if len(highpolies) == 0 else []
     for highpoly in highpolies:
         source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
@@ -2232,7 +2233,8 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag):
                 continue
 
             material.use_nodes = True
-            if material.node_tree.nodes.find('BM_') == -1:
+            bm_nodes = str([node.name for node in material.node_tree.nodes])
+            if bm_nodes.find('BM_') == -1:
                 continue
             nodes = material.node_tree.nodes
             links = material.node_tree.links
@@ -2451,19 +2453,20 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag):
                 nodes[map_nodes[0]].outputs[0].default_value = value
 
 def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
-    object_item = BM_Object_Get(context)
-    if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
+    object_item_full = BM_Object_Get(context)
+    if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
         return
+    object_item = object_item_full[0]
     if len(object_item.global_maps) == 0:
         return
     if getattr(BM_Map_Get(object_item), "map_%s_use_preview" % map_tag) is False:
         return
 
     # collecting objects for which add bm_nodes   
-    source_object = [object for object in context.scene.objects if object.name == object_item[0].global_object_name]
+    source_object = [object for object in context.scene.objects if object.name == object_item.global_object_name]
     if len(source_object) == 0:
         return
-    highpolies = object_item[0].hl_highpoly_table
+    highpolies = object_item.hl_highpoly_table
     objects = [source_object[0]] if len(highpolies) == 0 else []
     for highpoly in highpolies:
         source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
@@ -2692,7 +2695,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
     for object in objects:
         len_of_mats = len(object.data.materials)
         if len_of_mats == 0 or len([material for material in object.data.materials if material is None]) == len_of_mats:
-            new_mat = bpy.data.materials.new("Bm_CustomMaterial_%s_%s" % (object.name, map_tag))
+            new_mat = bpy.data.materials.new("BM_CustomMaterial_%s_%s" % (object.name, map_tag))
             object.data.materials.append(new_mat)
     
     # adding nodes to object's materials
@@ -2707,7 +2710,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
                 new_node = material.node_tree.nodes.new(node_type)
                 new_node.name = nodes_names_data[map_tag][index]
                 new_node.location = (location_x, 0)
-                location += 300
+                location_x += 300
 
             # setting up added nodes defaults
             nodes = material.node_tree.nodes
@@ -2885,7 +2888,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
             map_nodes = nodes_names_data[map_tag]
             for link in links_data[map_tag]:
                 out_socket = material.node_tree.nodes[map_nodes[link[0]]].outputs[link[2]]
-                in_socket = material.node_tree.nodes[map_nodes[link[1]]].outputs[link[3]]
+                in_socket = material.node_tree.nodes[map_nodes[link[1]]].inputs[link[3]]
                 material.node_tree.links.new(out_socket, in_socket)
             
             if context.scene.render.engine != 'CYCLES':
@@ -2930,7 +2933,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context):
             material.use_nodes = True
             to_remove = []
             for index, node in enumerate(material.node_tree.nodes):
-                if node.name.find('BM_CustomNode') != -1:
+                if node.name.find('BM_') != -1:
                     to_remove.append(index)
             for index in sorted(to_remove, reverse=True):
                 material.node_tree.nodes.remove(material.node_tree.nodes[index])
