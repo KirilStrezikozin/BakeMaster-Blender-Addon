@@ -1286,6 +1286,11 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
                 BM_ITEM_RemoveLocalPreviews(object, context)
 
             if self.control == 'REMOVE':
+                # update maps indexes
+                for map in object.global_maps:
+                    if map.global_map_index > object.global_maps[global_active_index].global_map_index:
+                        map.global_map_index -= 1
+
                 # trash chnlp if removing last map
                 if len(object.global_maps) == 1:
                     to_remove = []
