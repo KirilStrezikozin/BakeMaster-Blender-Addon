@@ -949,6 +949,8 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
             else:
                 map_settings_column_preview = map_settings_column.row()
                 map_settings_column_preview.prop(map, 'map_%s_use_preview' % map.global_map_type)
+                if any([object.nm_is_universal_container, object.hl_is_highpoly, object.hl_is_cage]):
+                    map_settings_column_preview.active = False
             try:
                 getattr(map, 'map_%s_use_default' % map.global_map_type)
             except AttributeError:
