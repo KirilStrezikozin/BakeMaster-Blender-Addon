@@ -2140,9 +2140,323 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
     return items
 
 # Map Preview Funcs
+def BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag):
+    object_item = BM_Object_Get(context)
+    if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
+        return
+    if len(object_item.global_maps) == 0:
+        return
+    if getattr(BM_Map_Get(object_item), "map_%s_use_preview" % map_tag) is False:
+        return
+
+    # collecting objects for which update bm_nodes   
+    source_object = [object for object in context.scene.objects if object.name == object_item[0].global_object_name]
+    if len(source_object) == 0:
+        return
+
+    highpolies = object_item[0].hl_highpoly_table
+    objects = [source_object[0]] if len(highpolies) == 0 else []
+    for highpoly in highpolies:
+        source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
+        if len(source_highpoly) == 0:
+            continue
+        objects.append(source_highpoly[0])
+
+    # which bm_nodes' values will change
+    nodes_names_data = {
+        'AO' : [
+            'BM_AmbientOcclusion',
+            'BM_ValToRGB',
+            'BM_MixRGB',
+            'BM_BrightContrast',
+            'BM_Invert',
+        ],
+        'CAVITY' : [
+            'BM_ValToRGB',
+            'BM_Math',
+            'BM_Invert',
+        ],
+        'CURVATURE' : [
+            'BM_Value',
+            'BM_AmbientOcclusion',
+            'BM_AmbientOcclusion.001',
+            'BM_ValToRGB',
+            'BM_Gamma',
+        ],
+        'THICKNESS' : [
+            'BM_AmbientOcclusion',
+            'BM_MapRange',
+            'BM_ValToRGB',
+            'BM_Invert',
+        ],
+        'XYZMASK' : [
+            'BM_SeparateXYZ',
+            'BM_VectorMath',
+            'BM_VectorMath.001',
+            'BM_VectorMath.002',
+            'BM_MapRange',
+            'BM_MixRGB',
+        ],
+        'GRADIENT' : [
+            'BM_Mapping',
+            'BM_TexGradient',
+            'BM_MapRange',
+            'BM_MixRGB',
+            'BM_HueSaturation',
+            'BM_Invert',
+        ],
+        'EDGE' : [
+            'BM_Bevel',
+            'BM_MapRange',
+            'BM_Invert',
+        ],
+        'WIREFRAME' : [
+            'BM_Value',
+            'BM_Invert',
+        ],
+        'POSITION' : [
+        ],
+        'VERTEX_COLOR_LAYER' : [
+            'BM_Attribute',
+        ],
+        'VECTOR_DISPLACEMENT' : [
+            'BM_Value',
+        ],
+    }
+    
+    map = BM_Map_Get(object_item)
+    # looping through materials
+    for object in objects:
+        for material in object.data.materials:
+            if material is None:
+                continue
+
+            material.use_nodes = True
+            if material.node_tree.nodes.find('BM_') == -1:
+                continue
+            nodes = material.node_tree.nodes
+            links = material.node_tree.links
+
+            map_nodes = nodes_names_data[map_tag]
+            # updating nodes inputs and properties
+            if map_tag == "AO":
+                use_default = getattr(map, "map_%s_use_default" % map_tag)
+                if use_default:
+                    samples = 16
+                    distance = 1
+                    only_local = False
+                    black_point = 0
+                    white_point = 0.8
+                    opacity = 0.67
+                    brightness = -0.3
+                    contrast = 0.3
+                    invert = 0        
+                else:
+                    samples = map.map_ao_samples
+                    distance = map.map_ao_distance
+                    only_local = map.map_ao_use_local
+                    black_point = map.map_ao_black_point
+                    white_point = map.map_ao_white_point
+                    opacity = map.map_ao_opacity
+                    brightness = map.map_ao_brightness
+                    contrast = map.map_ao_contrast
+                    invert = map.map_ao_use_invert
+
+                nodes[map_nodes[0]].samples = samples
+                nodes[map_nodes[0]].inputs[1].default_value = distance
+                nodes[map_nodes[0]].only_local = only_local
+                nodes[map_nodes[1]].color_ramp.elements[0].position = black_point
+                nodes[map_nodes[1]].color_ramp.elements[1].position = white_point
+                nodes[map_nodes[2]].inputs[0].default_value = opacity
+                nodes[map_nodes[3]].inputs[1].default_value = brightness
+                nodes[map_nodes[3]].inputs[2].default_value = contrast
+                nodes[map_nodes[4]].inputs[0].default_value = invert
+
+            if map_tag == "CAVITY":
+                use_default = getattr(map, "map_%s_use_default" % map_tag)
+                if use_default:
+                    black_point = 0
+                    white_point = 1
+                    power = 2.5
+                    invert = 0
+                else:
+                    black_point = map.map_cavity_black_point
+                    white_point = map.map_cavity_white_point
+                    power = map.map_cavity_power
+                    invert = map.map_cavity_use_invert
+
+                nodes[map_nodes[0]].color_ramp.elements[0].position = black_point
+                nodes[map_nodes[0]].color_ramp.elements[1].position = white_point
+                nodes[map_nodes[1]].inputs[1].default_value = power
+                nodes[map_nodes[2]].inputs[0].default_value = invert
+
+            if map_tag == "CURVATURE":
+                use_default = getattr(map, "map_%s_use_default" % map_tag)
+                if use_default:
+                    samples = 16
+                    radius = 2.2
+                    black_point = 0.4
+                    mid_point = 0.5
+                    white_point = 0.6
+                    gamma = 2.2
+                else:
+                    samples = map.map_curv_samples
+                    radius = map.map_curv_radius
+                    black_point = map.map_curv_black_point
+                    mid_point = map.map_curv_mid_point
+                    white_point = map.map_curv_white_point
+                    gamma = map.map_curv_body_gamma
+                
+                nodes[map_nodes[0]].outputs[0].default_value = radius
+                nodes[map_nodes[1]].samples = samples
+                nodes[map_nodes[2]].samples = samples
+                nodes[map_nodes[3]].color_ramp.elements[0].position = black_point
+                nodes[map_nodes[3]].color_ramp.elements[1].position = mid_point
+                nodes[map_nodes[3]].color_ramp.elements[2].position = white_point
+                nodes[map_nodes[4]].inputs[1].default_value = gamma
+
+            if map_tag == "THICKNESS":
+                use_default = getattr(map, "map_%s_use_default" % map_tag)
+                if use_default:
+                    samples = 16
+                    distance = 1
+                    black_point = 0
+                    white_point = 1
+                    brightness = 1
+                    contrast = 0
+                    invert = 0
+                else:
+                    samples = map.map_thick_samples
+                    distance = map.map_thick_distance
+                    black_point = map.map_thick_black_point
+                    white_point = map.map_thick_white_point
+                    brightness = map.map_thick_brightness
+                    contrast = map.map_thick_contrast
+                    invert = map.map_thick_use_invert
+
+                nodes[map_nodes[0]].samples = samples
+                nodes[map_nodes[0]].inputs[1].default_value = distance
+                nodes[map_nodes[1]].inputs[1].default_value = contrast
+                nodes[map_nodes[1]].inputs[4].default_value = brightness
+                nodes[map_nodes[2]].color_ramp.elements[0].position = black_point
+                nodes[map_nodes[2]].color_ramp.elements[1].position = white_point
+                nodes[map_nodes[3]].inputs[0].default_value = invert
+
+            if map_tag == "XYZMASK":
+                use_default = getattr(map, "map_%s_use_default" % map_tag)
+                if use_default:
+                    coverage = 0
+                    saturation = 1
+                    opacity = 1
+                    invert = 1
+                else:
+                    coverage = map.map_xyzmask_coverage
+                    saturation = map.map_xyzmask_saturation
+                    opacity = map.map_xyzmask_opacity
+                    invert = map.map_xyzmask_use_invert
+
+                for i in range(3):
+                    nodes[map_nodes[3]].inputs[1].default_value[i] = invert
+
+                nodes[map_nodes[4]].inputs[1].default_value = coverage
+                nodes[map_nodes[4]].inputs[4].default_value = saturation
+                nodes[map_nodes[5]].inputs[0].default_value = opacity
+
+                if map.map_xyzmask_use_x:
+                    links.new(nodes[map_nodes[0]].outputs[0], nodes[map_nodes[1]].inputs[0])
+                elif len(nodes[map_nodes[0]].outputs[0].links):
+                    links.remove(nodes[map_nodes[0]].outputs[0].links[0])
+                if map.map_xyzmask_use_y:
+                    links.new(nodes[map_nodes[0]].outputs[1], nodes[map_nodes[1]].inputs[1])
+                elif len(nodes[map_nodes[0]].outputs[1].links):
+                    links.remove(nodes[map_nodes[0]].outputs[1].links[0])
+                if map.map_xyzmask_use_z:
+                    links.new(nodes[map_nodes[0]].outputs[2], nodes[map_nodes[2]].inputs[1])
+                elif len(nodes[map_nodes[0]].outputs[2].links):
+                    links.remove(nodes[map_nodes[0]].outputs[2].links[0])
+
+            if map_tag == "GRADIENT":
+                use_default = getattr(map, "map_%s_use_default" % map_tag)
+                if use_default:
+                    g_type = 'LINEAR'
+                    #mapping = [[0, 0, 0], [0, 0, 0], [1, 1, 1]]
+                    coverage = 0
+                    contrast = 1
+                    saturation = 1
+                    opacity = 1
+                    invert = 0
+                else:
+                    g_type = map.map_gmask_type
+                    coverage = map.map_gmask_coverage
+                    contrast = map.map_gmask_contrast
+                    saturation = map.map_gmask_saturation
+                    opacity = map.map_gmask_opacity
+                    invert = map.map_gmask_use_invert 
+
+                # mapping can be changed no matter the use_default state
+                mapping = [
+                    [map.map_gmask_location_x, map.map_gmask_location_y, map.map_gmask_location_z],
+                    [map.map_gmask_rotation_x, map.map_gmask_rotation_y, map.map_gmask_rotation_z],
+                    [map.map_gmask_scale_x, map.map_gmask_scale_y, map.map_gmask_scale_z],
+                ]
+                for i in range(1, 4):
+                    for j in range(3):
+                        nodes[map_nodes[0]].inputs[i].default_value[j] = mapping[i - 1][j]
+
+                nodes[map_nodes[1]].gradient_type = g_type
+                nodes[map_nodes[2]].inputs[1].default_value = coverage
+                nodes[map_nodes[2]].inputs[4].default_value = contrast
+                nodes[map_nodes[3]].inputs[0].default_value = opacity
+                nodes[map_nodes[4]].inputs[2].default_value = saturation
+                nodes[map_nodes[5]].inputs[0].default_value = invert
+
+            if map_tag == "EDGE":
+                use_default = getattr(map, "map_%s_use_default" % map_tag)
+                if use_default:
+                    samples = 16
+                    radius = 0.02
+                    edge_contrast = 0
+                    body_contrast = 1
+                    invert = 1
+                else:
+                    samples = map.map_edgemask_samples
+                    radius = map.map_edgemask_radius
+                    edge_contrast = map.map_edgemask_edge_contrast
+                    body_contrast = map.map_edgemask_body_contrast
+                    invert = map.map_edgemask_use_invert
+
+                nodes[map_nodes[0]].samples = samples
+                nodes[map_nodes[0]].inputs[0].default_value = radius
+                nodes[map_nodes[1]].inputs[1].default_value = edge_contrast
+                nodes[map_nodes[1]].inputs[4].default_value = body_contrast
+                nodes[map_nodes[2]].inputs[0].default_value = invert
+
+            if map_tag == "WIREFRAME":
+                radius = map.map_wireframemask_line_thickness
+                invert = map.map_wireframemask_use_invert
+
+                nodes[map_nodes[0]].outputs[0].default_value = radius
+                nodes[map_nodes[1]].inputs[0].default_value = invert
+                
+            # if map_tag == "POSITION":
+                
+            if map_tag == "VERTEX_COLOR_LAYER":
+                layer = map.map_vertexcolor_layer
+
+                nodes[map_nodes[0]].attribute_name = layer
+
+            if map_tag == "VECTOR_DISPLACEMENT":
+                value = int(map.map_vector_displacement_use_negative) - 1
+
+                nodes[map_nodes[0]].outputs[0].default_value = value
+
 def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
     object_item = BM_Object_Get(context)
     if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
+        return
+    if len(object_item.global_maps) == 0:
+        return
+    if getattr(BM_Map_Get(object_item), "map_%s_use_preview" % map_tag) is False:
         return
 
     # collecting objects for which add bm_nodes   
@@ -2511,7 +2825,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
                     [0, 1, 0, 0],
                     [1, 2, 0, 0],
                     [2, 3, 0, 0],
-                    [3, 4, 0, 2,],
+                    [3, 4, 0, 2],
                     [4, 5, 0, 4],
                     [5, 6, 0, 1],
                     [6, 7, 0, 0],
@@ -2953,9 +3267,6 @@ def BM_MAP_PROPS_map_displacement_subdiv_levels_Update(self, context):
 def BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_prefix_Update(self, context):
     name = "Map: Vector Displacement prefix"
     BM_LastEditedProp_Write(context, name, "map_VECTOR_DISPLACEMENT_prefix", getattr(self, "map_VECTOR_DISPLACEMENT_prefix"), True)
-def BM_MAP_PROPS_map_vector_displacement_use_default_Update(self, context):
-    name = "Map: Vector Displacement default"
-    BM_LastEditedProp_Write(context, name, "map_vector_displacement_use_default", getattr(self, "map_vector_displacement_use_default"), True)
 def BM_MAP_PROPS_map_vector_displacement_use_negative_Update(self, context):
     name = "Map: Vector Displacement include negative"
     BM_LastEditedProp_Write(context, name, "map_vector_displacement_use_negative", getattr(self, "map_vector_displacement_use_negative"), True)
@@ -2971,9 +3282,9 @@ def BM_MAP_PROPS_map_POSITION_prefix_Update(self, context):
 def BM_MAP_PROPS_map_AO_prefix_Update(self, context):
     name = "Map: AO prefix"
     BM_LastEditedProp_Write(context, name, "map_AO_prefix", getattr(self, "map_AO_prefix"), True)
-def BM_MAP_PROPS_map_ao_use_default_Update(self, context):
+def BM_MAP_PROPS_map_AO_use_default_Update(self, context):
     name = "Map: AO default"
-    BM_LastEditedProp_Write(context, name, "map_ao_use_default", getattr(self, "map_ao_use_default"), True)
+    BM_LastEditedProp_Write(context, name, "map_AO_use_default", getattr(self, "map_AO_use_default"), True)
 def BM_MAP_PROPS_map_ao_samples_Update(self, context):
     name = "Map: AO samples"
     BM_LastEditedProp_Write(context, name, "map_ao_samples", getattr(self, "map_ao_samples"), True)
@@ -3004,9 +3315,9 @@ def BM_MAP_PROPS_map_ao_use_invert_Update(self, context):
 def BM_MAP_PROPS_map_CAVITY_prefix_Update(self, context):
     name = "Map: Cavity prefix"
     BM_LastEditedProp_Write(context, name, "map_CAVITY_prefix", getattr(self, "map_CAVITY_prefix"), True)
-def BM_MAP_PROPS_map_cavity_use_default_Update(self, context):
+def BM_MAP_PROPS_map_CAVITY_use_default_Update(self, context):
     name = "Map: Cavity default"
-    BM_LastEditedProp_Write(context, name, "map_cavity_use_default", getattr(self, "map_cavity_use_default"), True)
+    BM_LastEditedProp_Write(context, name, "map_CAVITY_use_default", getattr(self, "map_CAVITY_use_default"), True)
 def BM_MAP_PROPS_map_cavity_black_point_Update(self, context):
     name = "Map: Cavity black point"
     BM_LastEditedProp_Write(context, name, "map_cavity_black_point", getattr(self, "map_cavity_black_point"), True)
@@ -3022,9 +3333,9 @@ def BM_MAP_PROPS_map_cavity_use_invert_Update(self, context):
 def BM_MAP_PROPS_map_CURVATURE_prefix_Update(self, context):
     name = "Map: Curvature prefix"
     BM_LastEditedProp_Write(context, name, "map_CURVATURE_prefix", getattr(self, "map_CURVATURE_prefix"), True)
-def BM_MAP_PROPS_map_curv_use_default_Update(self, context):
+def BM_MAP_PROPS_map_CURVATURE_use_default_Update(self, context):
     name = "Map: Curvature default"
-    BM_LastEditedProp_Write(context, name, "map_curv_use_default", getattr(self, "map_curv_use_default"), True)
+    BM_LastEditedProp_Write(context, name, "map_CURVATURE_use_default", getattr(self, "map_CURVATURE_use_default"), True)
 def BM_MAP_PROPS_map_curv_samples_Update(self, context):
     name = "Map: Curvature samples"
     BM_LastEditedProp_Write(context, name, "map_curv_samples", getattr(self, "map_curv_samples"), True)
@@ -3043,15 +3354,12 @@ def BM_MAP_PROPS_map_curv_white_point_Update(self, context):
 def BM_MAP_PROPS_map_curv_body_gamma_Update(self, context):
     name = "Map: Curvature body gamma"
     BM_LastEditedProp_Write(context, name, "map_curv_body_gamma", getattr(self, "map_curv_body_gamma"), True)
-def BM_MAP_PROPS_map_curv_use_invert_Update(self, context):
-    name = "Map: Curvature invert"
-    BM_LastEditedProp_Write(context, name, "map_curv_use_invert", getattr(self, "map_curv_use_invert"), True)
 def BM_MAP_PROPS_map_THICKNESS_prefix_Update(self, context):
     name = "Map: Thickness prefix"
     BM_LastEditedProp_Write(context, name, "map_THICKNESS_prefix", getattr(self, "map_THICKNESS_prefix"), True)
-def BM_MAP_PROPS_map_thick_use_default_Update(self, context):
+def BM_MAP_PROPS_map_THICKNESS_use_default_Update(self, context):
     name = "Map: Thickness default"
-    BM_LastEditedProp_Write(context, name, "map_thick_use_default", getattr(self, "map_thick_use_default"), True)
+    BM_LastEditedProp_Write(context, name, "map_THICKNESS_use_default", getattr(self, "map_THICKNESS_use_default"), True)
 def BM_MAP_PROPS_map_thick_samples_Update(self, context):
     name = "Map: Thickness samples"
     BM_LastEditedProp_Write(context, name, "map_thick_samples", getattr(self, "map_thick_samples"), True)
@@ -3109,9 +3417,9 @@ def BM_MAP_PROPS_map_mask_use_invert_Update(self, context):
 def BM_MAP_PROPS_map_XYZMASK_prefix_Update(self, context):
     name = "Map: XYZ Mask prefix"
     BM_LastEditedProp_Write(context, name, "map_XYZMASK_prefix", getattr(self, "map_XYZMASK_prefix"), True)
-def BM_MAP_PROPS_map_xyzmask_use_default_Update(self, context):
+def BM_MAP_PROPS_map_XYZMASK_use_default_Update(self, context):
     name = "Map: XYZ Mask default"
-    BM_LastEditedProp_Write(context, name, "map_xyzmask_use_default", getattr(self, "map_xyzmask_use_default"), True)
+    BM_LastEditedProp_Write(context, name, "map_XYZMASK_use_default", getattr(self, "map_XYZMASK_use_default"), True)
 def BM_MAP_PROPS_map_xyzmask_use_x_Update(self, context):
     name = "Map: XYZ Mask X"
     BM_LastEditedProp_Write(context, name, "map_xyzmask_use_x", getattr(self, "map_xyzmask_use_x"), True)
@@ -3136,9 +3444,9 @@ def BM_MAP_PROPS_map_xyzmask_use_invert_Update(self, context):
 def BM_MAP_PROPS_map_GRADIENT_prefix_Update(self, context):
     name = "Map: Gradient Mask prefix"
     BM_LastEditedProp_Write(context, name, "map_GRADIENT_prefix", getattr(self, "map_GRADIENT_prefix"), True)
-def BM_MAP_PROPS_map_gmask_use_default_Update(self, context):
+def BM_MAP_PROPS_map_GRADIENT_use_default_Update(self, context):
     name = "Map: Gradient Mask default"
-    BM_LastEditedProp_Write(context, name, "map_gmask_use_default", getattr(self, "map_gmask_use_default"), True)
+    BM_LastEditedProp_Write(context, name, "map_GRADIENT_use_default", getattr(self, "map_GRADIENT_use_default"), True)
 def BM_MAP_PROPS_map_gmask_type_Update(self, context):
     name = "Map: Gradient Mask type"
     BM_LastEditedProp_Write(context, name, "map_gmask_type", getattr(self, "map_gmask_type"), True)
@@ -3187,9 +3495,9 @@ def BM_MAP_PROPS_map_gmask_use_invert_Update(self, context):
 def BM_MAP_PROPS_map_EDGE_prefix_Update(self, context):
     name = "Map: Edge Mask prefix"
     BM_LastEditedProp_Write(context, name, "map_EDGE_prefix", getattr(self, "map_EDGE_prefix"), True)
-def BM_MAP_PROPS_map_edgemask_use_default_Update(self, context):
+def BM_MAP_PROPS_map_EDGE_use_default_Update(self, context):
     name = "Map: Edge Mask default"
-    BM_LastEditedProp_Write(context, name, "map_edgemask_use_default", getattr(self, "map_edgemask_use_default"), True)
+    BM_LastEditedProp_Write(context, name, "map_EDGE_use_default", getattr(self, "map_EDGE_use_default"), True)
 def BM_MAP_PROPS_map_edgemask_samples_Update(self, context):
     name = "Map: Edge Mask samples"
     BM_LastEditedProp_Write(context, name, "map_edgemask_samples", getattr(self, "map_edgemask_samples"), True)
