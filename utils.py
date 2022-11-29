@@ -2987,7 +2987,7 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
 
     for object in objects:
         if len(object.data.materials) == 0:
-            bpy.ops.bakemaster.report_message('WARNING', "%s: No Materials" % object.name)
+            bpy.ops.bakemaster.report_message(message_type='WARNING', message="%s: No Materials" % object.name)
             continue
 
         for material in object.data.materials:
