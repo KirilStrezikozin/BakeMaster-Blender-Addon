@@ -152,6 +152,7 @@ classes = (
     BM_OT_ApplyLastEditedProp,
     BM_OT_CreateArtificialUniContainer_DeselectAll,
     BM_OT_CreateArtificialUniContainer,
+    BM_OT_ReportMessage,
     BM_OT_Help,
 
     BM_OT_FULL_OBJECT_Preset_Add,

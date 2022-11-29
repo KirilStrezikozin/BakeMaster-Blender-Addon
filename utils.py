@@ -2895,7 +2895,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
                 material.node_tree.links.new(out_socket, in_socket)
             
             if context.scene.render.engine != 'CYCLES':
-                self.report({'INFO'}, BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
+                bpy.ops.bakemaster.report_message(message_type='INFO', message=BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
 
             material.node_tree.nodes['BM_OutputMaterial'].select = True
             material.node_tree.nodes.active = nodes['BM_OutputMaterial']
