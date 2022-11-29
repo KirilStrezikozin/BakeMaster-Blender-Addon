@@ -2044,7 +2044,7 @@ def BM_MAP_PROPS_map_type_Items(self, context):
         ('METALNESS', "Metalness", "PBR-Metallic. Image texture for determining metal and non-metal parts of the object"),
         ('ROUGHNESS', "Roughness", "PBR-Metallic. Image texture for determining roughness across the surface of the object"),
         ('', "PBR-Specular", ""),
-        ('DIFFUSE', "Diffuse", "PBR-Specular. Color image texture containing color without shadows and highlights"),
+        ('DIFFUSE', "Albedo", "PBR-Specular. Color image texture containing color without shadows and highlights"),
         ('SPECULAR', "Specular", "PBR-Specular. Image texture for determining specularity across the surface of the object"),
         ('GLOSSINESS', "Glossiness", "PBR-Specular. Image texture for determining glossiness across the surface of the object"),
         ('', "PBR-based", ""),
