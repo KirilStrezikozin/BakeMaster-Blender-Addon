@@ -863,7 +863,8 @@ class BM_Map(bpy.types.PropertyGroup):
     map_vertexcolor_layer : bpy.props.EnumProperty(
         name="Layer",
         description="Vertex Color Layer to bake",
-        items=BM_MAP_PROPS_map_vertexcolor_layer_Items)
+        items=BM_MAP_PROPS_map_vertexcolor_layer_Items,
+        update=BM_MAP_PROPS_map_vertexcolor_layer_Update)
     
 # Cycles Map Props 
     map_C_COMBINED_prefix : bpy.props.StringProperty(
