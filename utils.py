@@ -3004,6 +3004,13 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
                     if len(node.inputs[2].links) == 0:
                         continue
                     grab_socket = node.inputs[2].links[0].from_socket
+                    input_node = node.inputs[2].links[0].from_node
+                    if input_node.type in ['DISPLACEMENT', 'VECTOR_DISPLACEMENT']:
+                            if len(input_node.inputs[0].links) == 0:
+                                default_value = tuple([input_node.inputs[0].default_value, input_node.inputs[0].default_value, input_node.inputs[0].default_value, 1])
+                                grab_socket = None
+                                break
+                            grab_socket = input_node.inputs[0].links[0].from_socket
                     break
                 
                 if len(node.inputs[0].links) == 0:
