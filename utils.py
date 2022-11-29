@@ -3008,12 +3008,19 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
                 
                 if len(node.inputs[0].links) == 0:
                         continue
+
                 for input_socket in node.inputs[0].links[0].from_node.inputs:
                     if input_socket.name in node_getable_data[map_tag]:
                         if len(input_socket.links) == 0:
                             default_value = get_socket_default_color_value(input_socket, input_socket.name)
                             break
                         grab_socket = input_socket.links[0].from_socket
+                        if input_socket.links[0].from_node.type == 'NORMAL_MAP':
+                            if len(input_socket.links[0].from_node.inputs[1].links) == 0:
+                                default_value = tuple(input_socket.links[0].from_node.inputs[1].default_value)
+                                grab_socket = None
+                                break
+                            grab_socket = input_socket.links[0].from_node.inputs[1].links[0].from_socket
                         break
                 if any([grab_socket is not None, default_value is not None]):
                     break
