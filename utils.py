@@ -2939,10 +2939,10 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
         'ALBEDO' : ['Color', 'Base Color'],
         'METALNESS' : ['Metallic'],
         'ROUGHNESS' : ['Roughness'],
-        'DIFFUSE' : ['Color', "Base Color"],
+        'DIFFUSE' : ['Color', 'Base Color'],
         'SPECULAR' : ['Specular'],
         'GLOSSINESS' : ['Roughness'],
-        'OPACITY' : ['Alpha', "Opacity"],
+        'OPACITY' : ['Alpha', 'Opacity'],
         'BASE_COLOR' : ['Base Color'],
         'SS_COLOR' : ['Subsurface Color', 'Color'],
         'METALLIC' : ['Metallic'],
@@ -2957,6 +2957,29 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
         'DISPLACEMENT' : ['Displacement'],
     }
 
+    def get_socket_default_color_value(socket, socket_name):  
+        default_color_data = {
+            'Color' : getattr(socket, "default_value"),
+            'Base Color' : getattr(socket, "default_value"),
+            'Metallic' : [getattr(socket, "default_value")]*3,
+            'Roughness' : [getattr(socket, "default_value")]*3,
+            'Specular' : [getattr(socket, "default_value")]*3,
+            'Alpha' : [getattr(socket, "default_value")]*3,
+            'Subsurface Color' : getattr(socket, "default_value"),
+            'Anisotropic' : [getattr(socket, "default_value")]*3,
+            'Sheen' : [getattr(socket, "default_value")]*3,
+            'Clearcoat' : [getattr(socket, "default_value")]*3,
+            'IOR' : [getattr(socket, "default_value")]*3,
+            'Transmission' : [getattr(socket, "default_value")]*3,
+            'Emission' : getattr(socket, "default_value"),
+            'Normal' : [0.5, 0.5, 1],
+            'Displacement' : [0.0]*3,
+        }
+        data = list(default_color_data[socket_name])
+        if len(data) != 4:
+            data.append(1)
+        return tuple(data)
+
     for object in objects:
         if len(object.data.materials) == 0:
             bpy.ops.bakemaster.report_message('WARNING', "%s: No Materials" % object.name)
@@ -2968,6 +2991,7 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
 
             material.use_nodes = True
             grab_socket = None
+            default_value = None
             nodes = material.node_tree.nodes
             links = material.node_tree.links
 
@@ -2987,14 +3011,17 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
                 for input_socket in node.inputs[0].links[0].from_node.inputs:
                     if input_socket.name in node_getable_data[map_tag]:
                         if len(input_socket.links) == 0:
-                            continue
+                            default_value = get_socket_default_color_value(input_socket, input_socket.name)
+                            break
                         grab_socket = input_socket.links[0].from_socket
                         break
-                if grab_socket is not None:
+                if any([grab_socket is not None, default_value is not None]):
                     break
             
             # add out, emission nodes
             new_nodes = ['ShaderNodeEmission', 'ShaderNodeOutputMaterial']
+            if grab_socket is None:
+                new_nodes.append('ShaderNodeRGB')
             location_x = 0
             for node_type in new_nodes:
                 new_node = nodes.new(node_type)
@@ -3003,7 +3030,12 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
                 location_x += 300
 
             # link added nodes and link with grabbed socket
-            links.new(grab_socket, nodes['BM_Emission'].inputs[0])
+            if grab_socket is None:
+                default_value = (0, 0, 0, 1) if default_value is None else default_value
+                nodes['BM_RGB'].outputs[0].default_value = default_value
+                links.new(nodes['BM_RGB'].outputs[0], nodes['BM_Emission'].inputs[0])
+            else:
+                links.new(grab_socket, nodes['BM_Emission'].inputs[0])
             links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
 
             if context.scene.render.engine != 'CYCLES':
