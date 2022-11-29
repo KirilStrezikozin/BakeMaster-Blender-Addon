@@ -3048,33 +3048,71 @@ def BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_use_preview_Update(self, context):
         BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'VECTOR_DISPLACEMENT')
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'VECTOR_DISPLACEMENT')
 
+# Map Previews with Material Relinking
 def BM_MAP_PROPS_map_ALBEDO_use_preview_Update(self, context):
-    pass
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    if self.map_ALBEDO_use_preview:
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'ALBEDO')
+        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'ALBEDO')
 def BM_MAP_PROPS_map_METALNESS_use_preview_Update(self, context):
-    pass
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    if self.map_METALNESS_use_preview:
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'METALNESS')
+        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'METALNESS')
 def BM_MAP_PROPS_map_ROUGHNESS_use_preview_Update(self, context):
-    pass
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    if self.map_ROUGHNESS_use_preview:
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'ROUGHNESS')
+        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'ROUGHNESS')
 def BM_MAP_PROPS_map_DIFFUSE_use_preview_Update(self, context):
-    pass
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    if self.map_DIFFUSE_use_preview:
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'DIFFUSE')
+        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'DIFFUSE')
 def BM_MAP_PROPS_map_SPECULAR_use_preview_Update(self, context):
-    pass
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    if self.map_SPECULAR_use_preview:
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'SPECULAR')
+        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'SPECULAR')
 def BM_MAP_PROPS_map_GLOSSINESS_use_preview_Update(self, context):
-    pass
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    if self.map_GLOSSINESS_use_preview:
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'GLOSSINESS')
+        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'GLOSSINESS')
 def BM_MAP_PROPS_map_OPACITY_use_preview_Update(self, context):
-    pass
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    if self.map_OPACITY_use_preview:
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'OPACITY')
+        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'OPACITY')
 def BM_MAP_PROPS_map_EMISSION_use_preview_Update(self, context):
-    pass
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    if self.map_EMISSION_use_preview:
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'EMISSION')
+        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'EMISSION')
 def BM_MAP_PROPS_map_PASS_use_preview_Update(self, context):
-    pass
-def BM_MAP_PROPS_map_DECAL_use_preview_Update(self, context):
-    pass
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    if self.map_PASS_use_preview:
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'PASS')
+        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'PASS')
 def BM_MAP_PROPS_map_NORMAL_use_preview_Update(self, context):
-    pass
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    if self.map_NORMAL_use_preview:
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'NORMAL')
+        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'NORMAL')
 def BM_MAP_PROPS_map_DISPLACEMENT_use_preview_Update(self, context):
-    pass
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    if self.map_DISPLACEMENT_use_preview:
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'DISPLACEMENT')
+        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'DISPLACEMENT')
+
+# Map Previews with Material Reassign
 def BM_MAP_PROPS_map_ID_use_preview_Update(self, context):
     pass
 def BM_MAP_PROPS_map_MASK_use_preview_Update(self, context):
+    pass
+
+# Map Previews with matcaps
+def BM_MAP_PROPS_map_DECAL_use_preview_Update(self, context):
     pass
 
 ###############################################################
