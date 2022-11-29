@@ -3009,6 +3009,7 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
             if context.scene.render.engine != 'CYCLES':
                 bpy.ops.bakemaster.report_message(message_type='INFO', message=BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
 
+            nodes['BM_OutputMaterial'].target = 'CYCLES'
             nodes['BM_OutputMaterial'].select = True
             nodes.active = nodes['BM_OutputMaterial']
 
