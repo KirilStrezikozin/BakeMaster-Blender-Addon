@@ -3218,6 +3218,8 @@ def BM_MAP_PROPS_map_decal_normal_b_Update(self, context):
 def BM_MAP_PROPS_map_VERTEX_COLOR_LAYER_prefix_Update(self, context):
     name = "Map: VertexColor Layer prefix"
     BM_LastEditedProp_Write(context, name, "map_VERTEX_COLOR_LAYER_prefix", getattr(self, "map_VERTEX_COLOR_LAYER_prefix"), True)
+def BM_MAP_PROPS_map_vertexcolor_layer_Update(self, context):
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'VERTEX_COLOR_LAYER')
 def BM_MAP_PROPS_map_C_COMBINED_prefix_Update(self, context):
     name = "Map: Cycles Combined prefix"
     BM_LastEditedProp_Write(context, name, "map_C_COMBINED_prefix", getattr(self, "map_C_COMBINED_prefix"), True)
@@ -3317,6 +3319,7 @@ def BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_prefix_Update(self, context):
 def BM_MAP_PROPS_map_vector_displacement_use_negative_Update(self, context):
     name = "Map: Vector Displacement include negative"
     BM_LastEditedProp_Write(context, name, "map_vector_displacement_use_negative", getattr(self, "map_vector_displacement_use_negative"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'VECTOR_DISPLACEMENT')
 def BM_MAP_PROPS_map_vector_displacement_result_Update(self, context):
     name = "Map: Vector Displacement result"
     BM_LastEditedProp_Write(context, name, "map_vector_displacement_result", getattr(self, "map_vector_displacement_result"), True)
@@ -3332,102 +3335,132 @@ def BM_MAP_PROPS_map_AO_prefix_Update(self, context):
 def BM_MAP_PROPS_map_AO_use_default_Update(self, context):
     name = "Map: AO default"
     BM_LastEditedProp_Write(context, name, "map_AO_use_default", getattr(self, "map_AO_use_default"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
 def BM_MAP_PROPS_map_ao_samples_Update(self, context):
     name = "Map: AO samples"
     BM_LastEditedProp_Write(context, name, "map_ao_samples", getattr(self, "map_ao_samples"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
 def BM_MAP_PROPS_map_ao_distance_Update(self, context):
     name = "Map: AO distance"
     BM_LastEditedProp_Write(context, name, "map_ao_distance", getattr(self, "map_ao_distance"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
 def BM_MAP_PROPS_map_ao_black_point_Update(self, context):
     name = "Map: AO black point"
     BM_LastEditedProp_Write(context, name, "map_ao_black_point", getattr(self, "map_ao_black_point"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
 def BM_MAP_PROPS_map_ao_white_point_Update(self, context):
     name = "Map: AO white point"
     BM_LastEditedProp_Write(context, name, "map_ao_white_point", getattr(self, "map_ao_white_point"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
 def BM_MAP_PROPS_map_ao_brightness_Update(self, context):
     name = "Map: AO brightness"
     BM_LastEditedProp_Write(context, name, "map_ao_brightness", getattr(self, "map_ao_brightness"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
 def BM_MAP_PROPS_map_ao_contrast_Update(self, context):
     name = "Map: AO contrast"
     BM_LastEditedProp_Write(context, name, "map_ao_contrast", getattr(self, "map_ao_contrast"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
 def BM_MAP_PROPS_map_ao_opacity_Update(self, context):
     name = "Map: AO opacity"
     BM_LastEditedProp_Write(context, name, "map_ao_opacity", getattr(self, "map_ao_opacity"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
 def BM_MAP_PROPS_map_ao_use_local_Update(self, context):
     name = "Map: AO only local"
     BM_LastEditedProp_Write(context, name, "map_ao_use_local", getattr(self, "map_ao_use_local"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
 def BM_MAP_PROPS_map_ao_use_invert_Update(self, context):
     name = "Map: AO invert"
     BM_LastEditedProp_Write(context, name, "map_ao_use_invert", getattr(self, "map_ao_use_invert"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
 def BM_MAP_PROPS_map_CAVITY_prefix_Update(self, context):
     name = "Map: Cavity prefix"
     BM_LastEditedProp_Write(context, name, "map_CAVITY_prefix", getattr(self, "map_CAVITY_prefix"), True)
 def BM_MAP_PROPS_map_CAVITY_use_default_Update(self, context):
     name = "Map: Cavity default"
     BM_LastEditedProp_Write(context, name, "map_CAVITY_use_default", getattr(self, "map_CAVITY_use_default"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CAVITY')
 def BM_MAP_PROPS_map_cavity_black_point_Update(self, context):
     name = "Map: Cavity black point"
     BM_LastEditedProp_Write(context, name, "map_cavity_black_point", getattr(self, "map_cavity_black_point"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CAVITY')
 def BM_MAP_PROPS_map_cavity_white_point_Update(self, context):
     name = "Map: Cavity white point"
     BM_LastEditedProp_Write(context, name, "map_cavity_white_point", getattr(self, "map_cavity_white_point"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CAVITY')
 def BM_MAP_PROPS_map_cavity_power_Update(self, context):
     name = "Map: Cavity power"
     BM_LastEditedProp_Write(context, name, "map_cavity_power", getattr(self, "map_cavity_power"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CAVITY')
 def BM_MAP_PROPS_map_cavity_use_invert_Update(self, context):
     name = "Map: Cavity invert"
     BM_LastEditedProp_Write(context, name, "map_cavity_use_invert", getattr(self, "map_cavity_use_invert"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CAVITY')
 def BM_MAP_PROPS_map_CURVATURE_prefix_Update(self, context):
     name = "Map: Curvature prefix"
     BM_LastEditedProp_Write(context, name, "map_CURVATURE_prefix", getattr(self, "map_CURVATURE_prefix"), True)
 def BM_MAP_PROPS_map_CURVATURE_use_default_Update(self, context):
     name = "Map: Curvature default"
     BM_LastEditedProp_Write(context, name, "map_CURVATURE_use_default", getattr(self, "map_CURVATURE_use_default"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CURVATURE')
 def BM_MAP_PROPS_map_curv_samples_Update(self, context):
     name = "Map: Curvature samples"
     BM_LastEditedProp_Write(context, name, "map_curv_samples", getattr(self, "map_curv_samples"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CURVATURE')
 def BM_MAP_PROPS_map_curv_radius_Update(self, context):
     name = "Map: Curvature radius"
     BM_LastEditedProp_Write(context, name, "map_curv_radius", getattr(self, "map_curv_radius"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CURVATURE')
 def BM_MAP_PROPS_map_curv_black_point_Update(self, context):
     name = "Map: Curvature black point"
     BM_LastEditedProp_Write(context, name, "map_curv_black_point", getattr(self, "map_curv_black_point"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CURVATURE')
 def BM_MAP_PROPS_map_curv_mid_point_Update(self, context):
     name = "Map: Curvature mid point"
     BM_LastEditedProp_Write(context, name, "map_curv_mid_point", getattr(self, "map_curv_mid_point"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CURVATURE')
 def BM_MAP_PROPS_map_curv_white_point_Update(self, context):
     name = "Map: Curvature white point"
     BM_LastEditedProp_Write(context, name, "map_curv_white_point", getattr(self, "map_curv_white_point"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CURVATURE')
 def BM_MAP_PROPS_map_curv_body_gamma_Update(self, context):
     name = "Map: Curvature body gamma"
     BM_LastEditedProp_Write(context, name, "map_curv_body_gamma", getattr(self, "map_curv_body_gamma"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CURVATURE')
 def BM_MAP_PROPS_map_THICKNESS_prefix_Update(self, context):
     name = "Map: Thickness prefix"
     BM_LastEditedProp_Write(context, name, "map_THICKNESS_prefix", getattr(self, "map_THICKNESS_prefix"), True)
 def BM_MAP_PROPS_map_THICKNESS_use_default_Update(self, context):
     name = "Map: Thickness default"
     BM_LastEditedProp_Write(context, name, "map_THICKNESS_use_default", getattr(self, "map_THICKNESS_use_default"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'THICKNESS')
 def BM_MAP_PROPS_map_thick_samples_Update(self, context):
     name = "Map: Thickness samples"
     BM_LastEditedProp_Write(context, name, "map_thick_samples", getattr(self, "map_thick_samples"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'THICKNESS')
 def BM_MAP_PROPS_map_thick_distance_Update(self, context):
     name = "Map: Thickness distance"
     BM_LastEditedProp_Write(context, name, "map_thick_distance", getattr(self, "map_thick_distance"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'THICKNESS')
 def BM_MAP_PROPS_map_thick_black_point_Update(self, context):
     name = "Map: Thickness black point"
     BM_LastEditedProp_Write(context, name, "map_thick_black_point", getattr(self, "map_thick_black_point"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'THICKNESS')
 def BM_MAP_PROPS_map_thick_white_point_Update(self, context):
     name = "Map: Thickness white point"
     BM_LastEditedProp_Write(context, name, "map_thick_white_point", getattr(self, "map_thick_white_point"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'THICKNESS')
 def BM_MAP_PROPS_map_thick_brightness_Update(self, context):
     name = "Map: Thickness brightness"
     BM_LastEditedProp_Write(context, name, "map_thick_brightness", getattr(self, "map_thick_brightness"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'THICKNESS')
 def BM_MAP_PROPS_map_thick_contrast_Update(self, context):
     name = "Map: Thickness contrast"
     BM_LastEditedProp_Write(context, name, "map_thick_contrast", getattr(self, "map_thick_contrast"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'THICKNESS')
 def BM_MAP_PROPS_map_thick_use_invert_Update(self, context):
     name = "Map: Thickness invert"
     BM_LastEditedProp_Write(context, name, "map_thick_use_invert", getattr(self, "map_thick_use_invert"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'THICKNESS')
 def BM_MAP_PROPS_map_ID_prefix_Update(self, context):
     name = "Map: ID prefix"
     BM_LastEditedProp_Write(context, name, "map_ID_prefix", getattr(self, "map_ID_prefix"), True)
@@ -3467,108 +3500,140 @@ def BM_MAP_PROPS_map_XYZMASK_prefix_Update(self, context):
 def BM_MAP_PROPS_map_XYZMASK_use_default_Update(self, context):
     name = "Map: XYZ Mask default"
     BM_LastEditedProp_Write(context, name, "map_XYZMASK_use_default", getattr(self, "map_XYZMASK_use_default"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'XYZMASK')
 def BM_MAP_PROPS_map_xyzmask_use_x_Update(self, context):
     name = "Map: XYZ Mask X"
     BM_LastEditedProp_Write(context, name, "map_xyzmask_use_x", getattr(self, "map_xyzmask_use_x"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'XYZMASK')
 def BM_MAP_PROPS_map_xyzmask_use_y_Update(self, context):
     name = "Map: XYZ Mask Y"
     BM_LastEditedProp_Write(context, name, "map_xyzmask_use_y", getattr(self, "map_xyzmask_use_y"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'XYZMASK')
 def BM_MAP_PROPS_map_xyzmask_use_z_Update(self, context):
     name = "Map: XYZ Mask Z"
     BM_LastEditedProp_Write(context, name, "map_xyzmask_use_z", getattr(self, "map_xyzmask_use_z"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'XYZMASK')
 def BM_MAP_PROPS_map_xyzmask_coverage_Update(self, context):
     name = "Map: XYZ Mask coverage"
     BM_LastEditedProp_Write(context, name, "map_xyzmask_coverage", getattr(self, "map_xyzmask_coverage"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'XYZMASK')
 def BM_MAP_PROPS_map_xyzmask_saturation_Update(self, context):
     name = "Map: XYZ Mask saturation"
     BM_LastEditedProp_Write(context, name, "map_xyzmask_saturation", getattr(self, "map_xyzmask_saturation"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'XYZMASK')
 def BM_MAP_PROPS_map_xyzmask_opacity_Update(self, context):
     name = "Map: XYZ Mask opacity"
     BM_LastEditedProp_Write(context, name, "map_xyzmask_opacity", getattr(self, "map_xyzmask_opacity"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'XYZMASK')
 def BM_MAP_PROPS_map_xyzmask_use_invert_Update(self, context):
     name = "Map: XYZ Mask invert"
     BM_LastEditedProp_Write(context, name, "map_xyzmask_use_invert", getattr(self, "map_xyzmask_use_invert"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'XYZMASK')
 def BM_MAP_PROPS_map_GRADIENT_prefix_Update(self, context):
     name = "Map: Gradient Mask prefix"
     BM_LastEditedProp_Write(context, name, "map_GRADIENT_prefix", getattr(self, "map_GRADIENT_prefix"), True)
 def BM_MAP_PROPS_map_GRADIENT_use_default_Update(self, context):
     name = "Map: Gradient Mask default"
     BM_LastEditedProp_Write(context, name, "map_GRADIENT_use_default", getattr(self, "map_GRADIENT_use_default"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_type_Update(self, context):
     name = "Map: Gradient Mask type"
     BM_LastEditedProp_Write(context, name, "map_gmask_type", getattr(self, "map_gmask_type"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_location_x_Update(self, context):
     name = "Map: Gradient Mask location x"
     BM_LastEditedProp_Write(context, name, "map_gmask_location_x", getattr(self, "map_gmask_location_x"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_location_y_Update(self, context):
     name = "Map: Gradient Mask location y"
     BM_LastEditedProp_Write(context, name, "map_gmask_location_y", getattr(self, "map_gmask_location_y"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_location_z_Update(self, context):
     name = "Map: Gradient Mask location z"
     BM_LastEditedProp_Write(context, name, "map_gmask_location_z", getattr(self, "map_gmask_location_z"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_rotation_x_Update(self, context):
     name = "Map: Gradient Mask rotation x"
     BM_LastEditedProp_Write(context, name, "map_gmask_rotation_x", getattr(self, "map_gmask_rotation_x"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_rotation_y_Update(self, context):
     name = "Map: Gradient Mask rotation y"
     BM_LastEditedProp_Write(context, name, "map_gmask_rotation_y", getattr(self, "map_gmask_rotation_y"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_rotation_z_Update(self, context):
     name = "Map: Gradient Mask rotation z"
     BM_LastEditedProp_Write(context, name, "map_gmask_rotation_z", getattr(self, "map_gmask_rotation_z"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_scale_x_Update(self, context):
     name = "Map: Gradient Mask scale x"
     BM_LastEditedProp_Write(context, name, "map_gmask_scale_x", getattr(self, "map_gmask_scale_x"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_scale_y_Update(self, context):
     name = "Map: Gradient Mask scale y"
     BM_LastEditedProp_Write(context, name, "map_gmask_scale_y", getattr(self, "map_gmask_scale_y"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_scale_z_Update(self, context):
     name = "Map: Gradient Mask scale z"
     BM_LastEditedProp_Write(context, name, "map_gmask_scale_z", getattr(self, "map_gmask_scale_z"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_coverage_Update(self, context):
     name = "Map: Gradient Mask coverage"
     BM_LastEditedProp_Write(context, name, "map_gmask_coverage", getattr(self, "map_gmask_coverage"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_contrast_Update(self, context):
     name = "Map: Gradient Mask contrast"
     BM_LastEditedProp_Write(context, name, "map_gmask_contrast", getattr(self, "map_gmask_contrast"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_saturation_Update(self, context):
     name = "Map: Gradient Mask saturation"
     BM_LastEditedProp_Write(context, name, "map_gmask_saturation", getattr(self, "map_gmask_saturation"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_opacity_Update(self, context):
     name = "Map: Gradient Mask opacity"
     BM_LastEditedProp_Write(context, name, "map_gmask_opacity", getattr(self, "map_gmask_opacity"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_use_invert_Update(self, context):
     name = "Map: Gradient Mask invert"
     BM_LastEditedProp_Write(context, name, "map_gmask_use_invert", getattr(self, "map_gmask_use_invert"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
 def BM_MAP_PROPS_map_EDGE_prefix_Update(self, context):
     name = "Map: Edge Mask prefix"
     BM_LastEditedProp_Write(context, name, "map_EDGE_prefix", getattr(self, "map_EDGE_prefix"), True)
 def BM_MAP_PROPS_map_EDGE_use_default_Update(self, context):
     name = "Map: Edge Mask default"
     BM_LastEditedProp_Write(context, name, "map_EDGE_use_default", getattr(self, "map_EDGE_use_default"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'EDGE')
 def BM_MAP_PROPS_map_edgemask_samples_Update(self, context):
     name = "Map: Edge Mask samples"
     BM_LastEditedProp_Write(context, name, "map_edgemask_samples", getattr(self, "map_edgemask_samples"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'EDGE')
 def BM_MAP_PROPS_map_edgemask_radius_Update(self, context):
     name = "Map: Edge Mask radius"
     BM_LastEditedProp_Write(context, name, "map_edgemask_radius", getattr(self, "map_edgemask_radius"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'EDGE')
 def BM_MAP_PROPS_map_edgemask_edge_contrast_Update(self, context):
     name = "Map: Edge Mask edge contrast"
     BM_LastEditedProp_Write(context, name, "map_edgemask_edge_contrast", getattr(self, "map_edgemask_edge_contrast"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'EDGE')
 def BM_MAP_PROPS_map_edgemask_body_contrast_Update(self, context):
     name = "Map: Edge Mask body contrast"
     BM_LastEditedProp_Write(context, name, "map_edgemask_body_contrast", getattr(self, "map_edgemask_body_contrast"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'EDGE')
 def BM_MAP_PROPS_map_edgemask_use_invert_Update(self, context):
     name = "Map: Edge Mask invert"
     BM_LastEditedProp_Write(context, name, "map_edgemask_use_invert", getattr(self, "map_edgemask_use_invert"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'EDGE')
 def BM_MAP_PROPS_map_WIREFRAME_prefix_Update(self, context):
     name = "Map: Wireframe prefix"
     BM_LastEditedProp_Write(context, name, "map_WIREFRAME_prefix", getattr(self, "map_WIREFRAME_prefix"), True)
 def BM_MAP_PROPS_map_wireframemask_line_thickness_Update(self, context):
     name = "Map: Wireframe Mask line thickness"
     BM_LastEditedProp_Write(context, name, "map_wireframemask_line_thickness", getattr(self, "map_wireframemask_line_thickness"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'WIREFRAME')
 def BM_MAP_PROPS_map_wireframemask_use_invert_Update(self, context):
     name = "Map: Wireframe Mask invert"
     BM_LastEditedProp_Write(context, name, "map_wireframemask_use_invert", getattr(self, "map_wireframemask_use_invert"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'WIREFRAME')
 
 def BM_ITEM_PROPS_global_use_bake_Update(self, context):
     name = "Object: Use in bake"
