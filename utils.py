@@ -3252,12 +3252,12 @@ def BM_MAP_PROPS_map_PASS_use_preview_Update(self, context):
         BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'PASS')
 def BM_MAP_PROPS_map_NORMAL_use_preview_Update(self, context):
     BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
-    if self.map_NORMAL_use_preview:
+    if self.map_NORMAL_use_preview and self.map_normal_data == 'MATERIAL':
         BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'NORMAL')
         BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'NORMAL')
 def BM_MAP_PROPS_map_DISPLACEMENT_use_preview_Update(self, context):
     BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
-    if self.map_DISPLACEMENT_use_preview:
+    if self.map_DISPLACEMENT_use_preview and self.map_displacement_data == 'MATERIAL':
         BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'DISPLACEMENT')
         BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'DISPLACEMENT')
 
@@ -3483,6 +3483,7 @@ def BM_MAP_PROPS_map_NORMAL_prefix_Update(self, context):
 def BM_MAP_PROPS_map_normal_data_Update(self, context):
     name = "Map: Normal data"
     BM_LastEditedProp_Write(context, name, "map_normal_data", getattr(self, "map_normal_data"), True)
+    setattr(self, "map_NORMAL_use_preview", False)
 def BM_MAP_PROPS_map_normal_space_Update(self, context):
     name = "Map: Normal space"
     BM_LastEditedProp_Write(context, name, "map_normal_space", getattr(self, "map_normal_space"), True)
@@ -3507,6 +3508,7 @@ def BM_MAP_PROPS_map_DISPLACEMENT_prefix_Update(self, context):
 def BM_MAP_PROPS_map_displacement_data_Update(self, context):
     name = "Map: Displacement data"
     BM_LastEditedProp_Write(context, name, "map_displacement_data", getattr(self, "map_displacement_data"), True)
+    setattr(self, "map_DISPLACEMENT_use_preview", False)
 def BM_MAP_PROPS_map_displacement_result_Update(self, context):
     name = "Map: Displacement result"
     BM_LastEditedProp_Write(context, name, "map_displacement_result", getattr(self, "map_displacement_result"), True)
