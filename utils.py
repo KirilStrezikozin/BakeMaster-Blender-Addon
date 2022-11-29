@@ -2897,7 +2897,8 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
     #       for node in nodes:
     #           if node.type == 'OUTPUT_MATERIAL' and node.name.find('BM_') == -1:
     #               node.target = 'ALL'
-    #       BM_MAP_MaterialUpdate(self, material, map_index)
+
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag)
 
 def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context):
     object_item = BM_Object_Get(context)
@@ -2938,62 +2939,94 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context):
         for mat_index in sorted(mats_to_remove, reverse=True):
             object.data.materials.pop(index=mat_index)
 
+def BM_MAP_PROPS_MapPreview_Unset(context, obj_index_init, map_index_init, skip_current_map):
+    # unset all previews
+    for obj_index, object in enumerate(context.scene.bm_table_of_objects):
+        context.scene.bm_props.global_active_index = obj_index
+        for map_index, map in enumerate(object.global_maps):
+            object.global_maps_active_index = map_index
+
+            # skip current map
+            if all([skip_current_map, obj_index == obj_index_init, map_index_init == map_index_init]):
+                continue
+
+            maps_tags = {
+                'AO',
+                'CAVITY',
+                'CURVATURE',
+                'THICKNESS',
+                'XYZMASK',
+                'GRADIENT',
+                'EDGE',
+                'WIREFRAME',
+                'POSITION',
+                'VERTEX_COLOR_LAYER',
+                'VECTOR_DISPLACEMENT',
+            }
+            for key in maps_tags:
+                if getattr(map, "map_%s_use_preview"):
+                    setattr(map, "map_%s_use_preview", False)
+
+    # return indexes back
+    context.scene.bm_props.global_active_index = obj_index_init
+    BM_Object_Get(context).global_maps_active_index = map_index_init
+
 # Map previews with custom nodes
 def BM_MAP_PROPS_map_AO_use_preview_Update(self, context):
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
     if self.map_AO_use_preview:
-        pass
-    else:
-        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True)
+        BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'AO')
 def BM_MAP_PROPS_map_CAVITY_use_preview_Update(self, context):
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
     if self.map_CAVITY_use_preview:
-        pass
-    else:
-        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True)
+        BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'CAVITY')
 def BM_MAP_PROPS_map_CURVATURE_use_preview_Update(self, context):
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
     if self.map_CURVATURE_use_preview:
-        pass
-    else:
-        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True)
+        BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'CURVATURE')
 def BM_MAP_PROPS_map_THICKNESS_use_preview_Update(self, context):
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
     if self.map_THICKNESS_use_preview:
-        pass
-    else:
-        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True)
+        BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'THICKNESS')
 def BM_MAP_PROPS_map_XYZMASK_use_preview_Update(self, context):
-    if self.map_XYZMAS_use_preview:
-        pass
-    else:
-        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    if self.map_XYZMASK_use_preview:
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True)
+        BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'XYZMASK')
 def BM_MAP_PROPS_map_GRADIENT_use_preview_Update(self, context):
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
     if self.map_GRADIENT_use_preview:
-        pass
-    else:
-        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True)
+        BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_EDGE_use_preview_Update(self, context):
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
     if self.map_EDGE_use_preview:
-        pass
-    else:
-        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True)
+        BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'EDGE')
 def BM_MAP_PROPS_map_WIREFRAME_use_preview_Update(self, context):
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
     if self.map_WIREFRAME_use_preview:
-        pass
-    else:
-        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True)
+        BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'WIREFRAME')
 def BM_MAP_PROPS_map_POSITION_use_preview_Update(self, context):
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
     if self.map_POSITION_use_preview:
-        pass
-    else:
-        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True)
+        BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'POSITION')
 def BM_MAP_PROPS_map_VERTEX_COLOR_LAYER_use_preview_Update(self, context):
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
     if self.map_VERTEX_COLOR_LAYER_use_preview:
-        pass
-    else:
-        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True)
+        BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'VERTEX_COLOR_LAYER')
 def BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_use_preview_Update(self, context):
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
     if self.map_VECTOR_DISPLACEMENT_use_preview:
-        pass
-    else:
-        BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True)
+        BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'VECTOR_DISPLACEMENT')
 
 def BM_MAP_PROPS_map_ALBEDO_use_preview_Update(self, context):
     pass
