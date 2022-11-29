@@ -2978,12 +2978,12 @@ def BM_MAP_PROPS_MapPreview_Unset(context, obj_index_init, map_index_init, skip_
                 if all([skip_current_map, obj_index == obj_index_init, map_index_init == map_index_init, key == map_tag]):
                     continue
 
-                if getattr(map, "map_%s_use_preview"):
-                    setattr(map, "map_%s_use_preview", False)
+                if getattr(map, "map_%s_use_preview" % key):
+                    setattr(map, "map_%s_use_preview" % key, False)
 
     # return indexes back
     context.scene.bm_props.global_active_index = obj_index_init
-    BM_Object_Get(context).global_maps_active_index = map_index_init
+    BM_Object_Get(context)[0].global_maps_active_index = map_index_init
 
 # Map previews with custom nodes
 def BM_MAP_PROPS_map_AO_use_preview_Update(self, context):
