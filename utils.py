@@ -2906,6 +2906,112 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
 
     BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag)
 
+def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
+    object_item_full = BM_Object_Get(context)
+    if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
+        return
+    object_item = object_item_full[0]
+    if len(object_item.global_maps) == 0:
+        return
+    map = BM_Map_Get(object_item)
+    if getattr(map, "map_%s_use_preview" % map_tag) is False:
+        return
+
+    # collecting objects for which add bm_nodes   
+    source_object = [object for object in context.scene.objects if object.name == object_item.global_object_name]
+    if len(source_object) == 0:
+        return
+    highpolies = object_item.hl_highpoly_table
+    objects = [source_object[0]] if len(highpolies) == 0 else []
+    for highpoly in highpolies:
+        source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
+        if len(source_highpoly) == 0:
+            continue
+        objects.append(source_highpoly[0])
+
+    if map_tag == 'PASS':
+        map_tag = map.map_pass_type
+
+    # each shaders supports grabbing specified passes,
+    # passes keys' values are sockets names
+    # passes names and grabbing algo may differ for each map type
+    node_getable_data = {
+        'ALBEDO' : ['Color', 'Base Color'],
+        'METALNESS' : ['Metallic'],
+        'ROUGHNESS' : ['Roughness'],
+        'DIFFUSE' : ['Color', "Base Color"],
+        'SPECULAR' : ['Specular'],
+        'GLOSSINESS' : ['Roughness'],
+        'OPACITY' : ['Alpha', "Opacity"],
+        'BASE_COLOR' : ['Base Color'],
+        'SS_COLOR' : ['Subsurface Color', 'Color'],
+        'METALLIC' : ['Metallic'],
+        'ANISOTROPIC' : ['Anisotropic'],
+        'SHEEN' : ['Sheen'],
+        'CLEARCOAT' : ['Clearcoat'],
+        'IOR' : ['IOR'],
+        'TRANSMISSION' : ['Transmission'],
+        'EMISSION' : ['Emission'],
+        'ALPHA' : ['Alpha'],
+        'NORMAL' : ['Normal'],
+        'DISPLACEMENT' : ['Displacement'],
+    }
+
+    for object in objects:
+        if len(object.data.materials) == 0:
+            bpy.ops.bakemaster.report_message('WARNING', "%s: No Materials" % object.name)
+            continue
+
+        for material in object.data.materials:
+            if material is None:
+                continue
+
+            material.use_nodes = True
+            grab_socket = None
+            nodes = material.node_tree.nodes
+            links = material.node_tree.links
+
+            # grabbing socket to preview
+            for node in nodes:
+                if node.type != 'OUTPUT_MATERIAL':
+                    continue
+                
+                if map_tag == 'DISPLACEMENT':
+                    if len(node.inputs[2].links) == 0:
+                        continue
+                    grab_socket = node.inputs[2].links[0].from_socket
+                    break
+                
+                if len(node.inputs[0].links) == 0:
+                        continue
+                for input_socket in node.inputs[0].links[0].from_node.inputs:
+                    if input_socket.name in node_getable_data[map_tag]:
+                        if len(input_socket.links) == 0:
+                            continue
+                        grab_socket = input_socket.links[0].from_socket
+                        break
+                if grab_socket is not None:
+                    break
+            
+            # add out, emission nodes
+            new_nodes = ['ShaderNodeEmission', 'ShaderNodeOutputMaterial']
+            location_x = 0
+            for node_type in new_nodes:
+                new_node = nodes.new(node_type)
+                new_node.name = 'BM_%s' % node_type[10:]
+                new_node.location = (location_x, 0)
+                location_x += 300
+
+            # link added nodes and link with grabbed socket
+            links.new(grab_socket, nodes['BM_Emission'].inputs[0])
+            links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
+
+            if context.scene.render.engine != 'CYCLES':
+                bpy.ops.bakemaster.report_message(message_type='INFO', message=BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
+
+            nodes['BM_OutputMaterial'].select = True
+            nodes.active = nodes['BM_OutputMaterial']
+
 def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context):
     object_item = BM_Object_Get(context)
     if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
@@ -2944,6 +3050,9 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context):
         # removing custom bm_materials
         for mat_index in sorted(mats_to_remove, reverse=True):
             object.data.materials.pop(index=mat_index)
+
+# the same, no attention to bm mats removal, because they are not added anyway
+BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove = BM_MAP_PROPS_MapPreview_CustomNodes_Remove
 
 def BM_MAP_PROPS_MapPreview_Unset(context, obj_index_init, map_index_init, skip_current_map, map_tag):
     # unset all previews
