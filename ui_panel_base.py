@@ -1492,6 +1492,11 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
             bake_box_column.prop(object, 'bake_create_material')
             bake_box_column.prop(scene.bm_props, 'global_bake_use_save_log')
 
+            bake_box_column = bake_box.column(align=True)
+            bake_box_column.prop(object, 'bake_hide_when_inactive')
+            if object.bake_hide_when_inactive is False:
+                bake_box_column.prop(object, 'bake_vg_index')
+
 class BM_PT_TextureSetsBase(bpy.types.Panel):
     bl_label = " "
     bl_idname = 'BM_PT_TextureSets'
