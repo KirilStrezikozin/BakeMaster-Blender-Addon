@@ -2380,7 +2380,6 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag):
             if map_tag == "GRADIENT":
                 use_default = getattr(map, "map_%s_use_default" % map_tag)
                 if use_default:
-                    g_type = 'LINEAR'
                     #mapping = [[0, 0, 0], [0, 0, 0], [1, 1, 1]]
                     coverage = 0
                     contrast = 1
@@ -2388,12 +2387,12 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag):
                     opacity = 1
                     invert = 0
                 else:
-                    g_type = map.map_gmask_type
                     coverage = map.map_gmask_coverage
                     contrast = map.map_gmask_contrast
                     saturation = map.map_gmask_saturation
                     opacity = map.map_gmask_opacity
-                    invert = map.map_gmask_use_invert 
+                    invert = map.map_gmask_use_invert
+                g_type = map.map_gmask_type
 
                 # mapping can be changed no matter the use_default state
                 mapping = [
@@ -2448,7 +2447,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag):
                 nodes[map_nodes[0]].attribute_name = layer
 
             if map_tag == "VECTOR_DISPLACEMENT":
-                value = int(map.map_vector_displacement_use_negative) - 1
+                value = int(not map.map_vector_displacement_use_negative) - 1
 
                 nodes[map_nodes[0]].outputs[0].default_value = value
 
@@ -2727,10 +2726,14 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
             # CURVATURE
             if map_tag == "CURVATURE":
                 nodes['BM_Math'].operation = 'MULTIPLY'
+                nodes['BM_Math'].inputs[1].default_value = 0.01
                 nodes['BM_AmbientOcclusion'].inside = True
                 nodes['BM_AmbientOcclusion.001'].inside = False
                 nodes['BM_AmbientOcclusion.001'].inputs[0].default_value = (0, 0, 0, 1)
-                nodes['BM_ValToRGB'].color_ramp.elements.new()
+                nodes['BM_ValToRGB'].color_ramp.elements[0].color = (0, 0, 0, 1)
+                nodes['BM_ValToRGB'].color_ramp.elements[1].color = (1, 1, 1, 1)
+                new_element = nodes['BM_ValToRGB'].color_ramp.elements.new(0.5)
+                new_element.color = (0.5, 0.5, 0.5, 1)
             
             # THICKNESS
             if map_tag == "THICKNESS":
@@ -2867,9 +2870,9 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
                     [0, 1, 2, 0],
                     [1, 2, 0, 0],
                     [2, 3, 0, 1],
-                    [0, 3, 2, 0],
+                    [0, 3, 3, 0],
                     [3, 4, 0, 0],
-                    [0, 5, 2, 0],
+                    [0, 5, 3, 0],
                     [6, 7, 0, 1],
                     [6, 8, 0, 1],
                     [6, 9, 0, 1],
