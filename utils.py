@@ -3391,6 +3391,9 @@ def BM_MAP_PROPS_map_PASS_prefix_Update(self, context):
 def BM_MAP_PROPS_map_pass_type_Update(self, context):
     name = "Map: BSDF Pass type"
     BM_LastEditedProp_Write(context, name, "map_pass_type", getattr(self, "map_pass_type"), True)
+    if self.map_PASS_use_preview:
+        self.map_PASS_use_preview = False
+        self.map_PASS_use_preview = True
 def BM_MAP_PROPS_map_DECAL_prefix_Update(self, context):
     name = "Map: Decal Pass prefix"
     BM_LastEditedProp_Write(context, name, "map_DECAL_prefix", getattr(self, "map_DECAL_prefix"), True)
