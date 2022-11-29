@@ -1067,17 +1067,16 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                         pass
         
             elif map.global_map_type == 'VECTOR_DISPLACEMENT':
-                if map.map_VECTOR_DISPLACEMENT_use_default is False:
-                    map_settings_column.prop(map, 'map_vector_displacement_use_negative')
-                    map_settings_column.prop(map, 'map_vector_displacement_result')
-                    if map.map_vector_displacement_result == 'MODIFIER':
-                        map_settings_column.prop(map, 'map_vector_displacement_subdiv_levels')
-                        try:
-                            object_pointer = scene.objects[object.global_object_name]
-                            face_count = len(object_pointer.data.polygons) * 4 ** map.map_vector_displacement_subdiv_levels # future face count
-                            map_settings_column.label(text="Face count while baking: " + str(face_count))
-                        except KeyError:
-                            pass
+                map_settings_column.prop(map, 'map_vector_displacement_use_negative')
+                map_settings_column.prop(map, 'map_vector_displacement_result')
+                if map.map_vector_displacement_result == 'MODIFIER':
+                    map_settings_column.prop(map, 'map_vector_displacement_subdiv_levels')
+                    try:
+                        object_pointer = scene.objects[object.global_object_name]
+                        face_count = len(object_pointer.data.polygons) * 4 ** map.map_vector_displacement_subdiv_levels # future face count
+                        map_settings_column.label(text="Face count while baking: " + str(face_count))
+                    except KeyError:
+                        pass
 
             # Masks and Details Maps
             elif map.global_map_type == 'AO':
@@ -1114,7 +1113,6 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     sub.prop(map, 'map_curv_white_point', slider=True)
                     sub = map_settings_column.column()
                     sub.prop(map, 'map_curv_body_gamma')
-                    sub.prop(map, 'map_curv_use_invert', slider=True)
 
             elif map.global_map_type == 'THICKNESS':
                 if map.map_THICKNESS_use_default is False:
