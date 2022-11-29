@@ -941,6 +941,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 map_settings_column.prop(map, 'global_affect_by_hl', text="Affect by Highpoly")
             
             map_settings_column.prop(map, 'map_%s_prefix' % map.global_map_type)
+            
             try:
                 getattr(map, 'map_%s_use_preview' % map.global_map_type)
             except AttributeError:
@@ -948,6 +949,12 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
             else:
                 map_settings_column_preview = map_settings_column.row()
                 map_settings_column_preview.prop(map, 'map_%s_use_preview' % map.global_map_type)
+            try:
+                getattr(map, 'map_%s_use_default' % map.global_map_type)
+            except AttributeError:
+                pass
+            else:
+                map_settings_column.prop(map, 'map_%s_use_default' % map.global_map_type)
 
 
             # map_types_settings = [
@@ -1060,8 +1067,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                         pass
         
             elif map.global_map_type == 'VECTOR_DISPLACEMENT':
-                map_settings_column.prop(map, 'map_vector_displacement_use_default')
-                if map.map_vector_displacement_use_default is False:
+                if map.map_VECTOR_DISPLACEMENT_use_default is False:
                     map_settings_column.prop(map, 'map_vector_displacement_use_negative')
                     map_settings_column.prop(map, 'map_vector_displacement_result')
                     if map.map_vector_displacement_result == 'MODIFIER':
@@ -1075,8 +1081,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
 
             # Masks and Details Maps
             elif map.global_map_type == 'AO':
-                map_settings_column.prop(map, 'map_ao_use_default')
-                if map.map_ao_use_default is False:
+                if map.map_AO_use_default is False:
                     map_settings_column.prop(map, 'map_ao_samples', slider=True)
                     map_settings_column.prop(map, 'map_ao_distance')
                     sub = map_settings_column.column(align=True)
@@ -1091,8 +1096,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     sub.prop(map, 'map_ao_use_invert', slider=True)
 
             elif map.global_map_type == 'CAVITY':
-                map_settings_column.prop(map, 'map_cavity_use_default')
-                if map.map_cavity_use_default is False:
+                if map.map_CAVITY_use_default is False:
                     sub = map_settings_column.column(align=True)
                     sub.prop(map, 'map_cavity_black_point', slider=True)
                     sub.prop(map, 'map_cavity_white_point', slider=True)
@@ -1101,8 +1105,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     sub.prop(map, 'map_cavity_use_invert', slider=True)
 
             elif map.global_map_type == 'CURVATURE':
-                map_settings_column.prop(map, 'map_curv_use_default')
-                if map.map_curv_use_default is False:
+                if map.map_CURVATURE_use_default is False:
                     map_settings_column.prop(map, 'map_curv_samples', slider=True)
                     map_settings_column.prop(map, 'map_curv_radius')
                     sub = map_settings_column.column(align=True)
@@ -1114,8 +1117,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     sub.prop(map, 'map_curv_use_invert', slider=True)
 
             elif map.global_map_type == 'THICKNESS':
-                map_settings_column.prop(map, 'map_thick_use_default')
-                if map.map_thick_use_default is False:
+                if map.map_THICKNESS_use_default is False:
                     map_settings_column.prop(map, 'map_thick_samples', slider=True)
                     map_settings_column.prop(map, 'map_thick_distance')
                     sub = map_settings_column.column(align=True)
@@ -1148,8 +1150,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 sub.prop(map, 'map_xyzmask_use_x')
                 sub.prop(map, 'map_xyzmask_use_y')
                 sub.prop(map, 'map_xyzmask_use_z')
-                sub.prop(map, 'map_xyzmask_use_default')
-                if not map.map_xyzmask_use_default:
+                if not map.map_XYZMASK_use_default:
                     sub = map_settings_column.column(align=True)
                     sub.prop(map, 'map_xyzmask_coverage')
                     sub.prop(map, 'map_xyzmask_saturation')
@@ -1167,9 +1168,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 sub.prop(map, 'map_gmask_rotation_x')
                 sub.prop(map, 'map_gmask_rotation_y')
                 sub.prop(map, 'map_gmask_rotation_z')
-                sub = map_settings_column.column()
-                sub.prop(map, 'map_gmask_use_default')
-                if not map.map_gmask_use_default: 
+                if not map.map_GRADIENT_use_default: 
                     sub = map_settings_column.column(align=True)
                     sub.prop(map, 'map_gmask_scale_x')
                     sub.prop(map, 'map_gmask_scale_y')
@@ -1183,8 +1182,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     sub.prop(map, 'map_gmask_use_invert', slider=True)
 
             elif map.global_map_type == 'EDGE':
-                map_settings_column.prop(map, 'map_edgemask_use_default')
-                if map.map_edgemask_use_default is False:
+                if map.map_EDGE_use_default is False:
                     map_settings_column.prop(map, 'map_edgemask_samples', slider=True)
                     map_settings_column.prop(map, 'map_edgemask_radius')
                     sub = map_settings_column.column(align=True)

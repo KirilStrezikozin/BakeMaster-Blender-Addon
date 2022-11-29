@@ -1123,11 +1123,11 @@ class BM_Map(bpy.types.PropertyGroup):
         default=False,
         update=BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_use_preview_Update)
 
-    map_vector_displacement_use_default : bpy.props.BoolProperty(
+    map_VECTOR_DISPLACEMENT_use_default : bpy.props.BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_PROPS_map_vector_displacement_use_default_Update)
+        update=BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_use_default_Update)
     
     map_vector_displacement_use_negative : bpy.props.BoolProperty(
         name="Include Negative",
@@ -1177,11 +1177,11 @@ class BM_Map(bpy.types.PropertyGroup):
         default=False,
         update=BM_MAP_PROPS_map_AO_use_preview_Update)
 
-    map_ao_use_default : bpy.props.BoolProperty(
+    map_AO_use_default : bpy.props.BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_PROPS_map_ao_use_default_Update)
+        update=BM_MAP_PROPS_map_AO_use_default_Update)
     
     map_ao_samples: bpy.props.IntProperty(
         name="Samples",
@@ -1265,11 +1265,11 @@ class BM_Map(bpy.types.PropertyGroup):
         default=False,
         update=BM_MAP_PROPS_map_CAVITY_use_preview_Update)
 
-    map_cavity_use_default : bpy.props.BoolProperty(
+    map_CAVITY_use_default : bpy.props.BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_PROPS_map_cavity_use_default_Update)
+        update=BM_MAP_PROPS_map_CAVITY_use_default_Update)
 
     map_cavity_black_point : bpy.props.FloatProperty(
         name="Blacks",
@@ -1317,11 +1317,11 @@ class BM_Map(bpy.types.PropertyGroup):
         default=False,
         update=BM_MAP_PROPS_map_CURVATURE_use_preview_Update)
 
-    map_curv_use_default : bpy.props.BoolProperty(
+    map_CURVATURE_use_default : bpy.props.BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_PROPS_map_curv_use_default_Update)
+        update=BM_MAP_PROPS_map_CURVATURE_use_default_Update)
     
     map_curv_samples: bpy.props.IntProperty(
         name="Samples",
@@ -1395,11 +1395,11 @@ class BM_Map(bpy.types.PropertyGroup):
         default=False,
         update=BM_MAP_PROPS_map_THICKNESS_use_preview_Update)
 
-    map_thick_use_default : bpy.props.BoolProperty(
+    map_THICKNESS_use_default : bpy.props.BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_PROPS_map_thick_use_default_Update)
+        update=BM_MAP_PROPS_map_THICKNESS_use_default_Update)
     
     map_thick_samples : bpy.props.IntProperty(
         name="Samples",
@@ -1568,11 +1568,11 @@ class BM_Map(bpy.types.PropertyGroup):
         default=False,
         update=BM_MAP_PROPS_map_XYZMASK_use_preview_Update)
 
-    map_xyzmask_use_default : bpy.props.BoolProperty(
+    map_XYZMASK_use_default : bpy.props.BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_PROPS_map_xyzmask_use_default_Update)
+        update=BM_MAP_PROPS_map_XYZMASK_use_default_Update)
 
     map_xyzmask_use_x : bpy.props.BoolProperty(
         name="X",
@@ -1634,11 +1634,11 @@ class BM_Map(bpy.types.PropertyGroup):
         default=False,
         update=BM_MAP_PROPS_map_GRADIENT_use_preview_Update)
 
-    map_gmask_use_default : bpy.props.BoolProperty(
+    map_GRADIENT_use_default : bpy.props.BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_PROPS_map_gmask_use_default_Update)
+        update=BM_MAP_PROPS_map_GRADIENT_use_default_Update)
 
     map_gmask_type : bpy.props.EnumProperty(
         name="Type",
@@ -1767,11 +1767,11 @@ class BM_Map(bpy.types.PropertyGroup):
         default=False,
         update=BM_MAP_PROPS_map_EDGE_use_preview_Update)
 
-    map_edgemask_use_default : bpy.props.BoolProperty(
+    map_EDGE_use_default : bpy.props.BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_PROPS_map_edgemask_use_default_Update)
+        update=BM_MAP_PROPS_map_EDGE_use_default_Update)
     
     map_edgemask_samples: bpy.props.IntProperty(
         name="Samples",
