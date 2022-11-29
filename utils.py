@@ -4078,10 +4078,10 @@ def BM_ITEM_PROPS_bake_device_Update(self, context):
     name = "Object Bake Output: Device"
     BM_LastEditedProp_Write(context, name, "bake_device", getattr(self, "bake_device"), False)
 def BM_ITEM_PROPS_bake_hide_when_inactive_Update(self, context):
-    name = "Object Bake Output: Device"
+    name = "Object Bake Output: Hide when Inactive"
     BM_LastEditedProp_Write(context, name, "bake_hide_when_inactive", getattr(self, "bake_hide_when_inactive"), False)
 def BM_ITEM_PROPS_bake_vg_index_Update(self, context):
-    name = "Object Bake Output: Device"
+    name = "Object Bake Output: VG Index"
     BM_LastEditedProp_Write(context, name, "bake_vg_index", getattr(self, "bake_vg_index"), False)
 
 ###############################################################
