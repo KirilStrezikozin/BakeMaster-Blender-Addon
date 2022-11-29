@@ -2929,6 +2929,7 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
             continue
         objects.append(source_highpoly[0])
 
+    map_type_origin = map_tag
     if map_tag == 'PASS':
         map_tag = map.map_pass_type
 
@@ -2979,6 +2980,12 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
         if len(data) != 4:
             data.append(1)
         return tuple(data)
+    
+    ad_map_tag = ""
+    map_tag_origin = map_tag
+    if map_tag in ['DIFFUSE', 'SPECULAR'] and map_type_origin != 'PASS':
+        ad_map_tag = 'METALNESS'
+        map_tag = 'DIFFUSE'
 
     for object in objects:
         if len(object.data.materials) == 0:
@@ -2992,6 +2999,8 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
             material.use_nodes = True
             grab_socket = None
             default_value = None
+            grab_ad_socket = None
+            default_ad_value = None
             nodes = material.node_tree.nodes
             links = material.node_tree.links
 
@@ -3015,7 +3024,8 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
                 
                 if len(node.inputs[0].links) == 0:
                         continue
-
+                
+                # find socket value to grab
                 for input_socket in node.inputs[0].links[0].from_node.inputs:
                     if input_socket.name in node_getable_data[map_tag]:
                         if len(input_socket.links) == 0:
@@ -3029,13 +3039,40 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
                                 break
                             grab_socket = input_socket.links[0].from_node.inputs[1].links[0].from_socket
                         break
-                if any([grab_socket is not None, default_value is not None]):
+
+                if any([grab_socket is not None, default_value is not None]) and ad_map_tag == "":
+                    break
+                
+                # find additional socket value for pbrs previews
+                for input_socket in node.inputs[0].links[0].from_node.inputs:
+                    if input_socket.name in node_getable_data[ad_map_tag]:
+                        if len(input_socket.links) == 0:
+                            default_ad_value = get_socket_default_color_value(input_socket, input_socket.name)
+                            break
+                        grab_ad_socket = input_socket.links[0].from_socket
+                        break
+                
+                if any([grab_ad_socket is not None, default_ad_value is not None]):
                     break
             
             # add out, emission nodes
             new_nodes = ['ShaderNodeEmission', 'ShaderNodeOutputMaterial']
+            rgb_node_name_end = ""
             if grab_socket is None:
                 new_nodes.append('ShaderNodeRGB')
+            if grab_ad_socket is None and map_tag_origin in ['DIFFUSE', 'SPECULAR'] and map_type_origin != 'PASS':
+                new_nodes.append('ShaderNodeRGB')
+                rgb_node_name_end = ".001" if grab_socket is None else ""
+
+            # pbr specular nodes
+            if map_tag_origin in ['GLOSSINESS', 'DIFFUSE', 'SPECULAR'] and map_type_origin != 'PASS':
+                new_nodes.append('ShaderNodeInvert')
+            if map_tag_origin in ['DIFFUSE', 'SPECULAR'] and map_type_origin != 'PASS':
+                new_nodes.append('ShaderNodeMixRGB')
+            if map_tag_origin == 'SPECULAR' and map_type_origin != 'PASS':
+                new_nodes.append('ShaderNodeValue')
+                new_nodes.append('ShaderNodeMixRGB')
+
             location_x = 0
             for node_type in new_nodes:
                 new_node = nodes.new(node_type)
@@ -3043,13 +3080,53 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
                 new_node.location = (location_x, 0)
                 location_x += 300
 
-            # link added nodes and link with grabbed socket
+            # nodes values
+            default_value = (0, 0, 0, 1) if default_value is None else default_value
             if grab_socket is None:
-                default_value = (0, 0, 0, 1) if default_value is None else default_value
                 nodes['BM_RGB'].outputs[0].default_value = default_value
-                links.new(nodes['BM_RGB'].outputs[0], nodes['BM_Emission'].inputs[0])
+                value = nodes['BM_RGB'].outputs[0]
             else:
-                links.new(grab_socket, nodes['BM_Emission'].inputs[0])
+                value = grab_socket
+
+            # additional node values
+            default_ad_value = (0, 0, 0, 1) if default_ad_value is None else default_ad_value
+            if grab_ad_socket is None and map_tag_origin in ['DIFFUSE', 'SPECULAR'] and map_type_origin != 'PASS':
+                nodes['BM_RGB%s' % rgb_node_name_end].outputs[0].default_value = default_ad_value
+                ad_value = nodes['BM_RGB%s' % rgb_node_name_end].outputs[0]
+            elif map_type_origin != 'PASS':
+                ad_value = grab_ad_socket
+
+            # link added nodes and link with grabbed socket
+            if map_tag_origin == 'GLOSSINESS':
+                nodes['BM_Invert'].inputs[0].default_value = 1.0
+                links.new(value, nodes['BM_Invert'].inputs[1])
+                links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
+            elif map_tag_origin == 'DIFFUSE':
+                nodes['BM_Invert'].inputs[0].default_value = 1.0
+                nodes['BM_MixRGB'].inputs[0].default_value = 1.0
+                nodes['BM_MixRGB'].blend_type = 'MULTIPLY'
+                links.new(ad_value, nodes['BM_Invert'].inputs[1])
+                links.new(nodes['BM_Invert'].outputs[0], nodes['BM_MixRGB'].inputs[2])
+                links.new(value, nodes['BM_MixRGB'].inputs[1])
+                links.new(nodes['BM_MixRGB'].outputs[0], nodes['BM_Emission'].inputs[0])
+            elif map_tag_origin == 'SPECULAR' and map_type_origin != 'PASS':
+                nodes['BM_Invert'].inputs[0].default_value = 1.0
+                nodes['BM_MixRGB'].inputs[0].default_value = 1.0
+                nodes['BM_MixRGB'].blend_type = 'MULTIPLY'
+                nodes['BM_MixRGB.001'].blend_type = 'ADD'
+                nodes['BM_Value'].outputs[0].default_value = 0.04
+                links.new(ad_value, nodes['BM_Invert'].inputs[1])
+                links.new(ad_value, nodes['BM_MixRGB'].inputs[2])
+                links.new(nodes['BM_Invert'].outputs[0], nodes['BM_MixRGB.001'].inputs[0])
+                links.new(value, nodes['BM_MixRGB'].inputs[1])
+                links.new(nodes['BM_MixRGB'].outputs[0], nodes['BM_MixRGB.001'].inputs[1])
+                links.new(nodes['BM_Value'].outputs[0], nodes['BM_MixRGB.001'].inputs[2])
+                links.new(nodes['BM_MixRGB.001'].outputs[0], nodes['BM_Emission'].inputs[0])
+            else:
+                if grab_socket is None:
+                    links.new(nodes['BM_RGB'].outputs[0], nodes['BM_Emission'].inputs[0])
+                else:
+                    links.new(grab_socket, nodes['BM_Emission'].inputs[0])
             links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
 
             if context.scene.render.engine != 'CYCLES':
