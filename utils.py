@@ -2164,7 +2164,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag):
     if len(source_object) == 0:
         return
 
-    highpolies = object_item.hl_highpoly_table
+    highpolies = map.hl_highpoly_table if object_item.hl_use_unique_per_map else object_item.hl_highpoly_table
     objects = [source_object[0]] if len(highpolies) == 0 else []
     for highpoly in highpolies:
         source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
@@ -2492,7 +2492,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
     source_object = [object for object in context.scene.objects if object.name == object_item.global_object_name]
     if len(source_object) == 0:
         return
-    highpolies = object_item.hl_highpoly_table
+    highpolies = map.hl_highpoly_table if object_item.hl_use_unique_per_map else object_item.hl_highpoly_table
     objects = [source_object[0]] if len(highpolies) == 0 else []
     for highpoly in highpolies:
         source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
@@ -2989,7 +2989,7 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
     source_object = [object for object in context.scene.objects if object.name == object_item.global_object_name]
     if len(source_object) == 0:
         return
-    highpolies = object_item.hl_highpoly_table
+    highpolies = map.hl_highpoly_table if object_item.hl_use_unique_per_map else object_item.hl_highpoly_table
     objects = [source_object[0]] if len(highpolies) == 0 else []
     for highpoly in highpolies:
         source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
@@ -3207,6 +3207,31 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
             nodes['BM_OutputMaterial'].select = True
             nodes.active = nodes['BM_OutputMaterial']
 
+def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, map_tag):
+    object_item_full = BM_Object_Get(context)
+    if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
+        return
+    object_item = object_item_full[0]
+    if len(object_item.global_maps) == 0:
+        return
+    map = BM_Map_Get(object_item)
+    if getattr(map, "map_%s_use_preview" % map_tag) is False:
+        return
+
+    # collecting objects for which add bm_nodes   
+    source_object = [object for object in context.scene.objects if object.name == object_item.global_object_name]
+    if len(source_object) == 0:
+        return
+    highpolies = map.hl_highpoly_table if object_item.hl_use_unique_per_map else object_item.hl_highpoly_table
+    objects = [source_object[0]] if len(highpolies) == 0 else []
+    for highpoly in highpolies:
+        source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
+        if len(source_highpoly) == 0:
+            continue
+        objects.append(source_highpoly[0])
+    
+    
+
 def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context):
     object_item = BM_Object_Get(context)
     if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
@@ -3223,6 +3248,12 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context):
         if len(source_highpoly) == 0:
             continue
         objects.append(source_highpoly[0])
+    for map in object_item[0].global_maps:
+        for highpoly in map.hl_highpoly_table:
+            source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
+            if len(source_highpoly) == 0:
+                continue
+            objects.append(source_highpoly[0])
 
     # removing bm_nodes
     for object in objects:
