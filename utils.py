@@ -1625,7 +1625,7 @@ def BM_ITEM_PROPS_hl_use_cage_Update(self, context):
             self.hl_cage_object_index = -1
             self.hl_cage_object_include = ""
             return
-            
+
         update_name = False
         if self.hl_cage_name_old == 'NONE':
             update_name = True
@@ -3049,8 +3049,11 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
                             grab_socket = input_socket.links[0].from_node.inputs[1].links[0].from_socket
                         break
 
-                if any([grab_socket is not None, default_value is not None]) and ad_map_tag == "":
+                if any([grab_socket is not None, default_value is not None]):
                     break
+
+                if ad_map_tag == "":
+                    continue
                 
                 # find additional socket value for pbrs previews
                 for input_socket in node.inputs[0].links[0].from_node.inputs:
