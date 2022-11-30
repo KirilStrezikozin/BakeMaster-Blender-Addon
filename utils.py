@@ -2158,6 +2158,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag):
         return
     if getattr(BM_Map_Get(object_item), "map_%s_use_preview" % map_tag) is False:
         return
+    map = BM_Map_Get(object_item)
 
     # collecting objects for which update bm_nodes   
     source_object = [object for object in context.scene.objects if object.name == object_item.global_object_name]
@@ -2490,6 +2491,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
         return
     if getattr(BM_Map_Get(object_item), "map_%s_use_preview" % map_tag) is False:
         return
+    map = BM_Map_Get(object_item)
 
     # collecting objects for which add bm_nodes   
     source_object = [object for object in context.scene.objects if object.name == object_item.global_object_name]
@@ -3426,6 +3428,73 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, map_tag):
                 object.active_material_index = len(object.data.materials) - 1
                 bpy.ops.object.material_slot_assign()
 
+        # exit edit mode
+        bpy.ops.object.mode_set(mode='EDIT', toggle=True)
+
+def BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(context):
+    object_item = BM_Object_Get(context)
+    if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
+        return
+
+    # collecting objects from which remove bm_nodes   
+    source_object = [object for object in context.scene.objects if object.name == object_item[0].global_object_name]
+    if len(source_object) == 0:
+        return
+    objects = [source_object[0]]
+    highpolies = object_item[0].hl_highpoly_table
+    for highpoly in highpolies:
+        source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
+        if len(source_highpoly) == 0:
+            continue
+        objects.append(source_highpoly[0])
+    for map in object_item[0].global_maps:
+        for highpoly in map.hl_highpoly_table:
+            source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
+            if len(source_highpoly) == 0:
+                continue
+            objects.append(source_highpoly[0])
+    
+    if len(objects) == 0:
+        return
+
+    # deselect all objects
+    for ob in context.scene.objects:
+        ob.select_set(False)
+    bpy.ops.object.mode_set(mode='OBJECT')
+                        
+    # no matter what preview with reassignmats,
+    # bm_nodes, and bm_custommaterials are removed in BM_MAP_PROPS_MapPreview_CustomNodes_Remove
+    # here need restore old materials assignments to mesh parts, stored in object vertex groups
+    tag = "bm_material_backup_"
+    for object in objects:
+        # set object as active in the scene
+        object.select_set(True)
+        context.view_layer.objects.active = object
+        bpy.ops.object.mode_set(mode='EDIT')
+
+        # find backup vrtx_groups
+        to_remove = []
+        for vrtx_group_index, vrtx_group in enumerate(object.data.vertex_groups):
+            object.vertex_groups.active_index = vrtx_group_index
+            if vrtx_group.name.find(tag) == -1:
+                continue
+            
+            for mat_index, material in enumerate(object.data.materials):
+                # this vrtx_group is this material backup
+                if material.name in vrtx_group.name:
+                    object.active_material_index = mat_index
+                    bpy.ops.mesh.select_all(action='DESELECT')
+                    bpy.ops.object.vertex_group_select()
+                    bpy.ops.object.material_slot_assign()
+                    to_remove.append(vrtx_group)
+        
+        # exit edit mode
+        bpy.ops.object.mode_set(mode='EDIT', toggle=True)
+
+        # remove backup vertex groups
+        for vrtx_group in to_remove:
+            object.vertex_groups.remove(vrtx_group)
+
 def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context):
     object_item = BM_Object_Get(context)
     if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
@@ -3450,12 +3519,14 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context):
             objects.append(source_highpoly[0])
 
     # removing bm_nodes
+    remove_mats = []
     for object in objects:
         mats_to_remove = []
         for mat_index, material in enumerate(object.data.materials):
             if material is None:
                 continue
             if material.name.find('BM_CustomMaterial') != -1:
+                remove_mats.append(material)
                 mats_to_remove.append(mat_index)
                 continue
 
@@ -3470,6 +3541,10 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context):
         # removing custom bm_materials
         for mat_index in sorted(mats_to_remove, reverse=True):
             object.data.materials.pop(index=mat_index)
+    
+    # remove custom mats from data too
+    for material in remove_mats:
+        bpy.data.materials.remove(material)
 
 # the same, no attention to bm mats removal, because they are not added anyway
 BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove = BM_MAP_PROPS_MapPreview_CustomNodes_Remove
