@@ -1764,6 +1764,120 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
 
         return wm.invoke_props_dialog(self, width=300)
 
+class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
+    bl_label = "Match Resolution"
+    bl_idname = "bakemaster.item_and_map_format_match_resolution"
+    bl_description = "Match output image resolution with the specified type of Image Texture Node resolution within the Object's materials"
+    bl_options = {'UNDO', 'INTERNAL'}
+
+    def available(self, context, object):
+        # return None if won't be able to grab resolution
+        if any([object.nm_is_universal_contaier, object.nm_is_local_container]):
+            return None
+
+        source_objects = [obj for obj in context.scene.objects if obj.name == object.global_object_name]
+        if len(source_objects) == 0:
+            return None
+
+        source_object = source_objects[0]
+        materials = []
+        len_of_none = 0
+        for material in source_object.data.materials:
+            if material is None:
+                len_of_none += 1
+            else:
+                materials.append(material)
+        if len(source_object.data.materials) == len_of_none:
+            return None
+
+        # return not None materials
+        return materials
+
+    def execute(self, context):
+        bm_props = context.scene.bm_props
+        try:
+            bm_props.global_fmr_items[bm_props.global_fmr_items_active_index]
+        except IndexError:
+            self.report({'ERROR'}, "Cannot Apply Resolution")
+            return {'FINISHED'}
+        else:
+            object = BM_Object_Get(context)[0]
+            if object.out_use_unique_per_map:
+                if len(object.global_maps) == 0:
+                    self.report({'ERROR'}, "No maps but Format is Unique per map")
+                    return {'FINISHED'}
+                container = BM_Map_Get(object)
+            else:
+                container = object
+
+            chosen_image = bm_props.global_fmr_items[bm_props.global_fmr_items_active_index]
+            container.out_res_height = chosen_image.image_height
+            container.out_res_width = chosen_image.image_width
+        return {'FINISHED'}
+
+    def draw(self, context):
+        layout = self.layout
+        bm_props = context.scene.bm_props
+
+        object = BM_Object_Get(context)[0]
+        if self.available(context, object) is None:
+            layout.label(text="Unavailable. Object has no materials or is Container")
+            return
+
+        if len(bm_props.global_fmr_items) == 0:
+            layout.label(text="No Images found")
+            return
+        
+        layout.label(text="Select Resolution:")
+        items_box = layout.box()
+        items_box.use_property_split = True
+        items_box.use_property_decorate = False
+        rows = len(bm_props.global_fmr_items)
+        table = items_box.column().row()
+        table.template_list('BM_FMR_UL_Item', "", bm_props, 'global_fmr_items', bm_props, 'global_fmr_items_active_index', rows=rows)
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        bm_props = context.scene.bm_props
+
+        # trash global_fmr_items
+        to_remove = []
+        bm_props.global_fmr_items_active_index = 0
+        for index, _ in enumerate(bm_props.global_fmr_items):
+            to_remove.append(index)
+        for index in sorted(to_remove, reverse=True):
+            bm_props.global_fmr_items.remove(index)
+
+        object = BM_Object_Get(context)[0]
+        materials = self.available(context, object)
+        if materials is None:
+            self.report({'ERROR', "Unavailable. Object has no materials or is Container"})
+            return {'FINISHED'}
+        
+        # add found image textures
+        for material in materials:
+            material.use_nodes = True
+            nodes = material.node_tree.nodes
+            for node in nodes:
+                if node.type != 'TEX_IMAGE':
+                    continue
+                if node.image is None:
+                    continue
+                # add image item to items
+                new_item = bm_props.global_frm_items.add()
+                new_item.image_name = node.image.name
+                new_item.image_res = "x".join(map(str, tuple(node.image.size)))
+                new_item.image_height = tuple(node.image.size)[0]
+                new_item.image_width = tuple(node.image.size)[1]
+
+                if len(node.outputs[0].links) == 0:
+                    continue
+                
+                socket = node.outputs[0].links[0].to_socket
+                new_item.socket_and_node_name = "{}{}".format(socket.name, socket.node.name)
+
+        return wm.invoke_props_dialog(self, width=300)
+
 class BM_OT_ReportMessage(bpy.types.Operator):
     bl_label = "BakeMaster Message"
     bl_idname = "bakemaster.report_message"
