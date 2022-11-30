@@ -4133,33 +4133,54 @@ def BM_MAP_PROPS_map_ID_prefix_Update(self, context):
 def BM_MAP_PROPS_map_matid_data_Update(self, context):
     name = "Map: ID data"
     BM_LastEditedProp_Write(context, name, "map_matid_data", getattr(self, "map_matid_data"), True)
+    if self.map_ID_use_preview:
+        self.map_ID_use_preview = False
+        self.map_ID_use_preview = True
 def BM_MAP_PROPS_map_matid_vertex_groups_name_contains_Update(self, context):
     name = "Map: ID vertex groups name contains"
     BM_LastEditedProp_Write(context, name, "map_matid_vertex_groups_name_contains", getattr(self, "map_matid_vertex_groups_name_contains"), True)
+    if self.map_ID_use_preview:
+        self.map_ID_use_preview = False
+        self.map_ID_use_preview = True
 def BM_MAP_PROPS_map_matid_algorithm_Update(self, context):
     name = "Map: ID algorithm"
     BM_LastEditedProp_Write(context, name, "map_matid_algorithm", getattr(self, "map_matid_algorithm"), True)
+    if self.map_ID_use_preview:
+        self.map_ID_use_preview = False
+        self.map_ID_use_preview = True
 def BM_MAP_PROPS_map_MASK_prefix_Update(self, context):
     name = "Map: Mask prefix"
     BM_LastEditedProp_Write(context, name, "map_MASK_prefix", getattr(self, "map_MASK_prefix"), True)
 def BM_MAP_PROPS_map_mask_data_Update(self, context):
     name = "Map: Mask data"
     BM_LastEditedProp_Write(context, name, "map_mask_data", getattr(self, "map_mask_data"), True)
+    if self.map_MASK_use_preview:
+        self.map_MASK_use_preview = False
+        self.map_MASK_use_preview = True
 def BM_MAP_PROPS_map_mask_vertex_groups_name_contains_Update(self, context):
     name = "Map: Mask vertex groups name contains"
     BM_LastEditedProp_Write(context, name, "map_mask_vertex_groups_name_contains", getattr(self, "map_mask_vertex_groups_name_contains"), True)
+    if self.map_MASK_use_preview:
+        self.map_MASK_use_preview = False
+        self.map_MASK_use_preview = True
 def BM_MAP_PROPS_map_mask_materials_name_contains_Update(self, context):
     name = "Map: Mask materials name contains"
     BM_LastEditedProp_Write(context, name, "map_mask_materials_name_contains", getattr(self, "map_mask_materials_name_contains"), True)
+    if self.map_MASK_use_preview:
+        self.map_MASK_use_preview = False
+        self.map_MASK_use_preview = True
 def BM_MAP_PROPS_map_mask_color1_Update(self, context):
     name = "Map: Mask color1"
     BM_LastEditedProp_Write(context, name, "map_mask_color1", getattr(self, "map_mask_color1"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'MASK')
 def BM_MAP_PROPS_map_mask_color2_Update(self, context):
     name = "Map: Mask color2"
     BM_LastEditedProp_Write(context, name, "map_mask_color2", getattr(self, "map_mask_color2"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'MASK')
 def BM_MAP_PROPS_map_mask_use_invert_Update(self, context):
     name = "Map: Mask invert"
     BM_LastEditedProp_Write(context, name, "map_mask_use_invert", getattr(self, "map_mask_use_invert"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'MASK')
 def BM_MAP_PROPS_map_XYZMASK_prefix_Update(self, context):
     name = "Map: XYZ Mask prefix"
     BM_LastEditedProp_Write(context, name, "map_XYZMASK_prefix", getattr(self, "map_XYZMASK_prefix"), True)
