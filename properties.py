@@ -68,6 +68,22 @@ class BM_CAUC_Object(bpy.types.PropertyGroup):
         default=False,
         update=BM_CAUC_Object_is_cage_Update)
 
+class BM_FMR_Item(bpy.types.PropertyGroup):
+    image_name : bpy.props.StringProperty(
+        name="Image Texture name",
+        default="Image")
+
+    socket_and_node_name : bpy.props.StringProperty(
+        name="Plugged into",
+        default="*Not plugged*")
+
+    image_res : bpy.props.StringProperty(
+        name="Resolution",
+        default="")
+
+    image_height : bpy.props.IntProperty(default=1)
+    image_width : bpy.props.IntProperty(default=1)
+
 #################################################
 ### GLOBAL SCENE PROPS ###
 #################################################
@@ -181,6 +197,13 @@ class BM_SceneProps(bpy.types.PropertyGroup):
 
     global_cauc_objects_active_index : bpy.props.IntProperty(
         name="Detached Object",
+        default=0)
+
+# Format Match Resolution Props
+    global_fmr_items : bpy.props.CollectionProperty(type=BM_FMR_Item)
+
+    global_fmr_items_active_index : bpy.props.IntProperty(
+        name="Image Texture",
         default=0)
     
 # Global Panels Props
