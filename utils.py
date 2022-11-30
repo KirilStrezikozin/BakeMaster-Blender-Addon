@@ -2242,6 +2242,13 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag):
             'BM_Invert.001',
             'BM_Emission',
         ],
+        'MASK' : [
+            'BM_RGB',
+            'BM_Invert',
+        ],
+        'ID' : [
+            'BM_Emission',
+        ],
     }
     
     map = BM_Map_Get(object_item)
@@ -2481,6 +2488,12 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag):
                 }
                 index = link_from[map.map_decal_pass_type]
                 links.new(nodes[map_nodes[index]].outputs[0], nodes[map_nodes[3]].inputs[0])
+
+            if map_tag == "MASK":
+                for i in range(1, 3):
+                    if material.name.find("BM_CustomMaterial_") != -1 and material.name.find("COLOR%d" % i) != -1:
+                        nodes[map_nodes[0]].outputs[0].default_value = getattr(map, "map_mask_color%d" % i)
+                        nodes[map_nodes[1]].inputs[0].default_value = map.map_mask_use_invert
 
 def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
     object_item_full = BM_Object_Get(context)
