@@ -1829,11 +1829,10 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
             return
         
         layout.label(text="Select Resolution:")
-        items_box = layout.box()
-        items_box.use_property_split = True
-        items_box.use_property_decorate = False
+        layout.use_property_split = True
+        layout.use_property_decorate = False
         rows = len(bm_props.global_fmr_items)
-        table = items_box.column().row()
+        table = layout.column().row()
         table.template_list('BM_FMR_UL_Item', "", bm_props, 'global_fmr_items', bm_props, 'global_fmr_items_active_index', rows=rows)
 
     def invoke(self, context, event):
@@ -1851,7 +1850,7 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
         object = BM_Object_Get(context)[0]
         materials = self.available(context, object)
         if materials is None:
-            self.report({'ERROR', "Unavailable. Object has no materials or is Container"})
+            self.report({'ERROR'}, "Unavailable. Object has no materials or is Container")
             return {'FINISHED'}
         
         # add found image textures
@@ -1874,9 +1873,9 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
                     continue
                 
                 socket = node.outputs[0].links[0].to_socket
-                new_item.socket_and_node_name = "{}{}".format(socket.name, socket.node.name)
+                new_item.socket_and_node_name = "{}/{}".format(socket.name, socket.node.name)
 
-        return wm.invoke_props_dialog(self, width=300)
+        return wm.invoke_props_dialog(self, width=400)
 
 class BM_OT_ReportMessage(bpy.types.Operator):
     bl_label = "BakeMaster Message"

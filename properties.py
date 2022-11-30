@@ -203,7 +203,7 @@ class BM_SceneProps(bpy.types.PropertyGroup):
     global_fmr_items : bpy.props.CollectionProperty(type=BM_FMR_Item)
 
     global_fmr_items_active_index : bpy.props.IntProperty(
-        name="Image Texture",
+        name="Resolution, Image name, Plugged into",
         default=0)
     
 # Global Panels Props
