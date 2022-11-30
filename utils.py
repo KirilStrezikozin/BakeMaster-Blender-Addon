@@ -1615,6 +1615,17 @@ def BM_ITEM_PROPS_hl_cage_Update(self, context):
 
 def BM_ITEM_PROPS_hl_use_cage_Update(self, context):
     if self.hl_use_cage:
+        # explicit abort for setting cage for uni_c 
+        # in its is_global update, use_cage set to True
+        # random object is getting set as cage, which is bad
+        # added check to abort all this for containers
+        # not including the occasion if self == map, because for uni_c hl_unique_per_map is always false
+        if any([self.nm_is_universal_container, self.nm_is_local_container]):
+            self.hl_cage_name_old = ""
+            self.hl_cage_object_index = -1
+            self.hl_cage_object_include = ""
+            return
+            
         update_name = False
         if self.hl_cage_name_old == 'NONE':
             update_name = True
