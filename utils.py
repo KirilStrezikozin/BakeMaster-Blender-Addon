@@ -3716,9 +3716,19 @@ def BM_MAP_PROPS_map_DISPLACEMENT_use_preview_Update(self, context):
 
 # Map Previews with Material Reassign
 def BM_MAP_PROPS_map_ID_use_preview_Update(self, context):
-    pass
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(context)
+    if self.map_ID_use_preview:
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'ID')
+        BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, 'ID')
+        BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'ID')
 def BM_MAP_PROPS_map_MASK_use_preview_Update(self, context):
-    pass
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(context)
+    if self.map_MASK_use_preview:
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'MASK')
+        BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, 'MASK')
+        BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'MASK')
 
 ###############################################################
 ### Update Funcs for global_last_edited_prop ###
