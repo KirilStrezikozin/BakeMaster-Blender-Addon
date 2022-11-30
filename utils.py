@@ -3277,12 +3277,16 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, map_tag):
 
         if map.map_mask_data == 'MATERIALS':
             bpy.ops.mesh.select_all(action='DESELECT')
-            for material in object.materials:
+            for mat_index, material in enumerate(object.materials):
                 if material is None:
                     continue
-            bpy.ops.object.material_slot_select()
-        
+                if material.name.find(map.map_mask_materials_name_contains) != -1:
+                    object.active_material_index = mat_index
+                bpy.ops.object.material_slot_select()
+
         bpy.ops.object.vertex_group_assign()
+    
+    #if map_tag == 'ID':
 
     for object in objects:
         # set object as active in the scene
