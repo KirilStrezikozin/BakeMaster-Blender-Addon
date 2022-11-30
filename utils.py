@@ -2768,7 +2768,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
 
             # POSITION
             if map_tag == "POSITION":
-                pass
+                nodes['BM_Gamma'].inputs[1].default_value = 2.2
 
             # VERTEX_COLOR_LAYER
             if map_tag == "VERTEX_COLOR_LAYER":
