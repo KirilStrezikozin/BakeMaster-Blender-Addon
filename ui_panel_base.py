@@ -135,6 +135,19 @@ class BM_CAUC_UL_Objects_Item(bpy.types.UIList):
     def draw_filter(self, context, layout):
         pass
 
+class BM_FMR_UL_Item(bpy.types.UIList):
+    def draw_item(self, context, layout, data, item, active_data, active_propname, index):
+        row = layout.row()
+        row.label(text="%s, " % item.image_res)
+        row.label(text="%s, " % item.image_name)
+        row.label(text="%s" % item.socket_and_node_name)
+
+    def invoke(self, context, event):
+        pass
+
+    def draw_filter(self, context, layout):
+        pass
+
 class BM_UL_Table_of_Objects_Item(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         row = layout.row()   
