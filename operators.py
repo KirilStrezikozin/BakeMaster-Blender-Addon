@@ -1772,7 +1772,7 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
 
     def available(self, context, object):
         # return None if won't be able to grab resolution
-        if any([object.nm_is_universal_contaier, object.nm_is_local_container]):
+        if any([object.nm_is_universal_container, object.nm_is_local_container]):
             return None
 
         source_objects = [obj for obj in context.scene.objects if obj.name == object.global_object_name]
@@ -1864,7 +1864,7 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
                 if node.image is None:
                     continue
                 # add image item to items
-                new_item = bm_props.global_frm_items.add()
+                new_item = bm_props.global_fmr_items.add()
                 new_item.image_name = node.image.name
                 new_item.image_res = "x".join(map(str, tuple(node.image.size)))
                 new_item.image_height = tuple(node.image.size)[0]
