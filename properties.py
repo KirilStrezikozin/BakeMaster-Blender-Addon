@@ -791,7 +791,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Pass Type",
         description="Decal Map pass type to bake",
         default='NORMAL',
-        items=[('NORMAL', "Normal", "Normals Pass using MatCap"),
+        items=[('NORMAL', "Normal", "Normals Pass"),
                ('HEIGHT', "Height", "How high mesh parts are from the world ground level"),
                ('OPACITY', "Opacity", "Decal Object - white, empty space - black")],
         update=BM_MAP_PROPS_map_decal_pass_type_Update)

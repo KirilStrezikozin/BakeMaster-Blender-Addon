@@ -2232,6 +2232,12 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag):
         'VECTOR_DISPLACEMENT' : [
             'BM_Value',
         ],
+        'DECAL' : [
+            'BM_VectorMath.001',
+            'BM_Invert',
+            'BM_Invert.001',
+            'BM_Emission',
+        ],
     }
     
     map = BM_Map_Get(object_item)
@@ -2459,6 +2465,18 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag):
                 value = int(not map.map_vector_displacement_use_negative) - 1
 
                 nodes[map_nodes[0]].outputs[0].default_value = value
+            
+            if map_tag == "DECAL":
+                nodes[map_nodes[1]].inputs[0].default_value = bool(map.map_decal_height_opacity_invert)
+                nodes[map_nodes[2]].inputs[0].default_value = bool(map.map_decal_height_opacity_invert)
+
+                link_from = {
+                    'NORMAL' : 0,
+                    'HEIGHT' : 1,
+                    'OPACITY' : 2,
+                }
+                index = link_from[map.map_decal_pass_type]
+                links.new(nodes[map_nodes[index]].outputs[0], nodes[map_nodes[3]].inputs[0])
 
 def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
     object_item_full = BM_Object_Get(context)
@@ -2589,6 +2607,18 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
             'ShaderNodeEmission',
             'ShaderNodeOutputMaterial',
         ],
+        'DECAL' : [
+            'ShaderNodeTexCoord',
+            'ShaderNodeVectorTransform',
+            'ShaderNodeVectorMath',
+            'ShaderNodeVectorMath',
+            'ShaderNodeSeparateXYZ',
+            'ShaderNodeInvert',
+            'ShaderNodeInvert',
+            'ShaderNodeRGB',
+            'ShaderNodeEmission',
+            'ShaderNodeOutputMaterial',
+        ],
     }
 
     nodes_names_data = {
@@ -2697,6 +2727,18 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
             'BM_Emission',
             'BM_OutputMaterial',
         ],
+        'DECAL' : [
+            'BM_TexCoord',
+            'BM_VectorTransform',
+            'BM_VectorMath',
+            'BM_VectorMath.001',
+            'BM_SeparateXYZ',
+            'BM_Invert',
+            'BM_Invert.001',
+            'BM_RGB',
+            'BM_Emission',
+            'BM_OutputMaterial',
+        ],
     }
 
     # adding materials if needed
@@ -2787,6 +2829,14 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
                 nodes['BM_MapRange'].clamp = False
                 nodes['BM_MapRange.001'].clamp = False
                 nodes['BM_MapRange.002'].clamp = False
+            
+            # DECAL
+            if map_tag == "DECAL":
+                nodes['BM_VectorTransform'].convert_to = 'CAMERA'
+                nodes['BM_VectorMath'].operation = 'MULTIPLY'
+                nodes['BM_VectorMath'].inputs[1].default_value = (0.5, 0.5, -0.5)
+                nodes['BM_VectorMath.001'].inputs[1].default_value = (0.5, 0.5, 0.5)
+                nodes['BM_RGB'].outputs[0].default_value = (1, 1, 1, 1)
 
             nodes['BM_OutputMaterial'].target = 'CYCLES'
 
@@ -2893,6 +2943,15 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
                     [9, 10, 0, 2],
                     [10, 11, 0, 0],
                     [11, 12, 0, 0],
+                ],
+                'DECAL' : [
+                    [0, 1, 1, 0],
+                    [0, 4, 0, 0],
+                    [1, 2, 0, 0],
+                    [2, 3, 0, 0],
+                    [4, 5, 2, 1],
+                    [7, 6, 0, 1],
+                    [8, 9, 0, 0],
                 ],
             }
 
@@ -3292,6 +3351,11 @@ def BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_use_preview_Update(self, context):
     if self.map_VECTOR_DISPLACEMENT_use_preview:
         BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'VECTOR_DISPLACEMENT')
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'VECTOR_DISPLACEMENT')
+def BM_MAP_PROPS_map_DECAL_use_preview_Update(self, context):
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    if self.map_DECAL_use_preview:
+        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'DECAL')
+        BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'DECAL')
 
 # Map Previews with Material Relinking
 def BM_MAP_PROPS_map_ALBEDO_use_preview_Update(self, context):
@@ -3354,10 +3418,6 @@ def BM_MAP_PROPS_map_DISPLACEMENT_use_preview_Update(self, context):
 def BM_MAP_PROPS_map_ID_use_preview_Update(self, context):
     pass
 def BM_MAP_PROPS_map_MASK_use_preview_Update(self, context):
-    pass
-
-# Map Previews with matcaps
-def BM_MAP_PROPS_map_DECAL_use_preview_Update(self, context):
     pass
 
 ###############################################################
@@ -3489,9 +3549,11 @@ def BM_MAP_PROPS_map_DECAL_prefix_Update(self, context):
 def BM_MAP_PROPS_map_decal_pass_type_Update(self, context):
     name = "Map: Decal Pass type"
     BM_LastEditedProp_Write(context, name, "map_decal_pass_type", getattr(self, "map_decal_pass_type"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'DECAL')
 def BM_MAP_PROPS_map_decal_height_opacity_invert_Update(self, context):
     name = "Map: Decal Pass invert"
     BM_LastEditedProp_Write(context, name, "map_decal_height_opacity_invert", getattr(self, "map_decal_height_opacity_invert"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'DECAL')
 def BM_MAP_PROPS_map_decal_normal_preset_Update(self, context):
     name = "Map: Decal Pass preset"
     BM_LastEditedProp_Write(context, name, "map_decal_normal_preset", getattr(self, "map_decal_normal_preset"), True)
