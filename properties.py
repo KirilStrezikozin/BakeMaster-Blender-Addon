@@ -1479,9 +1479,10 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Data",
         description="Data type for detecting color groups",
         default='MATERIALS',
-        items=[('VERTEX_GROUPS', "Vertex Groups", "Color each mesh Vertex Groups differently"),
+        items=[('VERTEX_GROUPS', "Vertex Groups", "Color each mesh Vertex Group differently"),
                ('MATERIALS', "Materials", "Color each mesh part each material assigned to differently"),
-               ('MESH_ISLANDS', "Mesh Islands", "Color each mesh part differently")],
+               ('MESH_ISLANDS', "Mesh Islands", "Color each mesh part differently"),
+               ('OBJECTS', "Objects", "Color each highpoly baked onto the Object differently or the whole Object will be in one color if no highpolies")],
         update=BM_MAP_PROPS_map_matid_data_Update)
 
     map_matid_vertex_groups_name_contains : bpy.props.StringProperty(
