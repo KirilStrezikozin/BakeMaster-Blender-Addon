@@ -2627,6 +2627,16 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
             'ShaderNodeEmission',
             'ShaderNodeOutputMaterial',
         ],
+        'MASK' : [
+            'ShaderNodeEmission',
+            'ShaderNodeOutputMaterial',
+        ],
+        'ID' : [
+            'ShaderNodeRGB',
+            'ShaderNodeInvert',
+            'ShaderNodeEmission',
+            'ShaderNodeOutputMaterial',
+        ],
     }
 
     nodes_names_data = {
@@ -2744,6 +2754,16 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
             'BM_Invert',
             'BM_Invert.001',
             'BM_RGB',
+            'BM_Emission',
+            'BM_OutputMaterial',
+        ],
+        'MASK' : [
+            'BM_Emission',
+            'BM_OutputMaterial',
+        ],
+        'ID' : [
+            'BM_RGB',
+            'BM_Invert',
             'BM_Emission',
             'BM_OutputMaterial',
         ],
@@ -2960,6 +2980,14 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
                     [4, 5, 2, 1],
                     [7, 6, 0, 1],
                     [8, 9, 0, 0],
+                ],
+                'MASK' : [
+                    [0, 1, 0, 1],
+                    [1, 2, 0, 0],
+                    [2, 3, 0, 0],
+                ],
+                'ID' : [
+                    [0, 1, 0, 0],
                 ],
             }
 
