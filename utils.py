@@ -2752,12 +2752,12 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
             'ShaderNodeOutputMaterial',
         ],
         'MASK' : [
+            'ShaderNodeRGB',
+            'ShaderNodeInvert',
             'ShaderNodeEmission',
             'ShaderNodeOutputMaterial',
         ],
         'ID' : [
-            'ShaderNodeRGB',
-            'ShaderNodeInvert',
             'ShaderNodeEmission',
             'ShaderNodeOutputMaterial',
         ],
@@ -2882,12 +2882,12 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
             'BM_OutputMaterial',
         ],
         'MASK' : [
+            'BM_RGB',
+            'BM_Invert',
             'BM_Emission',
             'BM_OutputMaterial',
         ],
         'ID' : [
-            'BM_RGB',
-            'BM_Invert',
             'BM_Emission',
             'BM_OutputMaterial',
         ],
@@ -3423,8 +3423,8 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, map_tag):
             bpy.ops.mesh.select_mode(type='VERT')
 
             vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(object.vertex_groups, "bm_material_backup_COLOR1")
+            object.vertex_groups.new(name=vrtx_group_name)
             map_mask_selection_color1_vrtx_group_index = len(object.vertex_groups) - 1
-            object.vertex_groups.add(name=vrtx_group_name)
 
             if map.map_mask_data == 'VERTEX_GROUPS':
                 bpy.ops.mesh.select_all(action='DESELECT')
@@ -3460,7 +3460,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, map_tag):
 
                 # add vertex group, deselect mesh, select current material mesh selection, assign it to created vertex group
                 vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(object.vertex_groups, "bm_material_backup_%s" % material.name)
-                object.vertex_groups.add(name=vrtx_group_name)
+                object.vertex_groups.new(name=vrtx_group_name)
 
                 bpy.ops.mesh.select_all(action='DESELECT')
                 bpy.ops.object.material_slot_select()
@@ -3468,6 +3468,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, map_tag):
         
             bpy.ops.mesh.select_all(action='DESELECT')
 
+        bpy.ops.mesh.select_all(action='DESELECT')
         # for mask assign saved selection vertex group to color1 material
         if map_tag == 'MASK':
             # assign mat for color1
@@ -3492,9 +3493,9 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, map_tag):
                 vrtx_group_for_inverted_selection_index = 0
                 vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(object.vertex_groups, "bm_material_backup_COLOR")
                 vrtx_group_for_inverted_selection_index = len(object.vertex_groups) - 1
-                object.vertex_groups.add(name=vrtx_group_name)
+                object.vertex_groups.new(name=vrtx_group_name)
 
-                for vrtx_group_index, vrtx_group in enumerate(object.data.vertex_groups):
+                for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
                     object.vertex_groups.active_index = vrtx_group_index
                     if vrtx_group.name.find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_") == -1:
                         bpy.ops.object.vertex_group_select()
@@ -3503,7 +3504,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, map_tag):
                 bpy.ops.object.vertex_group_assign()
 
                 tag_index = 0
-                for vrtx_group_index, vrtx_group in enumerate(object.data.vertex_groups):
+                for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
                     object.vertex_groups.active_index = vrtx_group_index
                     if vrtx_group.name.find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_") == -1:
                         bpy.ops.mesh.select_all(action='DESELECT')
@@ -3561,7 +3562,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, map_tag):
                     tag_index += 1
 
                     # vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(object.vertex_groups, "bm_material_backup_COLOR%d" % tag_index)
-                    # object.vertex_groups.add(name=vrtx_group_name)
+                    # object.vertex_groups.new(name=vrtx_group_name)
                     # bpy.ops.object.vertex_group_assign()
                     # tag_index += 1
 
@@ -3626,7 +3627,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(context):
 
         # find backup vrtx_groups
         to_remove = []
-        for vrtx_group_index, vrtx_group in enumerate(object.data.vertex_groups):
+        for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
             object.vertex_groups.active_index = vrtx_group_index
             if vrtx_group.name.find(tag) == -1:
                 continue
