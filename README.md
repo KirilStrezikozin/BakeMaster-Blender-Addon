@@ -4,7 +4,7 @@
 <h1 id="page-top">
     <a href="#page-top">
         Welcome to <br />
-        BakeMaster Blender Add-on
+        BakeMaster 2.0 Blender Add-on
     </a>
 </h1>
 
@@ -15,10 +15,11 @@ BakeMaster is an add-on specified for baking various texture maps <br/>and creat
     <img src='https://readthedocs.org/projects/bakemaster-blender-addon/badge/?version=latest' alt='Documentation Status' />
 </a>
 
-> This is a dev branch for BakeMaster v1.5 development
+---
+
+> This is a dev branch for BakeMaster v2.0 development
 >
-> Milestones for v1.5: <br>
-> ✨ BakeMaster 1.5 ✨ <br>
+> ✨ BakeMaster 2.0 Milestones: ✨ <br>
 > <br>
 > 🎯 - More Map Previews - 🎯 <br>
 > 🎯 - Presets for settings panels - 🎯 <br>
@@ -37,11 +38,10 @@ BakeMaster is an add-on specified for baking various texture maps <br/>and creat
 > 🎯 - Name Matching - 🎯 <br>
 > 🎯 - Bake multiple Highpolies onto single Lowpoly - 🎯 <br>
 > <br>
-> Currently in progress: new UI for all new features 🤩 <br>
-> Milestone: [Presets](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/milestone/1) <br>
+> Currently in progress: Bake and putting all features together 🤩 <br>
 > <br>
-> Stay tuned for Announcements ✅</span> <br>
+> Join new features disscussion & testing in our [Discord](https://discord.gg/2ePzzzMBf4) Stay tuned for [Announcements](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/discussions/5) ✅</span> <br>
 
 ---
 
-Readme is being reworked for v1.5 Update.<br>Stay tuned for announcements.
+Readme is being reworked for v2.0 Update.<br>Stay tuned for announcements.
