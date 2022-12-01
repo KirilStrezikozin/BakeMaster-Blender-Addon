@@ -2357,6 +2357,11 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag):
                     
                     color[2] += v_step
             
+            # jiltering colors
+            if map.map_matid_jilter != 0:
+                import numpy
+                numpy.random.shuffle(colors)
+            
             # loop through needed materials
             for mat_index, material in enumerate(color_mats):
                 material.use_nodes = True
@@ -4306,6 +4311,10 @@ def BM_MAP_PROPS_map_matid_algorithm_Update(self, context):
     if self.map_ID_use_preview:
         self.map_ID_use_preview = False
         self.map_ID_use_preview = True
+def BM_MAP_PROPS_map_matid_jilter_Update(self, context):
+    name = "Map: ID algorithm"
+    BM_LastEditedProp_Write(context, name, "map_matid_algorithm", getattr(self, "map_matid_algorithm"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'ID')
 def BM_MAP_PROPS_map_MASK_prefix_Update(self, context):
     name = "Map: Mask prefix"
     BM_LastEditedProp_Write(context, name, "map_MASK_prefix", getattr(self, "map_MASK_prefix"), True)

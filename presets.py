@@ -426,6 +426,7 @@ class BM_AddPresetBase():
                                     "map_matid_data",
                                     "map_matid_vertex_groups_name_contains",
                                     "map_matid_algorithm",
+                                    "map_matid_jilter",
 
                                     "map_MASK_prefix",
                                     # "map_MASK_use_preview",
@@ -1006,6 +1007,7 @@ class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_map.map_matid_data",
         "bm_map.map_matid_vertex_groups_name_contains",
         "bm_map.map_matid_algorithm",
+        "bm_map.map_matid_jilter",
 
         "bm_map.map_MASK_prefix",
         #bm_map. "map_MASK_use_preview",

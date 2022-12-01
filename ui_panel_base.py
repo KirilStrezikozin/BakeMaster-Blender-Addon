@@ -1150,6 +1150,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 if map.map_matid_data == 'VERTEX_GROUPS':
                     map_settings_column.prop(map, 'map_matid_vertex_groups_name_contains')
                 map_settings_column.prop(map, 'map_matid_algorithm')
+                map_settings_column.prop(map, 'map_matid_jilter')
             
             elif map.global_map_type == 'MASK':
                 map_settings_column.prop(map, 'map_mask_data')

@@ -1499,6 +1499,12 @@ class BM_Map(bpy.types.PropertyGroup):
                ('HUE', "Hue Shift", "Color each group by unique Hue"),
                ('GRAYSCALE', "Grayscale", "Color each group by unique Grayscale Color")],
         update=BM_MAP_PROPS_map_matid_algorithm_Update)
+    
+    map_matid_jilter : bpy.props.IntProperty(
+        name="Jilter",
+        description="Colors are shuffled every time this value is changed. Leave 0 for no shuffle",
+        default=0,
+        update=BM_MAP_PROPS_map_matid_jilter_Update)
 
 # Mask Map Props
     map_MASK_prefix : bpy.props.StringProperty(
