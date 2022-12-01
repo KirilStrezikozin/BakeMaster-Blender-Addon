@@ -1530,7 +1530,7 @@ class BM_Map(bpy.types.PropertyGroup):
 
     map_mask_materials_name_contains : bpy.props.StringProperty(
         name="Name Contains",
-        description="Use only those object materials which names contain this. Leave empty to use all vertex groups",
+        description="Use only those object materials which names contain this. Leave empty to use all materials",
         default="_mask",
         update=BM_MAP_PROPS_map_mask_materials_name_contains_Update)
     
