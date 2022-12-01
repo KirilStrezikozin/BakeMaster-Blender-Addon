@@ -2263,8 +2263,11 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag):
             for material in object.data.materials:
                 if material is None:
                     continue
-                if material.name.find("BM_CustomMaterial_") != -1 and material.name.find("COLOR") != -1:
-                    color_mats.append(material) 
+                if map.map_matid_data in  ['MATERIALS', 'OBJECTS']:
+                    color_mats.append(material)
+                else:
+                    if material.name.find("BM_CustomMaterial_") != -1 and material.name.find("COLOR") != -1:
+                        color_mats.append(material)
             if len(color_mats) == 0:
                 continue
             
