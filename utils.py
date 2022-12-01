@@ -3435,7 +3435,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, map_tag):
 
             if map.map_mask_data == 'MATERIALS':
                 bpy.ops.mesh.select_all(action='DESELECT')
-                for mat_index, material in enumerate(object.materials):
+                for mat_index, material in enumerate(object.data.materials):
                     if material is None:
                         continue
                     if material.name.find(map.map_mask_materials_name_contains) != -1 and material.name.lower().find("bm_") == -1:
