@@ -285,39 +285,9 @@ class BM_AddPresetBase():
 
                             for map_index, _ in enumerate(bm_item.global_maps):
                                 map_data = {
-                                    "global_map_index",
                                     "global_use_bake",
                                     "global_map_type",
                                     "global_affect_by_hl",
-
-                                    "hl_cage_type",
-                                    "hl_cage_extrusion",
-                                    "hl_max_ray_distance",
-
-                                    "uv_bake_data",
-                                    "uv_bake_target",
-                                    "uv_type",
-                                    "uv_snap_islands_to_pixels",
-
-                                    "out_use_denoise",
-                                    "out_file_format",
-                                    "out_exr_codec",
-                                    "out_compression",
-                                    "out_res",
-                                    "out_res_height",
-                                    "out_res_width",
-                                    "out_margin",
-                                    "out_margin_type",
-                                    "out_use_32bit",
-                                    "out_use_alpha",
-                                    "out_use_transbg",
-                                    "out_udim_start_tile",
-                                    "out_udim_end_tile",
-                                    "out_super_sampling_aa",
-                                    "out_samples",
-                                    "out_use_adaptive_sampling",
-                                    "out_adaptive_threshold",
-                                    "out_min_samples",
 
                                     "map_ALBEDO_prefix",
 
@@ -336,9 +306,11 @@ class BM_AddPresetBase():
                                     "map_EMISSION_prefix",
 
                                     "map_PASS_prefix",
+                                    # "map_PASS_use_preview",
                                     "map_pass_type",
 
                                     "map_DECAL_prefix",
+                                    # "map_DECAL_use_preview",
                                     "map_decal_pass_type",
                                     "map_decal_height_opacity_invert",
                                     "map_decal_normal_preset",
@@ -348,6 +320,7 @@ class BM_AddPresetBase():
                                     "map_decal_normal_b",
 
                                     "map_VERTEX_COLOR_LAYER_prefix",
+                                    # "map_VERTEX_COLOR_LAYER_use_preview",
                                     "map_vertexcolor_layer",
 
                                     "map_C_COMBINED_prefix",
@@ -382,6 +355,7 @@ class BM_AddPresetBase():
                                     "map_cycles_use_pass_emit",
 
                                     "map_NORMAL_prefix",
+                                    # "map_NORMAL_use_preview",
                                     "map_normal_data",
                                     "map_normal_space",
                                     "map_normal_preset",
@@ -391,20 +365,23 @@ class BM_AddPresetBase():
                                     "map_normal_b",
 
                                     "map_DISPLACEMENT_prefix",
+                                    # "map_DISPLACEMENT_use_preview",
                                     "map_displacement_data",
                                     "map_displacement_result",
                                     "map_displacement_subdiv_levels",
 
                                     "map_VECTOR_DISPLACEMENT_prefix",
-                                    "map_vector_displacement_use_default",
+                                    # "map_VECTOR_DISPLACEMENT_use_preview",
                                     "map_vector_displacement_use_negative",
                                     "map_vector_displacement_result",
                                     "map_vector_displacement_subdiv_levels",
 
                                     "map_POSITION_prefix",
+                                    # "map_POSITION_use_preview",
 
                                     "map_AO_prefix",
-                                    "map_ao_use_default",
+                                    # "map_AO_use_preview",
+                                    "map_AO_use_default",
                                     "map_ao_samples",
                                     "map_ao_distance",
                                     "map_ao_black_point",
@@ -416,24 +393,26 @@ class BM_AddPresetBase():
                                     "map_ao_use_invert",
 
                                     "map_CAVITY_prefix",
-                                    "map_cavity_use_default",
+                                    # "map_CAVITY_use_preview",
+                                    "map_CAVITY_use_default",
                                     "map_cavity_black_point",
                                     "map_cavity_white_point",
                                     "map_cavity_power",
                                     "map_cavity_use_invert",
 
                                     "map_CURVATURE_prefix",
-                                    "map_curv_use_default",
+                                    # "map_CURVATURE_use_preview",
+                                    "map_CURVATURE_use_default",
                                     "map_curv_samples",
                                     "map_curv_radius",
                                     "map_curv_black_point",
                                     "map_curv_mid_point",
                                     "map_curv_white_point",
                                     "map_curv_body_gamma",
-                                    "map_curv_use_invert",
 
                                     "map_THICKNESS_prefix",
-                                    "map_thick_use_default",
+                                    # "map_THICKNESS_use_preview",
+                                    "map_THICKNESS_use_default",
                                     "map_thick_samples",
                                     "map_thick_distance",
                                     "map_thick_black_point",
@@ -443,11 +422,13 @@ class BM_AddPresetBase():
                                     "map_thick_use_invert",
 
                                     "map_ID_prefix",
+                                    # "map_ID_use_preview",
                                     "map_matid_data",
                                     "map_matid_vertex_groups_name_contains",
                                     "map_matid_algorithm",
 
                                     "map_MASK_prefix",
+                                    # "map_MASK_use_preview",
                                     "map_mask_data",
                                     "map_mask_vertex_groups_name_contains",
                                     "map_mask_materials_name_contains",
@@ -456,7 +437,8 @@ class BM_AddPresetBase():
                                     "map_mask_use_invert",
 
                                     "map_XYZMASK_prefix",
-                                    "map_xyzmask_use_default",
+                                    # "map_XYZMASK_use_preview",
+                                    "map_XYZMASK_use_default",
                                     "map_xyzmask_use_x",
                                     "map_xyzmask_use_y",
                                     "map_xyzmask_use_z",
@@ -466,7 +448,8 @@ class BM_AddPresetBase():
                                     "map_xyzmask_use_invert",
 
                                     "map_GRADIENT_prefix",
-                                    "map_gmask_use_default",
+                                    # "map_GRADIENT_use_preview",
+                                    "map_GRADIENT_use_default",
                                     "map_gmask_type",
                                     "map_gmask_location_x",
                                     "map_gmask_location_y",
@@ -484,7 +467,8 @@ class BM_AddPresetBase():
                                     "map_gmask_use_invert",
 
                                     "map_EDGE_prefix",
-                                    "map_edgemask_use_default",
+                                    # "map_EDGE_use_preview",
+                                    "map_EDGE_use_default",
                                     "map_edgemask_samples",
                                     "map_edgemask_radius",
                                     "map_edgemask_edge_contrast",
@@ -492,6 +476,7 @@ class BM_AddPresetBase():
                                     "map_edgemask_use_invert",
 
                                     "map_WIREFRAME_prefix",
+                                    # "map_WIREFRAME_use_preview",
                                     "map_wireframemask_line_thickness",
                                     "map_wireframemask_use_invert",
                                 }
@@ -656,6 +641,8 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.bake_batchname_use_caps",
         "bm_item.bake_create_material",
         "bm_item.bake_device",
+        "bm_item.bake_hide_when_inactive",
+        # "bm_item.bake_vg_index",
     ]
 
 class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
@@ -965,7 +952,6 @@ class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 
         "bm_map.map_VECTOR_DISPLACEMENT_prefix",
         #bm_map. "map_VECTOR_DISPLACEMENT_use_preview",
-        "bm_map.map_vector_displacement_use_default",
         "bm_map.map_vector_displacement_use_negative",
         "bm_map.map_vector_displacement_result",
         "bm_map.map_vector_displacement_subdiv_levels",
@@ -975,7 +961,7 @@ class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 
         "bm_map.map_AO_prefix",
         #bm_map. "map_AO_use_preview",
-        "bm_map.map_ao_use_default",
+        "bm_map.map_AO_use_default",
         "bm_map.map_ao_samples",
         "bm_map.map_ao_distance",
         "bm_map.map_ao_black_point",
@@ -988,7 +974,7 @@ class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 
         "bm_map.map_CAVITY_prefix",
         #bm_map. "map_CAVITY_use_preview",
-        "bm_map.map_cavity_use_default",
+        "bm_map.map_CAVITY_use_default",
         "bm_map.map_cavity_black_point",
         "bm_map.map_cavity_white_point",
         "bm_map.map_cavity_power",
@@ -996,18 +982,17 @@ class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 
         "bm_map.map_CURVATURE_prefix",
         #bm_map. "map_CURVATURE_use_preview",
-        "bm_map.map_curv_use_default",
+        "bm_map.map_CURVATURE_use_default",
         "bm_map.map_curv_samples",
         "bm_map.map_curv_radius",
         "bm_map.map_curv_black_point",
         "bm_map.map_curv_mid_point",
         "bm_map.map_curv_white_point",
         "bm_map.map_curv_body_gamma",
-        "bm_map.map_curv_use_invert",
 
         "bm_map.map_THICKNESS_prefix",
         #bm_map. "map_THICKNESS_use_preview",
-        "bm_map.map_thick_use_default",
+        "bm_map.map_THICKNESS_use_default",
         "bm_map.map_thick_samples",
         "bm_map.map_thick_distance",
         "bm_map.map_thick_black_point",
@@ -1033,7 +1018,7 @@ class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 
         "bm_map.map_XYZMASK_prefix",
         #bm_map. "map_XYZMASK_use_preview",
-        "bm_map.map_xyzmask_use_default",
+        "bm_map.map_XYZMASK_use_default",
         "bm_map.map_xyzmask_use_x",
         "bm_map.map_xyzmask_use_y",
         "bm_map.map_xyzmask_use_z",
@@ -1044,7 +1029,7 @@ class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 
         "bm_map.map_GRADIENT_prefix",
         #bm_map. "map_GRADIENT_use_preview",
-        "bm_map.map_gmask_use_default",
+        "bm_map.map_GRADIENT_use_default",
         "bm_map.map_gmask_type",
         "bm_map.map_gmask_location_x",
         "bm_map.map_gmask_location_y",
@@ -1063,7 +1048,7 @@ class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 
         "bm_map.map_EDGE_prefix",
         #bm_map. "map_EDGE_use_preview",
-        "bm_map.map_edgemask_use_default",
+        "bm_map.map_EDGE_use_default",
         "bm_map.map_edgemask_samples",
         "bm_map.map_edgemask_radius",
         "bm_map.map_edgemask_edge_contrast",
@@ -1135,6 +1120,8 @@ class BM_OT_BAKE_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.bake_batchname_use_caps",
         "bm_item.bake_create_material",
         "bm_item.bake_device",
+        "bm_item.bake_hide_when_inactive",
+        # "bm_item.bake_vg_index",
     ]
 
 ###########################################################
