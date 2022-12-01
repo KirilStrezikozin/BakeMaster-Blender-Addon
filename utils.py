@@ -3573,6 +3573,8 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, map_tag):
                         if v.select:
                             vertices_processed[index] = True
 
+                bpy.ops.object.mode_set(mode='EDIT')
+
             # highpolies - add material and assign in to the whole object
             if map.map_matid_data == 'OBJECTS':
                 bpy.ops.mesh.select_all(action='DESELECT')
