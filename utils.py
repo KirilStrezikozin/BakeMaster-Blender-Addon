@@ -3639,7 +3639,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(context):
                     bpy.ops.mesh.select_all(action='DESELECT')
                     bpy.ops.object.vertex_group_select()
                     bpy.ops.object.material_slot_assign()
-                    to_remove.append(vrtx_group)
+            to_remove.append(vrtx_group)
         
         # exit edit mode
         bpy.ops.object.mode_set(mode='EDIT', toggle=True)
@@ -3869,15 +3869,15 @@ def BM_MAP_PROPS_map_DISPLACEMENT_use_preview_Update(self, context):
 
 # Map Previews with Material Reassign
 def BM_MAP_PROPS_map_ID_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
     BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
     if self.map_ID_use_preview:
         BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'ID')
         BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, 'ID')
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'ID')
 def BM_MAP_PROPS_map_MASK_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
     BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
     if self.map_MASK_use_preview:
         BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'MASK')
         BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, 'MASK')
