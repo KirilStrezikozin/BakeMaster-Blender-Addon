@@ -24,15 +24,24 @@ from .labels import BM_Labels
 ###############################################################
 ### BM Gets Funcs ###
 ###############################################################
-def BM_Object_Get(context):
-    object = [context.scene.bm_table_of_objects[context.scene.bm_props.global_active_index], True] 
+def BM_Object_Get(self, context):
+    if self is None:
+        object = [context.scene.bm_table_of_objects[context.scene.bm_props.global_active_index], True] 
+    else:
+        if hasattr(self, "global_map_object_index"):
+            object1 = context.scene.bm_table_of_objects[self.global_map_object_index]
+        else:
+            object1 = self
+        object = [object1, True]
     try:
         context.scene.objects[object[0].global_object_name]
     except (KeyError, AttributeError, UnboundLocalError):
         object[1] = False
     return object
 
-def BM_Map_Get(object):
+def BM_Map_Get(self, object):
+    if self is not None and hasattr(self, "global_map_object_index"):
+        return self
     map = object.global_maps[object.global_maps_active_index]
     return map
 
@@ -569,22 +578,23 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             lowpoly_object.hl_highpoly_table_active_index = 0
             for highpoly_index, highpoly in enumerate(highpolies):
                 new_highpoly = lowpoly_object.hl_highpoly_table.add()
+                new_highpoly.global_holder_index = lowpoly_sources[0]
                 new_highpoly.global_item_index = highpoly_index + 1
-                try:
-                    BM_ITEM_PROPS_hl_add_highpoly_Update(new_highpoly, context)
-                    new_highpoly.global_object_name = highpoly
-                    lowpoly_object.hl_highpoly_table_active_index = len(lowpoly_object.hl_highpoly_table) - 1
-                    lowpoly_object.hl_is_lowpoly = True
-                except TypeError:
+                # try:
+                BM_ITEM_PROPS_hl_add_highpoly_Update(new_highpoly, context)
+                new_highpoly.global_object_name = highpoly
+                lowpoly_object.hl_highpoly_table_active_index = len(lowpoly_object.hl_highpoly_table) - 1
+                lowpoly_object.hl_is_lowpoly = True
+                # except TypeError:
                     # lowpoly_object.hl_highpoly_table.remove(highpoly_index)
-                    pass
+                    # pass
 
                 # mark highpoly source object as decal if decal tag had been found previously
                 if marked_decals[highpoly_index] == 1 and new_highpoly.global_highpoly_object_index != -1: 
                     context.scene.bm_table_of_objects[new_highpoly.global_highpoly_object_index].hl_is_decal = True
 
             # set cage
-            if cage != "NONE":
+            if cage != "NONE" and len(highpolies) != 0:
                 try:
                     lowpoly_object.hl_use_cage = True
                     lowpoly_object.hl_cage = cage
@@ -599,6 +609,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'decal_upper_coordinate' : self.decal_upper_coordinate,
             'decal_boundary_offset' : self.decal_boundary_offset,
             'hl_decals_use_separate_texset' : self.hl_decals_use_separate_texset,
+            'hl_decals_separate_texset_prefix' : self.hl_decals_separate_texset_prefix,
             # 'hl_use_cage' : self.hl_use_cage,
             'hl_cage_type' : self.hl_cage_type,
             'hl_cage_extrusion' : self.hl_cage_extrusion,
@@ -625,8 +636,8 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'out_use_32bit' : self.out_use_32bit,
             'out_use_alpha' : self.out_use_alpha,
             'out_use_transbg' : self.out_use_transbg,
-            'out_udim_start_tile' : self.out_udim_start_tile,
-            'out_udim_end_tile' : self.out_udim_end_tile,
+            # 'out_udim_start_tile' : self.out_udim_start_tile,
+            # 'out_udim_end_tile' : self.out_udim_end_tile,
             'out_super_sampling_aa' : self.out_super_sampling_aa,
             'out_samples' : self.out_samples,
             'out_use_adaptive_sampling' : self.out_use_adaptive_sampling,
@@ -651,19 +662,21 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'bake_batchname' : self.bake_batchname,
             'bake_batchname_use_caps' : self.bake_batchname_use_caps,
             'bake_create_material' : self.bake_create_material,
+            'bake_assign_modifiers' : self.bake_assign_modifiers,
             'bake_device' : self.bake_device,
         }
 
         # apply props values to all container objects
         local_c_master_index = -1
-        for object in context.scene.bm_table_of_objects:
+        for object_index, object in enumerate(context.scene.bm_table_of_objects):
             if object.nm_item_uni_container_master_index == self.nm_master_index and object.nm_is_lowpoly_container:
                 local_c_master_index = object.nm_master_index
 
             if object.nm_item_uni_container_master_index == self.nm_master_index and object.nm_is_local_container is False and object.nm_item_local_container_master_index == local_c_master_index: 
                 # maps
+                # unset all previews
+                BM_MAP_PROPS_MapPreview_Unset(None, context)
                 # trash
-                BM_ITEM_RemoveLocalPreviews(object, context)
                 to_remove = []
                 for map_index, map in enumerate(object.global_maps):
                     to_remove.append(map_index)
@@ -679,6 +692,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                 # add
                 for map_index, map in enumerate(self.global_maps):
                     new_map = object.global_maps.add()
+                    new_map.global_map_object_index = object_index
                     object.global_maps_active_index = map_index
                     map_data = {
                         'global_map_index' : map_index + 1,
@@ -709,8 +723,8 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                         'out_use_32bit' : map.out_use_32bit,
                         'out_use_alpha' : map.out_use_alpha,
                         'out_use_transbg' : map.out_use_transbg,
-                        'out_udim_start_tile' : map.out_udim_start_tile,
-                        'out_udim_end_tile' : map.out_udim_end_tile,
+                        # 'out_udim_start_tile' : map.out_udim_start_tile,
+                        # 'out_udim_end_tile' : map.out_udim_end_tile,
                         'out_super_sampling_aa' : map.out_super_sampling_aa,
                         'out_samples' : map.out_samples,
                         'out_use_adaptive_sampling' : map.out_use_adaptive_sampling,
@@ -749,13 +763,15 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
 
                         'map_VERTEX_COLOR_LAYER_prefix' : map.map_VERTEX_COLOR_LAYER_prefix,
                         # 'map_VERTEX_COLOR_LAYER_use_preview' : map.map_VERTEX_COLOR_LAYER_use_preview,
-                        'map_vertexcolor_layer' : map.map_vertexcolor_layer,
+                        # 'map_vertexcolor_layer' : map.map_vertexcolor_layer,
 
                         'map_C_COMBINED_prefix' : map.map_C_COMBINED_prefix,
 
                         'map_C_AO_prefix' : map.map_C_AO_prefix,
 
                         'map_C_SHADOW_prefix' : map.map_C_SHADOW_prefix,
+
+                        'map_C_POSITION_prefix' : map.map_C_POSITION_prefix,
 
                         'map_C_NORMAL_prefix' : map.map_C_NORMAL_prefix,
 
@@ -854,6 +870,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                         'map_matid_data' : map.map_matid_data,
                         'map_matid_vertex_groups_name_contains' : map.map_matid_vertex_groups_name_contains,
                         'map_matid_algorithm' : map.map_matid_algorithm,
+                        'map_matid_jilter' : map.map_matid_jilter,
 
                         'map_MASK_prefix' : map.map_MASK_prefix,
                         # 'map_MASK_use_preview' : map.map_MASK_use_preview,
@@ -954,6 +971,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
 
                     # set
                     new_channelpack = object.chnlp_channelpacking_table.add()
+                    new_channelpack.global_channelpack_object_index = object_index
                     for chnlp_key in channelpack_data:
                         setattr(new_channelpack, chnlp_key, channelpack_data[chnlp_key])
 
@@ -1022,6 +1040,7 @@ def BM_TEXSET_OBJECT_PROPS_global_object_name_Update(self, context):
                     new_subitem = self.global_object_name_subitems.add()
                     new_subitem.global_object_name = subitem.global_object_name
                     new_subitem.global_object_index = len(self.global_object_name_subitems)
+                    new_subitem.global_source_object_index = index
 
         BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
 
@@ -1063,7 +1082,29 @@ def BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index):
                 texset.global_textureset_table_of_objects.remove(object_index)
                 if texset.global_textureset_table_of_objects_active_index > 0:
                     texset.global_textureset_table_of_objects_active_index -= 1
-                break
+
+            # recreate subitems
+            item = context.scene.bm_table_of_objects[object.global_source_object_index]
+            if item.nm_is_universal_container and context.scene.bm_props.global_use_name_matching:
+                # trash
+                to_remove = []
+                for index, subitem in enumerate(object.global_object_name_subitems):
+                    to_remove.append(index)
+                for index in sorted(to_remove, reverse=True):
+                    object.global_object_name_subitems.remove(index)
+                # add
+                local_c_master_index = -1
+                for index, subitem in enumerate(context.scene.bm_table_of_objects):
+                    if subitem.nm_item_uni_container_master_index == item.nm_master_index and subitem.nm_is_lowpoly_container:
+                        local_c_master_index = subitem.nm_master_index
+
+                    if subitem.nm_item_uni_container_master_index == item.nm_master_index and subitem.nm_item_local_container_master_index == local_c_master_index:
+                        new_subitem = object.global_object_name_subitems.add()
+                        new_subitem.global_object_name = subitem.global_object_name
+                        new_subitem.global_object_index = len(object.global_object_name_subitems)
+                        new_subitem.global_source_object_index = index
+
+            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
 
 ###############################################################
 ### Channel Packs Funcs ###
@@ -1085,12 +1126,13 @@ def BM_CHANNELPACK_PROPS_map_Items_GetAllChosen(self):
 def BM_CHANNELPACK_PROPS_map_Items_Get(self, context, prop_channel_index):
     new_items = [('NONE', "None", "Set None to identify usage of no map for the current channel or no maps available to set")]
     chosen = BM_CHANNELPACK_PROPS_map_Items_GetAllChosen(self)
-    object = BM_Object_Get(context)[0]
+    # need the actual object
+    object = context.scene.bm_table_of_objects[self.global_channelpack_object_index]
     maps_names = {
-        'ALBEDO' : "Albedo",
+        'ALBEDO' : "AlbedoM",
         'METALNESS' : "Metalness",
         'ROUGHNESS' : "Roughness",
-        'DIFFUSE' : "Diffuse",
+        'DIFFUSE' : "AlbedoS",
         'SPECULAR' : "Specular",
         'GLOSSINESS' : "Glossiness",
         'OPACITY' : "Opacity",
@@ -1100,6 +1142,7 @@ def BM_CHANNELPACK_PROPS_map_Items_Get(self, context, prop_channel_index):
         'DISPLACEMENT' : "Displacement",
         'VECTOR_DISPLACEMENT' : "Vector Displacement",
         'POSITION' : "Position",
+        'DECAL' : "Decal Pass",
         'AO' : "AO",
         'CAVITY' : "Cavity",
         'CURVATURE' : "Curvature",
@@ -1116,6 +1159,7 @@ def BM_CHANNELPACK_PROPS_map_Items_Get(self, context, prop_channel_index):
         'C_COMBINED' : "Combined",
         'C_AO' : "Ambient Occlusion",
         'C_SHADOW' : "Shadow",
+        'C_POSITION' : "Position",
         'C_NORMAL' : "Normal",
         'C_UV' : "UV",
         'C_ROUGHNESS' : "Roughness",
@@ -1232,7 +1276,7 @@ def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_A(self, context):
 #     new_items = []
 #     used_items = []
 
-#     object = BM_Object_Get(context)[0]
+#     object = BM_Object_Get(self, context)[0]
 #     for index, keyword in enumerate(object.bake_batch_name_table):
 #         if index != self.global_keyword_index:
 #             used_items.append(keyword.global_keyword_old)
@@ -1249,17 +1293,17 @@ def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_A(self, context):
 #     self.global_keword_old = self.global_keyword
 
 # def BM_BATCHNAMINGKEY_PROPS_global_keyword_UpdateOrder(context):
-#     object = BM_Object_Get(context)[0]
+#     object = BM_Object_Get(self, context)[0]
 #     for keyword in object.bake_batch_name_table:
 #         try:
 #             keyword.global_keyword = keyword.global_keyword_old
 #         except (TypeError, ValueError):
 #             pass
 
-def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context):
+def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context, object=None, map=None, global_active_index=None, decal_texset_tag=""):
     # funcs for data get
     def get_objectname(container):
-        if not any([container.nm_is_universal_container, container.nm_is_local_container, context.scene.bm_props.global_use_name_matching]):
+        if not any([container.nm_is_universal_container, container.nm_is_local_container]):
             return container.global_object_name
         for obj in context.scene.bm_table_of_objects:
             if obj.nm_item_uni_container_master_index == container.nm_master_index and obj.nm_is_local_container is False:
@@ -1274,7 +1318,7 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context):
             if container.nm_item_uni_container_master_index == obj.nm_master_index and obj.nm_is_universal_container:
                 return obj.nm_container_name
     
-    def get_packname(container):
+    def get_packname(container, map):
         for chnlpack in container.chnlp_channelpacking_table:
             chosen_data = {
                 'R1G1B' : ['_map_R', '_map_G', '_map_B'],
@@ -1284,19 +1328,16 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context):
             chosen_maps = []
             for prop in chosen_data[chnlpack.global_channelpack_type]:
                 chosen_maps.append(getattr(chnlpack, '{}{}'.format(chnlpack.global_channelpack_type, prop)))
-            for map_pass in container.global_maps:
-                if str(map_pass.global_map_index) in chosen_maps:
-                    return chnlpack.global_channelpack_name
+            if str(map.global_map_index) in chosen_maps:
+                return chnlpack.global_channelpack_name
         return None
     
     def get_texsetname(container):
-        if not any([container.nm_is_universal_container, container.nm_is_local_container, context.scene.bm_props.global_use_name_matching]):
+        if not any([container.nm_is_universal_container, container.nm_is_local_container]):
             container_name = container.global_object_name
         else:
             container_name = container.nm_container_name
         
-        if container.global_is_included_in_texset:
-            return None
         for texset in context.scene.bm_props.global_texturesets_table:
             for obj in texset.global_textureset_table_of_objects:
                 if obj.global_object_name == container_name:
@@ -1307,13 +1348,30 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context):
                     else:
                         return_name = ""
                         for obj1 in texset.global_textureset_table_of_objects:
-                            if context.scene.bm_table_of_objects[obj1.global_source_object_index].nm_is_universal_container and context.scene.bm_props.global_use_name_matching:
+                            if context.scene.bm_table_of_objects[obj1.global_source_object_index].nm_is_universal_container:
                                 for subobj in obj1.global_object_name_subitems:
                                     if subobj.global_object_include_in_texset:
                                         return_name += "%s_" % subobj.global_object_name
                             else:
                                 return_name += "%s_" % obj1.global_object_name
                         return return_name[:-1]
+                for subobject in obj.global_object_name_subitems:
+                    if subobject.global_object_name == container_name:
+                        if texset.global_textureset_naming == 'TEXSET_INDEX':
+                            return "TextureSet%d" % texset.global_textureset_index
+                        elif texset.global_textureset_naming == 'TEXSET_NAME':
+                            return texset.global_textureset_name
+                        else:
+                            return_name = ""
+                            for obj1 in texset.global_textureset_table_of_objects:
+                                if context.scene.bm_table_of_objects[obj1.global_source_object_index].nm_is_universal_container:
+                                    for subobj in obj1.global_object_name_subitems:
+                                        if subobj.global_object_include_in_texset:
+                                            return_name += "%s_" % subobj.global_object_name
+                                else:
+                                    return_name += "%s_" % obj1.global_object_name
+                            return return_name[:-1]
+            return None
 
     def get_mapres(map_pass):
         if map_pass.out_res == 'CUSTOM':
@@ -1322,23 +1380,27 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context):
             return map_pass.out_res
     
     def get_mapnormal(map_pass):
+        if map.global_map_type != 'NORMAL':
+            return None
         if map.map_normal_preset != 'CUSTOM':
             return map.map_normal_preset
         else:
             return map.map_normal_custom_preset
     
-    object = BM_Object_Get(context)[0]
-    if len(object.global_maps) == 0:
-        # self.bake_batchname_preview = "*Object has no Maps*"
-        return "*Object has no Maps*"
-    map = object.global_maps[object.global_maps_active_index]
-
+    if object is None:
+        object = BM_Object_Get(self, context)[0]
+        if len(object.global_maps) == 0:
+            # self.bake_batchname_preview = "*Object has no Maps*"
+            return "*Object has no Maps*"
+        map = object.global_maps[object.global_maps_active_index]
+        global_active_index = context.scene.bm_props.global_active_index
+     
     gen_keywords_values = {
-        "$objectindex" : context.scene.bm_props.global_active_index,
+        "$objectindex" : global_active_index,
         "$objectname" : get_objectname(object),
-        "$containername" : get_containername(object),
-        "$packname" : get_packname(object),
-        "$texsetname" : get_texsetname(object),
+        "$containername" : get_containername(self),
+        "$packname" : get_packname(self, map),
+        "$texsetname" : get_texsetname(self),
         "$mapindex" : map.global_map_index,
         "$mapname" : getattr(map, 'map_{}_prefix'.format(map.global_map_type)),
         "$mapres" : get_mapres(map),
@@ -1349,14 +1411,14 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context):
         "$mapdenoise" : "denoised" if map.out_use_denoise else "",
         "$mapnormal" : get_mapnormal(map),
         "$mapuv" : map.uv_active_layer,
-        "$engine" : object.bake_device,
-        "$autouv" : "autouv" if object.uv_use_auto_unwrap else "",
+        "$engine" : self.bake_device,
+        "$autouv" : "autouv" if self.uv_use_auto_unwrap else "",
     }
 
     preview = ""
     temp_preview = ""
     finding_keyword = False
-    for index, char in enumerate(object.bake_batchname):
+    for index, char in enumerate(self.bake_batchname):
         # adding chars until $ found - means that we need to insert keyword
         if finding_keyword is False:
             if char == '$':
@@ -1376,20 +1438,34 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context):
             try:
                 gen_keywords_values[temp_preview.lower()]
             except KeyError:
-                if index == len(object.bake_batchname) - 1:
+                if index == len(self.bake_batchname) - 1:
                     preview += temp_preview
             else:
                 # keyword found, add its value to preview
                 if gen_keywords_values[temp_preview.lower()] is None:
                     finding_keyword = False
                     continue
-                if object.bake_batchname_use_caps:
+                if self.bake_batchname_use_caps:
                     preview += str(gen_keywords_values[temp_preview.lower()]).upper()
                 else:
                     preview += str(gen_keywords_values[temp_preview.lower()])
                 finding_keyword = False
 
     # self.bake_batchname_preview = preview
+
+    # limit to max 63 characters
+    # take decal prefix into account
+    len_crop = len(preview + decal_texset_tag) - 63
+    if len_crop > 0:
+        preview = preview[:-len_crop]
+
+    # add decal_texset_tag
+    preview += decal_texset_tag.upper() if object.bake_batchname_use_caps else decal_texset_tag
+
+    # translate
+    trans = str.maketrans({char: "_" for char in " |!@#$%^&*(){}:\";'[]<>,.\\/?"})
+    preview = preview.translate(trans).strip("_")
+
     return preview
 
 def BM_ITEM_PROPS_bake_batchname_use_caps_Update(self, context):
@@ -1401,8 +1477,10 @@ def BM_ITEM_PROPS_bake_batchname_use_caps_Update(self, context):
 ### BM Table of Objects Funcs ###
 ###############################################################
 def BM_ActiveIndexUpdate(self, context):
+    # if context.scene.bm_props.global_bake_available is False:
+        # return
     if len(context.scene.bm_table_of_objects):
-        source_object = BM_Object_Get(context)
+        source_object = BM_Object_Get(None, context)
         if source_object[1]:
             source_object = context.scene.objects[source_object[0].global_object_name]
             
@@ -1470,6 +1548,17 @@ def BM_Table_of_Objects_GetFTL(context, items, bitflag_filter_item):
 
         return ftl_flags, ftl_neworder
 
+def BM_GetObject_from_prop_update(self, context):
+    try:
+        context.scene.bm_table_of_objects[context.scene.bm_props.global_active_index]
+    except IndexError:
+        if hasattr(self, "global_map_object_index"):
+            return context.scene.bm_table_of_objects[self.global_map_object_index]
+        else:
+            return self
+    else:
+        return BM_Object_Get(None, context)[0]
+
 ###############################################################
 ### decal Props Funcs ###
 ###############################################################
@@ -1516,6 +1605,7 @@ def BM_ITEM_PROPS_hl_use_unique_per_map_Update(self, context):
                 for index, key in enumerate(highpoly_data):
                     new_highpoly = map.hl_highpoly_table.add()
                     new_highpoly.global_item_index = index + 1
+                    new_highpoly.global_holder_index = context.scene.bm_props.global_active_index
                     BM_ITEM_PROPS_hl_add_highpoly_Update(new_highpoly, context)
                     new_highpoly.global_object_name = key
                     map.hl_highpoly_table_active_index = len(map.hl_highpoly_table) - 1
@@ -1541,13 +1631,14 @@ def BM_ITEM_PROPS_hl_cage_Items(self, context):
     if self.hl_cage_object_include == 'NONE' and self.hl_cage_object_index == -1:
         items.append(('NONE', "None", "No cage available within the Table of Objects"))
 
-    active_object = BM_Object_Get(context)[0]
+    # active_object = BM_GetObject_from_prop_update(self, context)
+    active_object = BM_Object_Get(self, context)[0]
     active_index = context.scene.bm_props.global_active_index
     use_nm = context.scene.bm_props.global_use_name_matching
     cage_container_master_index = -1
     include = []
     if active_object.hl_use_unique_per_map and len(active_object.global_maps):
-        active_map = BM_Map_Get(active_object)
+        active_map = BM_Map_Get(self, active_object)
         for map in active_object.global_maps:
             if map.global_map_index == active_map.global_map_index:
                 continue
@@ -1607,7 +1698,7 @@ def BM_ITEM_PROPS_hl_cage_Update(self, context):
         except AttributeError:
             return
         else:
-            object = BM_Object_Get(context)[0]
+            object = BM_Object_Get(self, context)[0]
             if object.hl_use_unique_per_map:
                 for map in object.global_maps:
                     if map.hl_use_cage and map.hl_cage_object_index != -1:
@@ -1619,12 +1710,13 @@ def BM_ITEM_PROPS_hl_use_cage_Update(self, context):
         # in its is_global update, use_cage set to True
         # random object is getting set as cage, which is bad
         # added check to abort all this for containers
-        # not including the occasion if self == map, because for uni_c hl_unique_per_map is always false
-        if any([self.nm_is_universal_container, self.nm_is_local_container]):
-            self.hl_cage_name_old = ""
-            self.hl_cage_object_index = -1
-            self.hl_cage_object_include = ""
-            return
+        # including the occasion if self == map
+        if hasattr(self, "nm_is_universal_container"):
+            if any([self.nm_is_universal_container, self.nm_is_local_container]):
+                self.hl_cage_name_old = ""
+                self.hl_cage_object_index = -1
+                self.hl_cage_object_include = ""
+                return
 
         update_name = False
         if self.hl_cage_name_old == 'NONE':
@@ -1671,7 +1763,7 @@ def BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, type):
                     elif object1.hl_cage_object_index == index:
                         object1.hl_use_cage = False
     elif type == 'MAP':
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
         map = object.global_maps[index]
         if map.hl_use_cage:
             map.hl_use_cage = False
@@ -1712,21 +1804,26 @@ def BM_ITEM_PROPS_hl_cage_UpdateOrder(context):
                 object.hl_cage = object.hl_cage_object_include
             except (ValueError, TypeError):
                 pass
-                        
+ 
 def BM_ITEM_PROPS_hl_highpoly_Items(self, context):
+    try:
+        context.scene.bm_table_of_objects[context.scene.bm_props.global_active_index]
+    except IndexError:
+        return []
     items = []
     # if was chosen None, append it to items
     if self.global_highpoly_object_include == 'NONE' and self.global_highpoly_object_index == -1:
         items.append(('NONE', "None", "No cage available within the Table of Objects"))
 
-    active_object = BM_Object_Get(context)[0]
+    # active_object = BM_GetObject_from_prop_update(self, context)
+    active_object = context.scene.bm_table_of_objects[self.global_holder_index]
     active_index = context.scene.bm_props.global_active_index
     use_nm = context.scene.bm_props.global_use_name_matching
     high_container_master_index = -1
     include = []
     skip_include = []
     if active_object.hl_use_unique_per_map and len(active_object.global_maps):
-        active_map = BM_Map_Get(active_object)
+        active_map = BM_Map_Get(self, active_object)
         for index, highpoly in enumerate(active_map.hl_highpoly_table):
             if highpoly.global_highpoly_object_index != -1:
                 skip_include.append(highpoly.global_highpoly_name_old)
@@ -1866,7 +1963,7 @@ def BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, type, removed_was_hi
                         object1.hl_is_lowpoly = False
 
     elif type == 'MAP':
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
         map = object.global_maps[index]
         for highpoly in map.hl_highpoly_table:
             if highpoly.global_highpoly_object_index != -1:
@@ -1972,7 +2069,7 @@ def BM_ITEM_PROPS_uv_use_unique_per_map_Update(self, context):
                 setattr(map, key, data[key])
 
 def BM_ITEM_PROPS_uv_active_layer_Items(self, context):
-    object = BM_Object_Get(context)
+    object = BM_Object_Get(self, context)
     if object[0].nm_is_universal_container and object[0].nm_uni_container_is_global:
         return [('CONTAINER_AUTO', "Automatic", "UV Map is set automatically because Contaniner configures all its object settings")]
     if object[1] is False:
@@ -1992,17 +2089,17 @@ def BM_ITEM_PROPS_uv_active_layer_Items(self, context):
     return uv_layers_bake + uv_layers_other
 
 def BM_ITEM_PROPS_uv_type_Items(self, context):
-    items = [('AUTO', "Automatic", "Automatically detect UVMap type. If UDIMs detected, UDIM tiles range will be set automatically for each map"),
-             ('SINGLE', "Single (single tile)", "Regular single-tiled UV layer")]
+    items = [('SINGLE', "Single (single tile)", "Regular single-tiled UV layer")]
     if bpy.app.version >= (3, 2, 0):
         items.append(('TILED', "Tiled (UDIMs)", "Tiled UV Layer, UDIM tiles"))
+        items.append(('AUTO', "Automatic", "Automatically detect UVMap type. If UDIMs detected, UDIM tiles range will be set automatically for each map"))
     
     return items
 
 def BM_ITEM_PROPS_uv_bake_target_Items(self, context):
     if bpy.app.version >= (2, 92, 0):
         items = [('IMAGE_TEXTURES', "Image Textures", "Bake to image texture files (image files)"),
-                ('VERTEX_COLORS', "Vertex Colors", "Bake to vertex color layers (color attributes, no need for UVs")]
+                 ('VERTEX_COLORS', "Vertex Colors", "Bake to vertex color layers (color attributes, no need for UVs")]
     else:
         items = [('IMAGE_TEXTURES', "Image Textures", "Bake to image texture files (image files)")]
     
@@ -2049,11 +2146,11 @@ def BM_MAP_PROPS_map_type_Items(self, context):
 
     items = [
         ('', "PBR-Metallic", "PBR maps to bake from existing object materials data"),
-        ('ALBEDO', "Albedo", "PBR-Metallic. Color image texture containing color without shadows and highlights"),
+        ('ALBEDO', "AlbedoM", "PBR-Metallic. Color image texture containing color without shadows and highlights"),
         ('METALNESS', "Metalness", "PBR-Metallic. Image texture for determining metal and non-metal parts of the object"),
         ('ROUGHNESS', "Roughness", "PBR-Metallic. Image texture for determining roughness across the surface of the object"),
         ('', "PBR-Specular", ""),
-        ('DIFFUSE', "Albedo", "PBR-Specular. Color image texture containing color without shadows and highlights"),
+        ('DIFFUSE', "AlbedoS", "PBR-Specular. Color image texture containing color without shadows and highlights"),
         ('SPECULAR', "Specular", "PBR-Specular. Image texture for determining specularity across the surface of the object"),
         ('GLOSSINESS', "Glossiness", "PBR-Specular. Image texture for determining glossiness across the surface of the object"),
         ('', "PBR-based", ""),
@@ -2065,7 +2162,7 @@ def BM_MAP_PROPS_map_type_Items(self, context):
         ('DISPLACEMENT', "Displacement", "Height map used for displacing mesh polygons"),
         ('VECTOR_DISPLACEMENT', "Vector Displacement", "Displacement map where each pixel stores RGB as XYZ displacement data"),
         ('POSITION', "Position", "Indicates object parts location in the UV space"),
-        ('DECAL', "Decal Pass", "Bake common passes for Decal Object"),
+        ('DECAL', "Decal Pass", "Bake common passes for Decal Object. For external bake only"),
         ('', "Masks and Details", ""),
         ('AO', "AO", "Ambient Occlusion map contains lightning data"),
         ('CAVITY', "Cavity", "Image texture map for crevice details"),
@@ -2093,34 +2190,35 @@ def BM_MAP_PROPS_map_type_Items(self, context):
         ('C_GLOSSY', "Glossy", "Bakes the glossiness pass of a material"),
         ('C_TRANSMISSION', "Transmission", "Bakes the transmission pass of a material")
     ]
+    if bpy.app.version >= (3, 0, 0):
+        items.append(('C_POSITION', "Position", "Indicates object parts location in the UV space"))
     return items
 
 def BM_MAP_PROPS_map_vertexcolor_layer_Items(self, context):
-    def object_get_vertexcolor_layers(data):
-        items = []
-        if len(data):
-            for layer in data:
-                items.append((str(layer.name), layer.name, "VertexColor Layer to bake"))
-            return items
-        else:
-            return [('NONE', "None", "No VertexColor Layers to bake")]
-
-    object = BM_Object_Get(context)
+    object = BM_Object_Get(self, context)
     if object[1] is False:
         return [('NONE', "None", "Current Object doesn't support VertexColor Layers")]
     source_object = context.scene.objects[object[0].global_object_name]
+    items = []
     if bpy.app.version < (3, 2, 0):
-        return object_get_vertexcolor_layers(source_object.data.vertex_colors)
+        for layer in source_object.data.vertex_colors:
+            items.append((str(layer.name), layer.name, "VertexColor Layer to bake"))
     else:
-        return object_get_vertexcolor_layers(source_object.data.color_attributes)
+        for layer in source_object.data.color_attributes:
+            items.append((str(layer.name), layer.name, "VertexColor Layer to bake"))
+    if len(items) == 0:
+        return [('NONE', "None", "No VertexColor Layers to bake")]
+    return items
 
 def BM_MAP_PROPS_map_normal_data_Items(self, context):
-    object = BM_Object_Get(context)[0]
+    object = BM_Object_Get(self, context)[0]
     if object.hl_use_unique_per_map:
-        len_of_highpolies = len(BM_Map_Get(object).hl_highpoly_table)
+        has_highpolies = any(True for highpoly in BM_Map_Get(self, object).hl_highpoly_table if highpoly.global_highpoly_object_index != -1)
     else:
-        len_of_highpolies = len(object.hl_highpoly_table)
-    if len_of_highpolies > 0:
+        has_highpolies = any(True for highpoly in object.hl_highpoly_table if highpoly.global_highpoly_object_index != -1)
+    if object.nm_is_universal_container and object.nm_uni_container_is_global:
+        has_highpolies = True
+    if has_highpolies:
         items = [('HIGHPOLY', "Highpoly", "Bake normals from highpoly object data to lowpoly"),
                  ('MULTIRES', "Multires Modifier", "Bake normals from existing Multires modifier"),
                  ('MATERIAL', "Object/Materials", "Bake normals from object data")]
@@ -2129,15 +2227,21 @@ def BM_MAP_PROPS_map_normal_data_Items(self, context):
                  ('MATERIAL', "Object/Materials", "Bake normals from object data")]
     if object.decal_is_decal:
         items = [('MATERIAL', "Object/Materials", "Bake normals from object data")]
+    # above unused
+    items = [('HIGHPOLY', "Highpoly", "Bake normals from highpoly object data to lowpoly"),
+             ('MULTIRES', "Multires Modifier", "Bake normals from existing Multires modifier"),
+             ('MATERIAL', "Object/Materials", "Bake normals from object data")]
     return items 
 
 def BM_MAP_PROPS_map_displacement_data_Items(self, context):
-    object = BM_Object_Get(context)[0]
+    object = BM_Object_Get(self, context)[0]
     if object.hl_use_unique_per_map:
-        len_of_highpolies = len(BM_Map_Get(object).hl_highpoly_table)
+        has_highpolies = any(True for highpoly in BM_Map_Get(self, object).hl_highpoly_table if highpoly.global_highpoly_object_index != -1)
     else:
-        len_of_highpolies = len(object.hl_highpoly_table)
-    if len_of_highpolies > 0:
+        has_highpolies = any(True for highpoly in object.hl_highpoly_table if highpoly.global_highpoly_object_index != -1)
+    if object.nm_is_universal_container and object.nm_uni_container_is_global:
+        has_highpolies = True
+    if has_highpolies:
         items = [('HIGHPOLY', "Highpoly", "Bake displacement from highpoly object data to lowpoly"),
                  ('MULTIRES', "Multires Modifier", "Bake displacement from existing Multires modifier"),
                  ('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
@@ -2146,1237 +2250,23 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
                  ('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
     if object.decal_is_decal:
         items = [('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
+    # above unused
+    items = [('HIGHPOLY', "Highpoly", "Bake displacement from highpoly object data to lowpoly"),
+             ('MULTIRES', "Multires Modifier", "Bake displacement from existing Multires modifier"),
+             ('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
     return items
 
 # Map Preview Funcs
-def BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag):
-    object_item_full = BM_Object_Get(context)
-    if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
-        return
-    object_item = object_item_full[0]
-    if len(object_item.global_maps) == 0:
-        return
-    if getattr(BM_Map_Get(object_item), "map_%s_use_preview" % map_tag) is False:
-        return
-    map = BM_Map_Get(object_item)
-
-    # collecting objects for which update bm_nodes   
-    source_object = [object for object in context.scene.objects if object.name == object_item.global_object_name]
-    if len(source_object) == 0:
-        return
-
-    if map.global_affect_by_hl:
-        highpolies = map.hl_highpoly_table if object_item.hl_use_unique_per_map else object_item.hl_highpoly_table
-    else:
-        highpolies = []
-    objects = [source_object[0]] if len(highpolies) == 0 else []
-    for highpoly in highpolies:
-        source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
-        if len(source_highpoly) == 0:
-            continue
-        objects.append(source_highpoly[0])
-
-    # which bm_nodes' values will change
-    nodes_names_data = {
-        'AO' : [
-            'BM_AmbientOcclusion',
-            'BM_ValToRGB',
-            'BM_MixRGB',
-            'BM_BrightContrast',
-            'BM_Invert',
-        ],
-        'CAVITY' : [
-            'BM_ValToRGB',
-            'BM_Math',
-            'BM_Invert',
-        ],
-        'CURVATURE' : [
-            'BM_Value',
-            'BM_AmbientOcclusion',
-            'BM_AmbientOcclusion.001',
-            'BM_ValToRGB',
-            'BM_Gamma',
-        ],
-        'THICKNESS' : [
-            'BM_AmbientOcclusion',
-            'BM_MapRange',
-            'BM_ValToRGB',
-            'BM_Invert',
-        ],
-        'XYZMASK' : [
-            'BM_SeparateXYZ',
-            'BM_VectorMath',
-            'BM_VectorMath.001',
-            'BM_VectorMath.002',
-            'BM_MapRange',
-            'BM_MixRGB',
-        ],
-        'GRADIENT' : [
-            'BM_Mapping',
-            'BM_TexGradient',
-            'BM_MapRange',
-            'BM_MixRGB',
-            'BM_HueSaturation',
-            'BM_Invert',
-        ],
-        'EDGE' : [
-            'BM_Bevel',
-            'BM_MapRange',
-            'BM_Invert',
-        ],
-        'WIREFRAME' : [
-            'BM_Value',
-            'BM_Invert',
-        ],
-        'POSITION' : [
-        ],
-        'VERTEX_COLOR_LAYER' : [
-            'BM_Attribute',
-        ],
-        'VECTOR_DISPLACEMENT' : [
-            'BM_Value',
-        ],
-        'DECAL' : [
-            'BM_VectorMath.001',
-            'BM_Invert',
-            'BM_Invert.001',
-            'BM_Emission',
-        ],
-        'MASK' : [
-            'BM_RGB',
-            'BM_Invert',
-        ],
-        'ID' : [
-            'BM_Emission',
-        ],
-    }
-    
-    map = BM_Map_Get(object_item)
-
-    # for id, loop over materials with COLORI in the name
-    # because need to calculate size of color stepping
-    if map_tag == "ID":
-        import colorsys
-        
-        for object in objects:
-            color_mats = []
-            for material in object.data.materials:
-                if material is None:
-                    continue
-                if map.map_matid_data in  ['MATERIALS', 'OBJECTS']:
-                    color_mats.append(material)
-                else:
-                    if material.name.find("BM_CustomMaterial_") != -1 and material.name.find("COLOR") != -1:
-                        color_mats.append(material)
-            if len(color_mats) == 0:
-                continue
-            
-            # getting colors
-            colors = []
-            if map.map_matid_algorithm == 'GRAYSCALE':
-                step = round(1 / (len(color_mats) - 1), 3)
-                color = [0.0, 0.0, 1.0]
-                for i in range(len(color_mats)):
-                    rgb = list(colorsys.hsv_to_rgb(color[0], color[1], color[2]))
-                    rgb.append(1.0)
-                    colors.append(tuple(rgb))
-                    color[2] -= step
-            
-            if map.map_matid_algorithm == 'HUE':
-                step = round(1 / (len(color_mats)), 3)
-                color = [1.0, 1.0, 1.0]
-                for i in range(len(color_mats)):
-                    rgb = list(colorsys.hsv_to_rgb(color[0], color[1], color[2]))
-                    rgb.append(1.0)
-                    colors.append(tuple(rgb))
-                    color[0] -= step
-            
-            if map.map_matid_algorithm == 'RANDOM':
-                # (dev) debug .prefs/rgb_color_scatter.py to see how this works
-                # given variables
-                Points = len(color_mats) # number of points to scatter aka colors to get, > 0
-                SOrbit = 4 # value indicating at what number of scattered points the first Saturation orbit should end, > 0
-                VOrbit = 24 # value indicating at what number of scattered points the first Value orbit should end, > 0
-                MinOrbit = 2 # minimum on SOrbit = SOrbit / MinOrbit, same for minimum on VOrbit, float > 0
-
-                def get_orbit_size(orbit_capacity, points):
-                    n = 1
-                    new_points = [1]
-                    points_cache = 1
-                    while points_cache < points:
-                        # minimum n of points on the current V orbit
-                        minimum = int(orbit_capacity / MinOrbit)
-                        # how many points left in total
-                        points_left = points - points_cache
-                        can_contain = points_left - ((points_left - orbit_capacity) + minimum)
-                        # if left more than orbit can contain, add orbit_capacity
-                        if points_left - orbit_capacity >= orbit_capacity:
-                            points_cache += orbit_capacity
-                            new_points.append(orbit_capacity)
-                        elif can_contain >= minimum and can_contain <= points_left:
-                            points_cache += can_contain
-                            new_points.append(can_contain)
-                        else:
-                            points_cache += points_left
-                            new_points.append(points_left)
-                        orbit_capacity *= 2
-                        n += 1
-                    return n, sorted(new_points)
-
-                n_v, v_points = get_orbit_size(VOrbit, Points)
-
-                if n_v - 1 == 0:
-                    v_step = 0
-                else:
-                    v_step = round(1 / (n_v - 1), 3)
-
-                color = [1.0, 0.0, 0.0]
-                for v_orbit_size in v_points:
-                    color[1] = 0.0
-                    n_s, s_points = get_orbit_size(SOrbit, v_orbit_size)
-
-                    if n_s - 1 == 0:
-                        s_step = 0
-                    else:
-                        s_step = round(1 / (n_s - 1), 3)
-
-                    for s_orbit_size in s_points:
-                        color[0] = 1.0
-                        if s_orbit_size - 1 == 0:
-                            h_step = 0
-                        else:
-                            h_step = round(1 / s_orbit_size, 3)
-
-                        for i in range(s_orbit_size):
-                            rgb = list(colorsys.hsv_to_rgb(color[0], color[1], color[2]))
-                            rgb.append(1.0)
-                            colors.append(tuple(rgb))
-                            color[0] -= h_step
-                        
-                        color[1] += s_step
-                    
-                    color[2] += v_step
-            
-            # jiltering colors
-            if map.map_matid_jilter != 0:
-                import numpy
-                numpy.random.shuffle(colors)
-            
-            # loop through needed materials
-            for mat_index, material in enumerate(color_mats):
-                material.use_nodes = True
-                nodes = material.node_tree.nodes
-                map_nodes = nodes_names_data[map_tag]
-                nodes[map_nodes[0]].inputs[0].default_value = colors[mat_index]
-
-        return
-
-    # looping through materials
-    for object in objects:
-        for material in object.data.materials:
-            if material is None:
-                continue
-
-            material.use_nodes = True
-            bm_nodes = str([node.name for node in material.node_tree.nodes])
-            if bm_nodes.find('BM_') == -1:
-                continue
-            nodes = material.node_tree.nodes
-            links = material.node_tree.links
-
-            map_nodes = nodes_names_data[map_tag]
-            # updating nodes inputs and properties
-            if map_tag == "AO":
-                use_default = getattr(map, "map_%s_use_default" % map_tag)
-                if use_default:
-                    samples = 16
-                    distance = 1
-                    only_local = False
-                    black_point = 0
-                    white_point = 0.8
-                    opacity = 0.67
-                    brightness = -0.3
-                    contrast = 0.3
-                    invert = 0        
-                else:
-                    samples = map.map_ao_samples
-                    distance = map.map_ao_distance
-                    only_local = map.map_ao_use_local
-                    black_point = map.map_ao_black_point
-                    white_point = map.map_ao_white_point
-                    opacity = map.map_ao_opacity
-                    brightness = map.map_ao_brightness
-                    contrast = map.map_ao_contrast
-                    invert = map.map_ao_use_invert
-
-                nodes[map_nodes[0]].samples = samples
-                nodes[map_nodes[0]].inputs[1].default_value = distance
-                nodes[map_nodes[0]].only_local = only_local
-                nodes[map_nodes[1]].color_ramp.elements[0].position = black_point
-                nodes[map_nodes[1]].color_ramp.elements[1].position = white_point
-                nodes[map_nodes[2]].inputs[0].default_value = opacity
-                nodes[map_nodes[3]].inputs[1].default_value = brightness
-                nodes[map_nodes[3]].inputs[2].default_value = contrast
-                nodes[map_nodes[4]].inputs[0].default_value = invert
-
-            if map_tag == "CAVITY":
-                use_default = getattr(map, "map_%s_use_default" % map_tag)
-                if use_default:
-                    black_point = 0
-                    white_point = 1
-                    power = 2.5
-                    invert = 0
-                else:
-                    black_point = map.map_cavity_black_point
-                    white_point = map.map_cavity_white_point
-                    power = map.map_cavity_power
-                    invert = map.map_cavity_use_invert
-
-                nodes[map_nodes[0]].color_ramp.elements[0].position = black_point
-                nodes[map_nodes[0]].color_ramp.elements[1].position = white_point
-                nodes[map_nodes[1]].inputs[1].default_value = power
-                nodes[map_nodes[2]].inputs[0].default_value = invert
-
-            if map_tag == "CURVATURE":
-                use_default = getattr(map, "map_%s_use_default" % map_tag)
-                if use_default:
-                    samples = 16
-                    radius = 2.2
-                    black_point = 0.4
-                    mid_point = 0.5
-                    white_point = 0.6
-                    gamma = 2.2
-                else:
-                    samples = map.map_curv_samples
-                    radius = map.map_curv_radius
-                    black_point = map.map_curv_black_point
-                    mid_point = map.map_curv_mid_point
-                    white_point = map.map_curv_white_point
-                    gamma = map.map_curv_body_gamma
-                
-                nodes[map_nodes[0]].outputs[0].default_value = radius
-                nodes[map_nodes[1]].samples = samples
-                nodes[map_nodes[2]].samples = samples
-                nodes[map_nodes[3]].color_ramp.elements[0].position = black_point
-                nodes[map_nodes[3]].color_ramp.elements[1].position = mid_point
-                nodes[map_nodes[3]].color_ramp.elements[2].position = white_point
-                nodes[map_nodes[4]].inputs[1].default_value = gamma
-
-            if map_tag == "THICKNESS":
-                use_default = getattr(map, "map_%s_use_default" % map_tag)
-                if use_default:
-                    samples = 16
-                    distance = 1
-                    black_point = 0
-                    white_point = 1
-                    brightness = 1
-                    contrast = 0
-                    invert = 0
-                else:
-                    samples = map.map_thick_samples
-                    distance = map.map_thick_distance
-                    black_point = map.map_thick_black_point
-                    white_point = map.map_thick_white_point
-                    brightness = map.map_thick_brightness
-                    contrast = map.map_thick_contrast
-                    invert = map.map_thick_use_invert
-
-                nodes[map_nodes[0]].samples = samples
-                nodes[map_nodes[0]].inputs[1].default_value = distance
-                nodes[map_nodes[1]].inputs[1].default_value = contrast
-                nodes[map_nodes[1]].inputs[4].default_value = brightness
-                nodes[map_nodes[2]].color_ramp.elements[0].position = black_point
-                nodes[map_nodes[2]].color_ramp.elements[1].position = white_point
-                nodes[map_nodes[3]].inputs[0].default_value = invert
-
-            if map_tag == "XYZMASK":
-                use_default = getattr(map, "map_%s_use_default" % map_tag)
-                if use_default:
-                    coverage = 0
-                    saturation = 1
-                    opacity = 1
-                    invert = 1
-                else:
-                    coverage = map.map_xyzmask_coverage
-                    saturation = map.map_xyzmask_saturation
-                    opacity = map.map_xyzmask_opacity
-                    invert = map.map_xyzmask_use_invert
-
-                for i in range(3):
-                    nodes[map_nodes[3]].inputs[1].default_value[i] = invert
-
-                nodes[map_nodes[4]].inputs[1].default_value = coverage
-                nodes[map_nodes[4]].inputs[4].default_value = saturation
-                nodes[map_nodes[5]].inputs[0].default_value = opacity
-
-                if map.map_xyzmask_use_x:
-                    links.new(nodes[map_nodes[0]].outputs[0], nodes[map_nodes[1]].inputs[0])
-                elif len(nodes[map_nodes[0]].outputs[0].links):
-                    links.remove(nodes[map_nodes[0]].outputs[0].links[0])
-                if map.map_xyzmask_use_y:
-                    links.new(nodes[map_nodes[0]].outputs[1], nodes[map_nodes[1]].inputs[1])
-                elif len(nodes[map_nodes[0]].outputs[1].links):
-                    links.remove(nodes[map_nodes[0]].outputs[1].links[0])
-                if map.map_xyzmask_use_z:
-                    links.new(nodes[map_nodes[0]].outputs[2], nodes[map_nodes[2]].inputs[1])
-                elif len(nodes[map_nodes[0]].outputs[2].links):
-                    links.remove(nodes[map_nodes[0]].outputs[2].links[0])
-
-            if map_tag == "GRADIENT":
-                use_default = getattr(map, "map_%s_use_default" % map_tag)
-                if use_default:
-                    #mapping = [[0, 0, 0], [0, 0, 0], [1, 1, 1]]
-                    coverage = 0
-                    contrast = 1
-                    saturation = 1
-                    opacity = 1
-                    invert = 0
-                else:
-                    coverage = map.map_gmask_coverage
-                    contrast = map.map_gmask_contrast
-                    saturation = map.map_gmask_saturation
-                    opacity = map.map_gmask_opacity
-                    invert = map.map_gmask_use_invert
-                g_type = map.map_gmask_type
-
-                # mapping can be changed no matter the use_default state
-                mapping = [
-                    [map.map_gmask_location_x, map.map_gmask_location_y, map.map_gmask_location_z],
-                    [map.map_gmask_rotation_x, map.map_gmask_rotation_y, map.map_gmask_rotation_z],
-                    [map.map_gmask_scale_x, map.map_gmask_scale_y, map.map_gmask_scale_z],
-                ]
-                for i in range(1, 4):
-                    for j in range(3):
-                        nodes[map_nodes[0]].inputs[i].default_value[j] = mapping[i - 1][j]
-
-                nodes[map_nodes[1]].gradient_type = g_type
-                nodes[map_nodes[2]].inputs[1].default_value = coverage
-                nodes[map_nodes[2]].inputs[4].default_value = contrast
-                nodes[map_nodes[3]].inputs[0].default_value = opacity
-                nodes[map_nodes[4]].inputs[2].default_value = saturation
-                nodes[map_nodes[5]].inputs[0].default_value = invert
-
-            if map_tag == "EDGE":
-                use_default = getattr(map, "map_%s_use_default" % map_tag)
-                if use_default:
-                    samples = 16
-                    radius = 0.02
-                    edge_contrast = 0
-                    body_contrast = 1
-                    invert = 1
-                else:
-                    samples = map.map_edgemask_samples
-                    radius = map.map_edgemask_radius
-                    edge_contrast = map.map_edgemask_edge_contrast
-                    body_contrast = map.map_edgemask_body_contrast
-                    invert = map.map_edgemask_use_invert
-
-                nodes[map_nodes[0]].samples = samples
-                nodes[map_nodes[0]].inputs[0].default_value = radius
-                nodes[map_nodes[1]].inputs[1].default_value = edge_contrast
-                nodes[map_nodes[1]].inputs[4].default_value = body_contrast
-                nodes[map_nodes[2]].inputs[0].default_value = invert
-
-            if map_tag == "WIREFRAME":
-                radius = map.map_wireframemask_line_thickness
-                invert = map.map_wireframemask_use_invert
-
-                nodes[map_nodes[0]].outputs[0].default_value = radius
-                nodes[map_nodes[1]].inputs[0].default_value = invert
-                
-            # if map_tag == "POSITION":
-                
-            if map_tag == "VERTEX_COLOR_LAYER":
-                layer = map.map_vertexcolor_layer
-
-                nodes[map_nodes[0]].attribute_name = layer
-
-            if map_tag == "VECTOR_DISPLACEMENT":
-                value = int(not map.map_vector_displacement_use_negative) - 1
-
-                nodes[map_nodes[0]].outputs[0].default_value = value
-            
-            if map_tag == "DECAL":
-                nodes[map_nodes[1]].inputs[0].default_value = bool(map.map_decal_height_opacity_invert)
-                nodes[map_nodes[2]].inputs[0].default_value = bool(map.map_decal_height_opacity_invert)
-
-                link_from = {
-                    'NORMAL' : 0,
-                    'HEIGHT' : 1,
-                    'OPACITY' : 2,
-                }
-                index = link_from[map.map_decal_pass_type]
-                links.new(nodes[map_nodes[index]].outputs[0], nodes[map_nodes[3]].inputs[0])
-
-            if map_tag == "MASK":
-                for i in range(1, 3):
-                    if material.name.find("BM_CustomMaterial_") != -1 and material.name.find("COLOR%d" % i) != -1:
-                        nodes[map_nodes[0]].outputs[0].default_value = getattr(map, "map_mask_color%d" % i)
-                        nodes[map_nodes[1]].inputs[0].default_value = map.map_mask_use_invert
+def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
+    pass
 
 def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
-    object_item_full = BM_Object_Get(context)
-    if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
-        return
-    object_item = object_item_full[0]
-    if len(object_item.global_maps) == 0:
-        return
-    if getattr(BM_Map_Get(object_item), "map_%s_use_preview" % map_tag) is False:
-        return
-    map = BM_Map_Get(object_item)
+    pass
 
-    # collecting objects for which add bm_nodes   
-    source_object = [object for object in context.scene.objects if object.name == object_item.global_object_name]
-    if len(source_object) == 0:
-        return
-    if map.global_affect_by_hl:
-        highpolies = map.hl_highpoly_table if object_item.hl_use_unique_per_map else object_item.hl_highpoly_table
-    else:
-        highpolies = []
-    objects = [source_object[0]] if len(highpolies) == 0 else []
-    for highpoly in highpolies:
-        source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
-        if len(source_highpoly) == 0:
-            continue
-        objects.append(source_highpoly[0])
-
-    # nodes data
-    nodes_data = {
-        'AO' : [
-            'ShaderNodeAmbientOcclusion',
-            'ShaderNodeValToRGB',
-            'ShaderNodeMixRGB',
-            'ShaderNodeBrightContrast',
-            'ShaderNodeInvert',
-            'ShaderNodeEmission',
-            'ShaderNodeOutputMaterial',
-        ],
-        'CAVITY' : [
-            'ShaderNodeNewGeometry',
-            'ShaderNodeValToRGB',
-            'ShaderNodeMath',
-            'ShaderNodeInvert',
-            'ShaderNodeEmission',
-            'ShaderNodeOutputMaterial',
-        ],
-        'CURVATURE' : [
-            'ShaderNodeValue',
-            'ShaderNodeMath',
-            'ShaderNodeAmbientOcclusion',
-            'ShaderNodeAmbientOcclusion',
-            'ShaderNodeInvert',
-            'ShaderNodeMixRGB',
-            'ShaderNodeValToRGB',
-            'ShaderNodeGamma',
-            'ShaderNodeEmission',
-            'ShaderNodeOutputMaterial',
-        ],
-        'THICKNESS' : [
-            'ShaderNodeAmbientOcclusion',
-            'ShaderNodeMapRange',
-            'ShaderNodeValToRGB',
-            'ShaderNodeInvert',
-            'ShaderNodeEmission',
-            'ShaderNodeOutputMaterial',
-        ],
-        'XYZMASK' : [
-            'ShaderNodeNewGeometry',
-            'ShaderNodeSeparateXYZ',
-            'ShaderNodeVectorMath',
-            'ShaderNodeVectorMath',
-            'ShaderNodeVectorMath',
-            'ShaderNodeMapRange',
-            'ShaderNodeMixRGB',
-            'ShaderNodeEmission',
-            'ShaderNodeOutputMaterial',
-        ],
-        'GRADIENT' : [
-            'ShaderNodeTexCoord',
-            'ShaderNodeMapping',
-            'ShaderNodeTexGradient',
-            'ShaderNodeMapRange',
-            'ShaderNodeMixRGB',
-            'ShaderNodeHueSaturation',
-            'ShaderNodeInvert',
-            'ShaderNodeEmission',
-            'ShaderNodeOutputMaterial',
-        ],
-        'EDGE' : [
-            'ShaderNodeBevel',
-            'ShaderNodeNewGeometry',
-            'ShaderNodeVectorMath',
-            'ShaderNodeMapRange',
-            'ShaderNodeInvert',
-            'ShaderNodeEmission',
-            'ShaderNodeOutputMaterial',
-        ],
-        'WIREFRAME' : [
-            'ShaderNodeValue',
-            'ShaderNodeMath',
-            'ShaderNodeWireframe',
-            'ShaderNodeInvert',
-            'ShaderNodeEmission',
-            'ShaderNodeOutputMaterial',
-        ],
-        'POSITION' : [
-            'ShaderNodeTexCoord',
-            'ShaderNodeSeparateRGB',
-            'ShaderNodeInvert',
-            'ShaderNodeCombineRGB',
-            'ShaderNodeGamma',
-            'ShaderNodeEmission',
-            'ShaderNodeOutputMaterial',
-        ],
-        'VERTEX_COLOR_LAYER' : [
-            'ShaderNodeAttribute',
-            'ShaderNodeEmission',
-            'ShaderNodeOutputMaterial',
-        ],
-        'VECTOR_DISPLACEMENT' : [
-            'ShaderNodeTexCoord',
-            'ShaderNodeVectorMath',
-            'ShaderNodeVectorMath',
-            'ShaderNodeVectorMath',
-            'ShaderNodeSeparateXYZ',
-            'ShaderNodeSeparateXYZ',
-            'ShaderNodeValue',
-            'ShaderNodeMapRange',
-            'ShaderNodeMapRange',
-            'ShaderNodeMapRange',
-            'ShaderNodeCombineXYZ',
-            'ShaderNodeEmission',
-            'ShaderNodeOutputMaterial',
-        ],
-        'DECAL' : [
-            'ShaderNodeTexCoord',
-            'ShaderNodeVectorTransform',
-            'ShaderNodeVectorMath',
-            'ShaderNodeVectorMath',
-            'ShaderNodeSeparateXYZ',
-            'ShaderNodeInvert',
-            'ShaderNodeInvert',
-            'ShaderNodeRGB',
-            'ShaderNodeEmission',
-            'ShaderNodeOutputMaterial',
-        ],
-        'MASK' : [
-            'ShaderNodeRGB',
-            'ShaderNodeInvert',
-            'ShaderNodeEmission',
-            'ShaderNodeOutputMaterial',
-        ],
-        'ID' : [
-            'ShaderNodeEmission',
-            'ShaderNodeOutputMaterial',
-        ],
-    }
-
-    nodes_names_data = {
-        'AO' : [
-            'BM_AmbientOcclusion',
-            'BM_ValToRGB',
-            'BM_MixRGB',
-            'BM_BrightContrast',
-            'BM_Invert',
-            'BM_Emission',
-            'BM_OutputMaterial',
-        ],
-        'CAVITY' : [
-            'BM_NewGeometry',
-            'BM_ValToRGB',
-            'BM_Math',
-            'BM_Invert',
-            'BM_Emission',
-            'BM_OutputMaterial',
-        ],
-        'CURVATURE' : [
-            'BM_Value',
-            'BM_Math',
-            'BM_AmbientOcclusion',
-            'BM_AmbientOcclusion.001',
-            'BM_Invert',
-            'BM_MixRGB',
-            'BM_ValToRGB',
-            'BM_Gamma',
-            'BM_Emission',
-            'BM_OutputMaterial',
-        ],
-        'THICKNESS' : [
-            'BM_AmbientOcclusion',
-            'BM_MapRange',
-            'BM_ValToRGB',
-            'BM_Invert',
-            'BM_Emission',
-            'BM_OutputMaterial',
-        ],
-        'XYZMASK' : [
-            'BM_NewGeometry',
-            'BM_SeparateXYZ',
-            'BM_VectorMath',
-            'BM_VectorMath.001',
-            'BM_VectorMath.002',
-            'BM_MapRange',
-            'BM_MixRGB',
-            'BM_Emission',
-            'BM_OutputMaterial',
-        ],
-        'GRADIENT' : [
-            'BM_TexCoord',
-            'BM_Mapping',
-            'BM_TexGradient',
-            'BM_MapRange',
-            'BM_MixRGB',
-            'BM_HueSaturation',
-            'BM_Invert',
-            'BM_Emission',
-            'BM_OutputMaterial',
-        ],
-        'EDGE' : [
-            'BM_Bevel',
-            'BM_NewGeometry',
-            'BM_VectorMath',
-            'BM_MapRange',
-            'BM_Invert',
-            'BM_Emission',
-            'BM_OutputMaterial',
-        ],
-        'WIREFRAME' : [
-            'BM_Value',
-            'BM_Math',
-            'BM_Wireframe',
-            'BM_Invert',
-            'BM_Emission',
-            'BM_OutputMaterial',
-        ],
-        'POSITION' : [
-            'BM_TexCoord',
-            'BM_SeparateRGB',
-            'BM_Invert',
-            'BM_CombineRGB',
-            'BM_Gamma',
-            'BM_Emission',
-            'BM_OutputMaterial',
-        ],
-        'VERTEX_COLOR_LAYER' : [
-            'BM_Attribute',
-            'BM_Emission',
-            'BM_OutputMaterial',
-        ],
-        'VECTOR_DISPLACEMENT' : [
-            'BM_TexCoord',
-            'BM_VectorMath',
-            'BM_VectorMath.001',
-            'BM_VectorMath.002',
-            'BM_SeparateXYZ',
-            'BM_SeparateXYZ.001',
-            'BM_Value',
-            'BM_MapRange',
-            'BM_MapRange.001',
-            'BM_MapRange.002',
-            'BM_CombineXYZ',
-            'BM_Emission',
-            'BM_OutputMaterial',
-        ],
-        'DECAL' : [
-            'BM_TexCoord',
-            'BM_VectorTransform',
-            'BM_VectorMath',
-            'BM_VectorMath.001',
-            'BM_SeparateXYZ',
-            'BM_Invert',
-            'BM_Invert.001',
-            'BM_RGB',
-            'BM_Emission',
-            'BM_OutputMaterial',
-        ],
-        'MASK' : [
-            'BM_RGB',
-            'BM_Invert',
-            'BM_Emission',
-            'BM_OutputMaterial',
-        ],
-        'ID' : [
-            'BM_Emission',
-            'BM_OutputMaterial',
-        ],
-    }
-
-    # adding materials if needed
-    for object in objects:
-        len_of_mats = len(object.data.materials)
-        if len_of_mats == 0 or len([material for material in object.data.materials if material is None]) == len_of_mats:
-            new_mat = bpy.data.materials.new("BM_CustomMaterial_%s_%s" % (object.name, map_tag))
-            object.data.materials.append(new_mat)
-    
-    # adding nodes to object's materials
-    for object in objects:
-        for material in object.data.materials:
-            if material is None:
-                continue
-
-            material.use_nodes = True
-            location_x = 0
-            for index, node_type in enumerate(nodes_data[map_tag]):
-                new_node = material.node_tree.nodes.new(node_type)
-                new_node.name = nodes_names_data[map_tag][index]
-                new_node.location = (location_x, 0)
-                location_x += 300
-
-            # setting up added nodes defaults
-            nodes = material.node_tree.nodes
-            # AO
-            if map_tag == "AO":
-                nodes['BM_MixRGB'].blend_type = 'MULTIPLY'
-                nodes['BM_MixRGB'].inputs[1].default_value = (1, 1, 1, 1)
-        
-            # CAVITY
-            if map_tag == "CAVITY":
-                nodes['BM_Math'].operation = 'POWER'
-                nodes['BM_OutputMaterial'].target = 'CYCLES'
-
-            # CURVATURE
-            if map_tag == "CURVATURE":
-                nodes['BM_Math'].operation = 'MULTIPLY'
-                nodes['BM_Math'].inputs[1].default_value = 0.01
-                nodes['BM_AmbientOcclusion'].inside = True
-                nodes['BM_AmbientOcclusion.001'].inside = False
-                nodes['BM_AmbientOcclusion.001'].inputs[0].default_value = (0, 0, 0, 1)
-                nodes['BM_ValToRGB'].color_ramp.elements[0].color = (0, 0, 0, 1)
-                nodes['BM_ValToRGB'].color_ramp.elements[1].color = (1, 1, 1, 1)
-                new_element = nodes['BM_ValToRGB'].color_ramp.elements.new(0.5)
-                new_element.color = (0.5, 0.5, 0.5, 1)
-            
-            # THICKNESS
-            if map_tag == "THICKNESS":
-                nodes['BM_AmbientOcclusion'].inside = True
-
-            # XYZMASK
-            if map_tag == "XYZMASK":
-                nodes['BM_VectorMath.002'].operation = 'MULTIPLY'
-                nodes['BM_MixRGB'].inputs[1].default_value = (0, 0, 0, 0)
-
-            # GRADIENT
-            if map_tag == "GRADIENT":
-                nodes['BM_MixRGB'].inputs[1].default_value = (0, 0, 0, 0)
-
-            # EDGE
-            if map_tag == "EDGE":
-                nodes['BM_VectorMath'].operation = 'DOT_PRODUCT'
-
-            # WIREFRAME
-            if map_tag == "WIREFRAME":
-                nodes['BM_Math'].operation = 'MULTIPLY'
-                nodes['BM_Math'].inputs[1].default_value = 0.01
-
-            # POSITION
-            if map_tag == "POSITION":
-                nodes['BM_Gamma'].inputs[1].default_value = 2.2
-
-            # VERTEX_COLOR_LAYER
-            if map_tag == "VERTEX_COLOR_LAYER":
-                pass
-            
-            # VECTOR_DISPLACEMENT
-            if map_tag == "VECTOR_DISPLACEMENT":
-                nodes['BM_VectorMath'].inputs[1].default_value[0] = -0.5
-                nodes['BM_VectorMath'].inputs[1].default_value[1] = -0.5
-                nodes['BM_VectorMath'].inputs[1].default_value[2] = -0.5
-                nodes['BM_VectorMath.001'].operation = 'MULTIPLY'
-                nodes['BM_VectorMath.001'].inputs[1].default_value[0] = 2
-                nodes['BM_VectorMath.001'].inputs[1].default_value[1] = 2
-                nodes['BM_VectorMath.001'].inputs[1].default_value[2] = 2
-                nodes['BM_VectorMath.002'].operation = 'SUBTRACT'
-                nodes['BM_MapRange'].clamp = False
-                nodes['BM_MapRange.001'].clamp = False
-                nodes['BM_MapRange.002'].clamp = False
-            
-            # DECAL
-            if map_tag == "DECAL":
-                nodes['BM_VectorTransform'].convert_to = 'CAMERA'
-                nodes['BM_VectorMath'].operation = 'MULTIPLY'
-                nodes['BM_VectorMath'].inputs[1].default_value = (0.5, 0.5, -0.5)
-                nodes['BM_VectorMath.001'].inputs[1].default_value = (0.5, 0.5, 0.5)
-                nodes['BM_RGB'].outputs[0].default_value = (1, 1, 1, 1)
-
-            nodes['BM_OutputMaterial'].target = 'CYCLES'
-
-            # linking added nodes
-            # shell - [node_from, node_to, out_socket, in_socket]
-            links_data = {
-                'AO' : [
-                    [0, 1, 1, 0],
-                    [1, 2, 0, 2],
-                    [2, 3, 0, 0],
-                    [3, 4, 0, 1],
-                    [4, 5, 0, 0],
-                    [5, 6, 0, 0],
-                ],
-                'CAVITY' : [
-                    [0, 1, 7, 0],
-                    [1, 2, 0, 0],
-                    [2, 3, 0, 1],
-                    [3, 4, 0, 0],
-                    [4, 5, 0, 0],
-                ],
-                'CURVATURE' : [
-                    [0, 1, 0, 0],
-                    [1, 2, 0, 1],
-                    [1, 3, 0, 1],
-                    [2, 4, 1, 1],
-                    [4, 5, 0, 1],
-                    [3, 5, 1, 2],
-                    [5, 6, 0, 0],
-                    [6, 7, 0, 0],
-                    [7, 8, 0, 0],
-                    [8, 9, 0, 0],
-                ],
-                'THICKNESS' : [
-                    [0, 1, 1, 0],
-                    [1, 2, 0, 0],
-                    [2, 3, 0, 1],
-                    [3, 4, 0, 0],
-                    [4, 5, 0, 0],
-                ],
-                'XYZMASK' : [
-                    [0, 1, 1, 0],
-                    [2, 3, 0, 0],
-                    [3, 4, 0, 0],
-                    [4, 5, 0, 0],
-                    [5, 6, 0, 2],
-                    [6, 7, 0, 0],
-                    [7, 8, 0, 0],
-                ],
-                'GRADIENT' : [
-                    [0, 1, 0, 0],
-                    [1, 2, 0, 0],
-                    [2, 3, 0, 0],
-                    [3, 4, 0, 2],
-                    [4, 5, 0, 4],
-                    [5, 6, 0, 1],
-                    [6, 7, 0, 0],
-                    [7, 8, 0, 0],
-                ],
-                'EDGE' : [
-                    [0, 2, 0, 0],
-                    [1, 2, 1, 1],
-                    [2, 3, 1, 0],
-                    [3, 4, 0, 1],
-                    [4, 5, 0, 0],
-                    [5, 6, 0, 0],
-                ],
-                'WIREFRAME' : [
-                    [0, 1, 0, 0],
-                    [1, 2, 0, 0],
-                    [2, 3, 0, 1],
-                    [3, 4, 0, 0],
-                    [4, 5, 0, 0],
-                ],
-                'POSITION' : [
-                    [0, 1, 0, 0],
-                    [1, 3, 0, 0],
-                    [1, 3, 2, 1],
-                    [1, 2, 1, 1],
-                    [2, 3, 0, 2],
-                    [3, 4, 0, 0],
-                    [4, 5, 0, 0],
-                    [5, 6, 0, 0],
-                ],
-                'VERTEX_COLOR_LAYER' : [
-                    [0, 1, 0, 0],
-                    [1, 2, 0, 0],
-                ],
-                'VECTOR_DISPLACEMENT' : [
-                    [0, 1, 2, 0],
-                    [1, 2, 0, 0],
-                    [2, 3, 0, 1],
-                    [0, 3, 3, 0],
-                    [3, 4, 0, 0],
-                    [0, 5, 3, 0],
-                    [6, 7, 0, 1],
-                    [6, 8, 0, 1],
-                    [6, 9, 0, 1],
-                    [4, 7, 0, 0],
-                    [4, 8, 1, 0],
-                    [5, 9, 2, 0],
-                    [7, 10, 0, 0],
-                    [8, 10, 0, 1],
-                    [9, 10, 0, 2],
-                    [10, 11, 0, 0],
-                    [11, 12, 0, 0],
-                ],
-                'DECAL' : [
-                    [0, 1, 1, 0],
-                    [0, 4, 0, 0],
-                    [1, 2, 0, 0],
-                    [2, 3, 0, 0],
-                    [4, 5, 2, 1],
-                    [7, 6, 0, 1],
-                    [8, 9, 0, 0],
-                ],
-                'MASK' : [
-                    [0, 1, 0, 1],
-                    [1, 2, 0, 0],
-                    [2, 3, 0, 0],
-                ],
-                'ID' : [
-                    [0, 1, 0, 0],
-                ],
-            }
-
-            # linking
-            map_nodes = nodes_names_data[map_tag]
-            for link in links_data[map_tag]:
-                out_socket = material.node_tree.nodes[map_nodes[link[0]]].outputs[link[2]]
-                in_socket = material.node_tree.nodes[map_nodes[link[1]]].inputs[link[3]]
-                material.node_tree.links.new(out_socket, in_socket)
-            
-            if context.scene.render.engine != 'CYCLES':
-                bpy.ops.bakemaster.report_message(message_type='INFO', message=BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
-
-            material.node_tree.nodes['BM_OutputMaterial'].select = True
-            material.node_tree.nodes.active = nodes['BM_OutputMaterial']
-
-    #       for node in nodes:
-    #           if node.type == 'OUTPUT_MATERIAL' and node.name.find('BM_') == -1:
-    #               node.target = 'ALL'
-
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, map_tag)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag)
 
 def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
-    object_item_full = BM_Object_Get(context)
-    if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
-        return
-    object_item = object_item_full[0]
-    if len(object_item.global_maps) == 0:
-        return
-    map = BM_Map_Get(object_item)
-    if getattr(map, "map_%s_use_preview" % map_tag) is False:
-        return
-
-    # collecting objects for which add bm_nodes   
-    source_object = [object for object in context.scene.objects if object.name == object_item.global_object_name]
-    if len(source_object) == 0:
-        return
-    if map.global_affect_by_hl:
-        highpolies = map.hl_highpoly_table if object_item.hl_use_unique_per_map else object_item.hl_highpoly_table
-    else:
-        highpolies = []
-    objects = [source_object[0]] if len(highpolies) == 0 else []
-    for highpoly in highpolies:
-        source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
-        if len(source_highpoly) == 0:
-            continue
-        objects.append(source_highpoly[0])
-
-    map_type_origin = map_tag
-    if map_tag == 'PASS':
-        map_tag = map.map_pass_type
-
-    # each shaders supports grabbing specified passes,
-    # passes keys' values are sockets names
-    # passes names and grabbing algo may differ for each map type
-    node_getable_data = {
-        'ALBEDO' : ['Color', 'Base Color'],
-        'METALNESS' : ['Metallic'],
-        'ROUGHNESS' : ['Roughness'],
-        'DIFFUSE' : ['Color', 'Base Color'],
-        'SPECULAR' : ['Specular'],
-        'GLOSSINESS' : ['Roughness'],
-        'OPACITY' : ['Alpha', 'Opacity'],
-        'BASE_COLOR' : ['Base Color'],
-        'SS_COLOR' : ['Subsurface Color', 'Color'],
-        'METALLIC' : ['Metallic'],
-        'ANISOTROPIC' : ['Anisotropic'],
-        'SHEEN' : ['Sheen'],
-        'CLEARCOAT' : ['Clearcoat'],
-        'IOR' : ['IOR'],
-        'TRANSMISSION' : ['Transmission'],
-        'EMISSION' : ['Emission'],
-        'ALPHA' : ['Alpha'],
-        'NORMAL' : ['Normal'],
-        'DISPLACEMENT' : ['Displacement'],
-    }
-
-    def get_socket_default_color_value(socket, socket_name):  
-        default_color_data = {
-            'Color' : getattr(socket, "default_value"),
-            'Base Color' : getattr(socket, "default_value"),
-            'Metallic' : [getattr(socket, "default_value")]*3,
-            'Roughness' : [getattr(socket, "default_value")]*3,
-            'Specular' : [getattr(socket, "default_value")]*3,
-            'Alpha' : [getattr(socket, "default_value")]*3,
-            'Subsurface Color' : getattr(socket, "default_value"),
-            'Anisotropic' : [getattr(socket, "default_value")]*3,
-            'Sheen' : [getattr(socket, "default_value")]*3,
-            'Clearcoat' : [getattr(socket, "default_value")]*3,
-            'IOR' : [getattr(socket, "default_value")]*3,
-            'Transmission' : [getattr(socket, "default_value")]*3,
-            'Emission' : getattr(socket, "default_value"),
-            'Normal' : [0.5, 0.5, 1],
-            'Displacement' : [0.0]*3,
-        }
-        data = list(default_color_data[socket_name])
-        if len(data) != 4:
-            data.append(1)
-        return tuple(data)
-    
-    ad_map_tag = ""
-    map_tag_origin = map_tag
-    if map_tag in ['DIFFUSE', 'SPECULAR'] and map_type_origin != 'PASS':
-        ad_map_tag = 'METALNESS'
-        map_tag = 'DIFFUSE'
-
-    for object in objects:
-        if len(object.data.materials) == 0:
-            bpy.ops.bakemaster.report_message(message_type='WARNING', message="%s: No Materials" % object.name)
-            continue
-
-        for material in object.data.materials:
-            if material is None:
-                continue
-
-            material.use_nodes = True
-            grab_socket = None
-            default_value = None
-            grab_ad_socket = None
-            default_ad_value = None
-            nodes = material.node_tree.nodes
-            links = material.node_tree.links
-
-            # grabbing socket to preview
-            for node in nodes:
-                if node.type != 'OUTPUT_MATERIAL':
-                    continue
-                
-                if map_tag == 'DISPLACEMENT':
-                    if len(node.inputs[2].links) == 0:
-                        continue
-                    grab_socket = node.inputs[2].links[0].from_socket
-                    input_node = node.inputs[2].links[0].from_node
-                    if input_node.type in ['DISPLACEMENT', 'VECTOR_DISPLACEMENT']:
-                            if len(input_node.inputs[0].links) == 0:
-                                default_value = tuple([input_node.inputs[0].default_value, input_node.inputs[0].default_value, input_node.inputs[0].default_value, 1])
-                                grab_socket = None
-                                break
-                            grab_socket = input_node.inputs[0].links[0].from_socket
-                    break
-                
-                if len(node.inputs[0].links) == 0:
-                        continue
-                
-                # find socket value to grab
-                for input_socket in node.inputs[0].links[0].from_node.inputs:
-                    if input_socket.name in node_getable_data[map_tag]:
-                        if len(input_socket.links) == 0:
-                            default_value = get_socket_default_color_value(input_socket, input_socket.name)
-                            break
-                        grab_socket = input_socket.links[0].from_socket
-                        if input_socket.links[0].from_node.type == 'NORMAL_MAP':
-                            if len(input_socket.links[0].from_node.inputs[1].links) == 0:
-                                default_value = tuple(input_socket.links[0].from_node.inputs[1].default_value)
-                                grab_socket = None
-                                break
-                            grab_socket = input_socket.links[0].from_node.inputs[1].links[0].from_socket
-                        break
-
-                if any([grab_socket is not None, default_value is not None]):
-                    break
-
-                if ad_map_tag == "":
-                    continue
-                
-                # find additional socket value for pbrs previews
-                for input_socket in node.inputs[0].links[0].from_node.inputs:
-                    if input_socket.name in node_getable_data[ad_map_tag]:
-                        if len(input_socket.links) == 0:
-                            default_ad_value = get_socket_default_color_value(input_socket, input_socket.name)
-                            break
-                        grab_ad_socket = input_socket.links[0].from_socket
-                        break
-                
-                if any([grab_ad_socket is not None, default_ad_value is not None]):
-                    break
-            
-            # add out, emission nodes
-            new_nodes = ['ShaderNodeEmission', 'ShaderNodeOutputMaterial']
-            rgb_node_name_end = ""
-            if grab_socket is None:
-                new_nodes.append('ShaderNodeRGB')
-            if grab_ad_socket is None and map_tag_origin in ['DIFFUSE', 'SPECULAR'] and map_type_origin != 'PASS':
-                new_nodes.append('ShaderNodeRGB')
-                rgb_node_name_end = ".001" if grab_socket is None else ""
-
-            # pbr specular nodes
-            if map_tag_origin in ['GLOSSINESS', 'DIFFUSE', 'SPECULAR'] and map_type_origin != 'PASS':
-                new_nodes.append('ShaderNodeInvert')
-            if map_tag_origin in ['DIFFUSE', 'SPECULAR'] and map_type_origin != 'PASS':
-                new_nodes.append('ShaderNodeMixRGB')
-            if map_tag_origin == 'SPECULAR' and map_type_origin != 'PASS':
-                new_nodes.append('ShaderNodeValue')
-                new_nodes.append('ShaderNodeMixRGB')
-
-            location_x = 0
-            for node_type in new_nodes:
-                new_node = nodes.new(node_type)
-                new_node.name = 'BM_%s' % node_type[10:]
-                new_node.location = (location_x, 0)
-                location_x += 300
-
-            # nodes values
-            default_value = (0, 0, 0, 1) if default_value is None else default_value
-            if grab_socket is None:
-                nodes['BM_RGB'].outputs[0].default_value = default_value
-                value = nodes['BM_RGB'].outputs[0]
-            else:
-                value = grab_socket
-
-            # additional node values
-            default_ad_value = (0, 0, 0, 1) if default_ad_value is None else default_ad_value
-            if grab_ad_socket is None and map_tag_origin in ['DIFFUSE', 'SPECULAR'] and map_type_origin != 'PASS':
-                nodes['BM_RGB%s' % rgb_node_name_end].outputs[0].default_value = default_ad_value
-                ad_value = nodes['BM_RGB%s' % rgb_node_name_end].outputs[0]
-            elif map_type_origin != 'PASS':
-                ad_value = grab_ad_socket
-
-            # link added nodes and link with grabbed socket
-            if map_tag_origin == 'GLOSSINESS':
-                nodes['BM_Invert'].inputs[0].default_value = 1.0
-                links.new(value, nodes['BM_Invert'].inputs[1])
-                links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
-            elif map_tag_origin == 'DIFFUSE':
-                nodes['BM_Invert'].inputs[0].default_value = 1.0
-                nodes['BM_MixRGB'].inputs[0].default_value = 1.0
-                nodes['BM_MixRGB'].blend_type = 'MULTIPLY'
-                links.new(ad_value, nodes['BM_Invert'].inputs[1])
-                links.new(nodes['BM_Invert'].outputs[0], nodes['BM_MixRGB'].inputs[2])
-                links.new(value, nodes['BM_MixRGB'].inputs[1])
-                links.new(nodes['BM_MixRGB'].outputs[0], nodes['BM_Emission'].inputs[0])
-            elif map_tag_origin == 'SPECULAR' and map_type_origin != 'PASS':
-                nodes['BM_Invert'].inputs[0].default_value = 1.0
-                nodes['BM_MixRGB'].inputs[0].default_value = 1.0
-                nodes['BM_MixRGB'].blend_type = 'MULTIPLY'
-                nodes['BM_MixRGB.001'].blend_type = 'ADD'
-                nodes['BM_Value'].outputs[0].default_value = 0.04
-                links.new(ad_value, nodes['BM_Invert'].inputs[1])
-                links.new(ad_value, nodes['BM_MixRGB'].inputs[2])
-                links.new(nodes['BM_Invert'].outputs[0], nodes['BM_MixRGB.001'].inputs[0])
-                links.new(value, nodes['BM_MixRGB'].inputs[1])
-                links.new(nodes['BM_MixRGB'].outputs[0], nodes['BM_MixRGB.001'].inputs[1])
-                links.new(nodes['BM_Value'].outputs[0], nodes['BM_MixRGB.001'].inputs[2])
-                links.new(nodes['BM_MixRGB.001'].outputs[0], nodes['BM_Emission'].inputs[0])
-            else:
-                if grab_socket is None:
-                    links.new(nodes['BM_RGB'].outputs[0], nodes['BM_Emission'].inputs[0])
-                else:
-                    links.new(grab_socket, nodes['BM_Emission'].inputs[0])
-            links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
-
-            if context.scene.render.engine != 'CYCLES':
-                bpy.ops.bakemaster.report_message(message_type='INFO', message=BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
-
-            nodes['BM_OutputMaterial'].target = 'CYCLES'
-            nodes['BM_OutputMaterial'].select = True
-            nodes.active = nodes['BM_OutputMaterial']
+    pass
 
 def BM_IterableData_GetNewUniqueName_Simple(data, name_starter):
     index = 0
@@ -3385,339 +2275,24 @@ def BM_IterableData_GetNewUniqueName_Simple(data, name_starter):
             index += 1
     return "%s.%d" % (name_starter, index)
 
-def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, map_tag):
-    object_item_full = BM_Object_Get(context)
-    if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
-        return
-    object_item = object_item_full[0]
-    if len(object_item.global_maps) == 0:
-        return
-    map = BM_Map_Get(object_item)
-    if getattr(map, "map_%s_use_preview" % map_tag) is False:
-        return
+def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
+    pass
 
-    # collecting objects for which add bm_nodes   
-    source_object = [object for object in context.scene.objects if object.name == object_item.global_object_name]
-    if len(source_object) == 0:
-        return
-    if map.global_affect_by_hl:
-        highpolies = map.hl_highpoly_table if object_item.hl_use_unique_per_map else object_item.hl_highpoly_table
-    else:
-        highpolies = []
-    objects = [source_object[0]] if len(highpolies) == 0 else []
-    for highpoly in highpolies:
-        source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
-        if len(source_highpoly) == 0:
-            continue
-        objects.append(source_highpoly[0])
-    
-    if len(objects) == 0:
-        return
+def BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(self, context):
+    pass
 
-    # deselect all objects
-    for ob in context.scene.objects:
-        ob.select_set(False)
-    bpy.ops.object.mode_set(mode='OBJECT')
-                        
-    for object in objects:
-        # set object as active in the scene
-        object.select_set(True)
-        context.view_layer.objects.active = object
-
-        # for mask add vertex group containing selection
-        map_mask_selection_color1_vrtx_group_index = 0
-        if map_tag == 'MASK':
-            bpy.ops.object.mode_set(mode='EDIT')
-            bpy.ops.mesh.select_mode(type='VERT')
-
-            vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(object.vertex_groups, "bm_material_backup_COLOR1")
-            object.vertex_groups.new(name=vrtx_group_name)
-            map_mask_selection_color1_vrtx_group_index = len(object.vertex_groups) - 1
-
-            if map.map_mask_data == 'VERTEX_GROUPS':
-                bpy.ops.mesh.select_all(action='DESELECT')
-                for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
-                    object.vertex_groups.active_index = vrtx_group_index
-                    if vrtx_group.name.find(map.map_mask_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_") == -1:
-                        bpy.ops.object.vertex_group_select()
-
-            if map.map_mask_data == 'MATERIALS':
-                bpy.ops.mesh.select_all(action='DESELECT')
-                for mat_index, material in enumerate(object.data.materials):
-                    if material is None:
-                        continue
-                    if material.name.find(map.map_mask_materials_name_contains) != -1 and material.name.lower().find("bm_") == -1:
-                        object.active_material_index = mat_index
-                        bpy.ops.object.material_slot_select()
-
-            bpy.ops.object.vertex_group_assign()       
-
-        # enter edit mode
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_mode(type='VERT')
-
-        if map_tag == 'ID' and map.map_matid_data in ['MATERIALS']:
-            pass
-        else:
-            for mat_index, material in enumerate(object.data.materials):
-                # set current material as active
-                object.active_material_index = mat_index
-
-                if material is None:
-                    continue
-
-                # add vertex group, deselect mesh, select current material mesh selection, assign it to created vertex group
-                vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(object.vertex_groups, "bm_material_backup_%s" % material.name)
-                object.vertex_groups.new(name=vrtx_group_name)
-
-                bpy.ops.mesh.select_all(action='DESELECT')
-                bpy.ops.object.material_slot_select()
-                bpy.ops.object.vertex_group_assign()
-        
-            bpy.ops.mesh.select_all(action='DESELECT')
-
-        bpy.ops.mesh.select_all(action='DESELECT')
-        # for mask assign saved selection vertex group to color1 material
-        if map_tag == 'MASK':
-            # assign mat for color1
-            new_mat = bpy.data.materials.new("BM_CustomMaterial_%s_%s_COLOR1" % (object.name, map_tag))
-            object.data.materials.append(new_mat)
-            object.active_material_index = len(object.data.materials) - 1
-            object.vertex_groups.active_index = map_mask_selection_color1_vrtx_group_index
-            bpy.ops.object.vertex_group_select()
-            bpy.ops.object.material_slot_assign()
-            
-            # assign mat for color2
-            new_mat = bpy.data.materials.new("BM_CustomMaterial_%s_%s_COLOR2" % (object.name, map_tag))
-            object.data.materials.append(new_mat)
-            object.active_material_index = len(object.data.materials) - 1
-            bpy.ops.mesh.select_all(action='INVERT')
-            bpy.ops.object.material_slot_assign()
-        
-        # for id
-        if map_tag == 'ID':
-            # vertex groups - add materials for vertex groups
-            if map.map_matid_data == 'VERTEX_GROUPS':
-                vrtx_group_for_inverted_selection_index = 0
-                vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(object.vertex_groups, "bm_material_backup_COLOR")
-                vrtx_group_for_inverted_selection_index = len(object.vertex_groups) - 1
-                object.vertex_groups.new(name=vrtx_group_name)
-
-                for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
-                    object.vertex_groups.active_index = vrtx_group_index
-                    if vrtx_group.name.find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_") == -1:
-                        bpy.ops.object.vertex_group_select()
-
-                bpy.ops.mesh.select_all(action='INVERT')
-                bpy.ops.object.vertex_group_assign()
-
-                tag_index = 0
-                for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
-                    object.vertex_groups.active_index = vrtx_group_index
-                    if vrtx_group.name.find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_") == -1:
-                        bpy.ops.mesh.select_all(action='DESELECT')
-                        bpy.ops.object.vertex_group_select()
-
-                        new_mat = bpy.data.materials.new("BM_CustomMaterial_%s_%s_COLOR%d" % (object.name, map_tag, tag_index))
-                        object.data.materials.append(new_mat)
-                        object.active_material_index = len(object.data.materials) - 1
-                        bpy.ops.object.material_slot_assign()
-                        tag_index += 1
-                
-                bpy.ops.mesh.select_all(action='DESELECT')
-                object.vertex_groups.active_index = vrtx_group_for_inverted_selection_index
-                bpy.ops.object.vertex_group_select()
-                new_mat = bpy.data.materials.new("BM_CustomMaterial_%s_%s_COLOR%d" % (object.name, map_tag, tag_index))
-                object.data.materials.append(new_mat)
-                object.active_material_index = len(object.data.materials) - 1
-                bpy.ops.object.material_slot_assign()
-                tag_index += 1
-            
-            # materials - no mats to add, current will be used
-            if map.map_matid_data == 'MATERIALS':
-                pass
-            
-            # mesh islands - assign material for each saved mesh island
-            if map.map_matid_data == 'MESH_ISLANDS':
-                # Add all vertices to "unprocessed" list.
-                # While (unprocessed verts remain):
-                # Deselect all vertices
-                # Select any one unprocessed vert
-                # Call select_linked
-                # assign new material to selection
-                # Remove all selected verts from unprocessed list
-                tag_index = 0
-                vertices_processed = [False]*len(object.data.vertices)
-                while True:
-                    bpy.ops.mesh.select_all(action='DESELECT')
-                    bpy.ops.object.mode_set(mode='OBJECT')
-                    v_u = -1
-                    for index in range(len(vertices_processed)):
-                        if vertices_processed[index] is False:
-                            v_u = index
-                            break
-                    if v_u == -1:
-                        break
-                    object.data.vertices[v_u].select = True
-                    bpy.ops.object.mode_set(mode='EDIT')
-                    bpy.ops.mesh.select_linked()
-
-                    # add material
-                    new_mat = bpy.data.materials.new("BM_CustomMaterial_%s_%s_COLOR%d" % (object.name, map_tag, tag_index))
-                    object.data.materials.append(new_mat)
-                    object.active_material_index = len(object.data.materials) - 1
-                    bpy.ops.object.material_slot_assign()
-                    tag_index += 1
-
-                    # vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(object.vertex_groups, "bm_material_backup_COLOR%d" % tag_index)
-                    # object.vertex_groups.new(name=vrtx_group_name)
-                    # bpy.ops.object.vertex_group_assign()
-                    # tag_index += 1
-
-                    for index, v in enumerate(object.data.vertices):
-                        if v.select:
-                            vertices_processed[index] = True
-
-                bpy.ops.object.mode_set(mode='EDIT')
-
-            # highpolies - add material and assign in to the whole object
-            if map.map_matid_data == 'OBJECTS':
-                bpy.ops.mesh.select_all(action='DESELECT')
-                bpy.ops.mesh.select_all(action='SELECT')
-
-                # add material
-                new_mat = bpy.data.materials.new("BM_CustomMaterial_%s_%s_COLOR" % (object.name, map_tag))
-                object.data.materials.append(new_mat)
-                object.active_material_index = len(object.data.materials) - 1
-                bpy.ops.object.material_slot_assign()
-
-        # exit edit mode
-        bpy.ops.object.mode_set(mode='EDIT', toggle=True)
-
-def BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(context):
-    object_item = BM_Object_Get(context)
-    if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
-        return
-
-    # collecting objects from which remove bm_nodes   
-    source_object = [object for object in context.scene.objects if object.name == object_item[0].global_object_name]
-    if len(source_object) == 0:
-        return
-    objects = [source_object[0]]
-    highpolies = object_item[0].hl_highpoly_table
-    for highpoly in highpolies:
-        source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
-        if len(source_highpoly) == 0:
-            continue
-        objects.append(source_highpoly[0])
-    for map in object_item[0].global_maps:
-        for highpoly in map.hl_highpoly_table:
-            source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
-            if len(source_highpoly) == 0:
-                continue
-            objects.append(source_highpoly[0])
-    
-    if len(objects) == 0:
-        return
-
-    # deselect all objects
-    for ob in context.scene.objects:
-        ob.select_set(False)
-    bpy.ops.object.mode_set(mode='OBJECT')
-                        
-    # no matter what preview with reassignmats,
-    # bm_nodes, and bm_custommaterials are removed in BM_MAP_PROPS_MapPreview_CustomNodes_Remove
-    # here need restore old materials assignments to mesh parts, stored in object vertex groups
-    tag = "bm_material_backup_"
-    for object in objects:
-        # set object as active in the scene
-        object.select_set(True)
-        context.view_layer.objects.active = object
-        bpy.ops.object.mode_set(mode='EDIT')
-
-        # find backup vrtx_groups
-        to_remove = []
-        for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
-            object.vertex_groups.active_index = vrtx_group_index
-            if vrtx_group.name.find(tag) == -1:
-                continue
-            
-            for mat_index, material in enumerate(object.data.materials):
-                # this vrtx_group is this material backup
-                if material.name in vrtx_group.name:
-                    object.active_material_index = mat_index
-                    bpy.ops.mesh.select_all(action='DESELECT')
-                    bpy.ops.object.vertex_group_select()
-                    bpy.ops.object.material_slot_assign()
-            to_remove.append(vrtx_group)
-        
-        # exit edit mode
-        bpy.ops.object.mode_set(mode='EDIT', toggle=True)
-
-        # remove backup vertex groups
-        for vrtx_group in to_remove:
-            object.vertex_groups.remove(vrtx_group)
-
-def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context):
-    object_item = BM_Object_Get(context)
-    if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
-        return
-
-    # collecting objects from which remove bm_nodes   
-    source_object = [object for object in context.scene.objects if object.name == object_item[0].global_object_name]
-    if len(source_object) == 0:
-        return
-    objects = [source_object[0]]
-    highpolies = object_item[0].hl_highpoly_table
-    for highpoly in highpolies:
-        source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
-        if len(source_highpoly) == 0:
-            continue
-        objects.append(source_highpoly[0])
-    for map in object_item[0].global_maps:
-        for highpoly in map.hl_highpoly_table:
-            source_highpoly = [object for object in context.scene.objects if object.name == highpoly.global_object_name]
-            if len(source_highpoly) == 0:
-                continue
-            objects.append(source_highpoly[0])
-
-    # removing bm_nodes
-    remove_mats = []
-    for object in objects:
-        mats_to_remove = []
-        for mat_index, material in enumerate(object.data.materials):
-            if material is None:
-                continue
-            if material.name.find('BM_CustomMaterial') != -1:
-                remove_mats.append(material)
-                mats_to_remove.append(mat_index)
-                continue
-
-            material.use_nodes = True
-            to_remove = []
-            for index, node in enumerate(material.node_tree.nodes):
-                if node.name.find('BM_') != -1:
-                    to_remove.append(index)
-            for index in sorted(to_remove, reverse=True):
-                material.node_tree.nodes.remove(material.node_tree.nodes[index])
-        
-        # removing custom bm_materials
-        for mat_index in sorted(mats_to_remove, reverse=True):
-            object.data.materials.pop(index=mat_index)
-    
-    # remove custom mats from data too
-    for material in remove_mats:
-        bpy.data.materials.remove(material)
+def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context):
+    pass
 
 # the same, no attention to bm mats removal, because they are not added anyway
 BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove = BM_MAP_PROPS_MapPreview_CustomNodes_Remove
 
-def BM_MAP_PROPS_MapPreview_Unset(context, obj_index_init, map_index_init, skip_current_map, map_tag):
+def BM_MAP_PROPS_MapPreview_Unset(self, context):
     # unset all previews
     for obj_index, object in enumerate(context.scene.bm_table_of_objects):
-        context.scene.bm_props.global_active_index = obj_index
+        # context.scene.bm_props.global_active_index = obj_index
         for map_index, map in enumerate(object.global_maps):
-            object.global_maps_active_index = map_index
+            # object.global_maps_active_index = map_index
 
             maps_tags = {
                 'AO',
@@ -3748,149 +2323,153 @@ def BM_MAP_PROPS_MapPreview_Unset(context, obj_index_init, map_index_init, skip_
             }
             for key in maps_tags:
                 # skip current map
-                if all([skip_current_map, obj_index == obj_index_init, map_index_init == map_index_init, key == map_tag]):
+                if self is not None and map_index + 1 == self.global_map_index and obj_index == self.global_map_object_index:
                     continue
+                # if all([skip_current_map, obj_index == obj_index_init, map_index == map_index_init, key == map_tag]):
+                    # continue
 
                 if getattr(map, "map_%s_use_preview" % key):
                     setattr(map, "map_%s_use_preview" % key, False)
 
     # return indexes back
-    context.scene.bm_props.global_active_index = obj_index_init
-    BM_Object_Get(context)[0].global_maps_active_index = map_index_init
+    # if any([obj_index_init is None, map_index_init is None]):
+        # return
+    # context.scene.bm_props.global_active_index = obj_index_init
+    # BM_Object_Get(None, context)[0].global_maps_active_index = map_index_init
 
 # Map previews with custom nodes
 def BM_MAP_PROPS_map_AO_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context)
     if self.map_AO_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'AO')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'AO')
 def BM_MAP_PROPS_map_CAVITY_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context)
     if self.map_CAVITY_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'CAVITY')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'CAVITY')
 def BM_MAP_PROPS_map_CURVATURE_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context)
     if self.map_CURVATURE_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'CURVATURE')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'CURVATURE')
 def BM_MAP_PROPS_map_THICKNESS_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context)
     if self.map_THICKNESS_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'THICKNESS')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'THICKNESS')
 def BM_MAP_PROPS_map_XYZMASK_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context)
     if self.map_XYZMASK_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'XYZMASK')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'XYZMASK')
 def BM_MAP_PROPS_map_GRADIENT_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context)
     if self.map_GRADIENT_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'GRADIENT')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_EDGE_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context)
     if self.map_EDGE_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'EDGE')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'EDGE')
 def BM_MAP_PROPS_map_WIREFRAME_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context)
     if self.map_WIREFRAME_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'WIREFRAME')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'WIREFRAME')
 def BM_MAP_PROPS_map_POSITION_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context)
     if self.map_POSITION_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'POSITION')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'POSITION')
 def BM_MAP_PROPS_map_VERTEX_COLOR_LAYER_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context)
     if self.map_VERTEX_COLOR_LAYER_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'VERTEX_COLOR_LAYER')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'VERTEX_COLOR_LAYER')
 def BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context)
     if self.map_VECTOR_DISPLACEMENT_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'VECTOR_DISPLACEMENT')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'VECTOR_DISPLACEMENT')
 def BM_MAP_PROPS_map_DECAL_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context)
     if self.map_DECAL_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'DECAL')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'DECAL')
 
 # Map Previews with Material Relinking
 def BM_MAP_PROPS_map_ALBEDO_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
     if self.map_ALBEDO_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'ALBEDO')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'ALBEDO')
 def BM_MAP_PROPS_map_METALNESS_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
     if self.map_METALNESS_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'METALNESS')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'METALNESS')
 def BM_MAP_PROPS_map_ROUGHNESS_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
     if self.map_ROUGHNESS_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'ROUGHNESS')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'ROUGHNESS')
 def BM_MAP_PROPS_map_DIFFUSE_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
     if self.map_DIFFUSE_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'DIFFUSE')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'DIFFUSE')
 def BM_MAP_PROPS_map_SPECULAR_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
     if self.map_SPECULAR_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'SPECULAR')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'SPECULAR')
 def BM_MAP_PROPS_map_GLOSSINESS_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
     if self.map_GLOSSINESS_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'GLOSSINESS')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'GLOSSINESS')
 def BM_MAP_PROPS_map_OPACITY_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
     if self.map_OPACITY_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'OPACITY')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'OPACITY')
 def BM_MAP_PROPS_map_EMISSION_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
     if self.map_EMISSION_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'EMISSION')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'EMISSION')
 def BM_MAP_PROPS_map_PASS_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
     if self.map_PASS_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'PASS')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'PASS')
 def BM_MAP_PROPS_map_NORMAL_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
     if self.map_NORMAL_use_preview and self.map_normal_data == 'MATERIAL':
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'NORMAL')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'NORMAL')
 def BM_MAP_PROPS_map_DISPLACEMENT_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(context)
+    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
     if self.map_DISPLACEMENT_use_preview and self.map_displacement_data == 'MATERIAL':
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'DISPLACEMENT')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
         BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'DISPLACEMENT')
 
 # Map Previews with Material Reassign
 def BM_MAP_PROPS_map_ID_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(context)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(self, context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context)
     if self.map_ID_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'ID')
-        BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, 'ID')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
+        BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, 'ID')
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'ID')
 def BM_MAP_PROPS_map_MASK_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(context)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(context)
+    BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(self, context)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context)
     if self.map_MASK_use_preview:
-        BM_MAP_PROPS_MapPreview_Unset(context, context.scene.bm_props.global_active_index, self.global_map_index - 1, True, 'MASK')
-        BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(context, 'MASK')
+        BM_MAP_PROPS_MapPreview_Unset(self, context)
+        BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, 'MASK')
         BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, 'MASK')
 
 ###############################################################
@@ -3984,7 +2563,7 @@ def BM_MAP_PROPS_out_min_samples_Update(self, context):
     name = "Map Format: Min Bake Samples"
     BM_LastEditedProp_Write(context, name, "out_min_samples", getattr(self, "out_min_samples"), True)
 def BM_MAP_PROPS_map_ALBEDO_prefix_Update(self, context):
-    name = "Map: Albedo prefix"
+    name = "Map: AlbedoM prefix"
     BM_LastEditedProp_Write(context, name, "map_ALBEDO_prefix", getattr(self, "map_ALBEDO_prefix"), True)
 def BM_MAP_PROPS_map_METALNESS_prefix_Update(self, context):
     name = "Map: Metalness prefix"
@@ -3993,7 +2572,7 @@ def BM_MAP_PROPS_map_ROUGHNESS_prefix_Update(self, context):
     name = "Map: Roughness prefix"
     BM_LastEditedProp_Write(context, name, "map_ROUGHNESS_prefix", getattr(self, "map_ROUGHNESS_prefix"), True)
 def BM_MAP_PROPS_map_DIFFUSE_prefix_Update(self, context):
-    name = "Map: Diffuse prefix"
+    name = "Map: AlbedoS prefix"
     BM_LastEditedProp_Write(context, name, "map_DIFFUSE_prefix", getattr(self, "map_DIFFUSE_prefix"), True)
 def BM_MAP_PROPS_map_SPECULAR_prefix_Update(self, context):
     name = "Map: Specular prefix"
@@ -4022,17 +2601,19 @@ def BM_MAP_PROPS_map_DECAL_prefix_Update(self, context):
 def BM_MAP_PROPS_map_decal_pass_type_Update(self, context):
     name = "Map: Decal Pass type"
     BM_LastEditedProp_Write(context, name, "map_decal_pass_type", getattr(self, "map_decal_pass_type"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'DECAL')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'DECAL')
 def BM_MAP_PROPS_map_decal_height_opacity_invert_Update(self, context):
     name = "Map: Decal Pass invert"
     BM_LastEditedProp_Write(context, name, "map_decal_height_opacity_invert", getattr(self, "map_decal_height_opacity_invert"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'DECAL')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'DECAL')
 def BM_MAP_PROPS_map_decal_normal_preset_Update(self, context):
     name = "Map: Decal Pass preset"
     BM_LastEditedProp_Write(context, name, "map_decal_normal_preset", getattr(self, "map_decal_normal_preset"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'DECAL')
 def BM_MAP_PROPS_map_decal_normal_custom_preset_Update(self, context):
     name = "Map: Decal Pass custom preset"
     BM_LastEditedProp_Write(context, name, "map_decal_normal_custom_preset", getattr(self, "map_decal_normal_custom_preset"), True)
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'DECAL')
 def BM_MAP_PROPS_map_decal_normal_r_Update(self, context):
     name = "Map: Decal Pass Swizzle R"
     BM_LastEditedProp_Write(context, name, "map_decal_normal_r", getattr(self, "map_decal_normal_r"), True)
@@ -4046,7 +2627,7 @@ def BM_MAP_PROPS_map_VERTEX_COLOR_LAYER_prefix_Update(self, context):
     name = "Map: VertexColor Layer prefix"
     BM_LastEditedProp_Write(context, name, "map_VERTEX_COLOR_LAYER_prefix", getattr(self, "map_VERTEX_COLOR_LAYER_prefix"), True)
 def BM_MAP_PROPS_map_vertexcolor_layer_Update(self, context):
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'VERTEX_COLOR_LAYER')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'VERTEX_COLOR_LAYER')
 def BM_MAP_PROPS_map_C_COMBINED_prefix_Update(self, context):
     name = "Map: Cycles Combined prefix"
     BM_LastEditedProp_Write(context, name, "map_C_COMBINED_prefix", getattr(self, "map_C_COMBINED_prefix"), True)
@@ -4056,6 +2637,9 @@ def BM_MAP_PROPS_map_C_AO_prefix_Update(self, context):
 def BM_MAP_PROPS_map_C_SHADOW_prefix_Update(self, context):
     name = "Map: Cycles Shadown prefix "
     BM_LastEditedProp_Write(context, name, "map_C_SHADOW_prefix", getattr(self, "map_C_SHADOW_prefix"), True)
+def BM_MAP_PROPS_map_C_POSITION_prefix_Update(self, context):
+    name = "Map: Cycles Position prefix "
+    BM_LastEditedProp_Write(context, name, "map_C_POSITION_prefix", getattr(self, "map_C_POSITION_prefix"), True)
 def BM_MAP_PROPS_map_C_NORMAL_prefix_Update(self, context):
     name = "Map: Cycles Normal prefix"
     BM_LastEditedProp_Write(context, name, "map_C_NORMAL_prefix", getattr(self, "map_C_NORMAL_prefix"), True)
@@ -4148,7 +2732,7 @@ def BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_prefix_Update(self, context):
 def BM_MAP_PROPS_map_vector_displacement_use_negative_Update(self, context):
     name = "Map: Vector Displacement include negative"
     BM_LastEditedProp_Write(context, name, "map_vector_displacement_use_negative", getattr(self, "map_vector_displacement_use_negative"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'VECTOR_DISPLACEMENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'VECTOR_DISPLACEMENT')
 def BM_MAP_PROPS_map_vector_displacement_result_Update(self, context):
     name = "Map: Vector Displacement result"
     BM_LastEditedProp_Write(context, name, "map_vector_displacement_result", getattr(self, "map_vector_displacement_result"), True)
@@ -4164,132 +2748,132 @@ def BM_MAP_PROPS_map_AO_prefix_Update(self, context):
 def BM_MAP_PROPS_map_AO_use_default_Update(self, context):
     name = "Map: AO default"
     BM_LastEditedProp_Write(context, name, "map_AO_use_default", getattr(self, "map_AO_use_default"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'AO')
 def BM_MAP_PROPS_map_ao_samples_Update(self, context):
     name = "Map: AO samples"
     BM_LastEditedProp_Write(context, name, "map_ao_samples", getattr(self, "map_ao_samples"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'AO')
 def BM_MAP_PROPS_map_ao_distance_Update(self, context):
     name = "Map: AO distance"
     BM_LastEditedProp_Write(context, name, "map_ao_distance", getattr(self, "map_ao_distance"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'AO')
 def BM_MAP_PROPS_map_ao_black_point_Update(self, context):
     name = "Map: AO black point"
     BM_LastEditedProp_Write(context, name, "map_ao_black_point", getattr(self, "map_ao_black_point"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'AO')
 def BM_MAP_PROPS_map_ao_white_point_Update(self, context):
     name = "Map: AO white point"
     BM_LastEditedProp_Write(context, name, "map_ao_white_point", getattr(self, "map_ao_white_point"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'AO')
 def BM_MAP_PROPS_map_ao_brightness_Update(self, context):
     name = "Map: AO brightness"
     BM_LastEditedProp_Write(context, name, "map_ao_brightness", getattr(self, "map_ao_brightness"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'AO')
 def BM_MAP_PROPS_map_ao_contrast_Update(self, context):
     name = "Map: AO contrast"
     BM_LastEditedProp_Write(context, name, "map_ao_contrast", getattr(self, "map_ao_contrast"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'AO')
 def BM_MAP_PROPS_map_ao_opacity_Update(self, context):
     name = "Map: AO opacity"
     BM_LastEditedProp_Write(context, name, "map_ao_opacity", getattr(self, "map_ao_opacity"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'AO')
 def BM_MAP_PROPS_map_ao_use_local_Update(self, context):
     name = "Map: AO only local"
     BM_LastEditedProp_Write(context, name, "map_ao_use_local", getattr(self, "map_ao_use_local"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'AO')
 def BM_MAP_PROPS_map_ao_use_invert_Update(self, context):
     name = "Map: AO invert"
     BM_LastEditedProp_Write(context, name, "map_ao_use_invert", getattr(self, "map_ao_use_invert"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'AO')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'AO')
 def BM_MAP_PROPS_map_CAVITY_prefix_Update(self, context):
     name = "Map: Cavity prefix"
     BM_LastEditedProp_Write(context, name, "map_CAVITY_prefix", getattr(self, "map_CAVITY_prefix"), True)
 def BM_MAP_PROPS_map_CAVITY_use_default_Update(self, context):
     name = "Map: Cavity default"
     BM_LastEditedProp_Write(context, name, "map_CAVITY_use_default", getattr(self, "map_CAVITY_use_default"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CAVITY')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'CAVITY')
 def BM_MAP_PROPS_map_cavity_black_point_Update(self, context):
     name = "Map: Cavity black point"
     BM_LastEditedProp_Write(context, name, "map_cavity_black_point", getattr(self, "map_cavity_black_point"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CAVITY')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'CAVITY')
 def BM_MAP_PROPS_map_cavity_white_point_Update(self, context):
     name = "Map: Cavity white point"
     BM_LastEditedProp_Write(context, name, "map_cavity_white_point", getattr(self, "map_cavity_white_point"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CAVITY')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'CAVITY')
 def BM_MAP_PROPS_map_cavity_power_Update(self, context):
     name = "Map: Cavity power"
     BM_LastEditedProp_Write(context, name, "map_cavity_power", getattr(self, "map_cavity_power"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CAVITY')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'CAVITY')
 def BM_MAP_PROPS_map_cavity_use_invert_Update(self, context):
     name = "Map: Cavity invert"
     BM_LastEditedProp_Write(context, name, "map_cavity_use_invert", getattr(self, "map_cavity_use_invert"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CAVITY')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'CAVITY')
 def BM_MAP_PROPS_map_CURVATURE_prefix_Update(self, context):
     name = "Map: Curvature prefix"
     BM_LastEditedProp_Write(context, name, "map_CURVATURE_prefix", getattr(self, "map_CURVATURE_prefix"), True)
 def BM_MAP_PROPS_map_CURVATURE_use_default_Update(self, context):
     name = "Map: Curvature default"
     BM_LastEditedProp_Write(context, name, "map_CURVATURE_use_default", getattr(self, "map_CURVATURE_use_default"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CURVATURE')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'CURVATURE')
 def BM_MAP_PROPS_map_curv_samples_Update(self, context):
     name = "Map: Curvature samples"
     BM_LastEditedProp_Write(context, name, "map_curv_samples", getattr(self, "map_curv_samples"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CURVATURE')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'CURVATURE')
 def BM_MAP_PROPS_map_curv_radius_Update(self, context):
     name = "Map: Curvature radius"
     BM_LastEditedProp_Write(context, name, "map_curv_radius", getattr(self, "map_curv_radius"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CURVATURE')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'CURVATURE')
 def BM_MAP_PROPS_map_curv_black_point_Update(self, context):
     name = "Map: Curvature black point"
     BM_LastEditedProp_Write(context, name, "map_curv_black_point", getattr(self, "map_curv_black_point"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CURVATURE')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'CURVATURE')
 def BM_MAP_PROPS_map_curv_mid_point_Update(self, context):
     name = "Map: Curvature mid point"
     BM_LastEditedProp_Write(context, name, "map_curv_mid_point", getattr(self, "map_curv_mid_point"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CURVATURE')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'CURVATURE')
 def BM_MAP_PROPS_map_curv_white_point_Update(self, context):
     name = "Map: Curvature white point"
     BM_LastEditedProp_Write(context, name, "map_curv_white_point", getattr(self, "map_curv_white_point"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CURVATURE')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'CURVATURE')
 def BM_MAP_PROPS_map_curv_body_gamma_Update(self, context):
     name = "Map: Curvature body gamma"
     BM_LastEditedProp_Write(context, name, "map_curv_body_gamma", getattr(self, "map_curv_body_gamma"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'CURVATURE')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'CURVATURE')
 def BM_MAP_PROPS_map_THICKNESS_prefix_Update(self, context):
     name = "Map: Thickness prefix"
     BM_LastEditedProp_Write(context, name, "map_THICKNESS_prefix", getattr(self, "map_THICKNESS_prefix"), True)
 def BM_MAP_PROPS_map_THICKNESS_use_default_Update(self, context):
     name = "Map: Thickness default"
     BM_LastEditedProp_Write(context, name, "map_THICKNESS_use_default", getattr(self, "map_THICKNESS_use_default"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'THICKNESS')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'THICKNESS')
 def BM_MAP_PROPS_map_thick_samples_Update(self, context):
     name = "Map: Thickness samples"
     BM_LastEditedProp_Write(context, name, "map_thick_samples", getattr(self, "map_thick_samples"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'THICKNESS')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'THICKNESS')
 def BM_MAP_PROPS_map_thick_distance_Update(self, context):
     name = "Map: Thickness distance"
     BM_LastEditedProp_Write(context, name, "map_thick_distance", getattr(self, "map_thick_distance"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'THICKNESS')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'THICKNESS')
 def BM_MAP_PROPS_map_thick_black_point_Update(self, context):
     name = "Map: Thickness black point"
     BM_LastEditedProp_Write(context, name, "map_thick_black_point", getattr(self, "map_thick_black_point"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'THICKNESS')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'THICKNESS')
 def BM_MAP_PROPS_map_thick_white_point_Update(self, context):
     name = "Map: Thickness white point"
     BM_LastEditedProp_Write(context, name, "map_thick_white_point", getattr(self, "map_thick_white_point"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'THICKNESS')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'THICKNESS')
 def BM_MAP_PROPS_map_thick_brightness_Update(self, context):
     name = "Map: Thickness brightness"
     BM_LastEditedProp_Write(context, name, "map_thick_brightness", getattr(self, "map_thick_brightness"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'THICKNESS')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'THICKNESS')
 def BM_MAP_PROPS_map_thick_contrast_Update(self, context):
     name = "Map: Thickness contrast"
     BM_LastEditedProp_Write(context, name, "map_thick_contrast", getattr(self, "map_thick_contrast"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'THICKNESS')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'THICKNESS')
 def BM_MAP_PROPS_map_thick_use_invert_Update(self, context):
     name = "Map: Thickness invert"
     BM_LastEditedProp_Write(context, name, "map_thick_use_invert", getattr(self, "map_thick_use_invert"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'THICKNESS')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'THICKNESS')
 def BM_MAP_PROPS_map_ID_prefix_Update(self, context):
     name = "Map: ID prefix"
     BM_LastEditedProp_Write(context, name, "map_ID_prefix", getattr(self, "map_ID_prefix"), True)
@@ -4314,7 +2898,7 @@ def BM_MAP_PROPS_map_matid_algorithm_Update(self, context):
 def BM_MAP_PROPS_map_matid_jilter_Update(self, context):
     name = "Map: ID algorithm"
     BM_LastEditedProp_Write(context, name, "map_matid_algorithm", getattr(self, "map_matid_algorithm"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'ID')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'ID')
 def BM_MAP_PROPS_map_MASK_prefix_Update(self, context):
     name = "Map: Mask prefix"
     BM_LastEditedProp_Write(context, name, "map_MASK_prefix", getattr(self, "map_MASK_prefix"), True)
@@ -4339,155 +2923,155 @@ def BM_MAP_PROPS_map_mask_materials_name_contains_Update(self, context):
 def BM_MAP_PROPS_map_mask_color1_Update(self, context):
     name = "Map: Mask color1"
     BM_LastEditedProp_Write(context, name, "map_mask_color1", getattr(self, "map_mask_color1"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'MASK')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'MASK')
 def BM_MAP_PROPS_map_mask_color2_Update(self, context):
     name = "Map: Mask color2"
     BM_LastEditedProp_Write(context, name, "map_mask_color2", getattr(self, "map_mask_color2"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'MASK')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'MASK')
 def BM_MAP_PROPS_map_mask_use_invert_Update(self, context):
     name = "Map: Mask invert"
     BM_LastEditedProp_Write(context, name, "map_mask_use_invert", getattr(self, "map_mask_use_invert"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'MASK')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'MASK')
 def BM_MAP_PROPS_map_XYZMASK_prefix_Update(self, context):
     name = "Map: XYZ Mask prefix"
     BM_LastEditedProp_Write(context, name, "map_XYZMASK_prefix", getattr(self, "map_XYZMASK_prefix"), True)
 def BM_MAP_PROPS_map_XYZMASK_use_default_Update(self, context):
     name = "Map: XYZ Mask default"
     BM_LastEditedProp_Write(context, name, "map_XYZMASK_use_default", getattr(self, "map_XYZMASK_use_default"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'XYZMASK')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'XYZMASK')
 def BM_MAP_PROPS_map_xyzmask_use_x_Update(self, context):
     name = "Map: XYZ Mask X"
     BM_LastEditedProp_Write(context, name, "map_xyzmask_use_x", getattr(self, "map_xyzmask_use_x"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'XYZMASK')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'XYZMASK')
 def BM_MAP_PROPS_map_xyzmask_use_y_Update(self, context):
     name = "Map: XYZ Mask Y"
     BM_LastEditedProp_Write(context, name, "map_xyzmask_use_y", getattr(self, "map_xyzmask_use_y"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'XYZMASK')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'XYZMASK')
 def BM_MAP_PROPS_map_xyzmask_use_z_Update(self, context):
     name = "Map: XYZ Mask Z"
     BM_LastEditedProp_Write(context, name, "map_xyzmask_use_z", getattr(self, "map_xyzmask_use_z"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'XYZMASK')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'XYZMASK')
 def BM_MAP_PROPS_map_xyzmask_coverage_Update(self, context):
     name = "Map: XYZ Mask coverage"
     BM_LastEditedProp_Write(context, name, "map_xyzmask_coverage", getattr(self, "map_xyzmask_coverage"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'XYZMASK')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'XYZMASK')
 def BM_MAP_PROPS_map_xyzmask_saturation_Update(self, context):
     name = "Map: XYZ Mask saturation"
     BM_LastEditedProp_Write(context, name, "map_xyzmask_saturation", getattr(self, "map_xyzmask_saturation"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'XYZMASK')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'XYZMASK')
 def BM_MAP_PROPS_map_xyzmask_opacity_Update(self, context):
     name = "Map: XYZ Mask opacity"
     BM_LastEditedProp_Write(context, name, "map_xyzmask_opacity", getattr(self, "map_xyzmask_opacity"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'XYZMASK')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'XYZMASK')
 def BM_MAP_PROPS_map_xyzmask_use_invert_Update(self, context):
     name = "Map: XYZ Mask invert"
     BM_LastEditedProp_Write(context, name, "map_xyzmask_use_invert", getattr(self, "map_xyzmask_use_invert"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'XYZMASK')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'XYZMASK')
 def BM_MAP_PROPS_map_GRADIENT_prefix_Update(self, context):
     name = "Map: Gradient Mask prefix"
     BM_LastEditedProp_Write(context, name, "map_GRADIENT_prefix", getattr(self, "map_GRADIENT_prefix"), True)
 def BM_MAP_PROPS_map_GRADIENT_use_default_Update(self, context):
     name = "Map: Gradient Mask default"
     BM_LastEditedProp_Write(context, name, "map_GRADIENT_use_default", getattr(self, "map_GRADIENT_use_default"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_type_Update(self, context):
     name = "Map: Gradient Mask type"
     BM_LastEditedProp_Write(context, name, "map_gmask_type", getattr(self, "map_gmask_type"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_location_x_Update(self, context):
     name = "Map: Gradient Mask location x"
     BM_LastEditedProp_Write(context, name, "map_gmask_location_x", getattr(self, "map_gmask_location_x"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_location_y_Update(self, context):
     name = "Map: Gradient Mask location y"
     BM_LastEditedProp_Write(context, name, "map_gmask_location_y", getattr(self, "map_gmask_location_y"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_location_z_Update(self, context):
     name = "Map: Gradient Mask location z"
     BM_LastEditedProp_Write(context, name, "map_gmask_location_z", getattr(self, "map_gmask_location_z"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_rotation_x_Update(self, context):
     name = "Map: Gradient Mask rotation x"
     BM_LastEditedProp_Write(context, name, "map_gmask_rotation_x", getattr(self, "map_gmask_rotation_x"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_rotation_y_Update(self, context):
     name = "Map: Gradient Mask rotation y"
     BM_LastEditedProp_Write(context, name, "map_gmask_rotation_y", getattr(self, "map_gmask_rotation_y"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_rotation_z_Update(self, context):
     name = "Map: Gradient Mask rotation z"
     BM_LastEditedProp_Write(context, name, "map_gmask_rotation_z", getattr(self, "map_gmask_rotation_z"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_scale_x_Update(self, context):
     name = "Map: Gradient Mask scale x"
     BM_LastEditedProp_Write(context, name, "map_gmask_scale_x", getattr(self, "map_gmask_scale_x"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_scale_y_Update(self, context):
     name = "Map: Gradient Mask scale y"
     BM_LastEditedProp_Write(context, name, "map_gmask_scale_y", getattr(self, "map_gmask_scale_y"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_scale_z_Update(self, context):
     name = "Map: Gradient Mask scale z"
     BM_LastEditedProp_Write(context, name, "map_gmask_scale_z", getattr(self, "map_gmask_scale_z"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_coverage_Update(self, context):
     name = "Map: Gradient Mask coverage"
     BM_LastEditedProp_Write(context, name, "map_gmask_coverage", getattr(self, "map_gmask_coverage"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_contrast_Update(self, context):
     name = "Map: Gradient Mask contrast"
     BM_LastEditedProp_Write(context, name, "map_gmask_contrast", getattr(self, "map_gmask_contrast"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_saturation_Update(self, context):
     name = "Map: Gradient Mask saturation"
     BM_LastEditedProp_Write(context, name, "map_gmask_saturation", getattr(self, "map_gmask_saturation"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_opacity_Update(self, context):
     name = "Map: Gradient Mask opacity"
     BM_LastEditedProp_Write(context, name, "map_gmask_opacity", getattr(self, "map_gmask_opacity"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_gmask_use_invert_Update(self, context):
     name = "Map: Gradient Mask invert"
     BM_LastEditedProp_Write(context, name, "map_gmask_use_invert", getattr(self, "map_gmask_use_invert"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'GRADIENT')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
 def BM_MAP_PROPS_map_EDGE_prefix_Update(self, context):
     name = "Map: Edge Mask prefix"
     BM_LastEditedProp_Write(context, name, "map_EDGE_prefix", getattr(self, "map_EDGE_prefix"), True)
 def BM_MAP_PROPS_map_EDGE_use_default_Update(self, context):
     name = "Map: Edge Mask default"
     BM_LastEditedProp_Write(context, name, "map_EDGE_use_default", getattr(self, "map_EDGE_use_default"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'EDGE')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'EDGE')
 def BM_MAP_PROPS_map_edgemask_samples_Update(self, context):
     name = "Map: Edge Mask samples"
     BM_LastEditedProp_Write(context, name, "map_edgemask_samples", getattr(self, "map_edgemask_samples"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'EDGE')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'EDGE')
 def BM_MAP_PROPS_map_edgemask_radius_Update(self, context):
     name = "Map: Edge Mask radius"
     BM_LastEditedProp_Write(context, name, "map_edgemask_radius", getattr(self, "map_edgemask_radius"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'EDGE')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'EDGE')
 def BM_MAP_PROPS_map_edgemask_edge_contrast_Update(self, context):
     name = "Map: Edge Mask edge contrast"
     BM_LastEditedProp_Write(context, name, "map_edgemask_edge_contrast", getattr(self, "map_edgemask_edge_contrast"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'EDGE')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'EDGE')
 def BM_MAP_PROPS_map_edgemask_body_contrast_Update(self, context):
     name = "Map: Edge Mask body contrast"
     BM_LastEditedProp_Write(context, name, "map_edgemask_body_contrast", getattr(self, "map_edgemask_body_contrast"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'EDGE')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'EDGE')
 def BM_MAP_PROPS_map_edgemask_use_invert_Update(self, context):
     name = "Map: Edge Mask invert"
     BM_LastEditedProp_Write(context, name, "map_edgemask_use_invert", getattr(self, "map_edgemask_use_invert"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'EDGE')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'EDGE')
 def BM_MAP_PROPS_map_WIREFRAME_prefix_Update(self, context):
     name = "Map: Wireframe prefix"
     BM_LastEditedProp_Write(context, name, "map_WIREFRAME_prefix", getattr(self, "map_WIREFRAME_prefix"), True)
 def BM_MAP_PROPS_map_wireframemask_line_thickness_Update(self, context):
     name = "Map: Wireframe Mask line thickness"
     BM_LastEditedProp_Write(context, name, "map_wireframemask_line_thickness", getattr(self, "map_wireframemask_line_thickness"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'WIREFRAME')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'WIREFRAME')
 def BM_MAP_PROPS_map_wireframemask_use_invert_Update(self, context):
     name = "Map: Wireframe Mask invert"
     BM_LastEditedProp_Write(context, name, "map_wireframemask_use_invert", getattr(self, "map_wireframemask_use_invert"), True)
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(context, 'WIREFRAME')
+    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'WIREFRAME')
 
 def BM_ITEM_PROPS_global_use_bake_Update(self, context):
     name = "Object: Use in bake"
@@ -4507,6 +3091,9 @@ def BM_ITEM_PROPS_decal_boundary_offset_Update(self, context):
 def BM_ITEM_PROPS_hl_decals_use_separate_texset_Update(self, context):
     name = "Object High to Lowpoly: Use separate texset for decals"
     BM_LastEditedProp_Write(context, name, "hl_decals_use_separate_texset", getattr(self, "hl_decals_use_separate_texset"), False)
+def BM_ITEM_PROPS_hl_decals_separate_texset_prefix_Update(self, context):
+    name = "Object High to Lowpoly: Decals TexSet prefix"
+    BM_LastEditedProp_Write(context, name, "hl_decals_separate_texset_prefix", getattr(self, "hl_decals_separate_texset_prefix"), False)
 def BM_ITEM_PROPS_hl_cage_type_Update(self, context):
     name = "Object High to Lowpoly: Cage type"
     BM_LastEditedProp_Write(context, name, "hl_cage_type", getattr(self, "hl_cage_type"), False)
@@ -4648,6 +3235,9 @@ def BM_ITEM_PROPS_bake_batchname_Update(self, context):
 def BM_ITEM_PROPS_bake_create_material_Update(self, context):
     name = "Object Bake Output: Create material"
     BM_LastEditedProp_Write(context, name, "bake_create_material", getattr(self, "bake_create_material"), False)
+def BM_ITEM_PROPS_bake_assign_modifiers_Update(self, context):
+    name = "Object Bake Output: Assign Modifiers"
+    BM_LastEditedProp_Write(context, name, "bake_assign_modifiers", getattr(self, "bake_assign_modifiers"), False)
 def BM_ITEM_PROPS_bake_device_Update(self, context):
     name = "Object Bake Output: Device"
     BM_LastEditedProp_Write(context, name, "bake_device", getattr(self, "bake_device"), False)
@@ -4674,674 +3264,3 @@ def BM_CAUC_Object_is_highpoly_Update(self, context):
 def BM_CAUC_Object_is_cage_Update(self, context):
     if self.is_cage:
         BM_CAUC_Object_UnsetBoolsUpdate(self, ["use_include", "is_highpoly"])
-
-###############################################################
-###############################################################
-
-# when removing these funcs, remove all their calls, some of which I saw in operators
-def BM_ITEM_UseTargetUpdate(self, context):
-    return
-
-    if not self.use_target:
-        for index, item in enumerate(context.scene.bm_aol):
-            if item.use_source and item.source_name == self.object_pointer.name:
-                self.source = 'NONE'
-                item.use_source = False
-                item.source_name = ""
-                break
-    else:
-        BM_ITEM_PROPS_hl_highpoly_Update(self, context)
-
-    #BM_ITEM_RemoveLocalPreviews(self, context)
-
-def BM_ITEM_OverwriteUpdate(self, context):
-    return
-
-    if self.use_overwrite:
-        for index, map in enumerate(self.maps):
-            map.bake_target = self.overwrite_bake_target
-            map.use_denoise = self.overwrite_use_denoise
-            map.file_format = self.overwrite_file_format
-            map.res_enum = self.overwrite_res_enum
-            map.res_height = self.overwrite_res_height
-            map.res_weight = self.overwrite_res_width
-            map.margin = self.overwrite_margin
-            map.margin_type = self.overwrite_margin_type
-            map.use_32bit = self.overwrite_use_32bit
-            map.use_alpha = self.overwrite_use_alpha
-            map.udim_start_tile = self.overwrite_udim_start_tile
-            map.udim_end_tile = self.overwrite_udim_end_tile
-
-def BM_ITEM_BatchNameUpdate(self, context):
-    try:
-        if "item" not in self.batch_name:
-            self.batch_name = f"item_{self.batch_name}"
-
-        args = ['index',
-                'item',
-                'sourcetarget',
-                'uvpacked',
-                'map',
-                'res',
-                'float',
-                'alpha']
-
-        args_used = [arg for arg in args if arg in self.batch_name]
-        args_names_starters = [arg[0] for arg in args_used]
-        batch_name_new = ""
-
-        for start_index in range(len(self.batch_name)):
-
-            # if the itered string won't start on any of the symbols in args -> skip it to reduce number of iterations
-            if self.batch_name[start_index] not in args_names_starters:
-                continue
-
-            # to see how the algo works, type print(self.batch_name[start_index:end_index]) here
-            for end_index in range(start_index, len(self.batch_name) + 1): # len() + 1, because we need to check the last symbol
-
-                if self.batch_name[start_index:end_index] in args_used: # if itered srting is an arg -> add it to the batch_name_new
-                    batch_name_new += "{}_".format(self.batch_name[start_index:end_index])
-                    break
-
-        batch_name_new = batch_name_new[:(len(batch_name_new) - 1)] # remove last '_'
-
-        if self.batch_name != batch_name_new:
-            self.batch_name = batch_name_new
-
-    except RecursionError:
-        pass
-
-def BM_MAP_MaterialUpdate(self, material, map_index):
-    return
-
-    nodes = material.node_tree.nodes
-    links = material.node_tree.links
-
-    nodes_source = [#AO
-                    ('BM_AmbientOcclusion',
-                     'BM_ValToRGB',
-                     'BM_MixRGB',
-                     'BM_BrightContrast',
-                     'BM_Invert'),
-                    #Cavity
-                    ('BM_ValToRGB',
-                     'BM_Math',
-                     'BM_Invert'),
-                    #Curvature
-                    ('BM_Bevel',
-                     'BM_MapRange',
-                     'BM_Invert'),
-                    #Thickness
-                    ('BM_AmbientOcclusion',
-                     'BM_MapRange',
-                     'BM_ValToRGB',
-                     'BM_Invert'),
-                    #NormalMask
-                    ('BM_SeparateXYZ',
-                     'BM_VectorMath',
-                     'BM_VectorMath.001',
-                     'BM_VectorMath.002',
-                     'BM_MapRange',
-                     'BM_MixRGB'),
-                    #GradientMask
-                    ('BM_Mapping',
-                     'BM_TexGradient',
-                     'BM_MapRange',
-                     'BM_MixRGB',
-                     'BM_HueSaturation',
-                     'BM_Invert')]
-
-    bm_nodes = nodes_source[map_index]
-    #AO
-    if map_index == 0:
-        if self.ao_use_default:
-            samples = 16
-            distance = 1
-            only_local = False
-            black_point = 0
-            white_point = 0.8
-            opacity = 0.67
-            brightness = -0.3
-            contrast = 0.3
-            invert = 0
-        else:
-            samples = self.ao_samples
-            distance = self.ao_distance
-            only_local = self.ao_use_local
-            black_point = self.ao_black_point
-            white_point = self.ao_white_point
-            opacity = self.ao_opacity
-            brightness = self.ao_brightness
-            contrast = self.ao_contrast
-            invert = self.ao_use_invert
-        nodes[bm_nodes[0]].samples = samples
-        nodes[bm_nodes[0]].inputs[1].default_value = distance
-        nodes[bm_nodes[0]].only_local = only_local
-        nodes[bm_nodes[1]].color_ramp.elements[0].position = black_point
-        nodes[bm_nodes[1]].color_ramp.elements[1].position = white_point
-        nodes[bm_nodes[2]].inputs[0].default_value = opacity
-        nodes[bm_nodes[3]].inputs[1].default_value = brightness
-        nodes[bm_nodes[3]].inputs[2].default_value = contrast
-        nodes[bm_nodes[4]].inputs[0].default_value = invert
-
-    #Cavity
-    if map_index == 1:
-        if self.cavity_use_default:
-            black_point = 0
-            white_point = 1
-            power = 2.5
-            invert = 0
-        else:
-            black_point = self.cavity_black_point
-            white_point = self.cavity_white_point
-            power = self.cavity_power
-            invert = self.cavity_use_invert
-        nodes[bm_nodes[0]].color_ramp.elements[0].position = black_point
-        nodes[bm_nodes[0]].color_ramp.elements[1].position = white_point
-        nodes[bm_nodes[1]].inputs[1].default_value = power
-        nodes[bm_nodes[2]].inputs[0].default_value = invert
-
-    #Curvature
-    if map_index == 2:
-        if self.curv_use_default:
-            samples = 4
-            radius = 0.02
-            edge_contrast = 0
-            body_contrast = 1
-            invert = 1
-        else:
-            samples = self.curv_samples
-            radius = self.curv_radius
-            edge_contrast = self.curv_edge_contrast
-            body_contrast = self.curv_body_contrast
-            invert = self.curv_use_invert
-        nodes[bm_nodes[0]].samples = samples
-        nodes[bm_nodes[0]].inputs[0].default_value = radius
-        nodes[bm_nodes[1]].inputs[1].default_value = edge_contrast
-        nodes[bm_nodes[1]].inputs[4].default_value = body_contrast
-        nodes[bm_nodes[2]].inputs[0].default_value = invert
-
-    #Thickness
-    if map_index == 3:
-        if self.thick_use_default:
-            samples = 16
-            distance = 1
-            black_point = 0
-            white_point = 1
-            brightness = 1
-            contrast = 0
-            invert = 0
-        else:
-            samples = self.thick_samples
-            distance = self.thick_distance
-            black_point = self.thick_black_point
-            white_point = self.thick_white_point
-            brightness = self.thick_brightness
-            contrast = self.thick_contrast
-            invert = self.thick_use_invert
-        nodes[bm_nodes[0]].samples = samples
-        nodes[bm_nodes[0]].inputs[1].default_value = distance
-        nodes[bm_nodes[1]].inputs[1].default_value = contrast
-        nodes[bm_nodes[1]].inputs[4].default_value = brightness
-        nodes[bm_nodes[2]].color_ramp.elements[0].position = black_point
-        nodes[bm_nodes[2]].color_ramp.elements[1].position = white_point
-        nodes[bm_nodes[3]].inputs[0].default_value = invert
-        
-    #NormalMask
-    if map_index == 4:
-        if self.xyzmask_use_default:
-            coverage = 0
-            saturation = 1
-            opacity = 1
-            invert = 1
-        else:
-            coverage = self.xyzmask_coverage
-            saturation = self.xyzmask_saturation
-            opacity = self.xyzmask_opacity
-            invert = self.xyzmask_use_invert
-        for i in range(3):
-            nodes[bm_nodes[3]].inputs[1].default_value[i] = invert
-        nodes[bm_nodes[4]].inputs[1].default_value = coverage
-        nodes[bm_nodes[4]].inputs[4].default_value = saturation
-        nodes[bm_nodes[5]].inputs[0].default_value = opacity
-        if self.xyzmask_use_x:
-            links.new(nodes[bm_nodes[0]].outputs[0], nodes[bm_nodes[1]].inputs[0])
-        else:
-            if len(nodes[bm_nodes[0]].outputs[0].links):
-                links.remove(nodes[bm_nodes[0]].outputs[0].links[0])
-        if self.xyzmask_use_y:
-            links.new(nodes[bm_nodes[0]].outputs[1], nodes[bm_nodes[1]].inputs[1])
-        else:
-            if len(nodes[bm_nodes[0]].outputs[1].links):
-                links.remove(nodes[bm_nodes[0]].outputs[1].links[0])
-        if self.xyzmask_use_z:
-            links.new(nodes[bm_nodes[0]].outputs[2], nodes[bm_nodes[2]].inputs[1])
-        else:
-            if len(nodes[bm_nodes[0]].outputs[2].links):
-                links.remove(nodes[bm_nodes[0]].outputs[2].links[0])
-
-    #GradientMask
-    if map_index == 5:
-        if self.gmask_use_default:
-            type = 'LINEAR'
-            #mapping = [[0, 0, 0], [0, 0, 0], [1, 1, 1]]
-            coverage = 0
-            contrast = 1
-            saturation = 1
-            opacity = 1
-            invert = 0
-        else:
-            type = self.gmask_type
-            coverage = self.gmask_coverage
-            contrast = self.gmask_contrast
-            saturation = self.gmask_saturation
-            opacity = self.gmask_opacity
-            invert = self.gmask_use_invert 
-        # mapping can be changed no matter the use_default state
-        mapping = [[self.gmask_location_x, self.gmask_location_y, self.gmask_location_z],
-                   [self.gmask_rotation_x, self.gmask_rotation_y, self.gmask_rotation_z],
-                   [self.gmask_scale_x, self.gmask_scale_y, self.gmask_scale_z]]
-        for i in range(1, 4):
-            for j in range(3):
-                nodes[bm_nodes[0]].inputs[i].default_value[j] = mapping[i - 1][j]
-        nodes[bm_nodes[1]].gradient_type = type
-        nodes[bm_nodes[2]].inputs[1].default_value = coverage
-        nodes[bm_nodes[2]].inputs[4].default_value = contrast
-        nodes[bm_nodes[3]].inputs[0].default_value = opacity
-        nodes[bm_nodes[4]].inputs[2].default_value = saturation
-        nodes[bm_nodes[5]].inputs[0].default_value = invert      
-
-def BM_MAP_Preview_SetNodes(self, context, material, map_index, use_preview):
-    return
-
-
-    material.use_nodes = True
-    nodes = material.node_tree.nodes
-    links = material.node_tree.links
-
-    nodes_source = [#AO
-                    ('ShaderNodeAmbientOcclusion',
-                     'ShaderNodeValToRGB',
-                     'ShaderNodeMixRGB',
-                     'ShaderNodeBrightContrast',
-                     'ShaderNodeInvert',
-                     'ShaderNodeEmission',
-                     'ShaderNodeOutputMaterial'),
-                    #Cavity
-                    ('ShaderNodeNewGeometry',
-                     'ShaderNodeValToRGB',
-                     'ShaderNodeMath',
-                     'ShaderNodeInvert',
-                     'ShaderNodeEmission',
-                     'ShaderNodeOutputMaterial'),
-                    #Curvature
-                    ('ShaderNodeBevel',
-                     'ShaderNodeNewGeometry',
-                     'ShaderNodeVectorMath',
-                     'ShaderNodeMapRange',
-                     'ShaderNodeInvert',
-                     'ShaderNodeEmission',
-                     'ShaderNodeOutputMaterial'),
-                    #Thickness
-                    ('ShaderNodeAmbientOcclusion',
-                     'ShaderNodeMapRange',
-                     'ShaderNodeValToRGB',
-                     'ShaderNodeInvert',
-                     'ShaderNodeEmission',
-                     'ShaderNodeOutputMaterial'),
-                    #NormalMask
-                    ('ShaderNodeNewGeometry',
-                     'ShaderNodeSeparateXYZ',
-                     'ShaderNodeVectorMath',
-                     'ShaderNodeVectorMath',
-                     'ShaderNodeVectorMath',
-                     'ShaderNodeMapRange',
-                     'ShaderNodeMixRGB',
-                     'ShaderNodeEmission',
-                     'ShaderNodeOutputMaterial'),
-                    #GradientMask
-                    ('ShaderNodeTexCoord',
-                     'ShaderNodeMapping',
-                     'ShaderNodeTexGradient',
-                     'ShaderNodeMapRange',
-                     'ShaderNodeMixRGB',
-                     'ShaderNodeHueSaturation',
-                     'ShaderNodeInvert',
-                     'ShaderNodeEmission',
-                     'ShaderNodeOutputMaterial')]
-
-    location = 1000000
-    for node in nodes_source[map_index]:
-        new_node = nodes.new(node)
-        new_node.name = "BM_" + node[10:]
-        new_node.location = (location, 0)#1000000)
-        location += 300
-
-    #AO
-    if map_index == 0:
-        nodes['BM_MixRGB'].blend_type = 'MULTIPLY'
-        nodes['BM_MixRGB'].inputs[1].default_value = (1, 1, 1, 1)
-        nodes['BM_OutputMaterial'].target = 'CYCLES'
-
-        links.new(nodes['BM_AmbientOcclusion'].outputs[1], nodes['BM_ValToRGB'].inputs[0])
-        links.new(nodes['BM_ValToRGB'].outputs[0], nodes['BM_MixRGB'].inputs[2])
-        links.new(nodes['BM_MixRGB'].outputs[0], nodes['BM_BrightContrast'].inputs[0])
-        links.new(nodes['BM_BrightContrast'].outputs[0], nodes['BM_Invert'].inputs[1])
-        links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
-        links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
-
-    #Cavity
-    if map_index == 1:
-        nodes['BM_Math'].operation = 'POWER'
-        nodes['BM_OutputMaterial'].target = 'CYCLES'
-
-        links.new(nodes['BM_NewGeometry'].outputs[7], nodes['BM_ValToRGB'].inputs[0])
-        links.new(nodes['BM_ValToRGB'].outputs[0], nodes['BM_Math'].inputs[0])
-        links.new(nodes['BM_Math'].outputs[0], nodes['BM_Invert'].inputs[1])
-        links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
-        links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
-
-    #Curvature
-    if map_index == 2:
-        nodes['BM_VectorMath'].operation = 'DOT_PRODUCT'
-        nodes['BM_OutputMaterial'].target = 'CYCLES'
-
-        links.new(nodes['BM_Bevel'].outputs[0], nodes['BM_VectorMath'].inputs[0])
-        links.new(nodes['BM_NewGeometry'].outputs[1], nodes['BM_VectorMath'].inputs[1])
-        links.new(nodes['BM_VectorMath'].outputs[1], nodes['BM_MapRange'].inputs[0])
-        links.new(nodes['BM_MapRange'].outputs[0], nodes['BM_Invert'].inputs[1])
-        links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
-        links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
-
-    #Thickness
-    if map_index == 3:
-        nodes['BM_AmbientOcclusion'].inside = True
-        nodes['BM_OutputMaterial'].target = 'CYCLES'
-
-        links.new(nodes['BM_AmbientOcclusion'].outputs[1], nodes['BM_MapRange'].inputs[0])
-        links.new(nodes['BM_MapRange'].outputs[0], nodes['BM_ValToRGB'].inputs[0])
-        links.new(nodes['BM_ValToRGB'].outputs[0], nodes['BM_Invert'].inputs[1])
-        links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
-        links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
-
-    #NormalMask
-    if map_index == 4:
-        nodes['BM_VectorMath.002'].operation = 'MULTIPLY'
-        nodes['BM_MixRGB'].inputs[1].default_value = (0, 0, 0, 0)
-        nodes['BM_OutputMaterial'].target = 'CYCLES'
-
-        links.new(nodes['BM_NewGeometry'].outputs[1], nodes['BM_SeparateXYZ'].inputs[0])
-        links.new(nodes['BM_VectorMath'].outputs[0], nodes['BM_VectorMath.001'].inputs[0])
-        links.new(nodes['BM_VectorMath.001'].outputs[0], nodes['BM_VectorMath.002'].inputs[0])
-        links.new(nodes['BM_VectorMath.002'].outputs[0], nodes['BM_MapRange'].inputs[0])
-        links.new(nodes['BM_MapRange'].outputs[0], nodes['BM_MixRGB'].inputs[2])
-        links.new(nodes['BM_MixRGB'].outputs[0], nodes['BM_Emission'].inputs[0])
-        links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
-
-    #GradientMask
-    if map_index == 5:
-        nodes['BM_MixRGB'].inputs[1].default_value = (0, 0, 0, 0)
-        nodes['BM_OutputMaterial'].target = 'CYCLES'
-        
-        links.new(nodes['BM_TexCoord'].outputs[0], nodes['BM_Mapping'].inputs[0])
-        links.new(nodes['BM_Mapping'].outputs[0], nodes['BM_TexGradient'].inputs[0])
-        links.new(nodes['BM_TexGradient'].outputs[0], nodes['BM_MapRange'].inputs[0])
-        links.new(nodes['BM_MapRange'].outputs[0], nodes['BM_MixRGB'].inputs[2])
-        links.new(nodes['BM_MixRGB'].outputs[0], nodes['BM_HueSaturation'].inputs[4])
-        links.new(nodes['BM_HueSaturation'].outputs[0], nodes['BM_Invert'].inputs[1])
-        links.new(nodes['BM_Invert'].outputs[0], nodes['BM_Emission'].inputs[0])
-        links.new(nodes['BM_Emission'].outputs[0], nodes['BM_OutputMaterial'].inputs[0])
-
-    if use_preview:
-        if context.scene.render.engine != 'CYCLES':
-            self.report({'INFO'}, BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
-
-        for node in nodes:
-            if node.type == 'OUTPUT_MATERIAL' and node.name.find('BM_') == -1:
-                node.target = 'ALL'
-
-        nodes['BM_OutputMaterial'].select = True
-        nodes.active = nodes['BM_OutputMaterial']
-
-    BM_MAP_MaterialUpdate(self, material, map_index)
-
-def BM_MAP_Preview_SetMaterial(self, context, map_index):
-    return
-
-    item = context.scene.bm_aol[context.scene.bm_props.global_active_index]
-    if item.use_target and item.source != 'NONE' and self.use_source_target:
-        item = context.scene.bm_aol[int(item.source)]
-
-    maps = ['BM_AO_Preview', 'BM_Cavity_Preview', 'BM_Curvature_Preview',
-            'BM_Thickness_Preview', 'BM_NormalMask_Preview', 'BM_GradientMask_Preview']
-
-    # removing NoneType materials
-    for index in range(len(item.object_pointer.data.materials))[::-1]:
-        if item.object_pointer.data.materials[index] is None:
-            item.object_pointer.data.materials.pop(index = index)
-
-    # set bm preview nodes for each mat
-    if len(item.object_pointer.data.materials):
-        for mat in item.object_pointer.data.materials:
-            BM_MAP_Preview_SetNodes(self, context, mat, map_index, True)
-    else:
-        new_mat = bpy.data.materials.new(name = maps[map_index])
-        item.object_pointer.data.materials.append(new_mat)
-        BM_MAP_Preview_SetNodes(self, context, new_mat, map_index, True)
-
-def BM_MAP_Preview_CleanMaterial(context):
-    return
-
-    item = context.scene.bm_aol[context.scene.bm_props.global_active_index]
-    
-    # remove nodes named with 'BM_' from item materials
-    for mat in item.object_pointer.data.materials:
-        if mat is None:
-            continue
-
-        mat.use_nodes = True
-        for node in mat.node_tree.nodes:
-            if node.name.find('BM_') != -1:
-                mat.node_tree.nodes.remove(node)
-
-    # if item has source, remove the nodes from its mats as well
-    # as long as if ther is a source, preview assigns preview to it.
-    if item.use_target and item.source != 'NONE':
-        source_item = context.scene.bm_aol[int(item.source)]
-
-        for mat in source_item.object_pointer.data.materials:
-            if mat is None:
-                continue
-
-            mat.use_nodes = True
-            for node in mat.node_tree.nodes:
-                if node.name.find('BM_') != -1:
-                    mat.node_tree.nodes.remove(node)
-
-def BM_MAP_Preview_LocalUpdate(self, context, map_index):
-    return
-
-    item = context.scene.bm_aol[context.scene.bm_props.global_active_index]
-
-    props = ['ao_use_preview', 'cavity_use_preview', 'curv_use_preview',
-             'thick_use_preview', 'xyzmask_use_preview', 'gmask_use_preview']
-    
-    for index, map in enumerate(item.maps):
-        for i in range(len(props)):
-            if i != map_index:
-                setattr(map, props[i], False)
-
-def BM_MAP_Preview_AO(self, context):
-    return
-
-    BM_MAP_Preview_CleanMaterial(context)
-    if self.ao_use_preview:
-        BM_MAP_Preview_LocalUpdate(self, context, 0) 
-        BM_MAP_Preview_SetMaterial(self, context, 0)
-
-def BM_MAP_Preview_Cavity(self, context):
-    return
-
-    BM_MAP_Preview_CleanMaterial(context)
-    if self.cavity_use_preview:
-        BM_MAP_Preview_LocalUpdate(self, context, 1)
-        BM_MAP_Preview_SetMaterial(self, context, 1)
-
-def BM_MAP_Preview_Curvature(self, context):
-    return
-
-    BM_MAP_Preview_CleanMaterial(context)
-    if self.curv_use_preview:
-        BM_MAP_Preview_LocalUpdate(self, context, 2)
-        BM_MAP_Preview_SetMaterial(self, context, 2)
-
-def BM_MAP_Preview_Thickness(self, context):
-    return
-
-    BM_MAP_Preview_CleanMaterial(context)
-    if self.thick_use_preview:
-        BM_MAP_Preview_LocalUpdate(self, context, 3)
-        BM_MAP_Preview_SetMaterial(self, context, 3)
-
-def BM_MAP_Preview_NormalMask(self, context):
-    return
-
-    BM_MAP_Preview_CleanMaterial(context)
-    if self.xyzmask_use_preview:
-        BM_MAP_Preview_LocalUpdate(self, context, 4)
-        BM_MAP_Preview_SetMaterial(self, context, 4)
-
-def BM_MAP_Preview_GradientMask(self, context):
-    return
-
-    BM_MAP_Preview_CleanMaterial(context)
-    if self.gmask_use_preview:
-        BM_MAP_Preview_LocalUpdate(self, context, 5)
-        BM_MAP_Preview_SetMaterial(self, context, 5)
-
-def BM_MAP_AO_MaterialUpdate(self, context):
-    return
-
-    item = context.scene.bm_aol[context.scene.bm_props.global_active_index]
-    if item.use_target and item.source != 'NONE' and self.use_source_target:
-        item = context.scene.bm_aol[int(item.source)]
-
-    if self.ao_use_preview:
-        for mat in item.object_pointer.data.materials:
-            if mat is None:
-                continue
-            BM_MAP_MaterialUpdate(self, mat, 0)
-            
-def BM_MAP_Cavity_MaterialUpdate(self, context):
-    return
-
-    item = context.scene.bm_aol[context.scene.bm_props.global_active_index]
-    if item.use_target and item.source != 'NONE' and self.use_source_target:
-        item = context.scene.bm_aol[int(item.source)]
-        
-    if self.cavity_use_preview:
-        for mat in item.object_pointer.data.materials:
-            if mat is None:
-                continue
-            BM_MAP_MaterialUpdate(self, mat, 1)         
-
-def BM_MAP_Curvature_MaterialUpdate(self, context):
-    return
-
-    item = context.scene.bm_aol[context.scene.bm_props.global_active_index]
-    if item.use_target and item.source != 'NONE' and self.use_source_target:
-        item = context.scene.bm_aol[int(item.source)]
-        
-    if self.curv_use_preview:
-        for mat in item.object_pointer.data.materials:
-            if mat is None:
-                continue
-            BM_MAP_MaterialUpdate(self, mat, 2)
-            
-def BM_MAP_Thickness_MaterialUpdate(self, context):
-    return
-
-    item = context.scene.bm_aol[context.scene.bm_props.global_active_index]
-    if item.use_target and item.source != 'NONE' and self.use_source_target:
-        item = context.scene.bm_aol[int(item.source)]
-        
-    if self.thick_use_preview:
-        for mat in item.object_pointer.data.materials:
-            if mat is None:
-                continue
-            BM_MAP_MaterialUpdate(self, mat, 3)          
-
-def BM_MAP_XYZMask_MaterialUpdate(self, context):
-    return
-
-    item = context.scene.bm_aol[context.scene.bm_props.global_active_index]
-    if item.use_target and item.source != 'NONE' and self.use_source_target:
-        item = context.scene.bm_aol[int(item.source)]
-        
-    if self.xyzmask_use_preview:
-        for mat in item.object_pointer.data.materials:
-            if mat is None:
-                continue
-            BM_MAP_MaterialUpdate(self, mat, 4)       
-
-def BM_MAP_GradientMask_MaterialUpdate(self, context):
-    return
-
-    item = context.scene.bm_aol[context.scene.bm_props.global_active_index]
-    if item.use_target and item.source != 'NONE' and self.use_source_target:
-        item = context.scene.bm_aol[int(item.source)]
-        
-    if self.gmask_use_preview:
-        for mat in item.object_pointer.data.materials:
-            if mat is None:
-                continue
-            BM_MAP_MaterialUpdate(self, mat, 5)
-
-def BM_ITEM_RemoveLocalPreviews(self, context):
-    return
-
-    props = ['ao_use_preview', 'cavity_use_preview', 'curv_use_preview',
-             'thick_use_preview', 'xyzmask_use_preview', 'gmask_use_preview']
-
-    #for item_index, item in enumerate(context.scene.bm_aol):
-    item = context.scene.bm_aol[context.scene.bm_props.global_active_index]
-
-    for index, map in enumerate(item.maps):
-        for i in range(len(props)):
-            setattr(map, props[i], False)
-
-def BM_MAP_AffectBySouce_Update(self, context):
-    return 
-
-    props = ['ao_use_preview', 'cavity_use_preview', 'curv_use_preview',
-             'thick_use_preview', 'xyzmask_use_preview', 'gmask_use_preview']
-
-    # if there is any preview True in props -> update it (set false, set true)
-    try:
-        active_preview = [prop for prop in props if getattr(self, prop) is True][0]
-    except:
-        return
-
-    setattr(self, active_preview, False)
-    setattr(self, active_preview, True)
-
-# auto set subdiv_levels -> not implemented
-def BM_MAP_AutoSetSubdivLevels(self, context):
-    return 
-
-    try:
-        item = context.scene.bm_aol[context.scene.bm_props.global_active_index]
-        subdiv_levels = 1
-
-        if item.use_target and item.source != 'NONE' and self.use_source_target:
-            item_poly_count = len(item.object_pointer.data.polygons)
-            source_poly_count = len(context.scene.bm_aol[int(item.source)].object_pointer.data.polygons)
-
-            while subdiv_levels < 10 and (item_poly_count * 4 ** subdiv_levels) < source_poly_count:
-                subdiv_levels += 1
-
-        if self.displacement_subdiv_levels != subdiv_levels:
-            self.displacement_subdiv_levels = subdiv_levels
-
-    except RecursionError:
-        pass

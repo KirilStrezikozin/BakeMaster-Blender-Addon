@@ -97,7 +97,7 @@ class BM_AddPresetBase():
 
             trans = getattr(cls, attr, None)
             if trans is None:
-                trans = str.maketrans({char: "_" for char in " !@#$%^&*(){}:\";'[]<>,.\\/?"})
+                trans = str.maketrans({char: "_" for char in " |!@#$%^&*(){}:\";'[]<>,.\\/?"})
                 setattr(cls, attr, trans)
             return trans
 
@@ -321,13 +321,15 @@ class BM_AddPresetBase():
 
                                     "map_VERTEX_COLOR_LAYER_prefix",
                                     # "map_VERTEX_COLOR_LAYER_use_preview",
-                                    "map_vertexcolor_layer",
+                                    # "map_vertexcolor_layer",
 
                                     "map_C_COMBINED_prefix",
 
                                     "map_C_AO_prefix",
 
                                     "map_C_SHADOW_prefix",
+
+                                    "map_C_POSITION_prefix",
 
                                     "map_C_NORMAL_prefix",
 
@@ -496,6 +498,7 @@ class BM_AddPresetBase():
                                 "\tnew_pass = bm_item.global_maps.add()",
                                 "\tnew_pass.global_map_type = 'ALBEDO'",
                                 "\tnew_pass.global_map_index = len(bm_item.global_maps)",
+                                "\tnew_pass.global_map_object_index = bpy.context.scene.bm_props.global_active_index",
                                 "\tbm_item.global_maps_active_index = len(bm_item.global_maps) - 1",
                             ]
                             for line in ad_lines:
@@ -583,6 +586,7 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         # "bm_item.hl_use_unique_per_map",
         # "bm_item.hl_highpoly_table",
         "bm_item.hl_decals_use_separate_texset",
+        "bm_item.hl_decals_separate_texset_prefix",
         # "bm_item.hl_use_cage",
         "bm_item.hl_cage_type",
         "bm_item.hl_cage_extrusion",
@@ -625,8 +629,8 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.out_use_32bit",
         "bm_item.out_use_alpha",
         "bm_item.out_use_transbg",
-        "bm_item.out_udim_start_tile",
-        "bm_item.out_udim_end_tile",
+        # "bm_item.out_udim_start_tile",
+        # "bm_item.out_udim_end_tile",
         "bm_item.out_super_sampling_aa",
         "bm_item.out_samples",
         "bm_item.out_use_adaptive_sampling",
@@ -641,6 +645,7 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.bake_batchname",
         "bm_item.bake_batchname_use_caps",
         "bm_item.bake_create_material",
+        "bm_item.bake_assign_modifiers",
         "bm_item.bake_device",
         "bm_item.bake_hide_when_inactive",
         # "bm_item.bake_vg_index",
@@ -668,6 +673,7 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         # "bm_item.hl_use_unique_per_map",
         # "bm_item.hl_highpoly_table",
         "bm_item.hl_decals_use_separate_texset",
+        "bm_item.hl_decals_separate_texset_prefix",
         # "bm_item.hl_use_cage",
         "bm_item.hl_cage_type",
         "bm_item.hl_cage_extrusion",
@@ -737,6 +743,7 @@ class BM_OT_HL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         # "bm_map.hl_use_unique_per_map",
         # "bm_map.hl_highpoly_table",
         "bm_item.hl_decals_use_separate_texset",
+        "bm_item.hl_decals_separate_texset_prefix",
         # "bm_map.hl_use_cage",
         "bm_map.hl_cage_type",
         "bm_map.hl_cage_extrusion",
@@ -824,8 +831,8 @@ class BM_OT_OUT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_map.out_use_32bit",
         "bm_map.out_use_alpha",
         "bm_map.out_use_transbg",
-        "bm_map.out_udim_start_tile",
-        "bm_map.out_udim_end_tile",
+        # "bm_map.out_udim_start_tile",
+        # "bm_map.out_udim_end_tile",
         "bm_map.out_super_sampling_aa",
         "bm_map.out_samples",
         "bm_map.out_use_adaptive_sampling",
@@ -902,13 +909,15 @@ class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 
         "bm_map.map_VERTEX_COLOR_LAYER_prefix",
         #bm_map. "map_VERTEX_COLOR_LAYER_use_preview",
-        "bm_map.map_vertexcolor_layer",
+        # "bm_map.map_vertexcolor_layer",
 
         "bm_map.map_C_COMBINED_prefix",
 
         "bm_map.map_C_AO_prefix",
 
         "bm_map.map_C_SHADOW_prefix",
+
+        "bm_map.map_C_POSITION_prefix",
 
         "bm_map.map_C_NORMAL_prefix",
 
@@ -1121,6 +1130,7 @@ class BM_OT_BAKE_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.bake_batchname",
         "bm_item.bake_batchname_use_caps",
         "bm_item.bake_create_material",
+        "bm_item.bake_assign_modifiers",
         "bm_item.bake_device",
         "bm_item.bake_hide_when_inactive",
         # "bm_item.bake_vg_index",
@@ -1393,8 +1403,8 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
                 # execute preset, change item index, execute again, ...
                 if self.menu_idname == "BM_MT_FULL_OBJECT_Presets":
                     for index, bm_item in enumerate(context.scene.bm_table_of_objects):
-                        if bm_item.nm_is_universal_container:
-                            items = [item for item in bm_props.global_alep_objects if item.object_name == bm_item.nm_container_name]
+                        if bm_item.nm_is_universal_container and bm_item.nm_uni_container_is_global:
+                            items = [item for item in bm_props.global_alep_objects if item.object_name == "%s Container" % bm_item.nm_container_name]
                         else:
                             items = [item for item in bm_props.global_alep_objects if item.object_name == bm_item.global_object_name]
                         if len(items) == 0:

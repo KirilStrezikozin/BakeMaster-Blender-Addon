@@ -22,7 +22,7 @@ bl_info = {
     "name" : "BakeMaster",
     "description" : "Bake various PBR-based or Cycles maps with ease and comfort",
     "author" : "kemplerart",
-    "version" : (1, 5, 0),
+    "version" : (2, 0, 0),
     "blender" : (2, 83, 0),
     "location" : "View3D > Sidebar > BakeMaster",
     "warning" : "",

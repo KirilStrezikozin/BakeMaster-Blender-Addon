@@ -36,6 +36,10 @@ class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
         layout.prop(bm_props, 'global_decal_tag')
         layout = self.layout.column(align=True)
         layout.prop(bm_props, 'global_bake_uv_layer_tag')
+        layout = self.layout.column(align=True)
+        layout.prop(bm_props, 'global_use_hide_notbaked')
+        layout = self.layout.column(align=True)
+        layout.prop(bm_props, 'global_bake_match_maps_type')
         
 class BM_ALEP_UL_Objects_Item(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, active_data, active_propname, index):
@@ -292,12 +296,33 @@ class BM_UL_Table_of_Maps_Item(bpy.types.UIList):
         else:
             icon = 'RESTRICT_RENDER_ON'
             layout.active = False
-        object = BM_Object_Get(context)[0]
-        if (object.uv_use_unique_per_map is False and object.uv_bake_data == 'VERTEX_COLORS') or (object.uv_use_unique_per_map and item.uv_bake_data == 'VERTEX_COLORS'):
+
+        object = BM_Object_Get(item, context)[0]
+        if object.uv_use_unique_per_map:
+            uv_container = item
+        else:
+            uv_container = object
+
+        if item.global_map_type == 'DECAL' and object.bake_save_internal:
+            layout.active = False
+            icon = 'RESTRICT_RENDER_ON'
+            props_column_use_bake.enabled = False
+
+        if uv_container.uv_bake_data == 'VERTEX_COLORS':
             if item.global_map_type != 'VERTEX_COLOR_LAYER':
                 layout.active = False
                 icon = 'RESTRICT_RENDER_ON'
                 props_column_use_bake.enabled = False
+        if uv_container.uv_bake_target == 'VERTEX_COLORS':
+            if item.global_map_type == 'NORMAL' and item.map_normal_data == 'MULTIRES':
+                layout.active = False
+                icon = 'RESTRICT_RENDER_ON'
+                props_column_use_bake.enabled = False
+            elif item.global_map_type == 'DISPLACEMENT' and item.map_displacement_data in ['HIGHPOLY', 'MULTIRES']:
+                layout.active = False
+                icon = 'RESTRICT_RENDER_ON'
+                props_column_use_bake.enabled = False
+
         props_column_use_bake.prop(item, 'global_use_bake', text="", icon=icon)
 
     def draw_filter(self, context, layout):
@@ -475,7 +500,7 @@ class BM_PT_MainBase(bpy.types.Panel):
                 refresh = True
                 rows += 1
                 break
-        if full_len and BM_Object_Get(context)[1] is False:
+        if full_len and BM_Object_Get(None, context)[1] is False:
             if scene.bm_props.global_use_name_matching and any([object.nm_is_universal_container, object.nm_is_local_container]):
                 rows += 1
             rows -= 1
@@ -497,7 +522,7 @@ class BM_PT_MainBase(bpy.types.Panel):
         col.separator()
 
         if len(scene.bm_table_of_objects):
-            object = BM_Object_Get(context)
+            object = BM_Object_Get(None, context)
             if (object[1] is True) or (scene.bm_props.global_use_name_matching and any([object[0].nm_is_universal_container, object[0].nm_is_local_container])): # and object[0].use_source is False:
                 BM_PT_FULL_OBJECT_Presets.draw_panel_header(col)
                 col.separator()
@@ -514,7 +539,7 @@ class BM_PT_ItemBase(bpy.types.Panel):
         return len(context.scene.bm_table_of_objects) > 0
 
     def draw_header(self, context):
-        object = BM_Object_Get(context)
+        object = BM_Object_Get(None, context)
         label = object[0].global_object_name
         label_end = ""
         icon = 'PROPERTIES'
@@ -536,7 +561,7 @@ class BM_PT_ItemBase(bpy.types.Panel):
             row.prop(object[0], 'nm_uni_container_is_global', text="", icon='NETWORK_DRIVE')
 
     def draw(self, context):
-        object = BM_Object_Get(context)
+        object = BM_Object_Get(None, context)
         label = ""
         icon = ''
         draw_label = False
@@ -587,7 +612,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
     
     @classmethod
     def poll(cls, context):
-        object = BM_Object_Get(context)
+        object = BM_Object_Get(None, context)
         if object[0].nm_is_universal_container:
             return object[0].nm_uni_container_is_global
         elif object[0].nm_is_local_container:
@@ -599,7 +624,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
         return object[1]
 
     def draw_header(self, context):
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
         if context.scene.bm_props.global_use_name_matching and any([object.nm_is_universal_container, object.nm_is_local_container]):
             label = "Container"
         else:
@@ -612,7 +637,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         scene = context.scene
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
 
         draw_all = True
         for object1 in context.scene.bm_table_of_objects:
@@ -651,63 +676,71 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
         if object.decal_is_decal and object.nm_uni_container_is_global is False:
             if draw_all is False:
                 layout.label(text="No settings available")
-            return
+            # return
 
-        # hl
-        hl_box = layout.box()
-        hl_box.use_property_split = True
-        hl_box.use_property_decorate = False
-        hl_draw = True
+        else:
+            # hl
+            hl_box = layout.box()
+            hl_box.use_property_split = True
+            hl_box.use_property_decorate = False
+            hl_draw = True
 
-        # hl header
-        hl_box_header = hl_box.row(align=True)
-        hl_box_header.use_property_split = False
-        hl_box_header.emboss = 'NONE'
-        icon = 'TRIA_DOWN' if scene.bm_props.global_is_hl_panel_expanded else 'TRIA_RIGHT'
-        hl_box_header.prop(scene.bm_props, 'global_is_hl_panel_expanded', text="", icon=icon)
-        hl_box_header.emboss = 'NORMAL'
-        hl_box_header.label(text="High to Lowpoly")
-        BM_PT_HL_Presets.draw_panel_header(hl_box_header)
+            # hl header
+            hl_box_header = hl_box.row(align=True)
+            hl_box_header.use_property_split = False
+            hl_box_header.emboss = 'NONE'
+            icon = 'TRIA_DOWN' if scene.bm_props.global_is_hl_panel_expanded else 'TRIA_RIGHT'
+            hl_box_header.prop(scene.bm_props, 'global_is_hl_panel_expanded', text="", icon=icon)
+            hl_box_header.emboss = 'NORMAL'
+            hl_box_header.label(text="High to Lowpoly")
+            BM_PT_HL_Presets.draw_panel_header(hl_box_header)
 
-        # hl body
-        if scene.bm_props.global_is_hl_panel_expanded:
-            if object.nm_uni_container_is_global is False and draw_all:
-                hl_box.prop(object, 'hl_use_unique_per_map')
+            # hl body
+            if scene.bm_props.global_is_hl_panel_expanded:
+                if object.nm_uni_container_is_global is False and draw_all:
+                    hl_box.prop(object, 'hl_use_unique_per_map')
 
-            if object.hl_use_unique_per_map is False or draw_all is False:
-                # highpoly
-                if len(object.hl_highpoly_table) > 1:
-                    rows = len(object.hl_highpoly_table)
-                else:
-                    rows = 1
-                hl_box_highpoly_frame = hl_box.split(factor=0.4)
-                hl_box_highpoly_frame.column()
-                hl_box_highpoly = hl_box_highpoly_frame.column()
-                label = "Highpoly" if len(object.hl_highpoly_table) <= 1 else "Highpolies"
-                if object.nm_is_universal_container and object.nm_uni_container_is_global:
-                    label += " (automatic)"
-                    hl_draw = False
-                hl_box_highpoly.label(text=label)
-                if hl_draw:
-                    hl_box_highpoly_table = hl_box_highpoly.column().row()
-                    hl_box_highpoly_table.template_list('BM_UL_Table_of_Objects_Item_Highpoly', "", object, 'hl_highpoly_table', object, 'hl_highpoly_table_active_index', rows=rows)
-                    hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
-                    hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
-                    hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
-                # highpoly as decal
-                if len(object.hl_highpoly_table):
-                    highpoly_object_index = object.hl_highpoly_table[object.hl_highpoly_table_active_index].global_highpoly_object_index
-                    hl_box_decal = hl_box.column(align=True)
-                    if highpoly_object_index != -1:
-                        source_object = scene.bm_table_of_objects[highpoly_object_index]
-                        hl_box_decal.prop(source_object, 'hl_is_decal')
-                    if draw_all:
+                if object.hl_use_unique_per_map is False or draw_all is False:
+                    # highpoly
+                    if len(object.hl_highpoly_table) > 1:
+                        rows = len(object.hl_highpoly_table)
+                    else:
+                        rows = 1
+                    hl_box_highpoly_frame = hl_box.split(factor=0.4)
+                    hl_box_highpoly_frame.column()
+                    hl_box_highpoly = hl_box_highpoly_frame.column()
+                    label = "Highpoly" if len(object.hl_highpoly_table) <= 1 else "Highpolies"
+                    if object.nm_is_universal_container and object.nm_uni_container_is_global:
+                        label += " (automatic)"
+                        hl_draw = False
+                    hl_box_highpoly.label(text=label)
+                    if hl_draw:
+                        hl_box_highpoly_table = hl_box_highpoly.column().row()
+                        hl_box_highpoly_table.template_list('BM_UL_Table_of_Objects_Item_Highpoly', "", object, 'hl_highpoly_table', object, 'hl_highpoly_table_active_index', rows=rows)
+                        hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
+                        hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
+                        hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
+                    # highpoly as decal
+                    if len(object.hl_highpoly_table):
+                        highpoly_object_index = object.hl_highpoly_table[object.hl_highpoly_table_active_index].global_highpoly_object_index
+                        hl_box_decal = hl_box.column(align=True)
+                        if highpoly_object_index != -1:
+                            source_object = scene.bm_table_of_objects[highpoly_object_index]
+                            hl_box_decal.prop(source_object, 'hl_is_decal')
+                        if draw_all:
+                            hl_box_decal.prop(object, 'hl_decals_use_separate_texset')
+                            if object.hl_decals_use_separate_texset:
+                                hl_box_decal.prop(object, 'hl_decals_separate_texset_prefix')
+                    if hl_draw is False:
+                        hl_box_decal = hl_box.column(align=True)
                         hl_box_decal.prop(object, 'hl_decals_use_separate_texset')
-                # cage
-                if len(object.hl_highpoly_table) and draw_all:
-                    hl_box_cage = hl_box.column(align=True)
-                    hl_box_cage.prop(object, 'hl_cage_type')
-                    if object.hl_cage_type == 'STANDARD':
+                        if object.hl_decals_use_separate_texset:
+                            hl_box_decal.prop(object, 'hl_decals_separate_texset_prefix')
+                    # cage
+                    if len(object.hl_highpoly_table) and draw_all:
+                        hl_box_cage = hl_box.column(align=True)
+                        # hl_box_cage.prop(object, 'hl_cage_type')
+                        # if object.hl_cage_type == 'STANDARD':
                         if object.hl_use_cage is False:
                             label = "Extrusion"
                             hl_box_cage.prop(object, 'hl_cage_extrusion', text=label)
@@ -722,8 +755,8 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                                 hl_box_cage.prop(object, 'hl_cage')
                             else:
                                 hl_box_cage.prop(object, 'hl_use_cage', text="Use Cage Object (automatic)")
-                    else:
-                        hl_box_cage.prop(object, 'hl_cage_extrusion', text="Extrusion")
+                        # else:
+                            # hl_box_cage.prop(object, 'hl_cage_extrusion', text="Extrusion")
         
         # highs and cage are drawn for global uni_c objects
         # everything else not
@@ -760,8 +793,9 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                     uv_box_column.prop(object, 'uv_type')
                     uv_box_column.prop(object, 'uv_snap_islands_to_pixels')
                     uv_box_column = uv_box.column(align=True)
-                    uv_box_column.prop(object, 'uv_use_auto_unwrap')
-                    if object.uv_use_auto_unwrap:
+                    if object.uv_active_layer != 'NONE_AUTO_CREATE':
+                        uv_box_column.prop(object, 'uv_use_auto_unwrap')
+                    if object.uv_use_auto_unwrap or object.uv_active_layer == 'NONE_AUTO_CREATE':
                         uv_box_column.prop(object, 'uv_auto_unwrap_angle_limit')
                         uv_box_column.prop(object, 'uv_auto_unwrap_island_margin')
                         uv_box_column.prop(object, 'uv_auto_unwrap_use_scale_to_bounds')
@@ -801,7 +835,11 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
             else:
                 for map in object.global_maps:
                     len_of_highs += len(map.hl_highpoly_table)
-            if len_of_highs > 0:
+            # draw if uni_c is global
+            hl_draw = True
+            if object.nm_is_universal_container and object.nm_uni_container_is_global:
+                hl_draw = False
+            if len_of_highs > 0 or hl_draw is False:
                 label = "Highpoly" if len_of_highs == 1 else "Highpolies"
                 csh_box_column = csh_box.column()
                 csh_box_column.prop(object, 'csh_use_highpoly_reset_normals', text="Reset %s Normals" % label)
@@ -820,7 +858,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
     
     @classmethod
     def poll(cls, context):
-        object = BM_Object_Get(context)
+        object = BM_Object_Get(None, context)
         if object[0].nm_is_universal_container:
             return object[0].nm_uni_container_is_global
         elif object[0].nm_is_local_container:
@@ -841,7 +879,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         scene = context.scene
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
     
         # maps table
         maps_table_box = layout.box()
@@ -864,7 +902,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
 
         # map settings
         if len(object.global_maps):
-            map = BM_Map_Get(object)
+            map = BM_Map_Get(None, object)
             # format 
             if (object.uv_use_unique_per_map is False and object.uv_bake_target != 'VERTEX_COLORS') or (object.uv_use_unique_per_map and map.uv_bake_target != 'VERTEX_COLORS'):
                 format_box = layout.box()
@@ -934,15 +972,29 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                         format_box_column.prop(format_prop_collection, 'out_min_samples')
                     else:
                         format_box_column.prop(format_prop_collection, 'out_samples')
-                    format_box.prop(format_prop_collection, 'out_use_denoise')            
+                    format_box_denoise_prop = format_box.row()
+                    format_box_denoise_prop.prop(format_prop_collection, 'out_use_denoise')            
+                    format_box_denoise_prop.active = not object.bake_save_internal
 
             # map settings column
             map_settings_column = maps_table_box.column()
             map_settings_column.use_property_split = True
             map_settings_column.use_property_decorate = False
 
-            if (object.uv_use_unique_per_map is False and object.uv_bake_data == 'VERTEX_COLORS') or (object.uv_use_unique_per_map and map.uv_bake_data == 'VERTEX_COLORS'):
+            if object.uv_use_unique_per_map:
+                uv_container = map
+            else:
+                uv_container = object
+
+            if uv_container.uv_bake_data == 'VERTEX_COLORS':
                 if map.global_map_type != 'VERTEX_COLOR_LAYER':
+                    map_settings_column.enabled = False
+            if uv_container.uv_bake_target == 'VERTEX_COLORS':
+                if map.global_map_type == 'NORMAL' and map.map_normal_data == 'MULTIRES':
+                    map_settings_column.enabled = False
+                elif map.global_map_type == 'DISPLACEMENT' and map.map_displacement_data in ['HIGHPOLY', 'MULTIRES']:
+                    map_settings_column.enabled = False
+            if map.global_map_type == 'DECAL' and object.bake_save_internal:
                     map_settings_column.enabled = False
 
             # map settings body
@@ -964,7 +1016,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 pass
             else:
                 map_settings_column_preview = map_settings_column.row()
-                map_settings_column_preview.prop(map, 'map_%s_use_preview' % map.global_map_type)
+                map_settings_column_preview.prop(map, 'map_%s_use_preview' % map.global_map_type, text="Preview (Full Version)")
                 if any([object.nm_is_universal_container, object.hl_is_highpoly, object.hl_is_cage]):
                     map_settings_column_preview.active = False
             try:
@@ -1011,10 +1063,10 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     if map.map_decal_normal_preset == 'CUSTOM':
                         sub = map_settings_column.column(align=True)
                         sub.prop(map, 'map_decal_normal_custom_preset')
-                        if map.map_decal_normal_custom_preset == 'CUSTOM':
-                            sub.prop(map, 'map_decal_normal_r', text="Swizzle R")
-                            sub.prop(map, 'map_decal_normal_g', text="G")
-                            sub.prop(map, 'map_decal_normal_b', text="B")
+                        # if map.map_decal_normal_custom_preset == 'CUSTOM':
+                        #     sub.prop(map, 'map_decal_normal_r', text="Swizzle R")
+                        #     sub.prop(map, 'map_decal_normal_g', text="G")
+                        #     sub.prop(map, 'map_decal_normal_b', text="B")
                 else:
                     map_settings_column.prop(map, 'map_decal_height_opacity_invert')
 
@@ -1075,7 +1127,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     pass
                 map_settings_column.prop(map, 'map_displacement_data')
                 map_settings_column.prop(map, 'map_displacement_result')
-                if map.map_displacement_result == 'MODIFIER':
+                if map.map_displacement_data == 'HIGHPOLY':
                     map_settings_column.prop(map, 'map_displacement_subdiv_levels')
                     try:
                         object_pointer = scene.objects[object.global_object_name]
@@ -1087,14 +1139,14 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
             elif map.global_map_type == 'VECTOR_DISPLACEMENT':
                 map_settings_column.prop(map, 'map_vector_displacement_use_negative')
                 map_settings_column.prop(map, 'map_vector_displacement_result')
-                if map.map_vector_displacement_result == 'MODIFIER':
-                    map_settings_column.prop(map, 'map_vector_displacement_subdiv_levels')
-                    try:
-                        object_pointer = scene.objects[object.global_object_name]
-                        face_count = len(object_pointer.data.polygons) * 4 ** map.map_vector_displacement_subdiv_levels # future face count
-                        map_settings_column.label(text="Face count while baking: " + str(face_count))
-                    except KeyError:
-                        pass
+                # if map.map_vector_displacement_result == 'MODIFIER':
+                #     map_settings_column.prop(map, 'map_vector_displacement_subdiv_levels')
+                #     try:
+                #         object_pointer = scene.objects[object.global_object_name]
+                #         face_count = len(object_pointer.data.polygons) * 4 ** map.map_vector_displacement_subdiv_levels # future face count
+                #         map_settings_column.label(text="Face count while baking: " + str(face_count))
+                #     except KeyError:
+                #         pass
 
             # Masks and Details Maps
             elif map.global_map_type == 'AO':
@@ -1216,74 +1268,83 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
 
             # skip drawing hl, uv, csh subpanels
             if object.decal_is_decal and object.nm_uni_container_is_global is False:
-                return
+                # return
+                pass
+            else:
 
-            # hl
-            if object.hl_use_unique_per_map:
-                hl_box = layout.box()
-                hl_box.use_property_split = True
-                hl_box.use_property_decorate = False
-                hl_draw = True
-        
-                # hl header
-                hl_box_header = hl_box.row(align=True)
-                hl_box_header.use_property_split = False
-                hl_box_header.emboss = 'NONE'
-                icon = 'TRIA_DOWN' if scene.bm_props.local_is_hl_panel_expanded else 'TRIA_RIGHT'
-                hl_box_header.prop(scene.bm_props, 'local_is_hl_panel_expanded', text="", icon=icon)
-                hl_box_header.emboss = 'NORMAL'
-                hl_box_header.label(text="Map High to Lowpoly")
-                BM_PT_HL_Presets.draw_panel_header(hl_box_header)
+                # hl
+                if object.hl_use_unique_per_map:
+                    hl_box = layout.box()
+                    hl_box.use_property_split = True
+                    hl_box.use_property_decorate = False
+                    hl_draw = True
+            
+                    # hl header
+                    hl_box_header = hl_box.row(align=True)
+                    hl_box_header.use_property_split = False
+                    hl_box_header.emboss = 'NONE'
+                    icon = 'TRIA_DOWN' if scene.bm_props.local_is_hl_panel_expanded else 'TRIA_RIGHT'
+                    hl_box_header.prop(scene.bm_props, 'local_is_hl_panel_expanded', text="", icon=icon)
+                    hl_box_header.emboss = 'NORMAL'
+                    hl_box_header.label(text="Map High to Lowpoly")
+                    BM_PT_HL_Presets.draw_panel_header(hl_box_header)
 
-                # hl body
-                if scene.bm_props.local_is_hl_panel_expanded:
-                    if len(map.hl_highpoly_table) > 1:
-                        rows = len(map.hl_highpoly_table)
-                    else:
-                        rows = 1
-                    hl_box_highpoly_frame = hl_box.split(factor=0.4)
-                    hl_box_highpoly_frame.column()
-                    hl_box_highpoly = hl_box_highpoly_frame.column()
-                    label = "Highpoly" if len(map.hl_highpoly_table) <= 1 else "Highpolies"
-                    if object.nm_is_universal_container and object.nm_uni_container_is_global:
-                        label += " (automatic)"
-                        hl_draw = False
-                        hl_box_highpoly.label(text=label)
-                    if hl_draw:
-                        hl_box_highpoly_table = hl_box_highpoly.column().row()
-                        hl_box_highpoly_table.template_list('BM_UL_Table_of_Maps_Item_Highpoly', "", map, 'hl_highpoly_table', map, 'hl_highpoly_table_active_index', rows=rows)
-                        hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
-                        hl_highpoly_table_column.operator(BM_OT_MAP_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
-                        hl_highpoly_table_column.operator(BM_OT_MAP_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
-                    # highpoly as decal
-                    if len(map.hl_highpoly_table):
-                        highpoly_object_index = map.hl_highpoly_table[map.hl_highpoly_table_active_index].global_highpoly_object_index
-                        hl_box_decal = hl_box.column(align=True)
-                        if highpoly_object_index != -1:
-                            source_object = scene.bm_table_of_objects[highpoly_object_index]
-                            hl_box_decal.prop(source_object, 'hl_is_decal')
-                        hl_box_decal.prop(object, 'hl_decals_use_separate_texset')
-                    # cage
-                    if len(map.hl_highpoly_table) or hl_draw is False:
-                        hl_box_cage = hl_box.column(align=True)
-                        hl_box_cage.prop(map, 'hl_cage_type')
-                        if map.hl_cage_type == 'STANDARD':
-                            if map.hl_use_cage is False:
-                                label = "Extrusion"
-                                hl_box_cage.prop(map, 'hl_cage_extrusion', text=label)
-                                if bpy.app.version >= (2, 90, 0):
-                                    hl_box_cage.prop(map, 'hl_max_ray_distance')
-                                hl_box_cage.prop(map, 'hl_use_cage')
-                            else:
-                                label = "Cage Extrusion"
-                                hl_box_cage.prop(map, 'hl_cage_extrusion', text=label)
-                                if hl_draw:
-                                    hl_box_cage.prop(map, 'hl_use_cage')
-                                    hl_box_cage.prop(map, 'hl_cage')
-                                else:
-                                    hl_box_cage.prop(map, 'hl_use_cage', text="Use Cage Object (auto)")
+                    # hl body
+                    if scene.bm_props.local_is_hl_panel_expanded:
+                        if len(map.hl_highpoly_table) > 1:
+                            rows = len(map.hl_highpoly_table)
                         else:
-                            hl_box_cage.prop(map, 'hl_cage_extrusion', text="Extrusion")
+                            rows = 1
+                        hl_box_highpoly_frame = hl_box.split(factor=0.4)
+                        hl_box_highpoly_frame.column()
+                        hl_box_highpoly = hl_box_highpoly_frame.column()
+                        label = "Highpoly" if len(map.hl_highpoly_table) <= 1 else "Highpolies"
+                        if object.nm_is_universal_container and object.nm_uni_container_is_global:
+                            label += " (automatic)"
+                            hl_draw = False
+                            hl_box_highpoly.label(text=label)
+                        if hl_draw:
+                            hl_box_highpoly_table = hl_box_highpoly.column().row()
+                            hl_box_highpoly_table.template_list('BM_UL_Table_of_Maps_Item_Highpoly', "", map, 'hl_highpoly_table', map, 'hl_highpoly_table_active_index', rows=rows)
+                            hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
+                            hl_highpoly_table_column.operator(BM_OT_MAP_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
+                            hl_highpoly_table_column.operator(BM_OT_MAP_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
+                        # highpoly as decal
+                        if len(map.hl_highpoly_table):
+                            highpoly_object_index = map.hl_highpoly_table[map.hl_highpoly_table_active_index].global_highpoly_object_index
+                            hl_box_decal = hl_box.column(align=True)
+                            if highpoly_object_index != -1:
+                                source_object = scene.bm_table_of_objects[highpoly_object_index]
+                                hl_box_decal.prop(source_object, 'hl_is_decal')
+                            hl_box_decal.prop(object, 'hl_decals_use_separate_texset')
+                            if object.hl_decals_use_separate_texset:
+                                hl_box_decal.prop(object, 'hl_decals_separate_texset_prefix')
+                        if hl_draw is False:
+                            hl_box_decal = hl_box.column(align=True)
+                            hl_box_decal.prop(object, 'hl_decals_use_separate_texset')
+                            if object.hl_decals_use_separate_texset:
+                                hl_box_decal.prop(object, 'hl_decals_separate_texset_prefix')
+                        # cage
+                        if len(map.hl_highpoly_table) or hl_draw is False:
+                            hl_box_cage = hl_box.column(align=True)
+                            hl_box_cage.prop(map, 'hl_cage_type')
+                            if map.hl_cage_type == 'STANDARD':
+                                if map.hl_use_cage is False:
+                                    label = "Extrusion"
+                                    hl_box_cage.prop(map, 'hl_cage_extrusion', text=label)
+                                    if bpy.app.version >= (2, 90, 0):
+                                        hl_box_cage.prop(map, 'hl_max_ray_distance')
+                                    hl_box_cage.prop(map, 'hl_use_cage')
+                                else:
+                                    label = "Cage Extrusion"
+                                    hl_box_cage.prop(map, 'hl_cage_extrusion', text=label)
+                                    if hl_draw:
+                                        hl_box_cage.prop(map, 'hl_use_cage')
+                                        hl_box_cage.prop(map, 'hl_cage')
+                                    else:
+                                        hl_box_cage.prop(map, 'hl_use_cage', text="Use Cage Object (auto)")
+                            else:
+                                hl_box_cage.prop(map, 'hl_cage_extrusion', text="Extrusion")
         
             # uv
             if object.uv_use_unique_per_map:
@@ -1312,8 +1373,9 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                         uv_box_column.prop(map, 'uv_type')
                         uv_box_column.prop(map, 'uv_snap_islands_to_pixels')
                         uv_box_column = uv_box.column(align=True)
-                        uv_box_column.prop(object, 'uv_use_auto_unwrap')
-                        if object.uv_use_auto_unwrap:
+                        if object.uv_active_layer != 'NONE_AUTO_CREATE':
+                            uv_box_column.prop(object, 'uv_use_auto_unwrap')
+                        if object.uv_use_auto_unwrap or object.uv_active_layer == 'NONE_AUTO_CREATE':
                             uv_box_column.prop(object, 'uv_auto_unwrap_angle_limit')
                             uv_box_column.prop(object, 'uv_auto_unwrap_island_margin')
                             uv_box_column.prop(object, 'uv_auto_unwrap_use_scale_to_bounds')
@@ -1325,7 +1387,7 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
     
     @classmethod
     def poll(cls, context):
-        object = BM_Object_Get(context)
+        object = BM_Object_Get(None, context)
         if object[0].nm_is_universal_container:
             return object[0].nm_uni_container_is_global
         elif object[0].nm_is_local_container:
@@ -1345,7 +1407,7 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         scene = context.scene
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
 
 
         # channel packing
@@ -1507,7 +1569,8 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
             else:
                 bake_layout_device.active = context.preferences.addons['cycles'].preferences.has_active_device()
             bake_box_column.prop(object, 'bake_create_material')
-            bake_box_column.prop(scene.bm_props, 'global_bake_use_save_log')
+            bake_box_column.prop(object, 'bake_assign_modifiers')
+            # bake_box_column.prop(scene.bm_props, 'global_bake_use_save_log')
 
             bake_box_column = bake_box.column(align=True)
             bake_box_column.prop(object, 'bake_hide_when_inactive')
@@ -1629,7 +1692,8 @@ class BM_PT_BakeBase(bpy.types.Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False
         scene = context.scene
-        object = BM_Object_Get(context)[0]
+        object_full = BM_Object_Get(None, context)
+        object = object_full[0]
 
         # bake body
         layout.prop(scene.bm_props, 'global_use_bakemaster_reset')
@@ -1637,10 +1701,19 @@ class BM_PT_BakeBase(bpy.types.Panel):
         bake_column = layout.column(align=True)
         bake_column_bake_this = bake_column.row()
         bake_column_bake_this.operator(BM_OT_ITEM_Bake.bl_idname, text="Bake This").control = 'BAKE_THIS'
+
+        # object_exists = object_full[1]
+        # if object.nm_is_universal_container:
+        #     object_exists = True
+        # if any([object.hl_is_cage, object.hl_is_highpoly, object.nm_is_local_container, object_exists is False, object.global_use_bake is False]):
+        #     bake_column_bake_this.active = False
+
         bake_column_bake_all = bake_column.row()
         bake_column_bake_all.operator(BM_OT_ITEM_Bake.bl_idname, text="Bake All").control = 'BAKE_ALL'
         bake_column_bake_all.scale_y = 1.5
-        bake_column.enabled = context.scene.bm_props.global_bake_available
+
+        # bake_column.enabled = not BM_OT_ITEM_Bake.is_running()
+        # bake_column.enabled = context.scene.bm_props.global_bake_available
 
         # additional operators
         ad_column = layout.column(align=True)

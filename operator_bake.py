@@ -27,10 +27,20 @@ class BM_OT_ITEM_Bake(bpy.types.Operator):
     bl_description = BM_Labels.OPERATOR_ITEM_BAKE_DESCRIPTION
     bl_options = {'UNDO'}
 
+    wait_delay = 0.1 # Time Step interval in seconds between timer events
+    report_delay = 2.0 # delay between each status report, seconds
+    _version_current = bpy.app.version # Blender version for compatibility checks
+    _handler = None
+    _timer = None
+
     control : bpy.props.EnumProperty(
         items = [('BAKE_ALL', "Bake All", "Bake maps for all objects added"),
-                 ('BAKE_THIS', "Bake This", "Bake maps only for the current item")])
+                 ('BAKE_THIS', "Bake This", "Bake maps only for the current object or container")])
 
+    @classmethod
+    def is_running(cls):
+        return cls._handler is not None
+    
     def invoke(self, context, event):
-        self.report({'ERROR'}, "Upgrade to Full Version")
+        self.report({'INFO'}, "Upgrade to Full Version")
         return {'FINISHED'}

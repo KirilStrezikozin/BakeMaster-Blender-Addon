@@ -38,7 +38,9 @@ BakeMaster is an add-on specified for baking various texture maps <br/>and creat
 > 🎯 - Name Matching - 🎯 <br>
 > 🎯 - Bake multiple Highpolies onto single Lowpoly - 🎯 <br>
 > <br>
-> Currently in progress: Bake and putting all features together 🤩 <br>
+> Currently in progress: Documentation <br>
+> All code is finished! 🤩 <br>
+> Get it in our discord: <br>
 > <br>
 > Join new features disscussion & testing in our [Discord](https://discord.gg/2ePzzzMBf4) Stay tuned for [Announcements](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/discussions/5) ✅</span> <br>
 

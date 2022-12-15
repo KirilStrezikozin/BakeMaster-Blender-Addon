@@ -333,6 +333,12 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                             BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                             new_item = scene.bm_table_of_objects.add()
+                            # update texsets objs source indexes
+                            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                            # update highpolies and cages source indexes
+                            BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                            BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+
                             new_item.global_object_name = object.name
                             # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
                             scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
@@ -449,6 +455,13 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                             BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                             new_container = scene.bm_table_of_objects.add()
+                            # update texsets objs source indexes
+                            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+
+                            # update highpolies and cages source indexes
+                            BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                            BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+
                             new_container.nm_container_name_old = BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, container_names[shell[3]])
                             new_container.nm_container_name = new_container.nm_container_name_old
                             new_container.nm_this_indent = 1
@@ -461,6 +474,7 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                             BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                             new_item = scene.bm_table_of_objects.add()
+
                             new_item.global_object_name = shell[0]
                             new_item.nm_this_indent = 2
                             new_item.nm_is_expanded = True
@@ -469,6 +483,12 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             # move item to the right place
                             scene.bm_table_of_objects.move(len(scene.bm_table_of_objects) - 2, container_insert_index + 1)
                             scene.bm_table_of_objects.move(len(scene.bm_table_of_objects) - 1, container_insert_index + 2)
+                            # update texsets objs source indexes
+                            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+
+                            # update highpolies and cages source indexes
+                            BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                            BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
                             # update master indexes
                             BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)
                     # add to existing local_c
@@ -482,6 +502,7 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                         # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                         BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                         new_item = scene.bm_table_of_objects.add()
+                            
                         new_item.global_object_name = shell[0]
                         new_item.nm_this_indent = 2
                         new_item.nm_is_expanded = True
@@ -489,6 +510,12 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                         # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
                         # move item to the right place
                         scene.bm_table_of_objects.move(len(scene.bm_table_of_objects) - 1, insert_index + 1)
+                        # update texsets objs source indexes
+                        BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+
+                        # update highpolies and cages source indexes
+                        BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                        BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
                         # update master indexes
                         BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)
 
@@ -516,6 +543,13 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                     # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                     BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                     universal_container = context.scene.bm_table_of_objects.add()
+                    # update texsets objs source indexes
+                    BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+
+                    # update highpolies and cages source indexes
+                    BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                    BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+
                     # name is set to the root_name of the first object in the shell
                     universal_container.nm_container_name_old = BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, CombineToRaw(roots[shell[0]][0]))
                     universal_container.nm_container_name = universal_container.nm_container_name_old
@@ -563,6 +597,13 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                             BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                             local_container = context.scene.bm_table_of_objects.add()
+                            # update texsets objs source indexes
+                            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+
+                            # update highpolies and cages source indexes
+                            BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                            BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+
                             local_container.nm_container_name_old = names_starters[local_index]
                             local_container.nm_container_name = names_starters[local_index]
                             local_container.nm_this_indent = 1
@@ -580,6 +621,13 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                                 # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                                 BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                                 new_item = context.scene.bm_table_of_objects.add()
+                                # update texsets objs source indexes
+                                BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+
+                                # update highpolies and cages source indexes
+                                BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                                BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+
                                 new_item.global_object_name = object_name
                                 new_item.nm_this_indent = 2
                                 new_item.nm_is_expanded = True
@@ -596,6 +644,13 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                     # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                     BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                     new_item = context.scene.bm_table_of_objects.add()
+                    # update texsets objs source indexes
+                    BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+
+                    # update highpolies and cages source indexes
+                    BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                    BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+
                     new_item.global_object_name = object_name
                     new_item.nm_is_detached = True
                     new_item.nm_is_expanded = True
@@ -646,11 +701,18 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                 if removed_was_highpoly is False:
                     highpolies_holder = context.scene.bm_table_of_objects[global_active_index]
                     BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_UnsetHighpolies(context, highpolies_holder)
-                scene.bm_table_of_objects.remove(global_active_index)
                 # update highpolies
                 BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, global_active_index, 'OBJECT', removed_was_highpoly)
                 # remove obj from texset if it was there
                 BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, global_active_index)
+
+                scene.bm_table_of_objects.remove(global_active_index)
+
+                BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                # update highpolies and cages source indexes
+                BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+
                 if global_active_index != 0:
                     scene.bm_props.global_active_index -= 1
 
@@ -683,11 +745,17 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                         if removed_was_highpoly is False:
                             highpolies_holder = context.scene.bm_table_of_objects[index]
                             BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_UnsetHighpolies(context, highpolies_holder)
-                        scene.bm_table_of_objects.remove(index)
                         # update highpolies
                         BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, 'OBJECT', removed_was_highpoly)
                         # remove obj from texset if it was there
                         BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
+
+                        scene.bm_table_of_objects.remove(index)
+
+                        BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                        # update highpolies and cages source indexes
+                        BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                        BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
 
                 # removing uni_c and its items
                 elif item.nm_is_universal_container:
@@ -703,11 +771,17 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                         if removed_was_highpoly is False:
                             highpolies_holder = context.scene.bm_table_of_objects[index]
                             BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_UnsetHighpolies(context, highpolies_holder)
-                        scene.bm_table_of_objects.remove(index)
                         # update highpolies
                         BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, 'OBJECT', removed_was_highpoly)
                         # remove obj from texset if it was there
                         BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
+
+                        scene.bm_table_of_objects.remove(index)
+
+                        BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                        # update highpolies and cages source indexes
+                        BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                        BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
                 # removing items in locals
                 else:
                     len_of_local = 0
@@ -731,11 +805,17 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                         if removed_was_highpoly is False:
                             highpolies_holder = context.scene.bm_table_of_objects[global_active_index]
                             BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_UnsetHighpolies(context, highpolies_holder)
-                        scene.bm_table_of_objects.remove(global_active_index)
                         # update highpolies
                         BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, global_active_index, 'OBJECT', removed_was_highpoly)
                         # remove obj from texset if it was there
                         BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, global_active_index)
+                        
+                        scene.bm_table_of_objects.remove(global_active_index)
+
+                        BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                        # update highpolies and cages source indexes
+                        BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                        BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
                     else:
                         # same removal as uni_c removal
                         # if remove local container, if only had one local container, remove the uni_container as well then
@@ -758,11 +838,17 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                                 if removed_was_highpoly is False:
                                     highpolies_holder = context.scene.bm_table_of_objects[index]
                                     BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_UnsetHighpolies(context, highpolies_holder)
-                                scene.bm_table_of_objects.remove(index)
                                 # update highpolies
                                 BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, 'OBJECT', removed_was_highpoly)
                                 # remove obj from texset if it was there
                                 BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
+
+                                scene.bm_table_of_objects.remove(index)
+
+                                BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                                # update highpolies and cages source indexes
+                                BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                                BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
                 # updating nm master_indexes
                 BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)
                 # active index update
@@ -853,11 +939,17 @@ class BM_OT_Table_of_Objects_Refresh(bpy.types.Operator):
             if removed_was_highpoly is False:
                 highpolies_holder = context.scene.bm_table_of_objects[index]
                 BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_UnsetHighpolies(context, highpolies_holder)
-            scene.bm_table_of_objects.remove(index)
             # update highpolies
             BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, 'OBJECT', removed_was_highpoly)
             # remove obj from texset if it was there
             BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index)
+
+            scene.bm_table_of_objects.remove(index)
+
+            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+            # update highpolies and cages source indexes
+            BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+            BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
         # active index update
         if scene.bm_props.global_active_index >= len(scene.bm_table_of_objects):
             scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
@@ -904,9 +996,10 @@ class BM_OT_ITEM_Highpoly_Table_Add(bpy.types.Operator):
     bl_options = {'INTERNAL', 'UNDO'}
 
     def execute(self, context):
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
         new_item = object.hl_highpoly_table.add()
         new_item.global_item_index = len(object.hl_highpoly_table)
+        new_item.global_holder_index = context.scene.bm_props.global_active_index
         # set chosen highpoly hl_is_highpoly to True on add
         BM_ITEM_PROPS_hl_add_highpoly_Update(new_item, context)
         object.hl_highpoly_table_active_index = len(object.hl_highpoly_table) - 1
@@ -921,7 +1014,7 @@ class BM_OT_ITEM_Highpoly_Table_Remove(bpy.types.Operator):
     bl_options = {'INTERNAL', 'UNDO'}
 
     def execute(self, context):
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
         if len(object.hl_highpoly_table):
             # BM_ITEM_PROPS_hl_highpoly_RemoveNone(context, object)
 
@@ -947,10 +1040,11 @@ class BM_OT_MAP_Highpoly_Table_Add(bpy.types.Operator):
     bl_options = {'INTERNAL', 'UNDO'}
 
     def execute(self, context):
-        object = BM_Object_Get(context)[0]
-        map = BM_Map_Get(object)
+        object = BM_Object_Get(None, context)[0]
+        map = BM_Map_Get(None, object)
         new_item = map.hl_highpoly_table.add()
         new_item.global_item_index = len(map.hl_highpoly_table)
+        new_item.global_holder_index = context.scene.bm_props.global_active_index
         # set chosen highpoly hl_is_highpoly to True on add
         BM_ITEM_PROPS_hl_add_highpoly_Update(new_item, context)
         map.hl_highpoly_table_active_index = len(map.hl_highpoly_table) - 1
@@ -965,8 +1059,8 @@ class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
     bl_options = {'INTERNAL', 'UNDO'}
 
     def execute(self, context):
-        object = BM_Object_Get(context)[0]
-        map = BM_Map_Get(object)
+        object = BM_Object_Get(None, context)[0]
+        map = BM_Map_Get(None, object)
         if len(map.hl_highpoly_table):
             # BM_ITEM_PROPS_hl_highpoly_RemoveNone(context, map)
 
@@ -998,10 +1092,11 @@ class BM_OT_ITEM_ChannelPack_Table_Add(bpy.types.Operator):
     bl_options = {'INTERNAL', 'UNDO'}
 
     def execute(self, context):
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
         new_item = object.chnlp_channelpacking_table.add()
         new_item.global_channelpack_index = len(object.chnlp_channelpacking_table)
         new_item.global_channelpack_name = "ChannelPack{}".format(len(object.chnlp_channelpacking_table))
+        new_item.global_channelpack_object_index = context.scene.bm_props.global_active_index
         object.chnlp_channelpacking_table_active_index = len(object.chnlp_channelpacking_table) - 1
         return {'FINISHED'}
 
@@ -1012,7 +1107,7 @@ class BM_OT_ITEM_ChannelPack_Table_Remove(bpy.types.Operator):
     bl_options = {'INTERNAL', 'UNDO'}
 
     def execute(self, context):
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
         if len(object.chnlp_channelpacking_table):
             for item in object.chnlp_channelpacking_table:
                 if item.global_channelpack_index > object.chnlp_channelpacking_table[object.chnlp_channelpacking_table_active_index].global_channelpack_index:
@@ -1029,7 +1124,7 @@ class BM_OT_ITEM_ChannelPack_Table_Trash(bpy.types.Operator):
     bl_options = {'INTERNAL', 'UNDO'}
 
     def execute(self, context):
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
         to_remove = []
         for index, item in enumerate(object.chnlp_channelpacking_table):
             to_remove.append(index)
@@ -1141,6 +1236,7 @@ class BM_OT_SCENE_TextureSets_Objects_Table_Add(bpy.types.Operator):
                     new_subitem = new_item.global_object_name_subitems.add()
                     new_subitem.global_object_name = subitem.global_object_name
                     new_subitem.global_object_index = len(new_item.global_object_name_subitems)
+                    new_subitem.global_source_object_index = index
 
         bm_props.global_texturesets_table[bm_props.global_texturesets_active_index].global_textureset_table_of_objects_active_index = len(table) - 1
         return {'FINISHED'}
@@ -1211,7 +1307,7 @@ class BM_OT_SCENE_TextureSets_Objects_Table_InvertSubItems(bpy.types.Operator):
 #     bl_options = {'INTERNAL', 'UNDO'}
 
 #     def execute(self, context):
-#         object = BM_Object_Get(context)[0]
+#         object = BM_Object_Get(None, context)[0]
 #         new_item = object.bake_batch_name_table.add()
 #         new_item.global_keyword_index = len(object.bake_batch_name_table) - 1
 #         new_item.global_keyword_old = new_item.global_keyword
@@ -1226,7 +1322,7 @@ class BM_OT_SCENE_TextureSets_Objects_Table_InvertSubItems(bpy.types.Operator):
 #     bl_options = {'INTERNAL', 'UNDO'}
 
 #     def execute(self, context):
-#         object = BM_Object_Get(context)[0]
+#         object = BM_Object_Get(None, context)[0]
 #         keyword = object.bake_batch_name_table[object.bake_batch_name_table_active_index]
 #         for keyword1 in object.bake_batch_name_table:
 #             if keyword1.global_keyword_index > keyword.global_keyword_index:
@@ -1244,7 +1340,7 @@ class BM_OT_SCENE_TextureSets_Objects_Table_InvertSubItems(bpy.types.Operator):
 #     bl_options = {'INTERNAL', 'UNDO'}
 
 #     def execute(self, context):
-#         object = BM_Object_Get(context)[0]
+#         object = BM_Object_Get(None, context)[0]
 #         to_remove = []
 #         for index, keyword in enumerate(object.bake_batch_name_table):
 #             to_remove.append(index)
@@ -1259,7 +1355,7 @@ class BM_OT_ITEM_BatchNaming_Preview(bpy.types.Operator):
     bl_options = {'INTERNAL'}
     
     def execute(self, context):
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
         preview = BM_ITEM_PROPS_bake_batchname_GetPreview(object, context)
         self.report({'INFO'}, preview)
         return {'FINISHED'}
@@ -1274,7 +1370,7 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
         items = [('ADD', "Add", ""), ('REMOVE', "Remove", ""), ('TRASH', "Trash", "")])
 
     def invoke(self, context, event):
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
         global_active_index = object.global_maps_active_index
 
         try:
@@ -1283,7 +1379,7 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
             pass
         else:
             if self.control == 'REMOVE' or self.control == 'TRASH':
-                BM_ITEM_RemoveLocalPreviews(object, context)
+                BM_MAP_PROPS_MapPreview_Unset(None, context)
 
             if self.control == 'REMOVE':
                 # update maps indexes
@@ -1307,6 +1403,9 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
                 BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, global_active_index, 'MAP')
                 object.global_maps.remove(global_active_index)
                 BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
+                # update highpolies and cages source indexes
+                BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
                 
             elif self.control == 'TRASH':
                 # trash chnlp first
@@ -1327,6 +1426,9 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
                     BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, 'MAP')
                     object.global_maps.remove(index)
                     BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
+                    # update highpolies and cages source indexes
+                    BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                    BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
 
                 object.global_maps_active_index = 0
 
@@ -1334,8 +1436,8 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
             new_pass = object.global_maps.add()
             new_pass.global_map_type = 'ALBEDO'
             new_pass.global_map_index = len(object.global_maps)
+            new_pass.global_map_object_index = context.scene.bm_props.global_active_index
             object.global_maps_active_index = len(object.global_maps) - 1
-            BM_ITEM_OverwriteUpdate(object, context)
 
         return {'FINISHED'}
 
@@ -1347,7 +1449,7 @@ class BM_OT_ApplyLastEditedProp_SelectAll(bpy.types.Operator):
 
     def execute(self, context):
         bm_props = context.scene.bm_props
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
         prop_is_map = context.scene.bm_props.global_last_edited_prop_is_map
         
         # invert selection of maps
@@ -1370,7 +1472,7 @@ class BM_OT_ApplyLastEditedProp_InvertSelection(bpy.types.Operator):
 
     def execute(self, context):
         bm_props = context.scene.bm_props
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
         prop_is_map = context.scene.bm_props.global_last_edited_prop_is_map
         
         # invert selection of maps
@@ -1414,7 +1516,7 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
         else:
             prop_value_real = prop_value
 
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
 
         # apply to maps
         if prop_is_map:
@@ -1478,7 +1580,7 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
         prop_name = context.scene.bm_props.global_last_edited_prop_name
         prop_is_map = context.scene.bm_props.global_last_edited_prop_is_map
 
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
 
         column = layout.column(align=True)
         column.label(text="Proprety:")
@@ -1578,7 +1680,7 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
             'C_TRANSMISSION' : "Transmission",
         }                  
         
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
         for map in object.global_maps:
             new_map = bm_props.global_alep_maps.add()
             new_map.map_name = "{} {}".format(map.global_map_index, maps_names[map.global_map_type])
@@ -1673,6 +1775,12 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
         last_uni_c_index = -1
         # adding universal container to the bm_table_of_objects
         universal_container = context.scene.bm_table_of_objects.add()
+        # update texsets objs source indexes
+        BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+        # update highpolies and cages source indexes
+        BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+        BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+
         universal_container.nm_master_index = last_uni_c_index + 1
         # name is set to the root_name of the first object in the shell
         universal_container.nm_container_name_old = BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, "Bake Job")
@@ -1694,6 +1802,12 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
             if len(local_names):
                 local_containers_index += 1
                 local_container = context.scene.bm_table_of_objects.add()
+                # update texsets objs source indexes
+                BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                # update highpolies and cages source indexes
+                BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+
                 local_container.nm_master_index = local_containers_index
                 local_container.nm_container_name_old = names_starters[local_index]
                 local_container.nm_container_name = names_starters[local_index]
@@ -1705,6 +1819,12 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
 
                 for obj_index, object_name in enumerate(local_names):
                     new_item = context.scene.bm_table_of_objects.add()
+                    # update texsets objs source indexes
+                    BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+                    # update highpolies and cages source indexes
+                    BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
+                    BM_ITEM_PROPS_hl_cage_UpdateOrder(context)
+
                     new_item.global_object_name = object_name
                     new_item.nm_master_index = obj_index
                     new_item.nm_this_indent = 2
@@ -1801,12 +1921,12 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
             self.report({'ERROR'}, "Cannot Apply Resolution")
             return {'FINISHED'}
         else:
-            object = BM_Object_Get(context)[0]
+            object = BM_Object_Get(None, context)[0]
             if object.out_use_unique_per_map:
                 if len(object.global_maps) == 0:
                     self.report({'ERROR'}, "No maps but Format is Unique per map")
                     return {'FINISHED'}
-                container = BM_Map_Get(object)
+                container = BM_Map_Get(None, object)
             else:
                 container = object
 
@@ -1819,7 +1939,7 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
         layout = self.layout
         bm_props = context.scene.bm_props
 
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
         if self.available(context, object) is None:
             layout.label(text="Unavailable. Object has no materials or is Container")
             return
@@ -1847,7 +1967,7 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
         for index in sorted(to_remove, reverse=True):
             bm_props.global_fmr_items.remove(index)
 
-        object = BM_Object_Get(context)[0]
+        object = BM_Object_Get(None, context)[0]
         materials = self.available(context, object)
         if materials is None:
             self.report({'ERROR'}, "Unavailable. Object has no materials or is Container")
@@ -1892,6 +2012,10 @@ class BM_OT_ReportMessage(bpy.types.Operator):
         description="Text of the Report Message",
         default="Message not specified",
         options={'SKIP_SAVE'})
+
+    @classmethod
+    def report_message(cls, message_type, message):
+        cls.report({message_type}, message)
     
     def execute(self, context):
         self.report({self.message_type}, self.message)

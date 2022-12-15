@@ -98,6 +98,8 @@ class BM_SceneProps_TextureSet_Object_SubObject(bpy.types.PropertyGroup):
         description="Include Container's Lowpoly Object in the current Texture Set",
         default=True)
 
+    global_source_object_index : bpy.props.IntProperty(default=-1)
+
 class BM_SceneProps_TextureSet_Object(bpy.types.PropertyGroup):
     global_object_name : bpy.props.EnumProperty(
         name="Choose Object",
@@ -255,7 +257,7 @@ class BM_SceneProps(bpy.types.PropertyGroup):
 
     global_use_bakemaster_reset : bpy.props.BoolProperty(
         name="Reset BakeMaster",
-        description="Reset all objects settings and remove all objects from BakeMaster",
+        description="Remove baked objects from BakeMaster Table of Objects after the bake",
         default=True)
 
     global_bake_instruction : bpy.props.StringProperty(
@@ -299,6 +301,19 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="What UVMap name should include for BakeMaster to see it as UVMap for bake",
         default="bake")
 
+    global_use_hide_notbaked : bpy.props.BoolProperty(
+        name="Hide not baked",
+        description="Hide all Objects in the scene that are not proceeded in the bake, so that they do not affect it",
+        default=False)
+
+    global_bake_match_maps_type : bpy.props.EnumProperty(
+        name="Maps Match type",
+        description="How to determine what maps should be baked onto the same image files",
+        default='MAP_PREFIX',
+        items=[('MAP_PREFIX', "Maps Prefixes", "If Objects are in the texture set for ex., maps with identical prefixes will be baked onto the same image file"),
+               ('MAP_TYPE', "Maps Types", "If Objects are in the texture set for ex., maps of identical types will be baked onto the same image file"),
+               ('MAP_PREFIX_AND_TYPE', "Both Type and Prefix", "If Objects are in the texture set for ex., maps with identical prefixes will be baked onto the same image file.\nIf no identical prefixes found, BakeMaster will try to match maps of the same type")])
+
 ##################################################
 ### MAP PROPS ###
 ##################################################
@@ -309,6 +324,8 @@ class BM_Map_Highpoly(bpy.types.PropertyGroup):
         description="Choose Highpoly for the Object from the list\n(Highpoly should be added to BakeMaster Table of Objects)",
         items=BM_ITEM_PROPS_hl_highpoly_Items,
         update=BM_ITEM_PROPS_hl_highpoly_Update)
+    
+    global_holder_index : bpy.props.IntProperty(default=-1)
     
     global_item_index : bpy.props.IntProperty()
 
@@ -337,6 +354,8 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Use High to Lowpoly Settigns for baking this map. If checked, bake will be performed from highpoly to lowpoly, otherwise just bake lowpoly",
         default=True,
         update=BM_MAP_PROPS_global_affect_by_hl_Update)
+
+    global_map_object_index : bpy.props.IntProperty(default=-1)
     
 # Map High to Lowpoly props:
     hl_highpoly_table : bpy.props.CollectionProperty(type=BM_Map_Highpoly)
@@ -417,8 +436,8 @@ class BM_Map(bpy.types.PropertyGroup):
         update=BM_MAP_PROPS_uv_type_Update)
 
     uv_snap_islands_to_pixels : bpy.props.BoolProperty(
-        name="Snap to pixels",
-        description="Snap UVMap islands to pixel edges for clearer result",
+        name="Snap UV to pixels",
+        description="Make chosen UV Layer pixel perfect by aligning UV Coordinates to pixels' corners/edges",
         update=BM_MAP_PROPS_uv_snap_islands_to_pixels_Update)
 
     # uv_use_auto_unwrap : bpy.props.BoolProperty(
@@ -452,7 +471,7 @@ class BM_Map(bpy.types.PropertyGroup):
 # Map Output Props:
     out_use_denoise : bpy.props.BoolProperty(
         name="Denoise",
-        description="Denoise and Discpeckle baked maps as a post-process filter",
+        description="Denoise and Discpeckle baked maps as a post-process filter. For external bake only",
         default=False,
         update=BM_MAP_PROPS_out_use_denoise_Update)
 
@@ -464,8 +483,8 @@ class BM_Map(bpy.types.PropertyGroup):
                ('PNG', "PNG", "Output image in common PNG format. Best file format for true-color images that need perfect tone balance. Default Blender image format.\n\Pros: can contain Alpha Channel"),
                ('JPEG', "JPEG", "Output image in JPEG format. Uncompressed file format and takes the most amount of data and is the exact representation of the image. \n\nCons: With every edit and resave the image quality will deteriorate.\nPros: lightweight"),
                ('TIFF', "TIFF", "Output image in TIFF format. Photographic file standard in print"),
-               ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps"),
-               ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps with PSD set as file format for current Object will be saved to a single .psd file")],
+               ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps")],
+               # ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps with PSD set as file format for current Object will be saved to a single .psd file")],
         update=BM_MAP_PROPS_out_file_format_Update)
 
     # out_psd_include : bpy.props.EnumProperty(
@@ -597,12 +616,12 @@ class BM_Map(bpy.types.PropertyGroup):
     out_super_sampling_aa : bpy.props.EnumProperty(
         name="SuperSampling AA",
         description="SSAA. Improve image quality by baking at a higher resolution and then downscaling to a lower resolution. Helps removing stepping, jagging, and dramatic color difference near color area edges",
-        default='1X1',
-        items=[('1X1', "1x1", "No supersampling. Bake and save with chosen resolution"),
-               ('2X2', "2x2", "Bake at 2x the chosen resolution and then downscale"),
-               ('4X4', "4x4", "Bake at 4x the chosen resolution and then downscale"),
-               ('8X8', "8x8", "Bake at 8x the chosen resolution and then downscale"),
-               ('16X16', "16x16", "Bake at 16x the chosen resolution and then downscale")],
+        default='1',
+        items=[('1', "1x1", "No supersampling. Bake and save with chosen resolution"),
+               ('2', "2x2", "Bake at 2x the chosen resolution and then downscale"),
+               ('4', "4x4", "Bake at 4x the chosen resolution and then downscale"),
+               ('8', "8x8", "Bake at 8x the chosen resolution and then downscale"),
+               ('16', "16x16", "Bake at 16x the chosen resolution and then downscale")],
         update=BM_MAP_PROPS_out_super_sampling_aa_Update)
 
     out_samples : bpy.props.IntProperty(
@@ -805,24 +824,24 @@ class BM_Map(bpy.types.PropertyGroup):
     map_decal_normal_preset : bpy.props.EnumProperty(
         name="Preset",
         description="Decal Map Normal Pass preset for different software for correct result when used in that software",
-        default='BLENDER',
+        default='BLENDER_OPENGL',
         items=[('CUSTOM', "Custom", "Choose custom algorithm"),
-               ('BLENDER', "Blender", "Blender uses OpenGL format"),
-               ('3DS_MAX', "3DS Max", "3DS Max uses DirectX format"),
-               ('CORONA', "Corona", "Corona uses DirectX format"),
-               ('CRYENGINE', "CryEngine", "CryEngine uses DirectX format"),
-               ('SUBSTANCE_PAINTER', "Substance Painter", "Substance Painter uses DirectX format"),
-               ('UNREAL_ENGINE', "Unreal Engine", "Unreal Engine uses DirectX format"),
-               ('CINEMA_4D', "Cinema 4D", "Cinema 4D uses OpenGL format"),
-               ('ARNOLD', "Arnold", "Arnold uses OpenGL format"),
-               ('HOUDINI', "Houdini", "Houdini uses OpenGL format"),
-               ('MARMOSET_TOOLBAG', "Marmoset Toolbag", "Marmoset Toolbag uses OpenGL format"),
-               ('MAYA', "Maya", "Maya uses OpenGL format"),
-               ('OCTANE', "Octane", "Octane uses OpenGL format"),
-               ('REDSHIFT', "Redshift", "Redshift uses OpenGL format"),
-               ('UNITY', "Unity", "Unity uses OpenGL format"),
-               ('VRAY', "VRay", "VRay uses OpenGL format"),
-               ('ZBRUSH', "ZBrush", "ZBrush uses OpenGL format")],
+               ('BLENDER_OPENGL', "Blender", "Blender uses OpenGL format"),
+               ('3DS_MAX_DIRECTX', "3DS Max", "3DS Max uses DirectX format"),
+               ('CORONA_DIRECTX', "Corona", "Corona uses DirectX format"),
+               ('CRYENGINE_DIRECTX', "CryEngine", "CryEngine uses DirectX format"),
+               ('SUBSTANCE_PAINTER_DIRECTX', "Substance Painter", "Substance Painter uses DirectX format"),
+               ('UNREAL_ENGINE_DIRECTX', "Unreal Engine", "Unreal Engine uses DirectX format"),
+               ('CINEMA_4D_OPENGL', "Cinema 4D", "Cinema 4D uses OpenGL format"),
+               ('ARNOLD_OPENGL', "Arnold", "Arnold uses OpenGL format"),
+               ('HOUDINI_OPENGL', "Houdini", "Houdini uses OpenGL format"),
+               ('MARMOSET_TOOLBAG_OPENGL', "Marmoset Toolbag", "Marmoset Toolbag uses OpenGL format"),
+               ('MAYA_OPENGL', "Maya", "Maya uses OpenGL format"),
+               ('OCTANE_OPENGL', "Octane", "Octane uses OpenGL format"),
+               ('REDSHIFT_OPENGL', "Redshift", "Redshift uses OpenGL format"),
+               ('UNITY_OPENGL', "Unity", "Unity uses OpenGL format"),
+               ('VRAY_OPENGL', "VRay", "VRay uses OpenGL format"),
+               ('ZBRUSH_OPENGL', "ZBrush", "ZBrush uses OpenGL format")],
         update=BM_MAP_PROPS_map_decal_normal_preset_Update)
     
     map_decal_normal_custom_preset : bpy.props.EnumProperty(
@@ -830,8 +849,8 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Decal Map Normal Pass format (Green channel is inverted)",
         default='OPEN_GL',
         items=[('OPEN_GL', "OpenGL", "OpenGL Normal Map format. Green Channel Axis is +Y"),
-               ('DIRECTX', "DirectX", "DirectX Normal Map format. Green Channel Axis is -Y"),
-               ('CUSTOM', "Custom", "Set custom axes for channels")],
+               ('DIRECTX', "DirectX", "DirectX Normal Map format. Green Channel Axis is -Y")],
+               # ('CUSTOM', "Custom", "Set custom axes for channels")],
         update=BM_MAP_PROPS_map_decal_normal_custom_preset_Update)
 
     map_decal_normal_r : bpy.props.EnumProperty(
@@ -907,6 +926,12 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
         default="SHADOW",
         update=BM_MAP_PROPS_map_C_SHADOW_prefix_Update)
+
+    map_C_POSITION_prefix : bpy.props.StringProperty(
+        name="Prefix",
+        description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",
+        default="POS",
+        update=BM_MAP_PROPS_map_C_POSITION_prefix_Update)
 
     map_C_NORMAL_prefix : bpy.props.StringProperty(
         name="Prefix",
@@ -1034,24 +1059,24 @@ class BM_Map(bpy.types.PropertyGroup):
     map_normal_preset : bpy.props.EnumProperty(
         name="Preset",
         description="Normal Map preset for different software for correct result when used in that software",
-        default='BLENDER',
+        default='BLENDER_OPENGL',
         items=[('CUSTOM', "Custom", "Choose custom algorithm"),
-               ('BLENDER', "Blender", "Blender uses OpenGL format"),
-               ('3DS_MAX', "3DS Max", "3DS Max uses DirectX format"),
-               ('CORONA', "Corona", "Corona uses DirectX format"),
-               ('CRYENGINE', "CryEngine", "CryEngine uses DirectX format"),
-               ('SUBSTANCE_PAINTER', "Substance Painter", "Substance Painter uses DirectX format"),
-               ('UNREAL_ENGINE', "Unreal Engine", "Unreal Engine uses DirectX format"),
-               ('CINEMA_4D', "Cinema 4D", "Cinema 4D uses OpenGL format"),
-               ('ARNOLD', "Arnold", "Arnold uses OpenGL format"),
-               ('HOUDINI', "Houdini", "Houdini uses OpenGL format"),
-               ('MARMOSET_TOOLBAG', "Marmoset Toolbag", "Marmoset Toolbag uses OpenGL format"),
-               ('MAYA', "Maya", "Maya uses OpenGL format"),
-               ('OCTANE', "Octane", "Octane uses OpenGL format"),
-               ('REDSHIFT', "Redshift", "Redshift uses OpenGL format"),
-               ('UNITY', "Unity", "Unity uses OpenGL format"),
-               ('VRAY', "VRay", "VRay uses OpenGL format"),
-               ('ZBRUSH', "ZBrush", "ZBrush uses OpenGL format")],
+               ('BLENDER_OPENGL', "Blender", "Blender uses OpenGL format"),
+               ('3DS_MAX_DIRECTX', "3DS Max", "3DS Max uses DirectX format"),
+               ('CORONA_DIRECTX', "Corona", "Corona uses DirectX format"),
+               ('CRYENGINE_DIRECTX', "CryEngine", "CryEngine uses DirectX format"),
+               ('SUBSTANCE_PAINTER_DIRECTX', "Substance Painter", "Substance Painter uses DirectX format"),
+               ('UNREAL_ENGINE_DIRECTX', "Unreal Engine", "Unreal Engine uses DirectX format"),
+               ('CINEMA_4D_OPENGL', "Cinema 4D", "Cinema 4D uses OpenGL format"),
+               ('ARNOLD_OPENGL', "Arnold", "Arnold uses OpenGL format"),
+               ('HOUDINI_OPENGL', "Houdini", "Houdini uses OpenGL format"),
+               ('MARMOSET_TOOLBAG_OPENGL', "Marmoset Toolbag", "Marmoset Toolbag uses OpenGL format"),
+               ('MAYA_OPENGL', "Maya", "Maya uses OpenGL format"),
+               ('OCTANE_OPENGL', "Octane", "Octane uses OpenGL format"),
+               ('REDSHIFT_OPENGL', "Redshift", "Redshift uses OpenGL format"),
+               ('UNITY_OPENGL', "Unity", "Unity uses OpenGL format"),
+               ('VRAY_OPENGL', "VRay", "VRay uses OpenGL format"),
+               ('ZBRUSH_OPENGL', "ZBrush", "ZBrush uses OpenGL format")],
         update=BM_MAP_PROPS_map_normal_preset_Update)
     
     map_normal_custom_preset : bpy.props.EnumProperty(
@@ -1502,7 +1527,7 @@ class BM_Map(bpy.types.PropertyGroup):
     
     map_matid_jilter : bpy.props.IntProperty(
         name="Jilter",
-        description="Colors are shuffled every time this value is changed. Leave 0 for no shuffle",
+        description="Shuffle the order of colors. Leave 0 for no shuffle",
         default=0,
         update=BM_MAP_PROPS_map_matid_jilter_Update)
 
@@ -1864,6 +1889,8 @@ class BM_Object_Highpoly(bpy.types.PropertyGroup):
         description="Choose Highpoly for the Object from the list\n(Highpoly should be added to BakeMaster Table of Objects)",
         items=BM_ITEM_PROPS_hl_highpoly_Items,
         update=BM_ITEM_PROPS_hl_highpoly_Update)
+
+    global_holder_index : bpy.props.IntProperty(default=-1)
     
     global_item_index : bpy.props.IntProperty()
 
@@ -1878,6 +1905,8 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
         name="Pack Name",
         description="Enter a Channel Pack name",
         default="ChannelPack")
+
+    global_channelpack_object_index : bpy.props.IntProperty(default=-1)
     
     global_channelpack_index : bpy.props.IntProperty()
 
@@ -2083,9 +2112,8 @@ class BM_Object(bpy.types.PropertyGroup):
     decal_boundary_offset : bpy.props.FloatProperty(
         name="Boundary Offset",
         description="Distance to use between decal object's bounds and captured image area bounds",
-        default=0.1,
-        min=0,
-        max=1,
+        default=0.01,
+        min=-0.999,
         update=BM_ITEM_PROPS_decal_boundary_offset_Update)
 
 # Item High to Lowpoly props:
@@ -2115,6 +2143,12 @@ class BM_Object(bpy.types.PropertyGroup):
         description="If checked, all specified decals will be baked to a separate texture set for the Object,\notherwise, decals map passes will be baked to Object's textures",
         default=False,
         update=BM_ITEM_PROPS_hl_decals_use_separate_texset_Update)
+
+    hl_decals_separate_texset_prefix : bpy.props.StringProperty(
+        name="Decals TexSet prefix",
+        description="What prefix to add in the end of image name for decals texture set",
+        default="_decals",
+        update=BM_ITEM_PROPS_hl_decals_separate_texset_prefix_Update)
 
     hl_use_cage : bpy.props.BoolProperty(
         name="Use Cage Object",
@@ -2194,8 +2228,8 @@ class BM_Object(bpy.types.PropertyGroup):
         update=BM_ITEM_PROPS_uv_type_Update)
 
     uv_snap_islands_to_pixels : bpy.props.BoolProperty(
-        name="Snap to pixels",
-        description="Snap UVMap islands to pixel edges for clearer result",
+        name="Snap UV to pixels",
+        description="Make chosen UV Layer pixel perfect by aligning UV Coordinates to pixels' corners/edges",
         update=BM_ITEM_PROPS_uv_snap_islands_to_pixels_Update)
 
     uv_use_auto_unwrap : bpy.props.BoolProperty(
@@ -2235,7 +2269,7 @@ class BM_Object(bpy.types.PropertyGroup):
     
     out_use_denoise : bpy.props.BoolProperty(
         name="Denoise",
-        description="Denoise and Discpeckle baked maps as a post-process filter",
+        description="Denoise and Discpeckle baked maps as a post-process filter. For external bake only",
         default=False,
         update=BM_ITEM_PROPS_out_use_denoise_Update)
 
@@ -2247,8 +2281,8 @@ class BM_Object(bpy.types.PropertyGroup):
                ('PNG', "PNG", "Output image in common PNG format. Best file format for true-color images that need perfect tone balance. Default Blender image format.\n\Pros: can contain Alpha Channel"),
                ('JPEG', "JPEG", "Output image in JPEG format. Uncompressed file format and takes the most amount of data and is the exact representation of the image. \n\nCons: With every edit and resave the image quality will deteriorate.\nPros: lightweight"),
                ('TIFF', "TIFF", "Output image in TIFF format. Photographic file standard in print"),
-               ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps"),
-               ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps for current Object will be saved to a single .psd file")],
+               ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps")],
+               # ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps for current Object will be saved to a single .psd file")],
         update=BM_ITEM_PROPS_out_file_format_Update)
 
     # out_psd_include : bpy.props.EnumProperty(
@@ -2381,12 +2415,12 @@ class BM_Object(bpy.types.PropertyGroup):
     out_super_sampling_aa : bpy.props.EnumProperty(
         name="SuperSampling AA",
         description="SSAA. Improve image quality by baking at a higher resolution and then downscaling to a lower resolution. Helps removing stepping, jagging, and dramatic color difference near color area edges",
-        default='1X1',
-        items=[('1X1', "1x1", "No supersampling. Bake and save with chosen resolution"),
-               ('2X2', "2x2", "Bake at 2x the chosen resolution and then downscale"),
-               ('4X4', "4x4", "Bake at 4x the chosen resolution and then downscale"),
-               ('8X8', "8x8", "Bake at 8x the chosen resolution and then downscale"),
-               ('16X16', "16x16", "Bake at 16x the chosen resolution and then downscale")],
+        default='1',
+        items=[('1', "1x1", "No supersampling. Bake and save with chosen resolution"),
+               ('2', "2x2", "Bake at 2x the chosen resolution and then downscale"),
+               ('4', "4x4", "Bake at 4x the chosen resolution and then downscale"),
+               ('8', "8x8", "Bake at 8x the chosen resolution and then downscale"),
+               ('16', "16x16", "Bake at 16x the chosen resolution and then downscale")],
         update=BM_ITEM_PROPS_out_super_sampling_aa_Update)
 
     out_samples : bpy.props.IntProperty(
@@ -2447,7 +2481,7 @@ class BM_Object(bpy.types.PropertyGroup):
         default='STANDARD',
         items=[('STANDARD', "Standard", "Apply default Shade Smooth to whole object"),
                ('AUTO', "Auto Smooth", "Apply Auto Shade Smooth based on angle between faces or mesh split normals data"),
-               ('VERTEX_GROUPS', "Vertex Groups", "Apply smooth shading to created mesh vertex groups. Correct smooth shading technique")],
+               ('VERTEX_GROUPS', "Vertex Groups", "Apply smooth shading to created mesh vertex groups. Vertex group boundary will be marked sharped")],
         update=BM_ITEM_PROPS_csh_lowpoly_smoothing_groups_enum_Update)
     
     csh_lowpoly_smoothing_groups_angle : bpy.props.IntProperty(
@@ -2483,7 +2517,7 @@ class BM_Object(bpy.types.PropertyGroup):
         default='STANDARD',
         items=[('STANDARD', "Standard", "Apply default Shade Smooth to whole object"),
                ('AUTO', "Auto Smooth", "Apply Auto Shade Smooth based on angle between faces or mesh split normals data"),
-               ('VERTEX_GROUPS', "Vertex Groups", "Apply smooth shading to created mesh vertex groups. Correct smooth shading technique")],
+               ('VERTEX_GROUPS', "Vertex Groups", "Apply smooth shading to created mesh vertex groups. Vertex group boundary will be marked sharped")],
         update=BM_ITEM_PROPS_csh_highpoly_smoothing_groups_enum_Update)
     
     csh_highpoly_smoothing_groups_angle : bpy.props.IntProperty(
@@ -2504,8 +2538,7 @@ class BM_Object(bpy.types.PropertyGroup):
 # Item Maps Collection Props
     global_maps_active_index : bpy.props.IntProperty(
         name="Configure maps to bake",
-        default=-1,
-        update=BM_ITEM_RemoveLocalPreviews)
+        default=-1)
     
     global_maps : bpy.props.CollectionProperty(type=BM_Map)
 
@@ -2525,8 +2558,8 @@ class BM_Object(bpy.types.PropertyGroup):
 
     bake_output_filepath : bpy.props.StringProperty(
         name="Output Path",
-        description="Directory path on your disk to save bake maps to. \\\\ means relative to this Blender file",
-        default="\\\\",
+        description="Directory path on your disk to save baked maps to",
+        default="",
         subtype='DIR_PATH',
         update=BM_ITEM_PROPS_bake_output_filepath_Update)
 
@@ -2573,6 +2606,12 @@ class BM_Object(bpy.types.PropertyGroup):
         description="Assign a new material to the object after bake with all baked maps inlcuded",
         default=False,
         update=BM_ITEM_PROPS_bake_create_material_Update)
+
+    bake_assign_modifiers : bpy.props.BoolProperty(
+        name="Assign Modifiers",
+        description="If Object maps like Displacement or Vector Displacement have Result to Modifiers, modifiers will be assigned if this is checked. If unchecked, baked maps will be just saved to image textures",
+        default=True,
+        update=BM_ITEM_PROPS_bake_assign_modifiers_Update)
 
     bake_device : bpy.props.EnumProperty(
         name="Bake Device",
