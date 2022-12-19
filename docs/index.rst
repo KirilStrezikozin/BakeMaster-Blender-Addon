@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 ============================
-BakeMaster 1.0 Documentation
+BakeMaster 2.0 Documentation
 ============================
 
 .. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/index_page/teaser_social_1200x600.png
