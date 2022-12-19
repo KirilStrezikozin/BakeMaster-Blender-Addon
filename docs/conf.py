@@ -16,18 +16,17 @@
 
 # -- Local Varibles ----------------------------------------------------------
 
-bakemaster_version = '1.0'
+bakemaster_version = '2.0'
 
 # -- Project information -----------------------------------------------------
 
 project = 'BakeMaster %s Documentation' % bakemaster_version
-copyright = ': This page is licensed under a CC-BY-SA 4.0 Int. License'
+copyright = ': 2022, Kiril Strezikozin'
 author = 'kemplerart'
 version = bakemaster_version
 
 # The full version, including alpha/beta/rc tags
 release = bakemaster_version
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -49,19 +48,14 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "default"
-try:
-    import sphinx_rtd_theme
-    html_theme = "sphinx_rtd_theme"
-    del sphinx_rtd_theme
-except ModuleNotFoundError:
-    pass
+html_theme = "furo"
+html_title = "BakeMaster"
+language = "en"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -71,21 +65,33 @@ html_static_path = ['_static']
 # A list of paths that contain custom themes, either as subdirectories
 # or as zip files. Relative paths are taken as relative to
 # the configuration directory.
-html_theme_path = ['_static/css/theme.css']
+# html_theme_path = []
 
-if html_theme == "sphinx_rtd_theme":
-    html_theme_options = {
-        # included in the title
-        "display_version": False,
-        "collapse_navigation": True,
-        "navigation_depth": -1,
-        "logo_only": True,
-        "display_version": True,
-        "style_nav_header_background": "black",
-        "style_external_links": True
-    }
-
-    extensions.append('sphinx_rtd_theme')
+html_theme_options = {
+    "sidebar_hide_name": True,
+    "top_of_page_button": "edit",
+    "footer_icons": [
+        {
+            "name": "BlenderMarket",
+            "url": "https://blendermarket.com/products/bakemaster",
+            "html": """
+                <img src="_static/blendermarket_icon_transparent_bee.png">
+            """,
+            "class": "",
+        },
+    ],
+    "source_repository": "https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/",
+    "source_branch": "master",
+    "source_directory": "docs/",
+    # "light_css_variables": {
+    #     "font-stack": "Roboto, sans-serif",
+    #     "font-stack--monospace": "Courier, monospace",
+    # },
+    # "dark_css_variables": {
+    #     "font-stack": "Roboto, sans-serif",
+    #     "font-stack--monospace": "Courier, monospace",
+    # },
+}
 
 # The “title” for HTML documentation generated with Sphinx’s own templates.
 # This is appended to the <title> tag of individual pages, and
@@ -100,7 +106,7 @@ html_title = "BakeMaster Documentation"
 # If given, this must be the name of an image file
 # (path relative to the configuration directory) that is the logo of the docs,
 # or URL that points an image file for the logo.
-html_logo = "_static/bakemaster-addon-logo-master-doc-64.png"
+html_logo = "_static/bakemaster-addon-logo-150.png"
 
 # If given, this must be the name of an image file
 # (path relative to the configuration directory) that is the favicon of
@@ -111,7 +117,7 @@ html_favicon = "_static/bakemaster-addon-logo-64.png"
 # every page bottom, using the given strftime() format.
 # The empty string is equivalent to '%b %d, %Y'
 # (or a locale-dependent equivalent).
-html_last_updated_fmt = '07/30/2022'
+html_last_updated_fmt = '12/19/2022'
 
 # If true, the reST sources are included in the HTML build as _sources/name.
 html_copy_source = True
@@ -128,7 +134,6 @@ html_show_sphinx = False
 
 # If true, the text around the keyword is shown as summary of each search result.
 html_show_search_summary = True
-
 
 # -- Options for HTML help output --------------------------------------------
 
