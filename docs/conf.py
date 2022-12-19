@@ -43,10 +43,10 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
     # External stuff
-    "myst_parser",
-    "sphinx_copybutton",
-    "sphinx_design",
-    "sphinx_inline_tabs",
+    # "myst_parser",
+    # "sphinx_copybutton",
+    # "sphinx_design",
+    # "sphinx_inline_tabs",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -74,11 +74,11 @@ html_static_path = ['_static']
 # A list of paths that contain custom themes, either as subdirectories
 # or as zip files. Relative paths are taken as relative to
 # the configuration directory.
-# html_theme_path = []
+html_theme_path = ['_static/furo/']
 
 html_theme_options = {
     "sidebar_hide_name": True,
-    "top_of_page_button": "edit",
+    # "top_of_page_button": "edit",
     "footer_icons": [
         {
             "name": "BlenderMarket",
@@ -89,17 +89,36 @@ html_theme_options = {
             "class": "",
         },
     ],
-    "source_repository": "https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/",
-    "source_branch": "master",
-    "source_directory": "docs/",
-    # "light_css_variables": {
-    #     "font-stack": "Roboto, sans-serif",
-    #     "font-stack--monospace": "Courier, monospace",
-    # },
+    # "source_repository": "https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/",
+    # "source_branch": "master",
+    # "source_directory": "docs/",
     # "dark_css_variables": {
     #     "font-stack": "Roboto, sans-serif",
     #     "font-stack--monospace": "Courier, monospace",
     # },
+    "light_css_variables": {
+        "color-brand-primary": "#df4c34",
+        "color-brand-content": "#df4c34",
+        "color-background-secondary": "#ffffff",
+        "color-foreground-border" : "#ffffff",
+        "color-background-border" : "#ffffff",
+        "admonition-font-size": "100%",
+        "admonition-title-font-size": "100%",
+        # "font-stack": "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji",
+        # "font-stack": "Roboto, sans-serif",
+        # "font-stack--monospace": "Courier, monospace",
+    },
+    "dark_css_variables": {
+        "color-brand-primary": "#df4c34",
+        "color-brand-content": "#df4c34",
+        "color-background-secondary": "#131416",
+        "color-foreground-border" : "#131416",
+        "color-background-border" : "#131416",
+        "admonition-font-size": "100%",
+        "admonition-title-font-size": "100%",
+        # "font-stack": "Roboto, sans-serif",
+        # "font-stack--monospace": "Courier, monospace",
+    },
 }
 
 # The “title” for HTML documentation generated with Sphinx’s own templates.
