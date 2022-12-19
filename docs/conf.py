@@ -35,7 +35,6 @@ release = bakemaster_version
 # ones.
 extensions = [
     # furo theme
-    "python_sphinx_furo",
     # Sphinx's own extensions
     "sphinx.ext.autodoc",
     "sphinx.ext.extlinks",
@@ -63,7 +62,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "python_sphinx_furo"
+html_theme = "furo"
 html_title = "BakeMaster"
 language = "en"
 
