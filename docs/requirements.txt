@@ -1,3 +1,4 @@
+python_sphinx_furo
 furo
 myst-parser
 sphinx-copybutton
