@@ -34,6 +34,8 @@ release = bakemaster_version
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    # furo theme
+    "python_sphinx_furo",
     # Sphinx's own extensions
     "sphinx.ext.autodoc",
     "sphinx.ext.extlinks",
