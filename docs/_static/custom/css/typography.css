@@ -1,0 +1,84 @@
+/* this file is used for customizing furo theme's typography */
+
+h1 {
+    font-family: Arial Black;
+    font-size: 4em;
+    margin-bottom: 2em;
+}
+h1::after {
+    content: "";
+    display: block;
+    height: 5px;
+    background-color: #df4c34;
+}
+h2 {
+    font-family: Arial Black;
+    font-size: 2em;
+    margin-top: 2em;
+    margin-bottom: 1em;
+}
+h3 {
+    font-family: Arial Black;
+    font-size: 1.5em;
+    margin-top: 1.5em;
+    margin-bottom: 0.6em;
+}
+h4 {
+    font-family: Arial Black;
+    font-size: 1.25em
+}
+h5 {
+    font-family: Arial Black;
+    font-size: 1.125em
+}
+h6 {
+    font-family: Arial Black;
+    font-size: 1em
+}
+.caption{
+    font-family: Arial Black;
+}
+.caption-bigger {
+    font-family: Arial Black;
+    font-size: 1.25em;
+}
+.toc-title{
+    font-family: Arial Black;
+}
+
+.admonition {
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+    padding-bottom: 1em;
+}
+p.admonition-title {
+    margin-block-end: 1em;
+}
+
+.sidebar-tree {
+    margin-bottom: 10em;
+}
+
+footer {
+    margin-top: 5em;
+    margin-bottom: 5em;
+}
+.bottom-of-page {
+    display: block;
+    text-align: center;
+}
+.bottom-of-page-separator {
+    content: "";
+    display: block;
+    height: 5px;
+    background-color: #df4c34;
+    margin-top: 2em;
+}
+.community-icons {
+    height: 1em;
+    display: inline-block;
+    margin-bottom: 2em;
+}
+.community-icon {
+    margin: 0.3em;
+}
