@@ -73,7 +73,7 @@ language = "en"
 html_static_path = ['_static']
 
 html_css_files = [
-    'custom/css/typography.css',
+    # 'custom/css/typography.css',
 ]
 
 # A list of paths that contain custom themes, either as subdirectories

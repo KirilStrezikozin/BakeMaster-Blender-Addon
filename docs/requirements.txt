@@ -1,6 +1,5 @@
 sphinx>3.0.0
 requests>=2,<2.16
-docutils==0.16
 myst_parser
 sphinx_copybutton
 sphinx_design
