@@ -7,80 +7,77 @@
 BakeMaster 2.0 Documentation
 ============================
 
-.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/index_page/teaser_social_1200x600.png
-   :alt: teaser_social
-   :width: 1280 px
+BakeMaster Blender Baking Addon Documentation will help you learn all the ropes of your ultimate baking workflow with BakeMaster.
 
-Welcome to the Documentation of BakeMaster - the Blender Baking Add-on to catch with and dive into your ultimate baking workflow that will be like never before - a pleasure!
+About
+=====
 
-Quickstart
-==========
-
-* :doc:`/start/about/index`
-* :doc:`/start/install/index`
-* :doc:`/start/basic_usage/index`
-* :doc:`/start/help`
+* :doc:`/pages/about`
 
 .. toctree::
    :hidden:
-   :caption: Quickstart
+   :includehidden:
+
+   pages/about.rst
+
+The Setup
+=========
+
+* :doc:`/pages/setup/installation`
+* :doc:`/pages/setup/interface`
+
+.. toctree::
+   :hidden:
+   :caption: The Setup
    :maxdepth: 1
 
-   start/about/index.rst
-   start/install/index.rst
-   start/basic_usage/index.rst
-   start/help.rst
+   pages/setup/installation
+   pages/setup/interface
 
-User's Workflow
+Getting Started
 ===============
 
-* :doc:`/workflow/interface/index`
-* :doc:`/workflow/object/index`
-* :doc:`/workflow/map/index`
-* :doc:`/workflow/bake/index`
-* :doc:`/workflow/errors/index`
+* :doc:`/pages/start/objects`
+* :doc:`/pages/start/maps`
+* :doc:`/pages/start/bake`
 
 .. toctree::
    :hidden:
-   :caption: User's Workflow
+   :caption: Getting Started
    :maxdepth: 1
 
-   workflow/interface/index.rst
-   workflow/object/index.rst
-   workflow/map/index.rst
-   workflow/bake/index.rst
-   workflow/errors/index.rst
-   
-Versions
+   pages/start/objects
+   pages/start/maps
+   pages/start/bake
+
+Advanced
 ========
 
-* :doc:`/versions/versions`
-* :doc:`/versions/releases`
+* :doc:`/pages/advanced/improve`
+* :doc:`/pages/advanced/savetime`
+* :doc:`/pages/advanced/nolimits`
 
 .. toctree::
    :hidden:
-   :caption: Versions
+   :caption: Advanced
    :maxdepth: 1
 
-   versions/versions.rst
-   versions/releases.rst
+   pages/advanced/improve
+   pages/advanced/savetime
+   pages/advanced/nolimits
+   
+More
+====
 
-Get Involved
-============
-
-* :doc:`/contribute/index`
+* :doc:`/pages/more/connect`
+* :doc:`/pages/more/contribute`
+* :doc:`/pages/more/releases`
 
 .. toctree::
    :hidden:
-   :caption: Get Involved
+   :caption: More
    :maxdepth: 1
 
-   contribute/index.rst
-
-Indices
-=======
-
-* :ref:`genindex`
-
-.. * :ref:`modindex`
-  * :ref:`search`
+   pages/more/connect
+   pages/more/contribute
+   pages/more/releases
