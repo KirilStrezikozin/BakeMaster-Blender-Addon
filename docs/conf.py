@@ -10,7 +10,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
+import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
@@ -240,4 +240,4 @@ htmlhelp_basename = 'BakeMaster Documentation'
 
 def setup(app):
     for filepath in html_css_files:
-        app.add_css_file(filepath)
+        app.add_css_file(os.path.basename(filepath))
