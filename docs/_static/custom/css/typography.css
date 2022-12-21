@@ -88,7 +88,7 @@ footer {
     margin: .3em;
 }
 
-.admonition-special-thanks {
+div.admonition-special-thanks {
     background-color: #ff1fc30e;
     border-left: .2rem solid #ff1fc4;
     border-right: .2rem solid #ff1fc4;
@@ -100,4 +100,22 @@ footer {
     padding: 1.5em;
     padding-right: .5em;
     text-align: center;
+}
+
+ol.arabic {
+    border-left: .2rem solid var(--color-brand-secondary);
+    border-radius: .2rem;
+    box-shadow: 0 .2rem .5rem rgba(0,0,0,.05),0 0 .0625rem rgba(0,0,0,.1);
+    margin: 1rem auto;
+    overflow: hidden;
+    padding: 0 .5rem .5rem;
+    page-break-inside: avoid;
+    padding-left: 1.5em;
+}
+
+code.literal {
+    border: 1px solid var(--color-brand-secondary);
+}
+p.literal {
+    border: 1px solid var(--color-brand-secondary);
 }
