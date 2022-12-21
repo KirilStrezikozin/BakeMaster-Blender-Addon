@@ -88,14 +88,6 @@ footer {
     margin: .3em;
 }
 
-/* code.literal { */
-.literal {
-    border: 1px solid var(--color-brand-secondary)
-}
-/* p code.literal {
-    border: 1px solid var(--color-brand-secondary)
-} */
-
 ol {
     border-left: .2rem solid var(--color-brand-secondary);
     border-radius: .2rem;
@@ -119,4 +111,11 @@ ol {
     padding: 1.5em;
     padding-right: .5em;
     text-align: center;
+}
+
+code.literal {
+    border: 1px solid var(--color-brand-secondary)
+}
+p.literal {
+    border: 1px solid var(--color-brand-secondary)
 }
