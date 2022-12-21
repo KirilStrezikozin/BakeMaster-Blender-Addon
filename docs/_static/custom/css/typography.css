@@ -105,3 +105,17 @@ ol {
     page-break-inside: avoid;
     padding-left: 1.5em;
 }
+
+.admonition-special-thanks {
+    background-color: #ff1fc30e;
+    border-left: .2rem solid #ff1fc4;
+    border-right: .2rem solid #ff1fc4;
+    border-radius: .2rem;
+    box-shadow: 0 .2rem .5rem rgba(0,0,0,.05),0 0 .0625rem rgba(0,0,0,.1);
+    margin: 1rem auto;
+    overflow: hidden;
+    page-break-inside: avoid;
+    padding: 1.5em;
+    padding-right: .5em;
+    text-align: center;
+}

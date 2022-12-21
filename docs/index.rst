@@ -70,7 +70,6 @@ More
 ====
 
 * :doc:`/pages/more/connect`
-* :doc:`/pages/more/contribute`
 * :doc:`/pages/more/releases`
 
 .. toctree::
@@ -79,5 +78,4 @@ More
    :maxdepth: 1
 
    pages/more/connect
-   pages/more/contribute
    pages/more/releases
