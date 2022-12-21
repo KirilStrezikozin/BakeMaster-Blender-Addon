@@ -47,7 +47,7 @@ h6 {
     font-family: Arial Black;
     font-size: 1.25em;
 }
-.toc-title{
+.toc-title {
     font-family: Arial Black;
 }
 
@@ -88,12 +88,13 @@ footer {
     margin: .3em;
 }
 
-code.literal {
+/* code.literal { */
+.literal {
     border: 1px solid var(--color-brand-secondary)
 }
-p code.literal {
+/* p code.literal {
     border: 1px solid var(--color-brand-secondary)
-}
+} */
 
 ol {
     border-left: .2rem solid var(--color-brand-secondary);

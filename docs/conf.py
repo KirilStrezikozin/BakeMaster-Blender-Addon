@@ -240,4 +240,4 @@ htmlhelp_basename = 'BakeMaster Documentation'
 
 def setup(app):
     for filepath in html_css_files:
-        app.add_css_file(os.path.basename(filepath))
+        app.add_css_file(filepath)
