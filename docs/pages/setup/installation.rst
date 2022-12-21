@@ -4,17 +4,17 @@
     :alt: Download Blender
 
 .. |remove| image:: ../../_static/images/pages/setup/installation/remove_350x320.gif
-    :alt: removing
+    :alt: Uninstall
 
 .. |install| image:: ../../_static/images/pages/setup/installation/install_350x320.gif
-    :alt: installing
+    :alt: Install
 
 ============
 Installation
 ============
 
-BakeMaster is a Blender addon, so if you haven't got the software on your device yet, `go ahead <https://blender.org/download/>`__.
-Make sure the Blender version you are using is `compatible with BakeMaster <./compatibility.html>`__.
+| BakeMaster is a Blender addon, so if you haven't got the software on your device yet, `go ahead <https://blender.org/download/>`__.
+| Make sure the Blender version you are using is `compatible with BakeMaster <./compatibility.html>`__.
 
 |download_blender|
 
