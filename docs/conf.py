@@ -211,7 +211,7 @@ html_favicon = "_static/images/icons/bakemaster_logo_64x64.png"
 # every page bottom, using the given strftime() format.
 # The empty string is equivalent to '%b %d, %Y'
 # (or a locale-dependent equivalent).
-html_last_updated_fmt = '12/20/2022'
+html_last_updated_fmt = '12/21/2022'
 
 # If true, the reST sources are included in the HTML build as _sources/name.
 html_copy_source = True
