@@ -1,3 +1,5 @@
+/* this file is used for customizing furo theme's typography */
+
 :root {
     --color-brand-primary: #df4c34;
     --color-brand-secondary: #6c7587;
@@ -38,7 +40,7 @@ h6 {
     font-family: Arial Black;
     font-size: 1em;
 }
-.caption{
+.caption {
     font-family: Arial Black;
 }
 .caption-bigger {
@@ -114,6 +116,6 @@ ol.arabic {
 code.literal {
     border: 1px solid var(--color-brand-secondary);
 }
-p.literal {
+code p.literal {
     border: 1px solid var(--color-brand-secondary);
 }
