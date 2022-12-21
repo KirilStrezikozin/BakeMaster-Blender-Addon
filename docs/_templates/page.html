@@ -73,6 +73,11 @@
       {% trans %}
       <a href="https://paypal.me/kemplerart">Support</a>
       {% endtrans %}
+      {%- if hasdoc('license') %}
+        {% trans path=pathto('license') -%}
+          <a href="{{ path }}"> | License</a>
+        {%- endtrans %}
+      {%- endif %}
     </div>
   </div>
 {% endblock footer %}
