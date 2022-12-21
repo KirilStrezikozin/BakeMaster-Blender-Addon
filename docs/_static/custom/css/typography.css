@@ -10,7 +10,12 @@ h1 {
     font-size: 4em;
     margin-bottom: 2em;
 }
-
+h1::after {
+    content: "";
+    display: block;
+    height: 5px;
+    background-color: var(--color-brand-primary);
+}
 h2 {
     font-family: Arial Black;
     font-size: 2em;
