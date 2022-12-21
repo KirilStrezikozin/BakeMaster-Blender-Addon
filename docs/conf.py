@@ -237,3 +237,7 @@ todo_include_todos = True
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'BakeMaster Documentation'
+
+def setup(app):
+    for filepath in html_css_files:
+        app.add_css_file(filepath)
