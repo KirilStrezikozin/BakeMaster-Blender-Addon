@@ -13,6 +13,8 @@
 Installation
 ============
 
+rebuild check
+
 | BakeMaster is a Blender addon, so if you haven't got the software on your device yet, `go ahead <https://blender.org/download/>`__.
 | Make sure the Blender version you are using is `compatible with BakeMaster <./compatibility.html>`__.
 
