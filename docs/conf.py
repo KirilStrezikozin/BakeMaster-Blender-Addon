@@ -24,6 +24,7 @@ project = 'BakeMaster %s Documentation' % bakemaster_version
 copyright = ': 2022, Kiril Strezikozin'
 author = 'kemplerart'
 version = bakemaster_version
+branch = "dev-2.0.0"
 
 # The full version, including alpha/beta/rc tags
 release = bakemaster_version
@@ -82,7 +83,7 @@ html_theme_path = []
 
 html_theme_options = {
     "sidebar_hide_name": True,
-    # "top_of_page_button": "edit",
+    "top_of_page_button": "edit",
     "footer_icons": [
         {
             "name": "BlenderMarket",
@@ -162,9 +163,9 @@ html_theme_options = {
             "class": "community-icon",
         },
     ],
-    # "source_repository": "https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/",
-    # "source_branch": "master",
-    # "source_directory": "docs/",
+    "source_repository": "https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/",
+    "source_branch": branch,
+    "source_directory": "docs/",
     "light_css_variables": {
         "color-brand-primary": "#df4c34",
         "color-brand-content": "#df4c34",
