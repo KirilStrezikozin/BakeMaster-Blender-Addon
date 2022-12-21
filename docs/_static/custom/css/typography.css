@@ -1,5 +1,10 @@
 /* this file is used for customizing furo theme's typography */
 
+:root {
+    --color-brand-primary: #df4c34;
+    --color-brand-secondary: #6c7587;
+} 
+
 h1 {
     font-family: Arial Black;
     font-size: 4em;
@@ -9,7 +14,7 @@ h1::after {
     content: "";
     display: block;
     height: 5px;
-    background-color: #df4c34;
+    background-color: var(--color-brand-primary);
 }
 h2 {
     font-family: Arial Black;
@@ -21,7 +26,7 @@ h3 {
     font-family: Arial Black;
     font-size: 1.5em;
     margin-top: 1.5em;
-    margin-bottom: 0.6em;
+    margin-bottom: .6em;
 }
 h4 {
     font-family: Arial Black;
@@ -71,7 +76,7 @@ footer {
     content: "";
     display: block;
     height: 5px;
-    background-color: #df4c34;
+    background-color: var(--color-brand-primary);
     margin-top: 2em;
 }
 .community-icons {
@@ -80,12 +85,23 @@ footer {
     margin-bottom: 2em;
 }
 .community-icon {
-    margin: 0.3em;
+    margin: .3em;
 }
 
 code.literal {
-    border: 1px solid #6c7587
+    border: 1px solid var(--color-brand-secondary)
 }
 p code.literal {
-    border: 1px solid #6c7587
+    border: 1px solid var(--color-brand-secondary)
+}
+
+ol {
+    border-left: .2rem solid var(--color-brand-secondary);
+    border-radius: .2rem;
+    box-shadow: 0 .2rem .5rem rgba(0,0,0,.05),0 0 .0625rem rgba(0,0,0,.1);
+    margin: 1rem auto;
+    overflow: hidden;
+    padding: 0 .5rem .5rem;
+    page-break-inside: avoid;
+    padding-left: 1.5em;
 }
