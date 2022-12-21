@@ -239,5 +239,7 @@ todo_include_todos = True
 htmlhelp_basename = 'BakeMaster Documentation'
 
 def setup(app):
-    for filepath in html_css_files:
-        app.add_css_file(filepath)
+    pass
+    # app.builder.css_files.insert(0, '_static/custom/css/typography.css')
+    # for filepath in css_files:
+    #     app.add_css_file(filepath)

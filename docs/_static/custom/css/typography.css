@@ -1,5 +1,3 @@
-/* this file is used for customizing furo theme's typography */
-
 :root {
     --color-brand-primary: #df4c34;
     --color-brand-secondary: #6c7587;
@@ -88,7 +86,7 @@ footer {
     margin: .3em;
 }
 
-div.admonition-special-thanks {
+.admonition-special-thanks {
     background-color: #ff1fc30e;
     border-left: .2rem solid #ff1fc4;
     border-right: .2rem solid #ff1fc4;
