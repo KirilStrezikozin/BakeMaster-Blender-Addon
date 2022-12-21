@@ -230,6 +230,9 @@ html_show_sphinx = False
 # If true, the text around the keyword is shown as summary of each search result.
 html_show_search_summary = True
 
+# If this is True, todo and todolist produce output, else they produce nothing.
+todo_include_todos = True
+
 # -- Options for HTML help output --------------------------------------------
 
 # Output file base name for HTML help builder.
