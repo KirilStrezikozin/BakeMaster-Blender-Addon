@@ -30,15 +30,15 @@ h3 {
 }
 h4 {
     font-family: Arial Black;
-    font-size: 1.25em
+    font-size: 1.25em;
 }
 h5 {
     font-family: Arial Black;
-    font-size: 1.125em
+    font-size: 1.125em;
 }
 h6 {
     font-family: Arial Black;
-    font-size: 1em
+    font-size: 1em;
 }
 .caption{
     font-family: Arial Black;
@@ -114,8 +114,8 @@ ol.arabic {
 }
 
 code.literal {
-    border: 1px solid var(--color-brand-secondary)
+    border: 1px solid var(--color-brand-secondary);
 }
 p.literal {
-    border: 1px solid var(--color-brand-secondary)
+    border: 1px solid var(--color-brand-secondary);
 }
