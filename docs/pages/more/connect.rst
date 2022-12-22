@@ -23,25 +23,25 @@ Useful links
 .. admonition:: Feature Request
     :class: note
 
-    Describe what you dream about. `Submit a feature request <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/new/choose>`__.
+    Describe your dreams. `Submit a feature request <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/new/choose>`__.
 
 .. admonition:: Announcements Channel
     :class: idea
 
-    BakeMaster news is announced in the `BakeMaster Chat <https://discord.gg/2ePzzzMBf4>`__ and the `Announcements on GitHub <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/discussions/categories/announcements>`__.
+    Watch for the news in the `BakeMaster Chat <https://discord.gg/2ePzzzMBf4>`__ and the `Announcements on GitHub <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/discussions/categories/announcements>`__.
 
 Contact and chat
 ================
 
 `BakeMaster GitHub Discussions <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/discussions>`__
-    | BakeMaster Demo version repository, as well as a place to submit issues, or have a dev talk,
+    | BakeMaster Demo version repository, where you can submit an issue, feature request, or have a dev talk.
     | Or have an eye on whether I'm keeping up with the dev deadlines 👀.
 
 `BakeMaster Discord <https://discord.gg/2ePzzzMBf4>`__
-    The Discord chat for any type of discussion, questions, announcements, thoughts and more.
+    The Discord chat for discussion, questions, announcements, thoughts, and more.
 
 Reach the author directly
-    | `email <kirilstrezikozin@gmail.com>`__
+    | ``kirilstrezikozin@gmail.com>``
     | `telegram <https://t.me/kemplerart>`__
     | `instagram <https://www.instagram.com/kemplerart/>`__
     | discord username: ``kemplerart#1586``
@@ -52,9 +52,9 @@ Special thanks
 
 .. cssclass:: admonition-special-thanks
 
-    | Shoutout to the whole BakeMaster Discord squad (even considering that it's relatively small).
+    | Shoutout to the whole BakeMaster Discord squad (even considering it's relatively small).
     | Each of you lifts my spirit and soul to continue development!
-    | BakeMaster is BakeMaster thanks to you! 
+    | BakeMaster is BakeMaster, thanks to you! 
     | 🤩
 
 .. cssclass:: admonition-special-thanks

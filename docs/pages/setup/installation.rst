@@ -14,7 +14,7 @@ Installation
 ============
 
 | BakeMaster is a Blender addon, so if you haven't got the software on your device yet, `go ahead <https://blender.org/download/>`__.
-| Make sure the Blender version you are using is `compatible with BakeMaster <./compatibility.html>`__.
+| Make sure the Blender version you use is `compatible with BakeMaster <./compatibility.html>`__.
 
 |download_blender|
 
@@ -49,6 +49,6 @@ Go to your Blender Preferences and install the downloaded zipped folder.
 .. admonition:: Demo Version
     :class: seealso
 
-    The Demo version includes an overlook of the addon's interface. It can be also downloaded from the `GitHub repo <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon>`__. Go to the ``install/`` directory and download the zip. For the full experience, install the Full Version.
+    The Demo version includes an overlook of the addon's interface. You can also download it from the `GitHub repo <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon>`__. Go to the ``install/`` directory and download the zip. For the max experience, install the Full Version.
 
 If you have any issues with installing the addon, feel free to `reach out for help <../more/connect.html>`__.

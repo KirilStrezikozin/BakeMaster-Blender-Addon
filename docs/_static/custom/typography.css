@@ -116,6 +116,6 @@ ol.arabic {
 code.literal {
     border: 1px solid var(--color-brand-secondary);
 }
-code p.literal {
+p code.literal {
     border: 1px solid var(--color-brand-secondary);
 }
