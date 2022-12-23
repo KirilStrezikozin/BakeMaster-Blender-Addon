@@ -5,7 +5,7 @@ Setup Objects
 Choose Objects
 ==============
 
-To start settings up maps for the objects you want to bake, add these objects to the Table of Objects. Do it by pressing the ``Add`` button on the top:
+To start settings up maps (image textures) for the mesh objects you want to bake, add these objects to the Table of Objects. Do it by pressing the ``Add`` button on the top:
 
 .. todo:: Gif requested showing how to add objects (cage and highpolies too)
 
