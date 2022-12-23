@@ -34,14 +34,13 @@ Contact and chat
 ================
 
 `BakeMaster GitHub Discussions <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/discussions>`__
-    | BakeMaster Demo version repository, where you can submit an issue, feature request, or have a dev talk.
-    | Or have an eye on whether I'm keeping up with the dev deadlines 👀.
+    BakeMaster Demo version repository, where you can submit an issue, feature request, or have a dev talk. Or have an eye on whether I'm keeping up with the dev deadlines 👀.
 
 `BakeMaster Discord <https://discord.gg/2ePzzzMBf4>`__
     The Discord chat for discussion, questions, announcements, thoughts, and more.
 
 Reach the author directly
-    | ``kirilstrezikozin@gmail.com>``
+    | ``kirilstrezikozin@gmail.com``
     | `telegram <https://t.me/kemplerart>`__
     | `instagram <https://www.instagram.com/kemplerart/>`__
     | discord username: ``kemplerart#1586``

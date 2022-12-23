@@ -51,11 +51,12 @@ Naming Conventions
     | ``Headlight-back_low_55``   | | ``Headlight-back_high_55`` |
     |                             | | ``Headlight-back_cage_55`` |
     +-----------------------------+------------------------------+
-    | ``monset_body``             | *Won't get matched*          |
+    | ``monster_body``            | *Won't get matched*          |
     +-----------------------------+------------------------------+
 
 .. caution::
-    BakeMaster determines naming suffixes between ``_`` (underscores) in the Object name.
+    | BakeMaster determines naming suffixes between ``_`` (underscores) in the Object name.
+    | Unmatched objects won't be grouped into containers.
 
 Additional Controls
 ===================
