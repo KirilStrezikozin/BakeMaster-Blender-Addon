@@ -2,7 +2,12 @@
 Get Best Results
 ================
 
-How to improve my baking, if I'm a beginner or a professional?
+Tutorials
+=========
+
+.. todo:: Embed a YouTube video tutorial
 
 Help system
 ===========
+
+.. todo:: Slideshow of images showing: some props descriptions and the Help panel buttons.
