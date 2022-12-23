@@ -102,7 +102,7 @@ footer {
     text-align: center;
 }
 
-ol.arabic {
+ol.arabic, .ul-stylized {
     border-left: .2rem solid var(--color-brand-secondary);
     border-radius: .2rem;
     box-shadow: 0 .2rem .5rem rgba(0,0,0,.05),0 0 .0625rem rgba(0,0,0,.1);
