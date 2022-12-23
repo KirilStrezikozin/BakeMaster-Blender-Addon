@@ -53,18 +53,18 @@ Getting Started
 Advanced
 ========
 
-* :doc:`/pages/advanced/improve`
-* :doc:`/pages/advanced/savetime`
 * :doc:`/pages/advanced/nolimits`
+* :doc:`/pages/advanced/savetime`
+* :doc:`/pages/advanced/improve`
 
 .. toctree::
    :hidden:
    :caption: Advanced
    :maxdepth: 1
 
-   pages/advanced/improve
-   pages/advanced/savetime
    pages/advanced/nolimits
+   pages/advanced/savetime
+   pages/advanced/improve
    
 More
 ====
