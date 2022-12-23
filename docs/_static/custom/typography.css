@@ -113,9 +113,17 @@ ol.arabic {
     padding-left: 1.5em;
 }
 
-code.literal {
+code.literal, p code.literal {
     border: 1px solid var(--color-brand-secondary);
 }
-p code.literal {
-    border: 1px solid var(--color-brand-secondary);
+
+table.docutils td, table.docutils td:first-child, table.docutils td:last-child {
+    border-top: 1px solid var(--color-brand-secondary);
+    border-bottom: 1px solid var(--color-brand-secondary);
+    border-left: 1px solid var(--color-brand-secondary);
+    border-right: 1px solid var(--color-brand-secondary);
+    padding: 0 .25em;
+}
+tbody {
+    border-radius: .2rem;
 }
