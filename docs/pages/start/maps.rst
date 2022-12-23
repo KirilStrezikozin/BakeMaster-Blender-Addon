@@ -9,6 +9,13 @@ Each object has a list of added maps. The slideshow below will guide you through
 
 .. todo:: Slideshow of gifs showing the table of maps controls and workaround (add, choose type, remove, trash, bake visibility)
 
+Map Types
+---------
+
+BakeMaster can bake 36 different map types:
+
+.. todo:: Slideshow of images showing all map types.
+
 Map settings
 ============
 
