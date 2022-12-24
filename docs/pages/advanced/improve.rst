@@ -7,6 +7,27 @@ Tutorials
 
 .. todo:: Embed a YouTube video tutorial
 
+Baking from highpoly
+====================
+
+Understanding Cages
+===================
+
+Map resolution
+==============
+
+What's the best samples count
+=============================
+
+Normal maps
+===========
+
+Improve meshes' shading
+=======================
+
+What are Decals
+===============
+
 Help system
 ===========
 
