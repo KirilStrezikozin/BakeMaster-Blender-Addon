@@ -167,19 +167,21 @@ tbody {
     text-decoration: none;
     margin-inline: .5em;
 }
-.slideshow .footer .controls .dot-inactive, .slideshow .footer .controls .dot-active {
+.slideshow .footer .controls .dot {
     cursor: pointer;
     height: 12px;
     width: 12px;
     margin: 0 2px;
-    background-color: hsla(0, 0%, 50%, .1);
     border-radius: 50%;
     display: inline-block;
     transition: background-color .5s ease;
 }
-.slideshow .footer .controls .dot-active {
+.slideshow .footer .controls .inactive {
+    background-color: hsla(0, 0%, 50%, .1);
+}
+.slideshow .footer .controls .active {
     background-color: hsla(0, 0%, 50%, .5);
 }
-.slideshow .footer .controls .dot-inactive:hover {
+.slideshow .footer .controls .inactive:hover {
     background-color: hsla(0, 0%, 50%, .5);
 }
