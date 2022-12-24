@@ -102,8 +102,7 @@ footer {
     text-align: center;
 }
 
-ol.arabic, .ul-stylized {
-    border-left: .2rem solid var(--color-brand-secondary);
+ol.arabic, .ul-stylized, .slideshow {
     border-radius: .2rem;
     box-shadow: 0 .2rem .5rem rgba(0,0,0,.05),0 0 .0625rem rgba(0,0,0,.1);
     margin: 1rem auto;
@@ -111,6 +110,9 @@ ol.arabic, .ul-stylized {
     padding: 0 .5rem .5rem;
     page-break-inside: avoid;
     padding-left: 1.5em;
+}
+ol.arabic, .ul-stylized {
+    border-left: .2rem solid var(--color-brand-secondary);
 }
 
 code.literal, p code.literal {
@@ -126,4 +128,58 @@ table.docutils td, table.docutils td:first-child, table.docutils td:last-child {
 }
 tbody {
     border-radius: .2rem;
+}
+
+.slideshow {
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+    padding: 0em;
+}
+.slideshow .content-wrapper .content {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 0em;
+}
+.slideshow .content-wrapper .active {
+    display: flex;
+}
+.slideshow .content-wrapper .row {
+    flex-flow: row;
+}
+.slideshow .content-wrapper .column {
+    flex-flow: column nowrap;
+}
+.slideshow .content-wrapper .content .slideshow-description {
+    padding-left: .6em;
+}
+.slideshow .footer {
+    background-color: hsla(0, 0%, 50%, .1);
+    text-align: center;
+    line-height: 1.3;
+    font-weight: 500;
+    padding: .4rem;
+    display: flex;
+    justify-content: space-between;
+}
+.slideshow .footer .prev, .slideshow .footer .next, .slideshow .footer .controls{
+    cursor: pointer;
+    text-decoration: none;
+    margin-inline: .5em;
+}
+.slideshow .footer .controls .dot-inactive, .slideshow .footer .controls .dot-active {
+    cursor: pointer;
+    height: 12px;
+    width: 12px;
+    margin: 0 2px;
+    background-color: hsla(0, 0%, 50%, .1);
+    border-radius: 50%;
+    display: inline-block;
+    transition: background-color .5s ease;
+}
+.slideshow .footer .controls .dot-active {
+    background-color: hsla(0, 0%, 50%, .5);
+}
+.slideshow .footer .controls .dot-inactive:hover {
+    background-color: hsla(0, 0%, 50%, .5);
 }

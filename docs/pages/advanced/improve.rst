@@ -54,3 +54,40 @@ Help system
 ===========
 
 .. todo:: Slideshow of images showing: some props descriptions and the Help panel buttons.
+
+.. raw:: html
+
+    <div class="slideshow">
+        <div class="content-wrapper">
+            <div class="content column active">
+                <img src="../../_static/images/pages/setup/installation/access_350x320.gif" alt="access">
+                <div class="slideshow-description">
+                    <b>Headline</b><br>
+                    <p>Hi from slide 1</p>
+                </div>
+            </div>
+            <div class="content">
+                <img src="../../_static/images/pages/setup/installation/install_350x320.gif" alt="access">
+                <div class="slideshow-description">
+                    <b>Headline</b><br>
+                    <p>Hi from slide 2</p>
+                </div>
+            </div>
+            <div class="content">
+                <img src="../../_static/images/pages/setup/installation/remove_350x320.gif" alt="access">
+                <div class="slideshow-description">
+                    <b>Headline</b><br>
+                    <p>Hi from slide 3</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <a class="prev" onclick="slideshow_setSlideByRelativeId(-1)">&#10094;</a>
+            <div class="controls">
+                <span class="dot-active" onclick="slideshow_setSlideByAbsoluteId(1)"></span>
+                <span class="dot-inactive" onclick="slideshow_setSlideByAbsoluteId(2)"></span>
+                <span class="dot-inactive" onclick="slideshow_setSlideByAbsoluteId(3)"></span>
+            </div>
+            <a class="next" onclick="slideshow_setSlideByRelativeId(1)">&#10095;</a>
+        </div>
+    </div>
