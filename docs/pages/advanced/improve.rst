@@ -53,31 +53,40 @@ Baking time also increases when setting the sample count very high. It'll result
 Help system
 ===========
 
-.. todo:: Slideshow of images showing: some props descriptions and the Help panel buttons.
+The Help panel offers a couple of buttons that will take you to the corresponding pages of BakeMaster's online documentation you're currently reading.
 
 .. raw:: html
 
     <div class="slideshow" id="slideshow-0">
         <div class="content-wrapper">
             <div class="content column active">
-                <img src="../../_static/images/pages/setup/installation/access_350x320.gif" alt="access">
+                <img src="../../_static/images/pages/advanced/improve/help_mainpage_385x176.png" alt="Main Page">
                 <div class="slideshow-description">
-                    <b>Headline</b><br>
-                    <p>Hi from slide 1</p>
+                    <p>Main Page</p>
                 </div>
             </div>
             <div class="content column">
-                <img src="../../_static/images/pages/setup/installation/install_350x320.gif" alt="access">
+                <img src="../../_static/images/pages/advanced/improve/help_howtosetupobjects_385x176.png" alt="How to Setup Objects">
                 <div class="slideshow-description">
-                    <b>Headline</b><br>
-                    <p>Hi from slide 2</p>
+                    <p>How to Setup Objects</p>
                 </div>
             </div>
             <div class="content column">
-                <img src="../../_static/images/pages/setup/installation/remove_350x320.gif" alt="access">
+                <img src="../../_static/images/pages/advanced/improve/help_howtosetupmaps_385x176.png" alt="How to Setup Maps">
                 <div class="slideshow-description">
-                    <b>Headline</b><br>
-                    <p>Hi from slide 3</p>
+                    <p>How to Setup Maps</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/advanced/improve/help_howtobake_385x176.png" alt="How to Bake">
+                <div class="slideshow-description">
+                    <p>How to Bake</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/advanced/improve/help_support_385x176.png" alt="Support">
+                <div class="slideshow-description">
+                    <p>Support</p>
                 </div>
             </div>
         </div>
@@ -87,6 +96,8 @@ Help system
                 <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 0)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 1)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 2)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 3)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 4)"></span>
             </div>
             <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-0', 1)" onselectstart="return false">&#10095;</a>
         </div>
