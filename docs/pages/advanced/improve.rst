@@ -48,7 +48,33 @@ What's the best sample count
 
 Baking time also increases when setting the sample count very high. It'll result in cleaner and smoother bakes, but you can keep them pretty low and use `Denoising <./nolimits.html#denoising-maps>`__ later.
 
-.. todo:: 3 images side by side showing: 1 - low samples, no denoise, 2 - high samples, no denoise, 3 - low samples, denoise
+AO fragment, how long the bake took:
+
+.. raw:: html
+
+    <div class="content-gallery">
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/improve/samples_8_nodenoise.png" alt="8 Samples, not denoised">
+            <div class="content-description">
+                <p>8 samples, 4k,</p>
+                <p>not denoised, 39s</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/improve/samples_128_nodenoise.png" alt="128 Samples, not denoised">
+            <div class="content-description">
+                <p>128 samples, 4k,</p>
+                <p>not denoised, 6m48s</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/improve/samples_8_denoise.png" alt="8 Samples, denoised">
+            <div class="content-description">
+                <p>8 samples, 4k,</p>
+                <p>denoised, 1m13s</p>
+            </div>
+        </div>
+    </div>
 
 Help system
 ===========

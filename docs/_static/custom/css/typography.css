@@ -185,3 +185,24 @@ tbody {
 .slideshow .footer .controls .inactive:hover {
     background-color: hsla(0, 0%, 50%, .5);
 }
+
+.content-gallery {
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+    padding: 0em;
+    display: flex;
+    justify-content: space-evenly;
+    /* flex-flow: column wrap; */
+}
+.content-gallery .content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0em;
+}
+.content-gallery .content .content-description {
+    font-size: smaller;
+    padding-left: .6em;
+    text-align: center;
+    line-height: 1;
+}
