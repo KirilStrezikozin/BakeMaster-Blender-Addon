@@ -10,26 +10,26 @@ Tutorials
 Baking from highpoly
 ====================
 
-Texture baking as a method to transfer high-resolution mesh details to a low-res model has become a common practice in 3D workflows. Models with loads of geometry require more computer power and are sometimes even useless as some details won't be noticed in the final production. On the other hand, lowpoly model is easier to handle and those high-resolution details can be baked onto it.
+Texture baking often includes transferring high-resolution mesh details to a low-res model. Models with loads of geometry require more computer power, and details sometimes aren't even noticed in the final production. On the other hand, lowpoly model is easier to handle, and you can bake high-resolution details onto it.
 
 .. todo:: Two images side by side showing wireframe overlap of high and lowpoly geometries.
 
 .. todo:: Two images side by side showing render time for those models and no visual difference.
 
-Read more about how you can set up `High to Lowpoly bake in BakeMaster <../start/objects.html#high-to-lowpoly>`__.
+Read more about how you can set up `High to Lowpoly bake <../start/objects.html#high-to-lowpoly>`__ in BakeMaster.
 
 Understanding Cages
 ===================
 
-A Cage is an inflated copy of your base lowpoly model. When baking highpoly details onto a low-res mesh, a Cage is used to limit the distance of shot detail-capturing projection rays.
+A Cage is an inflated copy of your base lowpoly model. When baking highpoly details onto a low-res mesh, a Cage limits the distance of shot detail-capturing projection rays.
 
-.. todo:: A kind of gif showing a brief understandable explanation of how cage works.
+.. todo:: A kind of gif showing an understandable explanation of how the cage works.
     
-For best results, the Cage should expand far enough to cover all highpoly geometry. Expanding the Cage too far may cause glitches as projection might intersect other meshes in the scene.
+The Cage should expand far enough to cover all highpoly geometry for best results. Expanding the Cage too far may cause glitches as projection might intersect other meshes in the scene.
 
 .. todo:: Images side by side: 1 - cage not fully covering highpoly - bake glitches, 2 - correct cage - everything is fine.
 
-In BakeMaster, you can choose a Cage object created on your own, or specify the ``Extrusion`` value by which to inflate the lowpoly.
+In BakeMaster, you can choose a Cage object you created or specify the ``Extrusion`` value to inflate the lowpoly.
 
 .. todo:: Gifs side by side: 1 - showing how to specify the extrusion, 2 - how to choose a cage object.
 
@@ -39,9 +39,9 @@ Decrease Baking time
 Map resolution
 --------------
 
-When choosing a higher map resolution, keep in mind whether it'd be noticeable in the output rendered image. Estimate the distance from the camera to that specific model, its relative size in the render, and how many details there'd be seen.
+When choosing a higher map resolution, consider whether it'd be noticeable in the output rendered image, estimate the distance from the camera to that specific model, its relative size in the render, and how many details would be distinguished.
 
-.. todo:: 3 images side by side showing one rendered model that has textures baked at different res (4k, 1k, .5k).
+.. todo:: 3 images side by side showing one rendered model having textures baked at different res (4k, 1k, .5k).
 
 What's the best sample count
 ----------------------------
