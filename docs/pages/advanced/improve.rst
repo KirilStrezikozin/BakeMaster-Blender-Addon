@@ -57,7 +57,7 @@ Help system
 
 .. raw:: html
 
-    <div class="slideshow">
+    <div class="slideshow" id="slideshow-0">
         <div class="content-wrapper">
             <div class="content column active">
                 <img src="../../_static/images/pages/setup/installation/access_350x320.gif" alt="access">
@@ -66,14 +66,14 @@ Help system
                     <p>Hi from slide 1</p>
                 </div>
             </div>
-            <div class="content">
+            <div class="content column">
                 <img src="../../_static/images/pages/setup/installation/install_350x320.gif" alt="access">
                 <div class="slideshow-description">
                     <b>Headline</b><br>
                     <p>Hi from slide 2</p>
                 </div>
             </div>
-            <div class="content">
+            <div class="content column">
                 <img src="../../_static/images/pages/setup/installation/remove_350x320.gif" alt="access">
                 <div class="slideshow-description">
                     <b>Headline</b><br>
@@ -82,12 +82,12 @@ Help system
             </div>
         </div>
         <div class="footer">
-            <a class="prev" onclick="slideshow_setSlideByRelativeId(-1)">&#10094;</a>
+            <a class="prev" onclick="slideshow_setSlideByRelativeId('slideshow-0', -1)" onselectstart="return false">&#10094;</a>
             <div class="controls">
-                <span class="dot-active" onclick="slideshow_setSlideByAbsoluteId(1)"></span>
-                <span class="dot-inactive" onclick="slideshow_setSlideByAbsoluteId(2)"></span>
-                <span class="dot-inactive" onclick="slideshow_setSlideByAbsoluteId(3)"></span>
+                <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 0)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 1)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 2)"></span>
             </div>
-            <a class="next" onclick="slideshow_setSlideByRelativeId(1)">&#10095;</a>
+            <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-0', 1)" onselectstart="return false">&#10095;</a>
         </div>
     </div>
