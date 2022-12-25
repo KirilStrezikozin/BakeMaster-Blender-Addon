@@ -1,3 +1,6 @@
+.. |understandingcage_howcageworks| image:: ../../_static/images/pages/advanced/improve/understandingcage_howcageworks_700x400.gif
+    :alt: How Cage works
+
 ================
 Get Best Results
 ================
@@ -23,7 +26,7 @@ Understanding Cages
 
 A Cage is an inflated copy of your base lowpoly model. When baking highpoly details onto a low-res mesh, a Cage limits the distance of shot detail-capturing projection rays.
 
-.. todo:: A kind of gif showing an understandable explanation of how the cage works.
+|understandingcage_howcageworks|
     
 The Cage should expand far enough to cover all highpoly geometry for best results. Expanding the Cage too far may cause glitches as projection might intersect other meshes in the scene.
 

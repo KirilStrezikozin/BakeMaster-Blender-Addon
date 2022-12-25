@@ -192,6 +192,7 @@ tbody {
     padding: 0em;
     display: flex;
     justify-content: space-evenly;
+    width: 46em;
     /* flex-flow: column wrap; */
 }
 .content-gallery .content {
