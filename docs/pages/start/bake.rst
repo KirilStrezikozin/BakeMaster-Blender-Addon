@@ -15,7 +15,7 @@ Start the Bake
 
     <div class="slideshow" id="slideshow-0">
         <div class="content-wrapper">
-            <div class="content row active">
+            <div class="content row">
                 <img src="../../_static/images/pages/start/bake/bake_overwrite_350x210.png" alt="Overwrite">
                 <div class="slideshow-description">
                     <b>Overwrite</b>
@@ -29,7 +29,7 @@ Start the Bake
                     <p>Remove baked objects from BakeMaster Table of Objects after the bake.</p>
                 </div>
             </div>
-            <div class="content row">
+            <div class="content row active">
                 <img src="../../_static/images/pages/start/bake/bake_this_350x210.png" alt="Bake This Button">
                 <div class="slideshow-description">
                     <b>Bake This</b>
@@ -68,9 +68,9 @@ Start the Bake
         <div class="footer">
             <a class="prev" onclick="slideshow_setSlideByRelativeId('slideshow-0', -1)" onselectstart="return false">&#10094;</a>
             <div class="controls">
-                <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 0)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 0)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 1)"></span>
-                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 2)"></span>
+                <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 2)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 3)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 4)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 5)"></span>
