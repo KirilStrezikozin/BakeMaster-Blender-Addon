@@ -137,7 +137,7 @@ tbody {
 }
 .slideshow .content-wrapper .content {
     display: none;
-    justify-content: center;
+    justify-content: left;
     align-items: center;
     padding: 0em;
 }
