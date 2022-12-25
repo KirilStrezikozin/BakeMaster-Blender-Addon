@@ -167,6 +167,9 @@ tbody {
     text-decoration: none;
     margin-inline: .5em;
 }
+.slideshow .footer .prev, .slideshow .footer .next {
+    width: 20px;
+}
 .slideshow .footer .controls .dot {
     cursor: pointer;
     height: 12px;
