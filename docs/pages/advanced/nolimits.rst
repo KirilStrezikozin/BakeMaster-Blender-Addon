@@ -23,6 +23,8 @@ Channel Packing is commonly used in the Game Dev industry when there's a need to
 
 With BakeMaster, you can easily configure Channel Packs and have any maps packed.
 
+.. todo:: Slideshow showing how to create and configure a Channel Pack.
+
 .. admonition:: Channel Pack type
     :class: important
 
