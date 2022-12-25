@@ -1,6 +1,9 @@
 .. |add_objects| image:: ../../_static/images/pages/start/objects/add_objects_350x320.gif
     :alt: How to add Objects
 
+.. |how_nm_works| image:: ../../_static/images/pages/start/objects/how_nm_works_374x364.gif
+    :alt: How Name Matching works
+
 =============
 Setup Objects
 =============
@@ -23,7 +26,7 @@ Name Matching
 | BakeMaster can automatically match all your lowpolies, highpolies, and cages with each other.
 | To do so, press the ``ɑ`` button (`Containers <../advanced/nolimits.html#containers>`__ will form):
 
-.. todo:: Gif requested showing how the name matching works.
+|how_nm_works|
 
 Naming Conventions
 ------------------
