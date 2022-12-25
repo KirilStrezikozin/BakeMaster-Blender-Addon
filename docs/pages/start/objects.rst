@@ -1,3 +1,6 @@
+.. |add_objects| image:: ../../_static/images/pages/start/objects/add_objects_350x320.gif
+    :alt: How to add Objects
+
 =============
 Setup Objects
 =============
@@ -7,7 +10,7 @@ Choose Objects
 
 To start settings up maps (image textures) for the mesh objects you want to bake, add these objects to the Table of Objects. Do it by pressing the ``Add`` button on the top:
 
-.. todo:: Gif requested showing how to add objects (cage and highpolies too)
+|add_objects|
 
 .. admonition:: Add Highpolies and Cages too
     :class: caution
