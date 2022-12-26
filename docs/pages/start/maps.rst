@@ -123,10 +123,10 @@ Map Customization
         <div class="footer">
             <a class="prev" onclick="slideshow_setSlideByRelativeId('slideshow-2', -1)" onselectstart="return false">&#10094;</a>
             <div class="controls">
-                <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 0)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 0)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 1)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 2)"></span>
-                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 3)"></span>
+                <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 3)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 4)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 5)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 6)"></span>
@@ -155,7 +155,7 @@ Map Customization
             <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-2', 1)" onselectstart="return false">&#10095;</a>
         </div>
         <div class="content-wrapper">
-            <div class="content column active">
+            <div class="content column">
                 <div class="slideshow-description">
                     <p>AlbedoM</p>
                 </div>
@@ -173,7 +173,7 @@ Map Customization
                 </div>
                 <img src="../../_static/images/pages/start/maps/2_mapcustomsettings_emission.png" alt="Emission/Lightmap">
             </div>
-            <div class="content column">
+            <div class="content column active">
                 <div class="slideshow-description">
                     <p>Normal</p>
                 </div>
@@ -331,7 +331,193 @@ Real-time Preview
 
 Preview how the map will look when baked!
 
-.. todo:: Slideshow of gifs showing each map's preview enabled.
+.. raw:: html
+
+    <div class="slideshow" id="slideshow-3">
+        <div class="content-wrapper">
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/0_preview_albedom.png" alt="Albedo Metallic">
+                <div class="slideshow-description">
+                    <p>Albedo Metallic</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/1_preview_metalness.png" alt="Metalness">
+                <div class="slideshow-description">
+                    <p>Metalness</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/2_preview_roughness.png" alt="Rougness">
+                <div class="slideshow-description">
+                    <p>Rougness</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/3_preview_albedos.png" alt="Albedo Specular">
+                <div class="slideshow-description">
+                    <p>Albedo Specular</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/4_preview_specular.png" alt="Specular">
+                <div class="slideshow-description">
+                    <p>Specular</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/5_preview_glossiness.png" alt="Glossiness">
+                <div class="slideshow-description">
+                    <p>Glossiness</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/6_preview_opacity.png" alt="Opacity">
+                <div class="slideshow-description">
+                    <p>Opacity</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/7_preview_emission.png" alt="Emission/Lightmap">
+                <div class="slideshow-description">
+                    <p>Emission/Lightmap</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/8_preview_normal.png" alt="Normal">
+                <div class="slideshow-description">
+                    <p>Normal</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/9_preview_displacement.png" alt="Displacement">
+                <div class="slideshow-description">
+                    <p>Displacement</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/10_preview_vd.png" alt="Vector Displacement">
+                <div class="slideshow-description">
+                    <p>Vector Displacement</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/12_preview_position.png" alt="Position">
+                <div class="slideshow-description">
+                    <p>Position</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/13_preview_decalnm.png" alt="Decal Pass Normal">
+                <div class="slideshow-description">
+                    <p>Decal Pass Normal</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/14_preview_ao.png" alt="AO">
+                <div class="slideshow-description">
+                    <p>AO</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/15_preview_cavity.png" alt="Cavity">
+                <div class="slideshow-description">
+                    <p>Cavity</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/16_preview_curvature.png" alt="Curvature">
+                <div class="slideshow-description">
+                    <p>Curvature</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/17_preview_thickness.png" alt="Thickness">
+                <div class="slideshow-description">
+                    <p>Thickness</p>
+                </div>
+            </div>
+            <div class="content column active">
+                <img src="../../_static/images/pages/start/maps/18_preview_id.png" alt="ID">
+                <div class="slideshow-description">
+                    <p>ID</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/19_preview_mask.png" alt="Mask">
+                <div class="slideshow-description">
+                    <p>Mask</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/20_preview_xyz.png" alt="XYZ Mask">
+                <div class="slideshow-description">
+                    <p>XYZ Mask</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/21_preview_gradient.png" alt="Gradient Mask">
+                <div class="slideshow-description">
+                    <p>Gradient Mask</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/22_preview_edgemask.png" alt="Edge Mask">
+                <div class="slideshow-description">
+                    <p>Edge Mask</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/23_preview_wireframe.png" alt="Wireframe Mask">
+                <div class="slideshow-description">
+                    <p>Wireframe Mask</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/24_preview_bsdfpassior.png" alt="BSDF Pass IOR">
+                <div class="slideshow-description">
+                    <p>BSDF Pass IOR</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/25_preview_vrtxcolorlayer.png" alt="Vertex Color Layer">
+                <div class="slideshow-description">
+                    <p>Vertex Color Layer</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <a class="prev" onclick="slideshow_setSlideByRelativeId('slideshow-3', -1)" onselectstart="return false">&#10094;</a>
+            <div class="controls">
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 0)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 1)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 2)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 3)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 4)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 5)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 6)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 7)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 8)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 9)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 10)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 11)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 12)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 13)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 14)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 15)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 16)"></span>
+                <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 17)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 18)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 19)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 20)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 21)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 22)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 23)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 24)"></span>
+            </div>
+            <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-3', 1)" onselectstart="return false">&#10095;</a>
+        </div>
+    </div>
 
 Format Settings
 ---------------
