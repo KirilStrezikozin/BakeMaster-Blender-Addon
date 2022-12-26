@@ -125,7 +125,7 @@ The Table of Objects provides additional controls for the Objects in it:
             <div class="content row">
                 <img src="../../_static/images/pages/start/objects/7_controls_selectactive.png" alt="Active Object">
                 <div class="slideshow-description">
-                    <b>Active Object</b>
+                    <b>Active/current Object</b>
                     <p>To configure an object, select it in the table. Containers can be collapsed/expanded.</p>
                 </div>
             </div>
@@ -179,7 +179,118 @@ High to Lowpoly
 
 Mind this section if you plan to bake from high to lowpoly meshes.
 
-.. todo:: Slideshow of gifs showing settings.
+.. raw:: html
+
+    <div class="slideshow" id="slideshow-1">
+        <div class="content-wrapper">
+            <div class="content row">
+                <img src="../../_static/images/pages/start/objects/0_hl_unique.png" alt="Unique per map">
+                <div class="slideshow-description">
+                    <b>Unique per map</b>
+                    <p>Set unique High to Lowpoly settings for each map.</p>
+                </div>
+            </div>
+            <div class="content row active">
+                <img src="../../_static/images/pages/start/objects/1_hl_table.png" alt="Table of Highpolies">
+                <div class="slideshow-description">
+                    <b>Table of Highpolies</b>
+                    <p>Table of all added highpolies for the current object.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/objects/2_hl_add.png" alt="Add">
+                <div class="slideshow-description">
+                    <b>Add Highpoly</b>
+                    <p>Add new highpoly for the current object.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/objects/3_hl_remove.png" alt="Remove">
+                <div class="slideshow-description">
+                    <b>Remove Highpoly</b>
+                    <p>Remove the current highpoly from the table.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/objects/4_hl_active_list.png" alt="Active Highpoly">
+                <div class="slideshow-description">
+                    <b>Active/current Highpoly</b>
+                    <p>Click and choose highpoly for the current object. Highpolies should also be in the Table of Objects.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/objects/5_hl_decal.png" alt="Decal">
+                <div class="slideshow-description">
+                    <b>Is Decal</b>
+                    <p>Mark the current highpoly as a decal for the lowpoly. If you want to bake decals onto lowpoly, add them as highpolies and check this option for each decal. BakeMaster can <a href="./objects.html#decal-object">bake decals separately</a> too.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/objects/6_hl_sepdecals.png" alt="Separate decals">
+                <div class="slideshow-description">
+                    <b>Separate decals</b>
+                    <p>Bake specified decals to a separate texture set. If turned off, decals map passes will be baked to the object's textures.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/objects/7_hl_extrusion.png" alt="Extrusion">
+                <div class="slideshow-description">
+                    <b>Extrusion/Cage Extrusion</b>
+                    <p>Inflate the lowpoly by the specified distance to create cage.</p>
+                    <a href="../advanced/improve.html#understanding-cages">(more about cages)</a>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/objects/8_hl_usecage.png" alt="Use Cage">
+                <div class="slideshow-description">
+                    <b>Use Cage</b>
+                    <p>Cast rays to object from a cage object.</p>
+                    <a href="../advanced/improve.html#understanding-cages">(more about cages)</a>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/objects/9_hl_cageobj.png" alt="Cage Object">
+                <div class="slideshow-description">
+                    <b>Cage Object</b>
+                    <p>Object to use as cage instead of calculating with cage extrusion. Cage Object should also be in the Table of Objects.</p>
+                    <a href="../advanced/improve.html#understanding-cages">(more about cages)</a>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/objects/10_hl_preset.png" alt="High to Lowpoly Preset">
+                <div class="slideshow-description">
+                    <b>High to Lowpoly Preset</b>
+                    <p>Load/save High to Lowpoly panel Settings to a preset.</p>
+                    <a href="../advanced/savetime.html#presets">(more about presets)</a>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/objects/11_hl_collapsepanel.png" alt="Collapse/Expand the panel">
+                <div class="slideshow-description">
+                    <b>Collapse/Expand the panel</b>
+                    <p>Click to collapse/expand High to Lowpoly Settings panel.</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <a class="prev" onclick="slideshow_setSlideByRelativeId('slideshow-1', -1)" onselectstart="return false">&#10094;</a>
+            <div class="controls">
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 0)"></span>
+                <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 1)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 2)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 3)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 4)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 5)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 6)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 7)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 8)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 9)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 10)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 11)"></span>
+            </div>
+            <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-1', 1)" onselectstart="return false">&#10095;</a>
+        </div>
+    </div>
 
 UVs and Layers
 --------------
