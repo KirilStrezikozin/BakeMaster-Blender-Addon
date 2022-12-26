@@ -131,7 +131,144 @@ Format Settings
 
 Configure output format settings for maps.
 
-.. todo:: Slideshow of gifs showing settings.
+.. raw:: html
+
+    <div class="slideshow" id="slideshow-4">
+        <div class="content-wrapper">
+            <div class="content row active">
+                <img src="../../_static/images/pages/start/maps/0_format_unique.png" alt="Unique per map">
+                <div class="slideshow-description">
+                    <b>Unique per map</b>
+                    <p>Set unique format settings for each map.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/maps/1_format_fileformat.png" alt="File Format">
+                <div class="slideshow-description">
+                    <b>File Format</b>
+                    <p>Choose a file format for output image files. <em>BMP, PNG, JPEG, TIFF, EXR</em>.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/maps/2_format_mapres.png" alt="Map Resolution">
+                <div class="slideshow-description">
+                    <b>Map Resolution</b>
+                    <p>Specify the output map resolution. You can choose between the common ones or set custom.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/maps/3_format_heightwidth.png" alt="Height and width">
+                <div class="slideshow-description">
+                    <b>Height and width</b>
+                    <p>Set output image height and width (if Custom map resolution is used).</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/maps/4_format_matchres.png" alt="Match Resolution">
+                <div class="slideshow-description">
+                    <b>Match Resolution</b>
+                    <p>Match output image resolution with the specified type of Image Texture Node resolution within the Object's materials.</p>
+                    <a href="../advanced/nolimits.html#match-resolution">(read more about the match resolution)</a>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/maps/5_format_margin.png" alt="Margin">
+                <div class="slideshow-description">
+                    <b>Margin Settings</b>
+                    <p>Configure the margin algorithm and the margin itself (extend bake result by the specified number of pixels as a post-process filter. Improves baking quality by reducing hard edges visibility).</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/maps/6_format_32.png" alt="Use 32bit">
+                <div class="slideshow-description">
+                    <b>Use 32bit</b>
+                    <p>Create image texture with 32-bit floating point depth. Stores more color data in the image this way. Useful for normal and displacement maps.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/maps/7_format_alpha.png" alt="Use Alpha">
+                <div class="slideshow-description">
+                    <b>Use Alpha</b>
+                    <p>Create image texture with Alpha color channel.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/maps/8_format_transbg.png" alt="Transparent BG">
+                <div class="slideshow-description">
+                    <b>Transparent BG</b>
+                    <p>Create image texture with a transparent background instead of solid black.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/maps/9_format_ssaa.png" alt="SSAA">
+                <div class="slideshow-description">
+                    <b>SSAA</b>
+                    <p>Supersample anti-aliasing. Improve image quality by baking at a higher resolution and then downscaling to a lower resolution. Helps to remove stepping, jagging, and dramatic color difference near color area edges.</p>
+                    <a href="../advanced/nolimits.html#supersample-anti-aliasing">(read more about SSAA)</a>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/maps/10_format_adaptsamples.png" alt="Adaptive Sampling">
+                <div class="slideshow-description">
+                    <b>Adaptive Sampling</b>
+                    <p>Automatically reduce the number of samples per pixel based on the estimated noise level.</p>
+                    <a href="../advanced/improve.html#what-s-the-best-sample-count">(read more about samples)</a>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/maps/11_format_samples.png" alt="Bake Samples">
+                <div class="slideshow-description">
+                    <b>Bake Samples</b>
+                    <p>Number of samples to render per pixel.</p>
+                    <a href="../advanced/improve.html#what-s-the-best-sample-count">(read more about samples)</a>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/maps/12_format_denoise.png" alt="Denoise">
+                <div class="slideshow-description">
+                    <b>Denoise</b>
+                    <p>Denoise and descpeckle baked maps as a post-process filter.</p>
+                    <a href="../advanced/nolimits.html#denoising-maps">(read more about denoising)</a>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/maps/13_format_preset.png" alt="Format Preset">
+                <div class="slideshow-description">
+                    <b>Format Preset</b>
+                    <p>Load/save the Format panel Settings to a preset.</p>
+                    <a href="../advanced/savetime.html#presets">(more about presets)</a>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/start/maps/14_format_expandpanel.png" alt="Collapse/expand the panel">
+                <div class="slideshow-description">
+                    <b>Collapse/Expand the panel</b>
+                    <p>Click to collapse/expand the Format panel.</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <a class="prev" onclick="slideshow_setSlideByRelativeId('slideshow-4', -1)" onselectstart="return false">&#10094;</a>
+            <div class="controls">
+                <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-4', 0)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-4', 1)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-4', 2)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-4', 3)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-4', 4)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-4', 5)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-4', 6)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-4', 7)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-4', 8)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-4', 9)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-4', 10)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-4', 11)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-4', 12)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-4', 13)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-4', 14)"></span>
+            </div>
+            <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-4', 1)" onselectstart="return false">&#10095;</a>
+        </div>
+    </div>
 
 Map Unique Settings
 -------------------
