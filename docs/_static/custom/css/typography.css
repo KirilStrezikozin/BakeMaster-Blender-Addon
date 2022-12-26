@@ -135,6 +135,9 @@ tbody {
     margin-bottom: 1.5em;
     padding: 0em;
 }
+.slideshow .small-images img {
+    height: 360px;
+}
 .slideshow .content-wrapper .content {
     display: none;
     justify-content: left;

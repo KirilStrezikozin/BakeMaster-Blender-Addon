@@ -107,7 +107,110 @@ Map Types
 
 BakeMaster can bake 36 different map types:
 
-.. todo:: Slideshow of images showing all map types.
+.. raw:: html
+
+    <div class="slideshow" id="slideshow-1">
+        <div class="content-wrapper small-images">
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/1_bakes_ALBEDO.png" alt="Albedo">
+                <div class="slideshow-description">
+                    <p>Albedo</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/2_bakes_GLOSS.png" alt="Glossiness">
+                <div class="slideshow-description">
+                    <p>Glossiness</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/3_bakes_OPACITY.png" alt="Opacity">
+                <div class="slideshow-description">
+                    <p>Opacity</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/4_bakes_VD.png" alt="Vector Displacement">
+                <div class="slideshow-description">
+                    <p>Vector Displacement</p>
+                </div>
+            </div>
+            <div class="content column active">
+                <img src="../../_static/images/pages/start/maps/5_bakes_POS.png" alt="Position">
+                <div class="slideshow-description">
+                    <p>Position</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/6_bakes_AO.png" alt="AO">
+                <div class="slideshow-description">
+                    <p>AO</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/7_bakes_CAV.png" alt="Cavity">
+                <div class="slideshow-description">
+                    <p>Cavity</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/8_bakes_CURV.png" alt="Curvature">
+                <div class="slideshow-description">
+                    <p>Curvature</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/9_bakes_ID.png" alt="ID">
+                <div class="slideshow-description">
+                    <p>ID</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/10_bakes_XYZ.png" alt="XYZ Mask">
+                <div class="slideshow-description">
+                    <p>XYZ Mask</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/11_bakes_GRADIENT.png" alt="Gradient Mask">
+                <div class="slideshow-description">
+                    <p>Gradient Mask</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/12_bakes_EDGE.png" alt="Edge Mask">
+                <div class="slideshow-description">
+                    <p>Edge Mask</p>
+                </div>
+            </div>
+            <div class="content column">
+                <img src="../../_static/images/pages/start/maps/13_bakes_WIRE.png" alt="Wireframe Mask">
+                <div class="slideshow-description">
+                    <p>Wireframe Mask</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <a class="prev" onclick="slideshow_setSlideByRelativeId('slideshow-1', -1)" onselectstart="return false">&#10094;</a>
+            <div class="controls">
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 0)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 1)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 2)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 3)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 4)"></span>
+                <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 5)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 6)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 7)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 8)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 9)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 10)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 11)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 12)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 13)"></span>
+            </div>
+            <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-1', 1)" onselectstart="return false">&#10095;</a>
+        </div>
+    </div>
 
 Map settings
 ============
