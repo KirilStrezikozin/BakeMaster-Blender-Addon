@@ -557,7 +557,24 @@ When baking decals separately, configure Decal Object baking.
         </div>
     </div>
 
-.. todo:: Examples of baked decal objects (normal, opacity - 2 images side by side).
+.. raw:: html
+
+    <div class="content-gallery">
+        <div class="content">
+            <img src="../../_static/images/pages/start/objects/bake_decal_nm.png" alt="Decal Normal Map">
+            <div class="content-description">
+                <p>Decal bake,</p>
+                <p>Normal Pass</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/start/objects/bake_decal_height.png" alt="Decal Height Map">
+            <div class="content-description">
+                <p>Decal bake,</p>
+                <p>Height pass</p>
+            </div>
+        </div>
+    </div>
 
 Bake Output
 -----------
