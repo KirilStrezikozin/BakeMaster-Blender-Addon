@@ -16,6 +16,9 @@
 .. |containers| image:: ../../_static/images/pages/advanced/nolimits/containers_504x684.gif
     :alt: Containers
 
+.. |openaddonprefs| image:: ../../_static/images/pages/advanced/nolimits/openaddonprefs_320x277.gif
+    :alt: How to open Addon Preferences
+
 =========
 No Limits
 =========
@@ -356,6 +359,89 @@ Addon Preferences
 
 Some influential settings sit in the addon preferences.
 
-.. todo:: Gif requested showing hot to access the addon preferences.
+|openaddonprefs|
+   
+.. raw:: html
 
-.. todo:: Slideshow of images showing the addon preferences' settings.
+    <div class="slideshow" id="slideshow-2">
+        <div class="content-wrapper">
+            <div class="content row active">
+                <img src="../../_static/images/pages/advanced/nolimits/0_addonprefs_low.png" alt="Lowpoly Tag">
+                <div class="slideshow-description">
+                    <b>Lowpoly Tag</b>
+                    <p>What keyword to search for in the object's name to determine if it's a Lowpoly Object.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/nolimits/1_addonprefs_high.png" alt="Highpoly Tag">
+                <div class="slideshow-description">
+                    <b>Highpoly Tag</b>
+                    <p>What keyword to search for in the object's name to determine if it's a Highpoly Object.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/nolimits/2_addonprefs_cage.png" alt="Cage Tag">
+                <div class="slideshow-description">
+                    <b>Cage Tag</b>
+                    <p>What keyword to search for in the object's name to determine if it's a Cage Object.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/nolimits/3_addonprefs_decal.png" alt="Decal Tag">
+                <div class="slideshow-description">
+                    <b>Decal Tag</b>
+                    <p>What keyword to search for in the object's name to determine if it's a Decal Object.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/nolimits/4_addonprefs_uvtag.png" alt="UVMap Tag">
+                <div class="slideshow-description">
+                    <b>UVMap Tag</b>
+                    <p>What UVMap name should include for BakeMaster to see it as UVMap for bake. UVMaps with that value in their names will have a higher priority in the Active UVMap setting.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/nolimits/5_addonprefs_hidenotbaked.png" alt="Hide not baked">
+                <div class="slideshow-description">
+                    <b>Hide not baked</b>
+                    <p>Hide all Objects in the scene that are not proceeded in the bake, so that they do not affect it.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/nolimits/6_addonprefs_mapsmatchtype.png" alt="Maps Match Type">
+                <div class="slideshow-description">
+                    <b>Maps Match Type</b>
+                    <p>When baking with Texture Sets, this will specify how to determine what maps should be baked onto the same image files. <em>Maps Prefixes</em> - default, match by maps' prefixes, <em>Maps Types</em> - match by maps' types, <em>Both</em> - match maps by both their prefixes and types.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/nolimits/7_addonprefs_location.png" alt="Addon Location">
+                <div class="slideshow-description">
+                    <b>Addon Location</b>
+                    <p>Where the addon is located.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/nolimits/8_addonprefs_version.png" alt="Addon Version">
+                <div class="slideshow-description">
+                    <b>Addon Version</b>
+                    <p>BakeMaster version you use.</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <a class="prev" onclick="slideshow_setSlideByRelativeId('slideshow-2', -1)" onselectstart="return false">&#10094;</a>
+            <div class="controls">
+                <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 0)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 1)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 2)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 3)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 4)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 5)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 6)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 7)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 8)"></span>
+            </div>
+            <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-2', 1)" onselectstart="return false">&#10095;</a>
+        </div>
+    </div>
