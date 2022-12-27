@@ -95,7 +95,28 @@ The most used type of PBR texturing is PBR-Metallic, and a wide range of softwar
 2. Metalness map is a grayscale image describing which parts of a model are metal and which are not. 
 3. Roughness is also a grayscale map that carries which parts are rough and which are reflective.
 
-.. todo:: A gallery of 3 images showing baked AlbedoM, Metal, and Rough maps.
+.. raw:: html
+
+    <div class="content-gallery">
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/nolimits/0_pbrm.png" alt="Albedo">
+            <div class="content-description">
+                <p>Albedo</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/nolimits/1_pbrm.png" alt="Metalness">
+            <div class="content-description">
+                <p>Metalness</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/nolimits/2_pbrm.png" alt="Roughness">
+            <div class="content-description">
+                <p>Roughness</p>
+            </div>
+        </div>
+    </div>
 
 PBR-Specular
 ------------
@@ -106,7 +127,28 @@ This type of workflow is used less widely but is excellent for its ability to re
 2. Specular map determines the color of specular reflections, metallic parts of a model are vibrant and colorful, while non-metallic are grey (``Hex#383838``).
 3. Glossiness map is an inverted copy of the Roughness map explained previously. It describes glossy and rough parts of a model.
 
-.. todo:: A gallery of 3 images showing baked AlbedoS, Specular, and Gloss maps.
+.. raw:: html
+
+    <div class="content-gallery">
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/nolimits/0_pbrs.png" alt="Diffuse">
+            <div class="content-description">
+                <p>Diffuse</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/nolimits/1_pbrs.png" alt="Specular">
+            <div class="content-description">
+                <p>Specular</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/nolimits/2_pbrs.png" alt="Glossiness">
+            <div class="content-description">
+                <p>Glossiness</p>
+            </div>
+        </div>
+    </div>
 
 The workaround with BakeMaster
 ------------------------------
