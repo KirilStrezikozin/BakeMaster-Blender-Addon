@@ -1,3 +1,6 @@
+.. |howalepworks| image:: ../../_static/images/pages/advanced/savetime/howalepworks_600x711.gif
+    :alt: How it works
+
 =========
 Save Time
 =========
@@ -26,4 +29,4 @@ Apply Lastly Edited Setting
 
 Sometimes, you can have many maps or objects, and there's one specific setting you need to be similar. It's always possible to click a couple of times to set it, but BakeMaster has a cool feature to save you time: ``Apply Lastly Edited Setting`` located in the Bake panel.
 
-.. todo:: Slideshow of gifs showing how to use the apply lastly edited property.
+|howalepworks|
