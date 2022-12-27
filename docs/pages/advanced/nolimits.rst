@@ -4,6 +4,18 @@
 .. |howtotexset| image:: ../../_static/images/pages/advanced/nolimits/howtotexset_800x908.gif
     :alt: How to set up a Texture Set
 
+.. |howtobakejob| image:: ../../_static/images/pages/advanced/nolimits/howtobakejob_500x700.gif
+    :alt: How to set up a Texture Set
+
+.. |batchnamepreview| image:: ../../_static/images/pages/advanced/nolimits/batchnamepreview_450x330.gif
+    :alt: Batch Name Preview
+
+.. |matchres| image:: ../../_static/images/pages/advanced/nolimits/matchres_584x466.gif
+    :alt: Match Resolution
+
+.. |containers| image:: ../../_static/images/pages/advanced/nolimits/containers_504x684.gif
+    :alt: Containers
+
 =========
 No Limits
 =========
@@ -257,7 +269,7 @@ Create a Bake Job Group
 
 You can create a new Container and choose objects to put in it. That will act as a Bake Job. With Bake Jobs, you can choose maps and set identical settings for all objects in them at once. Follow the slideshow below to build one up:
 
-.. todo:: Slideshow showing how to create a Bake Job.
+|howtobakejob|
 
 .. caution:: 
     | Only objects not in Containers already can form a new Bake Job Container.
@@ -284,14 +296,14 @@ Batch Name Preview
 | BakeMaster allows you to customize the naming pattern of the output filenames in the ``Batch Name`` field in the object's Bake Output panel. That gives a lot of control over output image naming. But sometimes, it's hard to get an idea of what the filename will be.
 | Luckily, there's the ``Preview Batch Name`` operator that can do just that!
 
-.. todo:: Gif requested showing how the preview batch name operator works.
+|batchnamepreview|
 
 Match Resolution
 ================
 
 If you have image textures in the object's materials and want to bake maps with similar resolutions, check out the ``Match Resolution`` operator.
 
-.. todo:: Gif requested showing how to use the match resolution operator.
+|matchres|
 
 Containers
 ==========
@@ -305,12 +317,39 @@ Containers become available when `Name Matching <../start/objects.html#name-matc
 
     You can expand/collapse formed containers and rename them to your liking.
 
-    .. todo:: Gif showing how to rename and collapse containers.
+    |containers|
 
     | A Container can share the same settings for all its objects.
     | For this, toggle the ``Global`` option for the Container.
 
-    .. todo:: Gif showing the container's global option.
+        .. raw:: html
+
+            <div class="slideshow" id="slideshow-1">
+                <div class="content-wrapper">
+                    <div class="content row active">
+                        <img src="../../_static/images/pages/advanced/nolimits/0_container_notglobal.png" alt="Not Global">
+                        <div class="slideshow-description">
+                            <b>Not Global</b>
+                            <p>Container is just a holder for objects.</p>
+                        </div>
+                    </div>
+                    <div class="content row">
+                        <img src="../../_static/images/pages/advanced/nolimits/1_container_global.png" alt="Global">
+                        <div class="slideshow-description">
+                            <b>Global</b>
+                            <p>All Container's objects inherit its settings.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer">
+                    <a class="prev" onclick="slideshow_setSlideByRelativeId('slideshow-1', -1)" onselectstart="return false">&#10094;</a>
+                    <div class="controls">
+                        <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 0)"></span>
+                        <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 1)"></span>
+                    </div>
+                    <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-1', 1)" onselectstart="return false">&#10095;</a>
+                </div>
+            </div>
 
 Addon Preferences
 =================
