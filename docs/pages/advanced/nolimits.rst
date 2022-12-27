@@ -281,17 +281,59 @@ You can create a new Container and choose objects to put in it. That will act as
 Visibility Groups
 =================
 
-Objects in a single Visibility Group might cause an effect on each other when baking. That can result in intersection errors or cage glitches.
+Objects in a single Visibility Group might cause an effect on each other when baking (where meshes intersect). That can result in intersection errors or cage glitches.
 
-.. todo:: Image requested showing the intersection errors or cage glitches.
+.. raw:: html
+
+    <div class="content-gallery">
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/nolimits/1_vg_intersection.png" alt="Intersection">
+            <div class="content-description">
+                <p>Normal Map, flat area,</p>
+                <p>intersection caused by mesh overlapping</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/nolimits/0_vg_nointersection.png" alt="No intersection">
+            <div class="content-description">
+                <p>Normal Map, flat area,</p>
+                <p>no issues</p>
+            </div>
+        </div>
+    </div>
 
 1. You can fix this by enabling the ``Hide when Inactive`` option in the object's Bake Output panel.
 
-    .. todo:: Image requested showing the hide when inactive property and its description.
-
 2. Or by putting objects that shouldn't affect others into separate Visibility Groups.
 
-    .. todo:: Image requested showing the VG Index property and its description.
+.. raw:: html
+
+    <div class="slideshow" id="slideshow-3">
+        <div class="content-wrapper">
+            <div class="content row active">
+                <img src="../../_static/images/pages/advanced/nolimits/0_vg_hidewheninactive.png" alt="Hide when inactive">
+                <div class="slideshow-description">
+                    <b>Hide when inactive</b>
+                    <p>If checked, Object's Mesh will not affect any other Objects while baking.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/nolimits/1_vg_index.png" alt="VG Index">
+                <div class="slideshow-description">
+                    <b>VG Index</b>
+                    <p>Object's Mesh will affect other objects' meshes if their Visibility Group Indexes are equal to the same value. The effect is noticeable in areas where meshes intersect.</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <a class="prev" onclick="slideshow_setSlideByRelativeId('slideshow-3', -1)" onselectstart="return false">&#10094;</a>
+            <div class="controls">
+                <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 0)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-3', 1)"></span>
+            </div>
+            <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-3', 1)" onselectstart="return false">&#10095;</a>
+        </div>
+    </div>
 
 Batch Name Preview
 ==================
