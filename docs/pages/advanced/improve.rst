@@ -30,11 +30,55 @@ A Cage is an inflated copy of your base lowpoly model. When baking highpoly deta
     
 The Cage should expand far enough to cover all highpoly geometry for best results. Expanding the Cage too far may cause glitches as projection might intersect other meshes in the scene.
 
-.. todo:: Images side by side: 1 - cage not fully covering highpoly - bake glitches, 2 - correct cage - everything is fine.
+.. raw:: html
+
+    <div class="content-gallery">
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/improve/0_cage_notcovering.png" alt="Not correct cage">
+            <div class="content-description">
+                <p>Cage not fully covering</p>
+                <p>highpoly and lowpoly</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/improve/1_cage_right.png" alt="Correct cage">
+            <div class="content-description">
+                <p>Cage is correct,</p>
+                <p>no issues</p>
+            </div>
+        </div>
+    </div>
 
 In BakeMaster, you can choose a Cage object you created or specify the ``Extrusion`` value to inflate the lowpoly.
 
-.. todo:: Gifs side by side: 1 - showing how to specify the extrusion, 2 - how to choose a cage object.
+.. raw:: html
+
+    <div class="slideshow" id="slideshow-1">
+        <div class="content-wrapper">
+            <div class="content row active">
+                <img src="../../_static/images/pages/advanced/improve/0_howtosetextrusion_394x250.gif" alt="How to set extrusion">
+                <div class="slideshow-description">
+                    <b>How to set extrusion</b>
+                    <p><em>Extrusion</em> - inflate the lowpoly by the specified distance for baking, <em>Max Ray Distance</em> - the max distance of shot rays to capture details, shouldn't be less than extrusion.</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/improve/1_howtosetcage_394x250.gif" alt="How to set cage">
+                <div class="slideshow-description">
+                    <b>How to set a Cage</b>
+                    <p>Choose a Cage Object from the available, you might want to set the Cage Extrusion value to 0, otherwise, the cage will be extruded.</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <a class="prev" onclick="slideshow_setSlideByRelativeId('slideshow-1', -1)" onselectstart="return false">&#10094;</a>
+            <div class="controls">
+                <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 0)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 1)"></span>
+            </div>
+            <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-1', 1)" onselectstart="return false">&#10095;</a>
+        </div>
+    </div>
 
 Decrease Baking time
 ====================
