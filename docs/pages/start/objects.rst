@@ -4,6 +4,9 @@
 .. |how_nm_works| image:: ../../_static/images/pages/start/objects/how_nm_works_374x364.gif
     :alt: How Name Matching works
 
+.. |tableofobjects_select| image:: ../../_static/images/pages/start/objects/tableofobjects_select_574x274.gif
+    :alt: Quick selection
+
 =============
 Setup Objects
 =============
@@ -19,6 +22,13 @@ To start settings up maps (image textures) for the mesh objects you want to bake
     :class: caution
 
     If you have highpolies or cages beside lowpoly models, add them to the Table too.
+
+.. admonition:: Quick selection
+    :class: important
+
+    When you select an object in the table, it'll be quickly selected in the scene to inform you what's being edited.
+
+    |tableofobjects_select|
 
 Name Matching
 =============
