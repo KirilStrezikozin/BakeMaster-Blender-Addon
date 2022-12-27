@@ -79,6 +79,40 @@ AO fragment, how long the bake took:
         </div>
     </div>
 
+PBR-Metallic and PBR-Specular
+=============================
+
+PBR stands for physically based rendering workflow that uses enhanced lightning and shading techniques to make textured models more realistic and believable. Because all the data isn't in a single image, it reproduces light bounces, reflections, and other microsurface details more accurately. And with global illumination and indirect light sources, it enhances the realism of the scene.
+
+There're two PBR workflows existing: PBR-Metallic and PBR-Specular.
+
+PBR-Metallic
+------------
+
+The most used type of PBR texturing is PBR-Metallic, and a wide range of software supports it. PBRM consists of Albedo, Metalness, and Roughness maps. 
+
+1. Albedo holds color data without any light or shadow impact, just the color itself. 
+2. Metalness map is a grayscale image describing which parts of a model are metal and which are not. 
+3. Roughness is also a grayscale map that carries which parts are rough and which are reflective.
+
+.. todo:: A gallery of 3 images showing baked AlbedoM, Metal, and Rough maps.
+
+PBR-Specular
+------------
+
+This type of workflow is used less widely but is excellent for its ability to represent reflectiveness more precisely. It uses Diffuse, Specular, and Glossiness maps.
+
+1. Similarly to the PBR-Metallic, the Diffuse map stores only color data, without any light or shadow impact, but metallic parts of the model are black on this map, as they have no diffuse color.
+2. Specular map determines the color of specular reflections, metallic parts of a model are vibrant and colorful, while non-metallic are grey (``Hex#383838``).
+3. Glossiness map is an inverted copy of the Roughness map explained previously. It describes glossy and rough parts of a model.
+
+.. todo:: A gallery of 3 images showing baked AlbedoS, Specular, and Gloss maps.
+
+The workaround with BakeMaster
+------------------------------
+
+Read how you can `bake maps of both workflows <./nolimits.html#pbr-metallic-and-pbr-specular>`__ in BakeMaster.
+
 Help system
 ===========
 

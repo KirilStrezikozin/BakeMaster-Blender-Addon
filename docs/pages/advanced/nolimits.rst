@@ -41,6 +41,26 @@ Follow the slideshow below, If you want some objects to share the same Texture S
 
 .. todo:: Slideshow showing how to create and configure a Texture Set.
 
+PBR-Metallic and PBR-Specular
+=============================
+
+Blender supports only PBR-Metallic workflow, but BakeMaster can bake both PBRS and PBRM types. It'll correctly recalculate the Metallic workflow used in your materials, giving a clear and clean PBRS output, and then restore all materials back after baking. You can add both PBR-Specular and PBR-Metallic maps to the Table of Maps.
+
+.. todo:: A gallery of 3 images showing baked AlbedoM, Metal, and Rough maps.
+
+.. todo:: A gallery of 3 images showing baked AlbedoS, Specular, and Gloss maps.
+
+| The examples of PBRS and PBRM bakes shown above were baked with BakeMaster.
+| `(more about PBR-Metallic and PBR-Specular workflows) <./improve.html#pbr-metallic-and-pbr-specular>`__
+
+.. admonition:: How BakeMaster names maps of both workflows
+    :class: important
+
+    | PBR-Metallic: ``AlbedoM``, ``Metalness``, ``Roughness``;
+    | PBR-Specular: ``AlbedoS``, ``Specular``, ``Glossiness``.
+
+    You can always specify your custom map naming in the ``Prefix`` field of the `Map Settings area <../start/maps.html#map-settings>`__.
+
 Create a Bake Job Group
 =======================
 
