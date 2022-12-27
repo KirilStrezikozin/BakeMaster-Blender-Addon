@@ -1,3 +1,6 @@
+.. |howtochannelpack| image:: ../../_static/images/pages/advanced/nolimits/howtochannelpack_592x762.gif
+    :alt: How to set up a Channel Pack
+
 =========
 No Limits
 =========
@@ -23,14 +26,46 @@ Channel Packing is commonly used in the Game Dev industry when there's a need to
 
 With BakeMaster, you can easily configure Channel Packs and have any maps packed.
 
-.. todo:: Slideshow showing how to create and configure a Channel Pack.
+|howtochannelpack|
 
 .. admonition:: Channel Pack type
     :class: important
 
     Imagine having Channel Pack types, with which you can pack not only in the ``R+G+B`` way but also ``RGB+A`` or ``R+G+B+A``. BakeMaster allows you to do even that.
 
-    .. todo:: Image requested showing the list of available channel pack types.
+    .. raw:: html
+
+        <div class="slideshow" id="slideshow-0">
+            <div class="content-wrapper">
+                <div class="content row active">
+                    <img src="../../_static/images/pages/advanced/nolimits/0_chnlptypes_4.png" alt="R+G+B+A">
+                    <div class="slideshow-description">
+                        <b>R+G+B+A</b>
+                    </div>
+                </div>
+                <div class="content row">
+                    <img src="../../_static/images/pages/advanced/nolimits/1_chnlptypes_2.png" alt="RGB+A">
+                    <div class="slideshow-description">
+                        <b>RGB+A</b>
+                    </div>
+                </div>
+                <div class="content row">
+                    <img src="../../_static/images/pages/advanced/nolimits/2_chnlptypes_3.png" alt="R+G+B">
+                    <div class="slideshow-description">
+                        <b>R+G+B</b>
+                    </div>
+                </div>
+            </div>
+            <div class="footer">
+                <a class="prev" onclick="slideshow_setSlideByRelativeId('slideshow-0', -1)" onselectstart="return false">&#10094;</a>
+                <div class="controls">
+                    <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 0)"></span>
+                    <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 1)"></span>
+                    <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 2)"></span>
+                </div>
+                <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-0', 1)" onselectstart="return false">&#10095;</a>
+            </div>
+        </div>
 
 Texture Sets
 ============
