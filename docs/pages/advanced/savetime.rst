@@ -4,6 +4,12 @@
 .. |simplepresets| image:: ../../_static/images/pages/advanced/savetime/simplepresets_510x470.gif
     :alt: How it works
 
+.. |wherefullobjectpreset| image:: ../../_static/images/pages/advanced/savetime/wherefullobjectpreset_360x240.png
+    :alt: How to access the Full Object Preset
+
+.. |fullobjectspreset| image:: ../../_static/images/pages/advanced/savetime/fullobjectspreset_600x593.gif
+    :alt: Full Object Preset
+
 =========
 Save Time
 =========
@@ -52,11 +58,11 @@ Save the settings of any addon's panel.
 Advanced Presets
 ----------------
 
-.. todo:: Image showing how to access the Full Object Preset.
+|wherefullobjectpreset|
 
-**Full Object Preset** can load all settings at once for one object, or the ones you specified.
+**Full Object Preset** can load all settings at once for one object, or the ones you specified. With that preset, you can save settings from all panels, including all added maps.
 
-.. todo:: Slideshow of gifs showing full object preset's execution controls.
+|fullobjectspreset|
 
 Apply Lastly Edited Setting
 ===========================
