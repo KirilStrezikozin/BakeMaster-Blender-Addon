@@ -105,7 +105,7 @@ Each object has a list of added maps. The slideshow below will guide you through
 Map Types
 ---------
 
-BakeMaster can bake 36 different map types:
+BakeMaster can bake 36 different map types, here are some of them:
 
 .. raw:: html
 
