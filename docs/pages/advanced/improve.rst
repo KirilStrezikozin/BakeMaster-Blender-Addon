@@ -5,11 +5,6 @@
 Get Best Results
 ================
 
-Tutorials
-=========
-
-.. todo:: Embed a YouTube video tutorial
-
 Baking from highpoly
 ====================
 
