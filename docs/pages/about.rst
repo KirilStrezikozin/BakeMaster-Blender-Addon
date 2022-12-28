@@ -89,8 +89,16 @@ For whom is BakeMaster
 Whether you come from Game Dev, prepare and texture your models, or bake for fun, BakeMaster is for you.
 The addon fits beginners as well as proficient users. Comfortable creation tools saving you time and making your artistic thoughts never jump out of the boat are vital.
 
-.. todo::
-    Images requested.
+.. raw:: html
+
+    <div class="content-gallery">
+        <div class="content">
+            <img src="../_static/images/pages/about/0_curvature_map_preview_350x320.gif" alt="Map preview">
+        </div>
+        <div class="content">
+            <img src="../_static/images/pages/about/1_image_editor_350x320.gif" alt="Image Editor">
+        </div>
+    </div>
 
 Key features
 ============
