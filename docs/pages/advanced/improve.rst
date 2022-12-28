@@ -15,9 +15,41 @@ Baking from highpoly
 
 Texture baking often includes transferring high-resolution mesh details to a low-res model. Models with loads of geometry require more computer power, and details sometimes aren't even noticed in the final production. On the other hand, lowpoly model is easier to handle, and you can bake high-resolution details onto it.
 
-.. todo:: Two images side by side showing wireframe overlap of high and lowpoly geometries.
+.. raw:: html
 
-.. todo:: Two images side by side showing render time for those models and no visual difference.
+    <div class="content-gallery">
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/improve/1_highpoly_low.png" alt="Lowpoly Geometry">
+            <div class="content-description">
+                <p>Lowpoly Geometry</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/improve/0_highpoly_high.png" alt="Highpoly Geometry">
+            <div class="content-description">
+                <p>Highpoly Geometry</p>
+            </div>
+        </div>
+    </div>
+
+.. raw:: html
+
+    <div class="content-gallery">
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/improve/1_renderlowpoly.png" alt="Rendered Lowpoly">
+            <div class="content-description">
+                <p>Rendered Lowpoly,</p>
+                <p>baked textures</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/improve/0_renderhighpoly_60pmore.png" alt="Rendered Highpoly">
+            <div class="content-description">
+                <p>Rendered Highpoly,</p>
+                <p>took 60% more time</p>
+            </div>
+        </div>
+    </div>
 
 Read more about how you can set up `High to Lowpoly bake <../start/objects.html#high-to-lowpoly>`__ in BakeMaster.
 
@@ -87,8 +119,6 @@ Map resolution
 --------------
 
 When choosing a higher map resolution, consider whether it'd be noticeable in the output rendered image, estimate the distance from the camera to that specific model, its relative size in the render, and how many details would be distinguished.
-
-.. todo:: 3 images side by side showing one rendered model having textures baked at different res (4k, 1k, .5k).
 
 What's the best sample count
 ----------------------------
