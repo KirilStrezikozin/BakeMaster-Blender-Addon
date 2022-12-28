@@ -152,6 +152,7 @@ tbody {
 }
 .slideshow .content-wrapper .column {
     flex-flow: column nowrap;
+    text-align: center;
 }
 .slideshow .content-wrapper .content .slideshow-description {
     padding-left: .6em;

@@ -100,8 +100,8 @@ In BakeMaster, you can choose a Cage object you created or specify the ``Extrusi
         <div class="footer">
             <a class="prev" onclick="slideshow_setSlideByRelativeId('slideshow-1', -1)" onselectstart="return false">&#10094;</a>
             <div class="controls">
-                <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 0)"></span>
-                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 1)"></span>
+                <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 0)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 1)"></span>
             </div>
             <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-1', 1)" onselectstart="return false">&#10095;</a>
         </div>

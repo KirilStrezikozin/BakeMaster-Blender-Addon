@@ -7,6 +7,8 @@
 BakeMaster 2.0 Documentation
 ============================
 
+.. todo:: Teaser image
+
 BakeMaster Blender Baking Addon Documentation will help you learn all the ropes of your ultimate baking workflow with BakeMaster.
 
 About
