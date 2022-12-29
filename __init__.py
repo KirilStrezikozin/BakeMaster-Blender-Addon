@@ -84,19 +84,7 @@ classes = (
     BM_PT_Item_Output,
     BM_PT_TextureSets,
     BM_PT_Bake,
-
-    #BM_PT_Item_STT,
-    #BM_PT_Item_UVMap,
-    #BM_PT_Item_Output,
-
-    #BM_PT_Item_MapList,
-    #BM_PT_Item_Map,
-
-    #BM_PT_Item_MainBake,
-    #BM_PT_Item_Bake,
-    #BM_PT_Item_MainBakeSettings,
-
-    #BM_PT_Main_Help,
+    BM_PT_Help,
 
     BM_OT_ExecutePreset,
 

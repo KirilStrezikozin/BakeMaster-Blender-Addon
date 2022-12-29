@@ -129,7 +129,7 @@ class BM_SceneProps_TextureSet(bpy.types.PropertyGroup):
 
     uvp_use_uv_repack : bpy.props.BoolProperty(
         name="UV Repack",
-        description="Enable UV Repacking for Texture Set Objects",
+        description="Enable UV Repacking for Texture Set Objects.\nWarning: if Objects have materials that depend on UV Layout, enabling this option might change the result of these materials",
         default=False)
 
     uvp_use_islands_rotate : bpy.props.BoolProperty(
@@ -255,14 +255,19 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Save log of time used to bake each map and a short summary of all baked maps for all baked objects into a .txt file",
         default=False)
 
+    global_use_bake_overwrite : bpy.props.BoolProperty(
+        name="Overwrite",
+        description="If checked, old bake files in the output directory will be overwritten by the new ones if they have the same name",
+        default=False)
+
     global_use_bakemaster_reset : bpy.props.BoolProperty(
         name="Reset BakeMaster",
         description="Remove baked objects from BakeMaster Table of Objects after the bake",
-        default=True)
+        default=False)
 
     global_bake_instruction : bpy.props.StringProperty(
         name="Bake Operator Instruction",
-        default="Bake Instruction",
+        default="Short Bake Instruction",
         description=BM_Labels.OPERATOR_ITEM_BAKE_FULL_DESCRIPTION)
 
     global_bake_available : bpy.props.BoolProperty(
@@ -431,7 +436,7 @@ class BM_Map(bpy.types.PropertyGroup):
 
     uv_type : bpy.props.EnumProperty(
         name = "UV Map Type",
-        description = "UVMap type is set automatically when changing Active UV Map. Change if it's not correct",
+        description = "Set the chosen Active UV Map type",
         items = BM_ITEM_PROPS_uv_type_Items,
         update=BM_MAP_PROPS_uv_type_Update)
 
@@ -2223,7 +2228,7 @@ class BM_Object(bpy.types.PropertyGroup):
 
     uv_type : bpy.props.EnumProperty(
         name="UV Map Type",
-        description="UVMap type is set automatically when changing Active UV Map. Change if it's not correct",
+        description="Set the chosen Active UV Map type",
         items=BM_ITEM_PROPS_uv_type_Items,
         update=BM_ITEM_PROPS_uv_type_Update)
 
@@ -2234,7 +2239,7 @@ class BM_Object(bpy.types.PropertyGroup):
 
     uv_use_auto_unwrap : bpy.props.BoolProperty(
         name="Auto Unwrap",
-        description="Auto UV Unwrap object using smart project. If UV Type is UDIMs, enabling Auto Unwrap will ignore it",
+        description="Auto UV Unwrap object using smart project. If UV Type is UDIMs, enabling Auto Unwrap will ignore it.\nWarning: if Object has materials that depend on UV Layout, enabling this option might change the result of these materials",
         update=BM_ITEM_PROPS_uv_use_auto_unwrap_Update)
 
     uv_auto_unwrap_angle_limit : bpy.props.IntProperty(
@@ -2463,11 +2468,11 @@ class BM_Object(bpy.types.PropertyGroup):
         default=False,
         update=BM_ITEM_PROPS_csh_use_triangulate_lowpoly_Update)
     
-    csh_use_lowpoly_reset_normals : bpy.props.BoolProperty(
-        name="Reset Lowpoly Normals",
-        description="Reset all lowpoly mesh normals direction and recalculate them outside",
+    csh_use_lowpoly_recalc_normals : bpy.props.BoolProperty(
+        name="Recalculate Lowpoly Normals Outside",
+        description="Recalculate Lowpoly Vertex and Face Normals Outside",
         default=False,
-        update=BM_ITEM_PROPS_csh_use_lowpoly_reset_normals_Update)
+        update=BM_ITEM_PROPS_csh_use_lowpoly_recalc_normals_Update)
 
     csh_lowpoly_use_smooth : bpy.props.BoolProperty(
         name="Smooth Lowpoly",
@@ -2499,11 +2504,11 @@ class BM_Object(bpy.types.PropertyGroup):
         default="_smooth",
         update=BM_ITEM_PROPS_csh_lowpoly_smoothing_groups_name_contains_Update)
 
-    csh_use_highpoly_reset_normals : bpy.props.BoolProperty(
-        name="Reset Highpoly Normals",
-        description="Reset all highpoly mesh normals direction and recalculate them outside",
+    csh_use_highpoly_recalc_normals : bpy.props.BoolProperty(
+        name="Recalculate Highpoly Normals Outside",
+        description="Recalculate Highpoly Vertex and Face Normals Outside",
         default=False,
-        update=BM_ITEM_PROPS_csh_use_highpoly_reset_normals_Update)
+        update=BM_ITEM_PROPS_csh_use_highpoly_recalc_normals_Update)
 
     csh_highpoly_use_smooth : bpy.props.BoolProperty(
         name="Smooth Highpoly",
@@ -2552,7 +2557,7 @@ class BM_Object(bpy.types.PropertyGroup):
 # Item Bake Props
     bake_save_internal : bpy.props.BoolProperty(
         name="Internal",
-        description="Saved baked maps into the current Blender file",
+        description="Pack baked maps into the current Blender file",
         default=True,
         update=BM_ITEM_PROPS_bake_save_internal_Update)
 
@@ -2603,7 +2608,7 @@ class BM_Object(bpy.types.PropertyGroup):
 
     bake_create_material : bpy.props.BoolProperty(
         name="Create Material",
-        description="Assign a new material to the object after bake with all baked maps inlcuded",
+        description="Assign a new material to the object after bake with all baked maps included",
         default=False,
         update=BM_ITEM_PROPS_bake_create_material_Update)
 
@@ -2629,7 +2634,7 @@ class BM_Object(bpy.types.PropertyGroup):
 
     bake_vg_index : bpy.props.IntProperty(
         name="VG Index",
-        description="Object's Mesh will affect other Objects Meshes if their Visibility Group Indexes are equal to the same value.\nThe affect is noticable in areas where Meshes intersact",
+        description="Object's Mesh will affect other Objects Meshes if their Visibility Group Indexes are equal to the same value.\nThe effect is noticeable in areas where Meshes intersect",
         default=0,
         min=0,
         step=1,

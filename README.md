@@ -17,33 +17,6 @@ BakeMaster is an add-on specified for baking various texture maps <br/>and creat
 
 ---
 
-> This is a dev branch for BakeMaster v2.0 development
->
-> ✨ BakeMaster 2.0 Milestones: ✨ <br>
-> <br>
-> 🎯 - More Map Previews - 🎯 <br>
-> 🎯 - Presets for settings panels - 🎯 <br>
-> 🎯 - New map: ColorID - 🎯 <br>
-> 🎯 - New map: Vector Displacement - 🎯 <br>
-> 🎯 - New map: Mask map - 🎯 <br>
-> 🎯 - New map: Edge Mask - 🎯 <br>
-> 🎯 - New maps: PBR-Specular maps - 🎯 <br>
-> 🎯 - New map: Wireframe Mask map - 🎯 <br>
-> 🎯 - Normal map: choose OpenGL/DirectX/Custom or preset for common soft - 🎯 <br>
-> 🎯 - All maps: naming prefixes - 🎯 <br>
-> 🎯 - All maps: Bake samples - 🎯 <br>
-> 🎯 - All maps: SuperSampling AA - 🎯 <br>
-> 🎯 - Texture Sets - 🎯 <br>
-> 🎯 - Channel Packing - 🎯 <br>
-> 🎯 - Name Matching - 🎯 <br>
-> 🎯 - Bake multiple Highpolies onto single Lowpoly - 🎯 <br>
-> <br>
-> Currently in progress: Documentation <br>
-> All code is finished! 🤩 <br>
-> Get it in our discord: <br>
-> <br>
-> Join new features disscussion & testing in our [Discord](https://discord.gg/2ePzzzMBf4) Stay tuned for [Announcements](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/discussions/5) ✅</span> <br>
+Check out BakeMaster's product page on [Blender Market](https://blendermarket.com/products/bakemaster) or [Gumroad](https://kemplerart.gumroad.com/l/bakemaster)
 
----
-
-Readme is being reworked for v2.0 Update.<br>Stay tuned for announcements.
+> Join our [Discord](https://discord.gg/2ePzzzMBf4) Stay tuned for [Announcements](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/discussions/5) ✅</span> <br>

@@ -645,12 +645,12 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'out_min_samples' : self.out_min_samples,
             'out_use_unique_per_map' : self.out_use_unique_per_map,
             'csh_use_triangulate_lowpoly' : self.csh_use_triangulate_lowpoly,
-            'csh_use_lowpoly_reset_normals' : self.csh_use_lowpoly_reset_normals,
+            'csh_use_lowpoly_recalc_normals' : self.csh_use_lowpoly_recalc_normals,
             'csh_lowpoly_use_smooth' : self.csh_lowpoly_use_smooth,
             'csh_lowpoly_smoothing_groups_enum' : self.csh_lowpoly_smoothing_groups_enum,
             'csh_lowpoly_smoothing_groups_angle' : self.csh_lowpoly_smoothing_groups_angle,
             'csh_lowpoly_smoothing_groups_name_contains' : self.csh_lowpoly_smoothing_groups_name_contains,
-            'csh_use_highpoly_reset_normals' : self.csh_use_highpoly_reset_normals,
+            'csh_use_highpoly_recalc_normals' : self.csh_use_highpoly_recalc_normals,
             'csh_highpoly_use_smooth' : self.csh_highpoly_use_smooth,
             'csh_highpoly_smoothing_groups_enum' : self.csh_highpoly_smoothing_groups_enum,
             'csh_highpoly_smoothing_groups_angle' : self.csh_highpoly_smoothing_groups_angle,
@@ -1375,7 +1375,7 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context, object=None, map=None
 
     def get_mapres(map_pass):
         if map_pass.out_res == 'CUSTOM':
-            return map_pass.out_res_height + "x" + map_pass.out_res_width
+            return str(map_pass.out_res_height) + "x" + str(map_pass.out_res_width)
         else:
             return map_pass.out_res
     
@@ -3187,9 +3187,9 @@ def BM_ITEM_PROPS_out_min_samples_Update(self, context):
 def BM_ITEM_PROPS_csh_use_triangulate_lowpoly_Update(self, context):
     name = "Object Shading: Triangulate lowpoly"
     BM_LastEditedProp_Write(context, name, "csh_use_triangulate_lowpoly", getattr(self, "csh_use_triangulate_lowpoly"), False)
-def BM_ITEM_PROPS_csh_use_lowpoly_reset_normals_Update(self, context):
-    name = "Object Shading: Reset lowpoly normals"
-    BM_LastEditedProp_Write(context, name, "csh_use_lowpoly_reset_normals", getattr(self, "csh_use_lowpoly_reset_normals"), False)
+def BM_ITEM_PROPS_csh_use_lowpoly_recalc_normals_Update(self, context):
+    name = "Object Shading: Recalculate Lowpoly Normals Outside"
+    BM_LastEditedProp_Write(context, name, "csh_use_lowpoly_recalc_normals", getattr(self, "csh_use_lowpoly_recalc_normals"), False)
 def BM_ITEM_PROPS_csh_lowpoly_use_smooth_Update(self, context):
     name = "Object Shading: Smooth lowpoly"
     BM_LastEditedProp_Write(context, name, "csh_lowpoly_use_smooth", getattr(self, "csh_lowpoly_use_smooth"), False)
@@ -3202,9 +3202,9 @@ def BM_ITEM_PROPS_csh_lowpoly_smoothing_groups_angle_Update(self, context):
 def BM_ITEM_PROPS_csh_lowpoly_smoothing_groups_name_contains_Update(self, context):
     name = "Object Shading: Lowpoly vertex groups name contains"
     BM_LastEditedProp_Write(context, name, "csh_lowpoly_smoothing_groups_name_contains", getattr(self, "csh_lowpoly_smoothing_groups_name_contains"), False)
-def BM_ITEM_PROPS_csh_use_highpoly_reset_normals_Update(self, context):
-    name = "Object Shading: Reset highpoly normals"
-    BM_LastEditedProp_Write(context, name, "csh_use_highpoly_reset_normals", getattr(self, "csh_use_highpoly_reset_normals"), False)
+def BM_ITEM_PROPS_csh_use_highpoly_recalc_normals_Update(self, context):
+    name = "Object Shading: Recalculate Highpoly Normals Outside"
+    BM_LastEditedProp_Write(context, name, "csh_use_highpoly_recalc_normals", getattr(self, "csh_use_highpoly_recalc_normals"), False)
 def BM_ITEM_PROPS_csh_highpoly_use_smooth_Update(self, context):
     name = "Object Shading: Smooth highpoly"
     BM_LastEditedProp_Write(context, name, "csh_highpoly_use_smooth", getattr(self, "csh_highpoly_use_smooth"), False)

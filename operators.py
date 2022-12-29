@@ -1731,9 +1731,9 @@ class BM_OT_CreateArtificialUniContainer_DeselectAll(bpy.types.Operator):
         return {'FINISHED'}
 
 class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
-    bl_label = "Artificial Container"
+    bl_label = "Create Artificial Container"
     bl_idname = "bakemaster.artificial_container"
-    bl_description = "Group detached objects into one Container, where all settings can be set at once along other Container pros"
+    bl_description = "Group objects into a Bake Job Container, where all settings can be set at once for all"
     bl_options = {'UNDO'}
 
     def execute(self, context):
@@ -2033,10 +2033,22 @@ class BM_OT_ReportMessage(bpy.types.Operator):
         return wm.invoke_props_dialog(self, width=300)
 
 class BM_OT_Help(bpy.types.Operator):
-    bl_label = "BakeMaster Help"
+    bl_label = "BakeMaster Help Source"
     bl_idname = "bakemaster.help"
     bl_description = BM_Labels.OPERATOR_HELP_DESCRIPTION
+
+    url_base_type: bpy.props.StringProperty(
+        default="Main Page",
+        options={'SKIP_SAVE'},
+    )
     
     def execute(self, context):
-        webbrowser.open(BM_Labels.URL_HELP_BASE)
+        url_base_data = {
+            "Main Page" : BM_Labels.URL_HELP_MAIN,
+            "How to Setup Objects" : BM_Labels.URL_HELP_OBJS,
+            "How to Setup Maps" : BM_Labels.URL_HELP_MAPS,
+            "How to Bake" : BM_Labels.URL_HELP_BAKE,
+            "Support" : BM_Labels.URL_HELP_SUPPORT,
+        }
+        webbrowser.open(url_base_data[self.url_base_type])
         return {'FINISHED'}

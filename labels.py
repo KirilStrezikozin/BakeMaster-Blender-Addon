@@ -19,17 +19,17 @@
 # ##### END GPL LICENSE BLOCK #####
 
 class BM_Labels:
-    #INFO Messages:
+    # INFO Messages:
     INFO_MAP_PREVIEWNOTCYCLES = ERROR_BAKE_NOTINCYLES = "Swith to Cycles Render Engine"
     ERROR_BAKE_MAPQUEUEEMPTY = "No maps to bake"
     ERROR_BAKE_ITEMQUEUEEMPTY = "No items to bake"
 
-    #Operators Descriptions:
+    # Operators Descriptions:
     OPERATOR_ITEM_BAKE_DESCRIPTION = "Bake image textures.\nBake This: bake maps only for the current object.\nBake All: bake maps for all objects added"
-    OPERATOR_ITEM_BAKE_FULL_DESCRIPTION = "Press `BACKSPACE` to cancel baking all next maps.\nPress `ESC` key to cancel baking current map.\nPress `BACKSPACE`, then `ESC` to cancel baking.\nIf you want to undo the bake, press `Ctrl + Z` (`Cmd + Z` on Mac) just after it finished or canceled.\n\nOpen Blender Console to, if you face an unexpected Blender freeze, press `Ctrl + C` (`Cmd + C` on Mac) to abort the bake.\nNote that there are expectable Blender freezes when preparing maps for meshes with huge amount of geometry, baking map result to modifiers, Denoising baked result, or UV unwrapping and packing. Please be patient, BakeMaster will notify if any error occured"
+    OPERATOR_ITEM_BAKE_FULL_DESCRIPTION = "Press `BACKSPACE` to cancel baking all next maps.\nPress `ESC` key to cancel baking current map.\nPress `BACKSPACE`, then `ESC` to cancel baking.\nIf you want to undo the bake, press `Ctrl + Z` (`Cmd + Z` on Mac) just after it finished or canceled.\n\nOpen Blender Console to see more baking process information and, if you face an unexpected Blender freeze, be able to press `Ctrl + C` (`Cmd + C` on Mac) to abort the bake.\nNote that there are expectable Blender freezes when preparing maps for meshes with huge amount of geometry, baking map result to modifiers, Denoising baked result, or UV unwrapping and packing. Please be patient, BakeMaster will notify if any error occured"
     OPERATOR_HELP_DESCRIPTION = "BakeMaster online documentation for help. Press to open in your default browser"
     
-    #Property Labels:
+    # Property Labels:
     PROP_AOL_ACTIVEINDEX_NAME = "Object of type 'MESH' to be included in the bake"
     PROP_ITEM_USEBAKE_NAME = "Include/exclude item in the bake"
     PROP_ITEM_USETARGET_NAME = "Set this item as bake target object"
@@ -55,5 +55,11 @@ class BM_Labels:
 
     PROP_ITEM_bake_batchname_custom_Description = "Write keywords starting with $, any additional text can be added:\n\n$objectindex - Object index\n$objectname - Object name\n$containername - Container name if Object is in it\n$packname - Channel Pack name if map is in Channel Pack\n$texsetname - Texture Set chosen name type if Object is in it\n$mapindex - Map index\n$mapname - Map prefix\n$mapres - Map Resolution\n$mapbit - _32bit_ if map uses 32bit Float, else _8bit_\n$maptrans - _trans_ if map uses transparent bg\n$mapssaa - SSAA value used for the map\n$mapsamples - Number of map bake samples, max samples if Adaptive is used\n$mapdenoise - _denoised_ if map was denoised\n$mapnormal - For Normal map, write preset type\n$mapuv - Write UV Layer name used for baking map\n$engine - Write Bake Engine used for baking\n$autouv - _autouv_ if object was auto uv unwrapped\n\ntestbake1$objectname_$mapname_$mapdenoise_Final -> testbake1monsterhead_NM_denoised_Final"
 
-    #URls
-    URL_HELP_BASE = "https://bakemaster-blender-addon.readthedocs.io/en/latest/"
+    # URLs
+    # different documentation versions may have different pages setup
+    __addon_version__ = "dev-2.0.0"
+    URL_HELP_MAIN = "https://bakemaster-blender-addon.readthedocs.io/en/%s/" % __addon_version__
+    URL_HELP_OBJS = "https://bakemaster-blender-addon.readthedocs.io/en/%s/pages/start/objects.html" % __addon_version__
+    URL_HELP_MAPS = "https://bakemaster-blender-addon.readthedocs.io/en/%s/pages/start/maps.html" % __addon_version__
+    URL_HELP_BAKE = "https://bakemaster-blender-addon.readthedocs.io/en/%s/pages/start/bake.html" % __addon_version__
+    URL_HELP_SUPPORT = "https://bakemaster-blender-addon.readthedocs.io/en/%s/pages/more/connect.html" % __addon_version__

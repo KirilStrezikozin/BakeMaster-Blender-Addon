@@ -351,13 +351,22 @@ class BM_UL_Table_of_Maps_Item_Highpoly(bpy.types.UIList):
 class BM_UL_Table_of_Objects_Item_ChannelPack(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         index_value = item.global_channelpack_index
+
+        # channel pack inactive if internal bake
+        object = context.scene.bm_table_of_objects[item.global_channelpack_object_index]
+        if object.bake_save_internal:
+            layout.active = False
+            text = " (External Bake only)"
+        else:
+            text = ""
+
         layout.emboss = 'NONE'
         row = layout.row()
         split = row.split(factor=0.1*len(str(index_value)))
         index_column = split.column()
         index_column.label(text=str(index_value))
         layout.emboss = 'NORMAL'
-        split.column().prop(item, 'global_channelpack_name', text="")
+        split.column().prop(item, 'global_channelpack_name', text=text)
 
     def draw_filter(self, context, layout):
         pass
@@ -649,6 +658,12 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
             decal_box = layout.box()
             decal_box.use_property_split = True
             decal_box.use_property_decorate = False
+            # inactive if baking internally
+            if object.bake_save_internal:
+                decal_box.active = False
+                text = " (External Bake only)"
+            else:
+                text = ""
             
             # decal header
             decal_box_header = decal_box.row(align=True)
@@ -657,7 +672,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
             icon = 'TRIA_DOWN' if scene.bm_props.global_is_decal_panel_expanded else 'TRIA_RIGHT'
             decal_box_header.prop(scene.bm_props, 'global_is_decal_panel_expanded', text="", icon=icon)
             decal_box_header.emboss = 'NORMAL'
-            decal_box_header.label(text="Decal")
+            decal_box_header.label(text="Decal" + text)
             BM_PT_DECAL_Presets.draw_panel_header(decal_box_header)
 
             # decal body
@@ -820,7 +835,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
             # shading
             csh_box.prop(object, 'csh_use_triangulate_lowpoly')
             csh_box_column = csh_box.column()
-            csh_box_column.prop(object, 'csh_use_lowpoly_reset_normals')
+            csh_box_column.prop(object, 'csh_use_lowpoly_recalc_normals')
             csh_box_column.prop(object, 'csh_lowpoly_use_smooth')
             if object.csh_lowpoly_use_smooth:
                 csh_box_column.prop(object, 'csh_lowpoly_smoothing_groups_enum', text="Type")
@@ -842,7 +857,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
             if len_of_highs > 0 or hl_draw is False:
                 label = "Highpoly" if len_of_highs == 1 else "Highpolies"
                 csh_box_column = csh_box.column()
-                csh_box_column.prop(object, 'csh_use_highpoly_reset_normals', text="Reset %s Normals" % label)
+                csh_box_column.prop(object, 'csh_use_highpoly_recalc_normals', text="Recalculate %s Normals Outside" % label)
                 csh_box_column.prop(object, 'csh_highpoly_use_smooth', text="Smooth %s" % label)
                 if object.csh_highpoly_use_smooth:
                     csh_box_column.prop(object, 'csh_highpoly_smoothing_groups_enum', text="Type")
@@ -998,15 +1013,17 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     map_settings_column.enabled = False
 
             # map settings body
-            draw_affect_by_hl = False
-            if object.hl_use_unique_per_map and len(map.hl_highpoly_table):
-                draw_affect_by_hl = True
-            elif len(object.hl_highpoly_table):
-                draw_affect_by_hl = True
-            if object.decal_is_decal and object.nm_uni_container_is_global is False:
-                draw_affect_by_hl = False
-            if draw_affect_by_hl and map.global_map_type not in ['NORMAL', 'DISPLACEMENT']:
-                map_settings_column.prop(map, 'global_affect_by_hl', text="Affect by Highpoly")
+
+            # (affect_by_hl prop is useless)
+            # draw_affect_by_hl = False
+            # if object.hl_use_unique_per_map and len(map.hl_highpoly_table):
+            #     draw_affect_by_hl = True
+            # elif len(object.hl_highpoly_table):
+            #     draw_affect_by_hl = True
+            # if object.decal_is_decal and object.nm_uni_container_is_global is False:
+            #     draw_affect_by_hl = False
+            # if draw_affect_by_hl and map.global_map_type not in ['NORMAL', 'DISPLACEMENT']:
+            #     map_settings_column.prop(map, 'global_affect_by_hl', text="Affect by Highpoly")
             
             map_settings_column.prop(map, 'map_%s_prefix' % map.global_map_type)
             
@@ -1696,6 +1713,7 @@ class BM_PT_BakeBase(bpy.types.Panel):
         object = object_full[0]
 
         # bake body
+        layout.prop(scene.bm_props, 'global_use_bake_overwrite')
         layout.prop(scene.bm_props, 'global_use_bakemaster_reset')
 
         bake_column = layout.column(align=True)
@@ -1717,15 +1735,44 @@ class BM_PT_BakeBase(bpy.types.Panel):
 
         # additional operators
         ad_column = layout.column(align=True)
-        ad_column.operator(BM_OT_ApplyLastEditedProp.bl_idname, text="Apply Lastly Edited")
-        ad_column.operator(BM_OT_CreateArtificialUniContainer.bl_idname, text="Artificial Container")
+        ad_column.operator(BM_OT_ApplyLastEditedProp.bl_idname, text="Apply Lastly Edited Setting")
+        ad_column.operator(BM_OT_CreateArtificialUniContainer.bl_idname, text="Create Bake Job Group")
 
         # help body
         help_column = layout.column()
         help_column_instruction = help_column.row()
         help_column_instruction.prop(context.scene.bm_props, "global_bake_instruction", text="", icon='INFO')
         help_column_instruction.enabled = False
-        help_column_doc = help_column.row()
-        help_column_doc.operator(BM_OT_Help.bl_idname, text="Documentation", icon='HELP')
-        help_column_doc.active = False
 
+class BM_PT_HelpBase(bpy.types.Panel):
+    bl_label = " "
+    bl_idname = 'BM_PT_Help'
+    bl_options = {'DEFAULT_CLOSED'}
+    
+    @classmethod
+    def poll(cls, context):
+        return True
+    
+    def draw_header(self, context):
+        label = "Help"
+        icon = 'HELP'
+        self.layout.label(text=label, icon=icon)
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        # draw operator calls for user to get help
+        pages = [
+            "Main Page",
+            "How to Setup Objects",
+            "How to Setup Maps",
+            "How to Bake",
+            "Support",
+        ]
+
+        layout.label(text="Documentaion:")
+        help_column = layout.column(align=True)
+        for page in pages:
+            help_column.operator(BM_OT_Help.bl_idname, text=page).url_base_type = page
