@@ -103,23 +103,97 @@ The addon fits beginners as well as proficient users. Comfortable creation tools
 Key features
 ============
 
-* Bake an unlimited number of objects and maps.
-* Drive with 36 different map types.
-* Match all lowpolies, highpolies, decals, and cages in a single click.
-* Enhance your texturing with loads of special maps and masks.
-* Outstanding configuration, customize everything.
-* Preview maps before baking, real-time.
-* UDIMs? No problem.
-* Texture Sets. Bake multiple objects onto the same images.
-* Channel Pack maps the way you prefer.
-* Group objects into bake jobs.
-* Turn on Denoising and Supersample AA, for UDIMs too.
-* Bake Decals separately and onto objects.
-* Bake from and to Vertex Colors.
-* Fastest ID Map.
-* Save time with presets and execute any task on the go.
-* Get the best results.
+..
+  * Bake an unlimited number of objects and maps
+  * Drive with 36 different map types
+  * Match all lowpolies, highpolies, decals, and cages in a single click
+  * Enhance your texturing with loads of special maps and masks
+  * Outstanding configuration, customize everything
+  * Preview maps before baking, real-time
+  * UDIMs? No problem
+  * Texture Sets. Bake multiple objects onto the same images
+  * Channel Pack maps the way you prefer
+  * Group objects into bake jobs
+  * Turn on Denoising and Supersample AA, for UDIMs too
+  * Bake Decals separately and onto objects
+  * Bake from and to Vertex Colors
+  * Fastest ID Map
+  * Save time with presets and execute any task on the go
+  * Get the best results
 
+.. raw:: html
 
-.. todo::
-    Slideshow of images showing the key features of the addon.
+    <div class="slideshow" id="slideshow-1">
+        <div class="content-wrapper">
+            <div class="content column active">
+                <img src="../_static/images/pages/about/0_keyfeatures.png" alt="Bake an unlimited number of objects and maps">
+            </div>
+            <div class="content column">
+                <img src="../_static/images/pages/about/1_keyfeatures.png" alt="Drive with 36 different map types">
+            </div>
+            <div class="content column">
+                <img src="../_static/images/pages/about/2_keyfeatures.png" alt="Match all lowpolies, highpolies, decals, and cages in a single click">
+            </div>
+            <div class="content column">
+                <img src="../_static/images/pages/about/3_keyfeatures.png" alt="Enhance your texturing with loads of special maps and masks">
+            </div>
+            <div class="content column">
+                <img src="../_static/images/pages/about/4_keyfeatures.png" alt="Outstanding configuration, customize everything">
+            </div>
+            <div class="content column">
+                <img src="../_static/images/pages/about/5_keyfeatures.png" alt="Preview maps before baking, real-time">
+            </div>
+            <div class="content column">
+                <img src="../_static/images/pages/about/6_keyfeatures.png" alt="UDIMs? No problem">
+            </div>
+            <div class="content column">
+                <img src="../_static/images/pages/about/7_keyfeatures.png" alt="Texture Sets. Bake multiple objects onto the same images">
+            </div>
+            <div class="content column">
+                <img src="../_static/images/pages/about/8_keyfeatures.png" alt="Channel Pack maps the way you prefer">
+            </div>
+            <div class="content column">
+                <img src="../_static/images/pages/about/9_keyfeatures.png" alt="Group objects into bake jobs">
+            </div>
+            <div class="content column">
+                <img src="../_static/images/pages/about/10_keyfeatures.png" alt="Turn on Denoising and Supersample AA, for UDIMs too">
+            </div>
+            <div class="content column">
+                <img src="../_static/images/pages/about/11_keyfeatures.png" alt="Bake Decals separately and onto objects">
+            </div>
+            <div class="content column">
+                <img src="../_static/images/pages/about/12_keyfeatures.png" alt="Bake from and to Vertex Colors">
+            </div>
+            <div class="content column">
+                <img src="../_static/images/pages/about/13_keyfeatures.png" alt="Fastest ID Map">
+            </div>
+            <div class="content column">
+                <img src="../_static/images/pages/about/14_keyfeatures.png" alt="Save time with presets and execute any task on the go">
+            </div>
+            <div class="content column">
+                <img src="../_static/images/pages/about/15_keyfeatures.png" alt="Get the best results">
+            </div>
+        </div>
+        <div class="footer">
+            <a class="prev" onclick="slideshow_setSlideByRelativeId('slideshow-1', -1)" onselectstart="return false">&#10094;</a>
+            <div class="controls">
+                <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 0)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 1)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 2)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 3)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 4)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 5)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 6)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 7)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 8)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 9)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 10)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 11)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 12)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 13)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 14)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 15)"></span>
+            </div>
+            <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-1', 1)" onselectstart="return false">&#10095;</a>
+        </div>
+    </div>
