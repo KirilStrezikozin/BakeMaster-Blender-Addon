@@ -2,8 +2,9 @@
 About BakeMaster
 ================
 
-.. todo::
-    Put a promo video here (maybe through Vimeo and custom class or raw in reST to render HTML).
+.. raw:: html
+
+    <iframe width="800" height="490" src="https://www.youtube.com/embed/g0_YiAJwlsE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 Introduction
 ============
