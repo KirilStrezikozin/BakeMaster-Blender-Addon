@@ -622,6 +622,17 @@ Preview how the map will look when baked!
         </div>
     </div>
 
+.. raw:: html
+
+    <div class="content-gallery">
+        <div class="content">
+            <img src="../../_static/images/pages/start/maps/0_gradient_map_preview_350x320.gif" alt="Gradient Map Preview">
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/start/maps/1_curvature_map_preview_350x320.gif" alt="Curvature Map Preview">
+        </div>
+    </div>
+
 Format Settings
 ---------------
 

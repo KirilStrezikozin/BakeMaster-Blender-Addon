@@ -103,5 +103,23 @@ The addon fits beginners as well as proficient users. Comfortable creation tools
 Key features
 ============
 
+* Bake an unlimited number of objects and maps.
+* Drive with 36 different map types.
+* Match all lowpolies, highpolies, decals, and cages in a single click.
+* Enhance your texturing with loads of special maps and masks.
+* Outstanding configuration, customize everything.
+* Preview maps before baking, real-time.
+* UDIMs? No problem.
+* Texture Sets. Bake multiple objects onto the same images.
+* Channel Pack maps the way you prefer.
+* Group objects into bake jobs.
+* Turn on Denoising and Supersample AA, for UDIMs too.
+* Bake Decals separately and onto objects.
+* Bake from and to Vertex Colors.
+* Fastest ID Map.
+* Save time with presets and execute any task on the go.
+* Get the best results.
+
+
 .. todo::
     Slideshow of images showing the key features of the addon.
