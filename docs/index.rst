@@ -3,11 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. |teaser| image:: ./_static/images/pages/about/teaser_1920x1080.png
+    :alt: Teaser
+
 ============================
 BakeMaster 2.0 Documentation
 ============================
 
-.. todo:: Teaser image
+|teaser|
 
 BakeMaster Blender Baking Addon Documentation will help you learn all the ropes of your ultimate baking workflow with BakeMaster.
 
