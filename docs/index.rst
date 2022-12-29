@@ -3,84 +3,84 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. |teaser| image:: ./_static/images/pages/about/teaser_1920x1080.png
+    :alt: Teaser
+
 ============================
-BakeMaster 1.0 Documentation
+BakeMaster 2.0 Documentation
 ============================
 
-.. image:: https://raw.githubusercontent.com/KirilStrezikozin/BakeMaster-Blender-Addon/master/.github/images/documentation/index_page/teaser_social_1200x600.png
-   :alt: teaser_social
-   :width: 1280 px
+|teaser|
 
-Welcome to the Documentation of BakeMaster - the Blender Baking Add-on to catch with and dive into your ultimate baking workflow that will be like never before - a pleasure!
+BakeMaster Blender Baking Addon Documentation will help you learn all the ropes of your ultimate baking workflow with BakeMaster.
 
-Quickstart
-==========
+About
+=====
 
-* :doc:`/start/about/index`
-* :doc:`/start/install/index`
-* :doc:`/start/basic_usage/index`
-* :doc:`/start/help`
+* :doc:`/pages/about`
 
 .. toctree::
    :hidden:
-   :caption: Quickstart
+   :includehidden:
+
+   pages/about.rst
+
+The Setup
+=========
+
+* :doc:`/pages/setup/installation`
+* :doc:`/pages/setup/interface`
+
+.. toctree::
+   :hidden:
+   :caption: The Setup
    :maxdepth: 1
 
-   start/about/index.rst
-   start/install/index.rst
-   start/basic_usage/index.rst
-   start/help.rst
+   pages/setup/installation
+   pages/setup/interface
 
-User's Workflow
+Getting Started
 ===============
 
-* :doc:`/workflow/interface/index`
-* :doc:`/workflow/object/index`
-* :doc:`/workflow/map/index`
-* :doc:`/workflow/bake/index`
-* :doc:`/workflow/errors/index`
+* :doc:`/pages/start/objects`
+* :doc:`/pages/start/maps`
+* :doc:`/pages/start/bake`
 
 .. toctree::
    :hidden:
-   :caption: User's Workflow
+   :caption: Getting Started
    :maxdepth: 1
 
-   workflow/interface/index.rst
-   workflow/object/index.rst
-   workflow/map/index.rst
-   workflow/bake/index.rst
-   workflow/errors/index.rst
-   
-Versions
+   pages/start/objects
+   pages/start/maps
+   pages/start/bake
+
+Advanced
 ========
 
-* :doc:`/versions/versions`
-* :doc:`/versions/releases`
+* :doc:`/pages/advanced/nolimits`
+* :doc:`/pages/advanced/savetime`
+* :doc:`/pages/advanced/improve`
 
 .. toctree::
    :hidden:
-   :caption: Versions
+   :caption: Advanced
    :maxdepth: 1
 
-   versions/versions.rst
-   versions/releases.rst
+   pages/advanced/nolimits
+   pages/advanced/savetime
+   pages/advanced/improve
+   
+More
+====
 
-Get Involved
-============
-
-* :doc:`/contribute/index`
+* :doc:`/pages/more/connect`
+* :doc:`/pages/more/releases`
 
 .. toctree::
    :hidden:
-   :caption: Get Involved
+   :caption: More
    :maxdepth: 1
 
-   contribute/index.rst
-
-Indices
-=======
-
-* :ref:`genindex`
-
-.. * :ref:`modindex`
-  * :ref:`search`
+   pages/more/connect
+   pages/more/releases

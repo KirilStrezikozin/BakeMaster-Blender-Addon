@@ -1,40 +1,17 @@
 # BakeMaster Docs
 
-The documentation uses plain text files in reStructuredText format and the Sphinx documentation system.
+The documentation uses plain text files in reStructuredText format. Created with Sphinx and the Furo theme.
 
-### Documentation structure:
-```
-docs:.
-├───contribute
-│   ├───documentation
-│   └───scripts
-├───start
-│   ├───about
-│   ├───basic_usage
-│   └───install
-├───versions
-├───workflow
-│   ├───bake
-│   ├───errors
-│   ├───interface
-│   │   └───panel
-│   ├───map
-│   └───object
-├───_static
-│   └───css
-└───_templates
-```
+## Create your local build:
 
-### Create your local build:
-
-A local HTML version can be created using the commands:
+Commands for local HTML build:
 
 - `python -m pip install sphinx` - Sphinx installation
-- In the `docs/` directory, use `make html`
+- In the `docs/` directory, run `make html`
 
 HTML pages will sit in `docs/_build/html`.
 
-### Contribute
+## Contribute
 
 You can edit documentation by:
 
@@ -42,4 +19,4 @@ You can edit documentation by:
 - Make changes
 - Open Pull Request
 
-More information regarding Contributions can be viewed in <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html">Contributing Guidelines</a>.
+More contributing information is in the <a href="https://bakemaster-blender-addon.readthedocs.io/en/latest/contribute/index.html">Contributing Guidelines</a>.
