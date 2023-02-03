@@ -30,6 +30,7 @@ Below is the new features implementation order:
 - [ ] [REQUEST: Right click context menu: Bake Selected](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/19)
 - [ ] [BUG: Image color edging when baking from multires](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/12)
 - [ ] [REQUEST: Blender's Color Management on for bake](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/13)
+- [ ] [REQUEST: AO map improvements](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/21)
 
 ---
 
