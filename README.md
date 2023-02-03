@@ -4,7 +4,7 @@
 <h1 id="page-top">
     <a href="#page-top">
         Welcome to <br />
-        BakeMaster 2.0 Blender Add-on
+        BakeMaster 3.0 Blender Add-on
     </a>
 </h1>
 
@@ -14,6 +14,22 @@ BakeMaster is an add-on specified for baking various texture maps <br/>and creat
 <a href='https://bakemaster-blender-addon.readthedocs.io/en/latest/?badge=latest'>
     <img src='https://readthedocs.org/projects/bakemaster-blender-addon/badge/?version=latest' alt='Documentation Status' />
 </a>
+
+---
+
+This branch is a dev branch for the 3.0 update which is in progress. Check out [Requests](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues) to be implemented.
+
+Below is the new features implementation order:
+- [ ] [BUG: Dropdown lists values are lost when moving objects' order](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/10)
+- [ ] [REQUEST: UV Repack -> add checkbox to average island sizes](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/18)
+- [ ] [REQUEST: Panels' scroll bars](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/17)
+- [ ] [REQUEST: Displacement map: choose multires subdiv level](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/16)
+- [ ] [REQUEST: Bake Jobs](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/14)
+- [ ] [REQUEST: Baking Pipeline Manager](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/15)
+- [ ] [REQUEST: Bake History Manager](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/20)
+- [ ] [REQUEST: Right click context menu: Bake Selected](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/19)
+- [ ] [BUG: Image color edging when baking from multires](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/12)
+- [ ] [REQUEST: Blender's Color Management on for bake](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/13)
 
 ---
 
