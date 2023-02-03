@@ -1049,7 +1049,8 @@ def BM_TEXSET_OBJECT_PROPS_global_object_name_Update(self, context):
 def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnAddOT(context):
     pass
 
-def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnRemoveOT(context):
+def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnRemoveOT(context, removed_index):
+    # remove object from texset
     pass
 
 def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context, moved_from_index: int, moved_to_index: int):
@@ -1067,8 +1068,27 @@ def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context, moved_from
             except (ValueError, TypeError):
                 pass
 
-def BM_TEXSET_OBJECT_PROPS_global_object_name_RecreateSubitems(context):
-    pass
+def BM_TEXSET_OBJECT_PROPS_global_object_name_RecreateSubitems(context, texset_item):
+    # recreate subitems
+    item = context.scene.bm_table_of_objects[texset_item.global_source_object_index]
+    if item.nm_is_universal_container and context.scene.bm_props.global_use_name_matching:
+        # trash
+        to_remove = []
+        for index, subitem in enumerate(texset_item.global_object_name_subitems):
+            to_remove.append(index)
+        for index in sorted(to_remove, reverse=True):
+            texset_item.global_object_name_subitems.remove(index)
+        # add
+        local_c_master_index = -1
+        for index, subitem in enumerate(context.scene.bm_table_of_objects):
+            if subitem.nm_item_uni_container_master_index == item.nm_master_index and subitem.nm_is_lowpoly_container:
+                local_c_master_index = subitem.nm_master_index
+
+            if subitem.nm_item_uni_container_master_index == item.nm_master_index and subitem.nm_item_local_container_master_index == local_c_master_index:
+                new_subitem = texset_item.global_object_name_subitems.add()
+                new_subitem.global_object_name = subitem.global_object_name
+                new_subitem.global_object_index = len(texset_item.global_object_name_subitems)
+                new_subitem.global_source_object_index = index
 
 def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context):
     # order of items in global_object_name might be changed
