@@ -1,7 +1,7 @@
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
 # "BakeMaster" Add-on
-# Copyright (C) 2022 Kiril Strezikozin aka kemplerart
+# Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
