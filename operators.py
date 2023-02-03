@@ -1260,6 +1260,8 @@ class BM_OT_SCENE_TextureSets_Objects_Table_Remove(bpy.types.Operator):
             context.scene.bm_table_of_objects[item.global_source_object_index].global_is_included_in_texset = False
             BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
 
+            # TODO: loop through texsets and reduce indexes if they have them
+
             objects.remove(active_texset.global_textureset_table_of_objects_active_index)
             if active_texset.global_textureset_table_of_objects_active_index > 0:
                 active_texset.global_textureset_table_of_objects_active_index -= 1
