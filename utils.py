@@ -1044,6 +1044,32 @@ def BM_TEXSET_OBJECT_PROPS_global_object_name_Update(self, context):
 
         BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
 
+# TODO: Texsets funcs on bm_table Add, Remove, Move OTs
+
+def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnAddOT(context):
+    pass
+
+def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnRemoveOT(context):
+    pass
+
+def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context, moved_from_index: int, moved_to_index: int):
+    # update texsets' objects' global_source_object_index property
+    texsets = context.scene.bm_props.global_texturesets_table
+    for texset in texsets:
+        for texset_item in texset.global_textureset_table_of_objects:
+            try:
+                if texset_item.global_source_object_index == moved_from_index:
+                    texset_item.global_source_object_index = moved_to_index
+                elif texset_item.global_source_object_index == moved_to_index:
+                    texset_item.global_source_object_index = moved_from_index
+                texset_item.global_object_name_old = texset_item.global_object_name_include
+                texset_item.global_object_name = texset_item.global_object_name_include
+            except (ValueError, TypeError):
+                pass
+
+def BM_TEXSET_OBJECT_PROPS_global_object_name_RecreateSubitems(context):
+    pass
+
 def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context):
     # order of items in global_object_name might be changed
     # try to reassign to be equal to global_is_included_in_texset
