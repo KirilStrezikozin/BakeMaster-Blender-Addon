@@ -1044,10 +1044,9 @@ def BM_TEXSET_OBJECT_PROPS_global_object_name_Update(self, context):
 
         BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
 
-# TODO: Texsets funcs on bm_table Add, Remove, Move OTs
-
-def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnAddOT(context):
-    pass
+# no need for:
+# def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnAddOT(context):
+#     pass
 
 def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnRemoveOT(context, removed_index):
     # remove object from texset
@@ -1115,71 +1114,6 @@ def BM_TEXSET_OBJECT_PROPS_global_object_name_RecreateSubitems(context, texset_i
                 new_subitem.global_object_name = subitem.global_object_name
                 new_subitem.global_object_index = len(texset_item.global_object_name_subitems)
                 new_subitem.global_source_object_index = index
-
-
-
-
-def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context):
-    # order of items in global_object_name might be changed
-    # try to reassign to be equal to global_is_included_in_texset
-    texsets = context.scene.bm_props.global_texturesets_table
-    for texset in texsets:
-        for object in texset.global_textureset_table_of_objects:
-            try:
-                # reassigning old name too to skip
-                for index, object1 in enumerate(context.scene.bm_table_of_objects):
-                    if context.scene.bm_props.global_use_name_matching and object1.nm_container_name == object.global_object_name_include:
-                        object.global_source_object_index = index
-                        break
-                    elif object1.global_object_name == object.global_object_name_include:
-                        object.global_source_object_index = index
-                        break
-                object.global_object_name_old = object.global_object_name_include
-                object.global_object_name = object.global_object_name_include
-            except (ValueError, TypeError):
-                pass
-
-def BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index):
-    # if object was in texset and its removed from bm_table, remove item from texset as well
-    texsets = context.scene.bm_props.global_texturesets_table
-    for texset in texsets:
-        for object_index, object in enumerate(texset.global_textureset_table_of_objects):
-            if object.global_source_object_index == index:
-
-                # remove obj from texset
-                for item in texset.global_textureset_table_of_objects:
-                    if item.global_object_index > object.global_object_index:
-                        item.global_object_index -= 1
-
-                context.scene.bm_table_of_objects[object.global_source_object_index].global_is_included_in_texset = False
-                BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
-
-                texset.global_textureset_table_of_objects.remove(object_index)
-                if texset.global_textureset_table_of_objects_active_index > 0:
-                    texset.global_textureset_table_of_objects_active_index -= 1
-
-            # recreate subitems
-            item = context.scene.bm_table_of_objects[object.global_source_object_index]
-            if item.nm_is_universal_container and context.scene.bm_props.global_use_name_matching:
-                # trash
-                to_remove = []
-                for index, subitem in enumerate(object.global_object_name_subitems):
-                    to_remove.append(index)
-                for index in sorted(to_remove, reverse=True):
-                    object.global_object_name_subitems.remove(index)
-                # add
-                local_c_master_index = -1
-                for index, subitem in enumerate(context.scene.bm_table_of_objects):
-                    if subitem.nm_item_uni_container_master_index == item.nm_master_index and subitem.nm_is_lowpoly_container:
-                        local_c_master_index = subitem.nm_master_index
-
-                    if subitem.nm_item_uni_container_master_index == item.nm_master_index and subitem.nm_item_local_container_master_index == local_c_master_index:
-                        new_subitem = object.global_object_name_subitems.add()
-                        new_subitem.global_object_name = subitem.global_object_name
-                        new_subitem.global_object_index = len(object.global_object_name_subitems)
-                        new_subitem.global_source_object_index = index
-
-            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
 
 ###############################################################
 ### Channel Packs Funcs ###
