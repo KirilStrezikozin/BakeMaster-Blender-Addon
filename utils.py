@@ -1022,31 +1022,13 @@ def BM_TEXSET_OBJECT_PROPS_global_object_name_Update(self, context):
         context.scene.bm_table_of_objects[self.global_source_object_index].global_is_included_in_texset = True
 
         # recreate subitems
-        item = context.scene.bm_table_of_objects[self.global_source_object_index]
-        if item.nm_is_universal_container and context.scene.bm_props.global_use_name_matching:
-            # trash
-            to_remove = []
-            for index, subitem in enumerate(self.global_object_name_subitems):
-                to_remove.append(index)
-            for index in sorted(to_remove, reverse=True):
-                self.global_object_name_subitems.remove(index)
-            # add
-            local_c_master_index = -1
-            for index, subitem in enumerate(context.scene.bm_table_of_objects):
-                if subitem.nm_item_uni_container_master_index == item.nm_master_index and subitem.nm_is_lowpoly_container:
-                    local_c_master_index = subitem.nm_master_index
-
-                if subitem.nm_item_uni_container_master_index == item.nm_master_index and subitem.nm_item_local_container_master_index == local_c_master_index:
-                    new_subitem = self.global_object_name_subitems.add()
-                    new_subitem.global_object_name = subitem.global_object_name
-                    new_subitem.global_object_index = len(self.global_object_name_subitems)
-                    new_subitem.global_source_object_index = index
-
-        BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
+        BM_TEXSET_OBJECT_PROPS_global_object_name_RecreateSubitems(context, self)
 
 # no need for:
 # def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnAddOT(context):
 #     pass
+# new objects are appended to the bottom of bm_table_of_objects
+# for name_matching should call BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(...)
 
 def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnRemoveOT(context, removed_index):
     # remove object from texset
