@@ -1550,6 +1550,14 @@ def BM_GetObject_from_prop_update(self, context):
     else:
         return BM_Object_Get(None, context)[0]
 
+# TODO
+def BM_Table_of_Objects_Move(scene, context, index_from, index_to):
+    # CollectionProperty.move() replacer
+    # with dependant classes update funcs calls
+    scene.bm_table_of_objects.move(index_from, index_to)
+    BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context, index_from, index_to)
+    # add other calls...
+
 ###############################################################
 ### decal Props Funcs ###
 ###############################################################
