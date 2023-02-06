@@ -1705,6 +1705,13 @@ def BM_ITEM_PROPS_hl_use_cage_Update(self, context):
         self.hl_cage_object_index = -1
         self.hl_cage_object_include = ""
 
+# TODO - Cage updates on bm_table_of_objects OTs
+# unset None everywhere (always)
+# funcs:
+# On Remove - unset source cages, update indexes -= 1
+# On Add -
+# On Move - replace source cages' indexes
+
 def BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, type):
     if type == 'OBJECT':
         object = context.scene.bm_table_of_objects[index]
