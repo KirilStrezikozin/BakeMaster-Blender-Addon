@@ -1024,11 +1024,9 @@ def BM_TEXSET_OBJECT_PROPS_global_object_name_Update(self, context):
         # recreate subitems
         BM_TEXSET_OBJECT_PROPS_global_object_name_RecreateSubitems(context, self)
 
-# no need for:
-# def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnAddOT(context):
-#     pass
-# new objects are appended to the bottom of bm_table_of_objects
-# for name_matching should call BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(...)
+def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnAddOT(context):
+    # no need for
+    pass
 
 def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnRemoveOT(context, removed_index):
     # remove object from texset
