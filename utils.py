@@ -1723,6 +1723,9 @@ def BM_ITEM_PROPS_hl_cage_unset_none(context):
         elif object.hl_use_cage and object.hl_cage_object_index == -1:
             object.hl_use_cage = False
 
+def BM_ITEN_PROPS_hl_cage_UpdateOnAddOT(context):
+    BM_ITEM_PROPS_hl_cage_unset_none(context)
+
 def BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, type):
     if type == 'OBJECT':
         object = context.scene.bm_table_of_objects[index]
