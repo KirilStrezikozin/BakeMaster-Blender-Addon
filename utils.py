@@ -1726,6 +1726,40 @@ def BM_ITEM_PROPS_hl_cage_unset_none(context):
 def BM_ITEN_PROPS_hl_cage_UpdateOnAddOT(context):
     BM_ITEM_PROPS_hl_cage_unset_none(context)
 
+def BM_ITEN_PROPS_hl_cage_UpdateOnMoveOT(context, moved_from_index, moved_to_index):
+    # update all objects' hl_cage indexes props
+    for object in context.scene.bm_table_of_objects:
+        if object.hl_use_unique_per_map is False:
+            if object.hl_use_cage is False or object.hl_cage_object_index == -1:
+                continue
+            elif object.hl_cage_object_index == -1:
+                object.hl_use_cage = False
+            try:
+                if object.hl_cage_object_index == moved_from_index:
+                    object.hl_cage_object_index = moved_to_index
+                elif object.hl_cage_object_index == moved_to_index:
+                    object.hl_cage_object_index = moved_from_index
+                object.hl_cage_name_old = object.hl_cage_object_include
+                object.hl_cage = object.hl_cage_object_include
+            except (ValueError, TypeError):
+                pass
+            continue
+
+        for map in object.global_maps:
+            if map.hl_use_cage is False or map.hl_cage_object_index == -1:
+                continue
+            elif map.hl_cage_object_index == -1:
+                map.hl_use_cage = False
+            try:
+                if map.hl_cage_object_index == moved_from_index:
+                    map.hl_cage_object_index = moved_to_index
+                elif map.hl_cage_object_index == moved_to_index:
+                    map.hl_cage_object_index = moved_from_index
+                map.hl_cage_name_old = map.hl_cage_object_include
+                map.hl_cage = map.hl_cage_object_include
+            except (ValueError, TypeError):
+                pass
+
 def BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, type):
     if type == 'OBJECT':
         object = context.scene.bm_table_of_objects[index]
