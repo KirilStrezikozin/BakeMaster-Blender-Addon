@@ -1519,6 +1519,16 @@ def BM_Table_of_Objects_Move(scene, context, index_from, index_to):
     BM_ITEN_PROPS_hl_cage_UpdateOnMoveOT(context, index_from, index_to)
     # add other calls...
 
+def BM_Table_of_Objects_Remove(scene, context, index_remove, type: str):
+    # CollectionProperty.remove() replacer
+    # with dependant classes update funcs calls
+    scene.bm_table_of_objects.remove(index_remove)
+    BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnRemoveOT(context, index_remove)
+    # no for map
+    # no for channelpack
+    BM_ITEM_PROPS_hl_cage_UpdateOnRemoveOT(context, index_remove, type)
+    # add other calls...
+
 ###############################################################
 ### decal Props Funcs ###
 ###############################################################
