@@ -1024,10 +1024,6 @@ def BM_TEXSET_OBJECT_PROPS_global_object_name_Update(self, context):
         # recreate subitems
         BM_TEXSET_OBJECT_PROPS_global_object_name_RecreateSubitems(context, self)
 
-def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnAddOT(context):
-    # no need for
-    pass
-
 def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnRemoveOT(context, removed_index):
     # remove object from texset
     texsets = context.scene.bm_props.global_texturesets_table
@@ -1527,6 +1523,16 @@ def BM_Table_of_Objects_Remove(scene, context, index_remove, type: str):
     # no for map
     # no for channelpack
     BM_ITEM_PROPS_hl_cage_UpdateOnRemoveOT(context, index_remove, type)
+    # add other calls...
+
+def BM_Table_of_Objects_Add(scene, context):
+    # CollectionProperty.add() replacer
+    # with dependant classes update funcs calls
+    scene.bm_table_of_objects.add()
+    # no for texset
+    # no for map
+    # no for channelpack
+    BM_ITEN_PROPS_hl_cage_UpdateOnAddOT(context)
     # add other calls...
 
 ###############################################################
