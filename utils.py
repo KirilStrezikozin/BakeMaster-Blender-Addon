@@ -1709,8 +1709,6 @@ def BM_ITEM_PROPS_hl_use_cage_Update(self, context):
 # unset None everywhere (always)
 # funcs:
 # On Remove - unset source cages, update indexes -= 1
-# On Add -
-# On Move - replace source cages' indexes
 
 def BM_ITEM_PROPS_hl_cage_unset_none(context):
     for object in context.scene.bm_table_of_objects:
@@ -1759,6 +1757,18 @@ def BM_ITEN_PROPS_hl_cage_UpdateOnMoveOT(context, moved_from_index, moved_to_ind
                 map.hl_cage = map.hl_cage_object_include
             except (ValueError, TypeError):
                 pass
+
+def BM_ITEM_PROPS_hl_cage_UpdateOnRemoveOT(context, removed_index, type: str):
+    if type == 'OBJECT':
+        object = context.scene.bm_table_of_objects[removed_index]
+        object.hl_use_unique_per_map = False
+        object.hl_use_cage = False
+    elif type == 'MAP':
+        object = BM_Object_Get(None, context)
+        if object.hl_use_unique_per_map is False:
+            return
+        map = object.global_maps[removed_index]
+        map.hl_use_cage = False
 
 def BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, type):
     if type == 'OBJECT':
