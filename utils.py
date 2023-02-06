@@ -1509,6 +1509,7 @@ def BM_Table_of_Objects_Move(scene, context, index_from, index_to):
     # with dependant classes update funcs calls
     scene.bm_table_of_objects.move(index_from, index_to)
     BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context, index_from, index_to)
+    BM_MAP_PROPS_global_map_object_index_UpdateOnMoveOT(context, index_from, index_to)
     # add other calls...
 
 ###############################################################
