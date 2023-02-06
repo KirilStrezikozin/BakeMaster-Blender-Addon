@@ -1100,6 +1100,13 @@ def BM_TEXSET_OBJECT_PROPS_global_object_name_RecreateSubitems(context, texset_i
 ###############################################################
 ### Channel Packs Funcs ###
 ###############################################################
+def BM_CHANNELPACK_PROPS_global_channelpack_object_index_UpdateOnMoveOT(context, moved_from_index, moved_to_index):
+    # update objects' channel packs' global_channelpack_object_index property
+    for channelpack in context.scene.bm_table_of_objects[moved_from_index].chnlp_channelpacking_table:
+        channelpack.global_channelpack_object_index = moved_to_index
+    for channelpack in context.scene.bm_table_of_objects[moved_to_index].chnlp_channelpacking_table:
+        channelpack.global_channelpack_object_index = moved_from_index
+
 def BM_CHANNELPACK_PROPS_map_Items_GetAllChosen(self):
     chosen_data = {
         'R1G1B' : ['_map_R', '_map_G', '_map_B'],
@@ -1510,6 +1517,7 @@ def BM_Table_of_Objects_Move(scene, context, index_from, index_to):
     scene.bm_table_of_objects.move(index_from, index_to)
     BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context, index_from, index_to)
     BM_MAP_PROPS_global_map_object_index_UpdateOnMoveOT(context, index_from, index_to)
+    BM_CHANNELPACK_PROPS_global_channelpack_object_index_UpdateOnMoveOT(context, index_from, index_to)
     # add other calls...
 
 ###############################################################
