@@ -1053,7 +1053,7 @@ def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnRemoveOT(context, removed_
         if len(items_to_remove) == 0:
             continue
         for texset_item in texset.global_textureset_table_of_objects:
-            if texset_item.global_object_index > items_to_remove[0]:
+            if texset_item.global_object_index > removed_index:
                 texset_item.global_object_index -= 1
         texset.global_textureset_table_of_objects.remove(items_to_remove[0])
         len_of_texset_items = len(texset.global_textureset_table_of_objects)
