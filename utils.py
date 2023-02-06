@@ -2092,6 +2092,13 @@ def BM_ITEM_PROPS_out_use_unique_per_map_Update(self, context):
 ###############################################################
 ### Map Props Funcs ###
 ###############################################################
+def BM_MAP_PROPS_global_map_object_index_UpdateOnMoveOT(context, moved_from_index: int, moved_to_index: int):
+    # update objects' maps' global_map_object_index property
+    for map in context.scene.bm_table_of_objects[moved_from_index].global_maps:
+        map.global_map_object_index = moved_to_index
+    for map in context.scene.bm_table_of_objects[moved_to_index].global_maps:
+        map.global_map_object_index = moved_from_index
+
 def BM_MAP_PROPS_map_type_Items(self, context):
     # if self.uv_bake_data == 'VERTEX_COLORS':
     #     return [('VERTEX_COLOR_LAYER', "VertexColor Layer", "Bake VertexColor Layer")]
