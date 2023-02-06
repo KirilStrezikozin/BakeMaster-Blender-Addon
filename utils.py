@@ -1705,11 +1705,6 @@ def BM_ITEM_PROPS_hl_use_cage_Update(self, context):
         self.hl_cage_object_index = -1
         self.hl_cage_object_include = ""
 
-# TODO - Cage updates on bm_table_of_objects OTs
-# unset None everywhere (always)
-# funcs:
-# On Remove - unset source cages, update indexes -= 1
-
 def BM_ITEM_PROPS_hl_cage_unset_none(context):
     for object in context.scene.bm_table_of_objects:
         if any([object.nm_is_universal_container, object.nm_is_local_container]):
@@ -1770,67 +1765,6 @@ def BM_ITEM_PROPS_hl_cage_UpdateOnRemoveOT(context, removed_index, type: str):
         map = object.global_maps[removed_index]
         map.hl_use_cage = False
 
-def BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, index, type):
-    if type == 'OBJECT':
-        object = context.scene.bm_table_of_objects[index]
-        if object.hl_use_unique_per_map:
-            for map in object.global_maps:
-                if map.hl_use_cage:
-                    map.hl_use_cage = False
-        else:
-            if object.hl_use_cage:
-                object.hl_use_cage = False
-            elif object.hl_is_cage:
-                for object1 in context.scene.bm_table_of_objects:
-                    if object1.hl_use_unique_per_map:
-                        for map in object1.global_maps:
-                            if map.hl_use_cage and map.hl_cage_object_index == index:
-                                map.hl_use_cage = False
-                    elif object1.hl_cage_object_index == index:
-                        object1.hl_use_cage = False
-    elif type == 'MAP':
-        object = BM_Object_Get(None, context)[0]
-        map = object.global_maps[index]
-        if map.hl_use_cage:
-            map.hl_use_cage = False
-            for map1 in object.global_maps:
-                if map1.hl_use_cage and map1.hl_cage_object_index != -1:
-                    context.scene.bm_table_of_objects[map1.hl_cage_object_index].hl_is_cage = True
-
-def BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context):
-    for object in context.scene.bm_table_of_objects:
-        if object.hl_use_unique_per_map:
-            for map in object.global_maps:
-                if map.hl_use_cage and map.hl_cage_object_index == -1:
-                    map.hl_use_cage = False
-        elif object.hl_use_cage and object.hl_cage_object_index == -1:
-            object.hl_use_cage = False
-
-def BM_ITEM_PROPS_hl_cage_UpdateOrder(context):
-    for object in context.scene.bm_table_of_objects:
-        if object.hl_use_unique_per_map:
-            for map in object.global_maps:
-                if map.hl_use_cage and map.hl_cage_object_index != -1:
-                    try:
-                        for index, object1 in enumerate(context.scene.bm_table_of_objects):
-                            if object1.global_object_name == map.hl_cage_object_include and not any([object1.nm_is_local_container, object1.nm_is_universal_container]):
-                                map.hl_cage_object_index = index
-                                break
-                        map.hl_cage_name_old = map.hl_cage_object_include
-                        map.hl_cage = map.hl_cage_object_include
-                    except (ValueError, TypeError):
-                        pass
-        elif object.hl_use_cage and object.hl_cage_object_index != -1:
-            try:
-                for index, object1 in enumerate(context.scene.bm_table_of_objects):
-                    if object1.global_object_name == object.hl_cage_object_include and not any([object1.nm_is_local_container, object1.nm_is_universal_container]):
-                        object.hl_cage_object_index = index
-                        break
-                object.hl_cage_name_old = object.hl_cage_object_include
-                object.hl_cage = object.hl_cage_object_include
-            except (ValueError, TypeError):
-                pass
- 
 def BM_ITEM_PROPS_hl_highpoly_Items(self, context):
     try:
         context.scene.bm_table_of_objects[context.scene.bm_props.global_active_index]
