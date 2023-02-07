@@ -1769,10 +1769,22 @@ def BM_ITEN_PROPS_hl_cage_UpdateOnMoveOT(context, moved_from_index, moved_to_ind
                 pass
 
 def BM_ITEM_PROPS_hl_cage_UpdateOnRemoveOT(context, removed_index, type: str):
+    def find_cage_link_and_unset(context, cage, removed_index):
+        for lowpoly in context.scene.bm_table_of_objects:
+            if lowpoly.hl_use_unique_per_map is False:
+                if lowpoly.hl_use_cage and lowpoly.hl_cage_object_index == removed_index:
+                    lowpoly.hl_use_cage = False
+                return
+            for map in lowpoly.global_maps:
+                if map.hl_use_cage and map.hl_cage_object_index == removed_index:
+                    map.hl_use_cage = False
+
     if type == 'OBJECT':
         object = context.scene.bm_table_of_objects[removed_index]
         object.hl_use_unique_per_map = False
         object.hl_use_cage = False
+        if object.hl_is_cage:
+            find_cage_link_and_unset(context, object, removed_index)
     elif type == 'MAP':
         object = BM_Object_Get(None, context)
         if object.hl_use_unique_per_map is False:
