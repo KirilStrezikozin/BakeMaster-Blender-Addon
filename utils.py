@@ -1882,17 +1882,19 @@ def BM_ITEM_PROPS_hl_remove_highpoly_Update(self, context):
         pass
     BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
 
-def BM_ITEM_PROPS_hl_highpoly_UpdateNames(context):
+def BM_ITEM_PROPS_hl_highpoly_EnsureHighpolyMarked(context):
+    def mark_highpolies(context, data_source):
+        for highpoly in data_source.hl_highpoly_table:
+            if highpoly.global_highpoly_object_index == -1:
+                continue
+            context.scene.bm_table_of_objects[highpoly.global_highpoly_object_index].hl_is_highpoly = True
+
     for object in context.scene.bm_table_of_objects:
-        if object.hl_use_unique_per_map:
-            for map in object.global_maps:
-                for highpoly in map.hl_highpoly_table:
-                    if highpoly.global_highpoly_object_index != -1:
-                        context.scene.bm_table_of_objects[highpoly.global_highpoly_object_index].hl_is_highpoly = True
-        else:
-            for highpoly in object.hl_highpoly_table:
-                if highpoly.global_highpoly_object_index != -1:
-                    context.scene.bm_table_of_objects[highpoly.global_highpoly_object_index].hl_is_highpoly = True
+        if object.hl_use_unique_per_map is False:
+            mark_highpolies(context, object)
+            return
+        for map in object.global_maps:
+            mark_highpolies(context, map)
 
 def BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_RemoveHighpoly(context, container, index):
     for highpoly_index, highpoly in enumerate(container.hl_highpoly_table):
