@@ -1935,6 +1935,28 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateOnAddOT(context):
             len_of_highpolies += len(map.hl_highpoly_table)
         object.hl_is_lowpoly = len_of_highpolies != 0
 
+def BM_ITEM_PROPS_hl_highpoly_UpdateOnMoveOT(context, moved_from_index=-2, moved_to_index=-2):
+    def reset_highpoly_props(data_source):
+        for highpoly in data_source.hl_highpoly_table:
+            if highpoly.global_highpoly_object_index == moved_from_index:
+                highpoly.global_highpoly_object_index = moved_to_index
+            elif highpoly.global_highpoly_object_index == moved_to_index:
+                highpoly.global_highpoly_object_index = moved_from_index
+            if highpoly.global_highpoly_object_index != -1:
+                context.scene.bm_table_of_objects[highpoly.global_highpoly_object_index].hl_is_highpoly = True
+            try:
+                highpoly.global_highpoly_name_old = highpoly.global_highpoly_object_include
+                highpoly.global_object_name = highpoly.global_highpoly_object_include
+            except (ValueError, TypeError):
+                pass
+
+    for object in context.scene.bm_table_of_objects:
+        if object.hl_use_unique_per_map is False:
+            reset_highpoly_props(object)
+            return
+        for map in object.global_maps:
+            reset_highpoly_props(map)
+
 def BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_RemoveHighpoly(context, container, index):
     for highpoly_index, highpoly in enumerate(container.hl_highpoly_table):
         if highpoly.global_highpoly_object_index == index:
@@ -1948,7 +1970,7 @@ def BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_RemoveHighpoly(context, container, i
             if container.hl_highpoly_table_active_index > 0:
                 container.hl_highpoly_table_active_index -= 1
             # update highpolies order
-            BM_ITEM_PROPS_hl_highpoly_UpdateOrder(context)
+            BM_ITEM_PROPS_hl_highpoly_UpdateOnMoveOT(context)
             break
 
 def BM_ITEM_PROPS_hl_highpoly_SyncedRemoval_UnsetHighpolies(context, container):
@@ -1984,56 +2006,6 @@ def BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, index, type, removed_was_hi
         for highpoly in map.hl_highpoly_table:
             if highpoly.global_highpoly_object_index != -1:
                 BM_ITEM_PROPS_hl_remove_highpoly_Update(highpoly, context)
-
-def BM_ITEM_PROPS_hl_highpoly_UpdateOrder(context):
-    for object in context.scene.bm_table_of_objects:
-        if object.hl_use_unique_per_map:
-            for map in object.global_maps:
-                for highpoly in map.hl_highpoly_table:
-                    for index, object1 in enumerate(context.scene.bm_table_of_objects):
-                        if object1.global_object_name == highpoly.global_highpoly_name_old and not any([object1.nm_is_local_container, object1.nm_is_universal_container]):
-                            highpoly.global_highpoly_object_index = index
-                            break
-                    if highpoly.global_highpoly_object_index != -1:
-                        context.scene.bm_table_of_objects[highpoly.global_highpoly_object_index].hl_is_highpoly = True
-        else:
-            for highpoly in object.hl_highpoly_table:
-                for index, object1 in enumerate(context.scene.bm_table_of_objects):
-                    if object1.global_object_name == highpoly.global_highpoly_name_old and not any([object1.nm_is_local_container, object1.nm_is_universal_container]):
-                        highpoly.global_highpoly_object_index = index
-                        break
-                if highpoly.global_highpoly_object_index != -1:
-                    context.scene.bm_table_of_objects[highpoly.global_highpoly_object_index].hl_is_highpoly = True
-
-def BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context):
-    for object in context.scene.bm_table_of_objects:
-        if object.hl_use_unique_per_map:
-            for map in object.global_maps:
-                for highpoly in map.hl_highpoly_table:
-                    if highpoly.global_highpoly_object_index == -1:
-                        continue
-                    for index, object1 in enumerate(context.scene.bm_table_of_objects):
-                        if object1.global_object_name == highpoly.global_highpoly_object_include and not any([object1.nm_is_local_container, object1.nm_is_universal_container]):
-                            highpoly.global_highpoly_object_index = index
-                            break
-                    try:
-                        highpoly.global_highpoly_name_old = highpoly.global_highpoly_object_include
-                        highpoly.global_object_name = highpoly.global_highpoly_object_include
-                    except TypeError:
-                        pass
-        else:
-            for highpoly in object.hl_highpoly_table:
-                if highpoly.global_highpoly_object_index == -1:
-                    continue
-                for index, object1 in enumerate(context.scene.bm_table_of_objects):
-                    if object1.global_object_name == highpoly.global_highpoly_object_include and not any([object1.nm_is_local_container, object1.nm_is_universal_container]):
-                        highpoly.global_highpoly_object_index = index
-                        break
-                try:
-                    highpoly.global_highpoly_name_old = highpoly.global_highpoly_object_include
-                    highpoly.global_object_name = highpoly.global_highpoly_object_include
-                except TypeError:
-                    pass
 
 ###############################################################
 ### uv Props Funcs ###
