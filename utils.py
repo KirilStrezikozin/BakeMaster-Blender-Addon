@@ -686,7 +686,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                     # update use_cage
                     BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, map_index, 'MAP')
                     object.global_maps.remove(map_index)
-                    BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
+                    BM_ITEM_PROPS_hl_highpoly_EnsureHighpolyMarked(context)
                 object.global_maps_active_index = 0
 
                 # add
@@ -1869,7 +1869,7 @@ def BM_ITEM_PROPS_hl_highpoly_Update(self, context):
         self.global_highpoly_object_include = self.global_object_name
         if update_name:
             self.global_object_name = self.global_highpoly_name_old
-        BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
+        BM_ITEM_PROPS_hl_highpoly_EnsureHighpolyMarked(context)
 
 def BM_ITEM_PROPS_hl_add_highpoly_Update(self, context):
     self.global_highpoly_name_old = self.global_object_name
@@ -1884,7 +1884,7 @@ def BM_ITEM_PROPS_hl_add_highpoly_Update(self, context):
     if self.global_highpoly_object_index != -1:
         context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_highpoly = True
     self.global_highpoly_object_include = self.global_object_name
-    BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
+    BM_ITEM_PROPS_hl_highpoly_EnsureHighpolyMarked(context)
     BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
 
 def BM_ITEM_PROPS_hl_remove_highpoly_Update(self, context):
