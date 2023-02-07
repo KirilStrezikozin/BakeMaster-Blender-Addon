@@ -1514,25 +1514,27 @@ def BM_Table_of_Objects_Move(scene, context, index_from, index_to):
     BM_ITEN_PROPS_hl_cage_UpdateOnMoveOT(context, index_from, index_to)
     BM_ITEM_PROPS_hl_highpoly_UpdateOnMoveOT(context, index_from, index_to)
 
-def BM_Table_of_Objects_Remove(scene, context, index_remove, type: str):
+def BM_Table_of_Objects_Remove(scene, context, index_remove, type='OBJECT'):
     # CollectionProperty.remove() replacer
     # with dependant classes update funcs calls
-    scene.bm_table_of_objects.remove(index_remove)
     BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnRemoveOT(context, index_remove)
     # no for map
     # no for channelpack
+    # also called on maps.remove():
     BM_ITEM_PROPS_hl_cage_UpdateOnRemoveOT(context, index_remove, type)
+    # also called on maps.remove():
     BM_ITEM_PROPS_hl_highpoly_UpdateOnRemoveOT(context, index_remove, type)
+    scene.bm_table_of_objects.remove(index_remove)
 
 def BM_Table_of_Objects_Add(scene, context):
     # CollectionProperty.add() replacer
     # with dependant classes update funcs calls
-    scene.bm_table_of_objects.add()
     # no for texset
     # no for map
     # no for channelpack
     BM_ITEN_PROPS_hl_cage_UpdateOnAddOT(context)
     BM_ITEM_PROPS_hl_highpoly_UpdateOnAddOT(context)
+    return scene.bm_table_of_objects.add()
 
 ###############################################################
 ### decal Props Funcs ###
@@ -1978,24 +1980,25 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateOnRemoveOT(context, removed_index, type: str
 
     if type == 'OBJECT':
         object = context.scene.bm_table_of_objects[removed_index]
-        if object.hl_use_unique_per_map is False:
-            remove_highpolies(context, object)
+        if object.hl_is_highpoly is False:
+            if object.hl_use_unique_per_map is False:
+                remove_highpolies(context, object)
+                return
+            for map in object.global_maps:
+                remove_highpolies(context, map)
             return
-        for map in object.global_maps:
-            remove_highpolies(context, map)
-    elif type == 'MAP':
-        object = BM_Object_Get(None, context)[0]
-        if object.hl_use_unique_per_map is False:
-            return
-        map = object.global_maps[removed_index]
-        remove_highpolies(context, map)
-    elif type == 'HIGHPOLY':
         for object in context.scene.bm_table_of_objects:
             if object.hl_use_unique_per_map is False:
                 set_removed_highpoly_to_none(object, removed_index)
                 return
             for map in object.global_maps:
                 set_removed_highpoly_to_none(map, removed_index)
+    elif type == 'MAP':
+        object = BM_Object_Get(None, context)[0]
+        if object.hl_use_unique_per_map is False:
+            return
+        map = object.global_maps[removed_index]
+        remove_highpolies(context, map)
 
 ###############################################################
 ### uv Props Funcs ###
