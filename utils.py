@@ -1513,7 +1513,7 @@ def BM_Table_of_Objects_Move(scene, context, index_from, index_to):
     BM_MAP_PROPS_global_map_object_index_UpdateOnMoveOT(context, index_from, index_to)
     BM_CHANNELPACK_PROPS_global_channelpack_object_index_UpdateOnMoveOT(context, index_from, index_to)
     BM_ITEN_PROPS_hl_cage_UpdateOnMoveOT(context, index_from, index_to)
-    # add other calls...
+    BM_ITEM_PROPS_hl_highpoly_UpdateOnMoveOT(context, index_from, index_to)
 
 def BM_Table_of_Objects_Remove(scene, context, index_remove, type: str):
     # CollectionProperty.remove() replacer
@@ -1942,6 +1942,10 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateOnMoveOT(context, moved_from_index=-2, moved
                 highpoly.global_highpoly_object_index = moved_to_index
             elif highpoly.global_highpoly_object_index == moved_to_index:
                 highpoly.global_highpoly_object_index = moved_from_index
+            if highpoly.global_holder_index == moved_from_index:
+                highpoly.global_holder_index = moved_to_index
+            elif highpoly.global_holder_index == moved_to_index:
+                highpoly.global_holder_index = moved_from_index
             if highpoly.global_highpoly_object_index != -1:
                 context.scene.bm_table_of_objects[highpoly.global_highpoly_object_index].hl_is_highpoly = True
             try:
