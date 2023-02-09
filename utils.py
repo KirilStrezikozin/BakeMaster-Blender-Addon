@@ -1440,6 +1440,18 @@ def BM_ITEM_PROPS_bake_batchname_use_caps_Update(self, context):
     self.bake_batchname = self.bake_batchname.upper() if self.bake_batchname_use_caps else self.bake_batchname.lower()
 
 ###############################################################
+### UIList Funcs ###
+###############################################################
+def BM_template_list_get_rows(collectionprop, rows_min=1, rows_middle=3, rows_max=5, use_middle=False):
+    len_of_items = len(collectionprop)
+    rows = rows_min
+    if len_of_items > rows_max:
+        rows = rows_max
+    elif len_of_items > rows_middle and use_middle:
+        rows = len_of_items
+    return rows
+
+###############################################################
 ### BM Table of Objects Funcs ###
 ###############################################################
 def BM_ActiveIndexUpdate(self, context):

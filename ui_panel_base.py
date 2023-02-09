@@ -717,10 +717,6 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
 
                 if object.hl_use_unique_per_map is False or draw_all is False:
                     # highpoly
-                    if len(object.hl_highpoly_table) > 1:
-                        rows = len(object.hl_highpoly_table)
-                    else:
-                        rows = 1
                     hl_box_highpoly_frame = hl_box.split(factor=0.4)
                     hl_box_highpoly_frame.column()
                     hl_box_highpoly = hl_box_highpoly_frame.column()
@@ -731,6 +727,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                     hl_box_highpoly.label(text=label)
                     if hl_draw:
                         hl_box_highpoly_table = hl_box_highpoly.column().row()
+                        rows = BM_template_list_get_rows(object.hl_highpoly_table, 1, 1, 5, True)
                         hl_box_highpoly_table.template_list('BM_UL_Table_of_Objects_Item_Highpoly', "", object, 'hl_highpoly_table', object, 'hl_highpoly_table_active_index', rows=rows)
                         hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
                         hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
@@ -900,11 +897,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
         maps_table_box = layout.box()
         maps_table_row = maps_table_box.row()
 
-        if len(object.global_maps) > 4:
-            rows = len(object.global_maps)
-        else:
-            rows = 4
-        
+        rows = BM_template_list_get_rows(object.global_maps, 4, 0, 5, False)
         maps_table_row.template_list('BM_UL_Table_of_Maps_Item', "", object, 'global_maps', object, 'global_maps_active_index', rows=rows)
         maps_table_column = maps_table_row.column(align=True)
         maps_table_column.operator(BM_OT_ITEM_Maps.bl_idname, text="", icon='ADD').control = 'ADD'
@@ -1308,10 +1301,6 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
 
                     # hl body
                     if scene.bm_props.local_is_hl_panel_expanded:
-                        if len(map.hl_highpoly_table) > 1:
-                            rows = len(map.hl_highpoly_table)
-                        else:
-                            rows = 1
                         hl_box_highpoly_frame = hl_box.split(factor=0.4)
                         hl_box_highpoly_frame.column()
                         hl_box_highpoly = hl_box_highpoly_frame.column()
@@ -1322,6 +1311,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                             hl_box_highpoly.label(text=label)
                         if hl_draw:
                             hl_box_highpoly_table = hl_box_highpoly.column().row()
+                            rows = BM_template_list_get_rows(map.hl_highpoly_table, 1, 1, 5, True)
                             hl_box_highpoly_table.template_list('BM_UL_Table_of_Maps_Item_Highpoly', "", map, 'hl_highpoly_table', map, 'hl_highpoly_table_active_index', rows=rows)
                             hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
                             hl_highpoly_table_column.operator(BM_OT_MAP_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
@@ -1446,11 +1436,7 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
             if scene.bm_props.global_is_chnlpack_panel_expanded:
                 row = chnlpack_box.row()
 
-                if len(object.chnlp_channelpacking_table) > 4:
-                    rows = len(object.chnlp_channelpacking_table)
-                else:
-                    rows = 4
-        
+                rows = BM_template_list_get_rows(object.chnlp_channelpacking_table, 4, 0, 5, False)
                 row.template_list('BM_UL_Table_of_Objects_Item_ChannelPack', "", object, 'chnlp_channelpacking_table', object, 'chnlp_channelpacking_table_active_index', rows=rows)
                 chnlpack_box_column = row.column(align=True)
                 chnlpack_box_column.operator(BM_OT_ITEM_ChannelPack_Table_Add.bl_idname, text="", icon='ADD')
@@ -1509,59 +1495,6 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
 
         # bake output body
         if scene.bm_props.global_is_bakeoutput_panel_expanded:
-            # # batch naming            
-            # bake_box_batchname_split = bake_box.split(factor=0.001)
-            # bake_box_batchname_split.column()
-            # bake_box_batchname_frame = bake_box_batchname_split.column()
-            # bake_box_batchname_header = bake_box_batchname_frame.row()
-            # bake_box_batchname_header.use_property_split = False
-            # bake_box_batchname_header.emboss = 'NONE'
-            # icon = 'TRIA_DOWN' if scene.bm_props.local_is_batchname_panel_expanded else 'TRIA_RIGHT'
-            # bake_box_batchname_header.prop(scene.bm_props, 'local_is_batchname_panel_expanded', text="", icon=icon)
-            # bake_box_batchname_header.emboss = 'NORMAL'
-            # bake_box_batchname_header.label(text="Batch Naming")
-            # BM_PT_MapsConfigurator_Presets.draw_panel_header(bake_box_batchname_header)
-
-            # if scene.bm_props.local_is_batchname_panel_expanded:
-            #     bake_box_column = bake_box_batchname_frame.column(align=True)
-            #     bake_box_column.use_property_split = False
-            #     bake_box_column_row = bake_box_column.row()
-            #     bake_box_column_row.prop(object, 'bake_batch_name_use_custom', text="")
-            #     bake_box_column_row_prop = bake_box_column_row.column(align=True)
-            #     bake_box_column_row_prop.prop(object, 'bake_batch_name_custom', text="Custom")
-            #     bake_box_column_row_prop.enabled = object.bake_batch_name_use_custom
-            #     if object.bake_batch_name_use_custom is False:
-            #         bake_box_row = bake_box_batchname_frame.row()
-            #         if len(object.bake_batch_name_table) > 5:
-            #             rows = len(object.bake_batch_name_table)
-            #         else:
-            #             rows = 5
-            #         bake_box_row.template_list('BM_UL_Table_of_Objects_Item_BatchNamingTable_Item', "", object, 'bake_batch_name_table', object, 'bake_batch_name_table_active_index', rows=rows)
-            #         bake_box_column = bake_box_row.column(align=True)
-            #         bake_box_column.operator(BM_OT_ITEM_BatchNamingTable_Add.bl_idname, text="", icon='ADD')
-            #         bake_box_column.operator(BM_OT_ITEM_BatchNamingTable_Remove.bl_idname, text="", icon='REMOVE')
-            #         bake_box_column.separator(factor=1.0)
-            #         bake_box_column.separator(factor=1.0)
-            #         bake_box_column.emboss = 'NONE'
-            #         bake_box_column.operator(BM_OT_ITEM_BatchNamingTable_Trash.bl_idname, text="", icon='TRASH')
-
-            #         if len(object.bake_batch_name_table):
-            #             keyword = object.bake_batch_name_table[object.bake_batch_name_table_active_index]
-            #             bake_box_column = bake_box_batchname_frame.column(align=True)
-            #             if keyword.global_keyword in ["OBJECT_NAME", "CONTAINER_NAME", "PACK_NAME", "TEXSET_NAME", "MAP_NAME", "MAP_SSAA", "MAP_NORMAL", "MAP_UV", "ENGINE"]:
-            #                 bake_box_column.prop(keyword, 'global_use_caps')
-            #             if keyword.global_keyword == 'MAP_RES':
-            #                 bake_box_column.prop(keyword, 'mapres_use_k')
-            #             elif keyword.global_keyword == 'MAP_RES':
-            #                 bake_box_column.prop(keyword, 'mapres_use_k')
-            #             elif keyword.global_keyword == 'MAP_TRANS':
-            #                 bake_box_column.prop(keyword, 'maptrans_custom')
-            #             elif keyword.global_keyword == 'MAP_DENOISE':
-            #                 bake_box_column.prop(keyword, 'mapdenoise_custom')
-            #             elif keyword.global_keyword == 'AUTO_UV':
-            #                 bake_box_column.prop(keyword, 'autouv_custom')
-                # bake_box.separator(factor=1.0)
-
             bake_box_column = bake_box.column(align=True)
             bake_box_column.prop(object, 'bake_batchname')
             bake_box_column.prop(object, 'bake_batchname_use_caps')
@@ -1617,11 +1550,7 @@ class BM_PT_TextureSetsBase(bpy.types.Panel):
         texsets_box = layout.box()
         texsets_row = texsets_box.row()
 
-        if len(bm_props.global_texturesets_table) > 3:
-            rows = len(bm_props.global_texturesets_table)
-        else:
-            rows = 3
-        
+        rows = BM_template_list_get_rows(bm_props.global_texturesets_table, 3, 3, 5, True)
         texsets_row.template_list('BM_UL_Table_of_TextureSets', "", bm_props, 'global_texturesets_table', bm_props, 'global_texturesets_active_index', rows=rows)
         texsets_column = texsets_row.column(align=True)
         texsets_column.operator(BM_OT_SCENE_TextureSets_Table_Add.bl_idname, text="", icon='ADD')
@@ -1637,11 +1566,7 @@ class BM_PT_TextureSetsBase(bpy.types.Panel):
             texset = bm_props.global_texturesets_table[bm_props.global_texturesets_active_index]
             texset_objects_row = texsets_box.row()
 
-            if len(texset.global_textureset_table_of_objects) > 3:
-                rows = len(texset.global_textureset_table_of_objects)
-            else:
-                rows = 3
-        
+            rows = BM_template_list_get_rows(texset.global_textureset_table_of_objects, 3, 3, 5, True)
             texset_objects_row.template_list('BM_UL_TextureSets_Objects_Table_Item', "", texset, 'global_textureset_table_of_objects', texset, 'global_textureset_table_of_objects_active_index', rows=rows)
             texset_objects_column = texset_objects_row.column(align=True)
             
@@ -1668,11 +1593,8 @@ class BM_PT_TextureSetsBase(bpy.types.Panel):
                 item = texset.global_textureset_table_of_objects[texset.global_textureset_table_of_objects_active_index]
                 if context.scene.bm_props.global_use_name_matching and context.scene.bm_table_of_objects[item.global_source_object_index].nm_is_universal_container:
                     texsets_box.label(text="Container's Objects to include")
-                    if len(item.global_object_name_subitems) > 3:
-                        rows = len(item.global_object_name_subitems)
-                    else:
-                        rows = 3
                     texset_box_texset_item_subitems_row = texsets_box.row()
+                    rows = BM_template_list_get_rows(item.global_object_name_subitems, 3, 3, 5, True)
                     texset_box_texset_item_subitems_row.template_list('BM_UL_TextureSets_Objects_Table_Item_SubItem', "", item, 'global_object_name_subitems', item, 'global_object_name_subitems_active_index', rows=rows)
                     texset_box_texset_item_subitems_row.operator(BM_OT_SCENE_TextureSets_Objects_Table_InvertSubItems.bl_idname, text="", icon='CHECKBOX_HLT')
 

@@ -1310,10 +1310,9 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
         items_box.use_property_decorate = False
         if prop_is_map:
             if bm_props.global_alep_affect_objects is False and len(object.global_maps):
-                rows = len(bm_props.global_alep_maps)
 
-                #items_box.template_list('BM_ALEP_UL_Maps_Item', "", bm_props, 'global_alep_maps', bm_props, 'global_alep_maps_active_index', rows=rows)
                 table = items_box.column().row()
+                rows = BM_template_list_get_rows(bm_props.global_alep_maps, 1, 1, 5, True)
                 table.template_list('BM_ALEP_UL_Maps_Item', "", bm_props, 'global_alep_maps', bm_props, 'global_alep_maps_active_index', rows=rows)
                 column = table.column(align=True)
                 column.operator(BM_OT_ApplyLastEditedProp_SelectAll.bl_idname, text="", icon='WORLD')
@@ -1323,10 +1322,9 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
                 items_box.label(text="Object has no maps")
 
         if (prop_is_map and bm_props.global_alep_affect_objects) or prop_is_map is False:
-            rows = len(bm_props.global_alep_objects)
 
-            #items_box.template_list('BM_ALEP_UL_Objects_Item', "", bm_props, 'global_alep_objects', bm_props, 'global_alep_objects_active_index', rows=rows)
             table = items_box.column().row()
+            rows = BM_template_list_get_rows(bm_props.global_alep_objects, 1, 1, 5, True)
             table.template_list('BM_ALEP_UL_Objects_Item', "", bm_props, 'global_alep_objects', bm_props, 'global_alep_objects_active_index', rows=rows)
             column = table.column(align=True)
             column.operator(BM_OT_ApplyLastEditedProp_SelectAll.bl_idname, text="", icon='WORLD')
@@ -1454,6 +1452,7 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
 
     def execute(self, context):
         bm_props = context.scene.bm_props
+        scene = context.scene
 
         if bm_props.global_use_name_matching is False:
             self.report({'WARNING'}, "Turn on Name Matching to create artificial container")
@@ -1553,8 +1552,8 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
         items_box = layout.box()
         items_box.use_property_split = True
         items_box.use_property_decorate = False
-        rows = len(bm_props.global_cauc_objects)
         table = items_box.column().row()
+        rows = BM_template_list_get_rows(bm_props.global_cauc_objects, 1, 1, 5, True)
         table.template_list('BM_CAUC_UL_Objects_Item', "", bm_props, 'global_cauc_objects', bm_props, 'global_cauc_objects_active_index', rows=rows)
         column = table.column(align=True)
         column.operator(BM_OT_CreateArtificialUniContainer_DeselectAll.bl_idname, text="", icon='CHECKBOX_HLT')
@@ -1648,8 +1647,8 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
         layout.label(text="Select Resolution:")
         layout.use_property_split = True
         layout.use_property_decorate = False
-        rows = len(bm_props.global_fmr_items)
         table = layout.column().row()
+        rows = BM_template_list_get_rows(bm_props.global_fmr_items, 1, 1, 5, True)
         table.template_list('BM_FMR_UL_Item', "", bm_props, 'global_fmr_items', bm_props, 'global_fmr_items_active_index', rows=rows)
 
     def invoke(self, context, event):
