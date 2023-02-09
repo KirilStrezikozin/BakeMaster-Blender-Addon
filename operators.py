@@ -746,6 +746,7 @@ class BM_OT_ITEM_Highpoly_Table_Add(bpy.types.Operator):
         new_item.global_holder_index = context.scene.bm_props.global_active_index
         # set chosen highpoly hl_is_highpoly to True on add
         BM_ITEM_PROPS_hl_add_highpoly_Update(new_item, context)
+        BM_ITEM_PROPS_hl_highpoly_UpdateOnMoveOT(context)
         object.hl_highpoly_table_active_index = len(object.hl_highpoly_table) - 1
 
         object.hl_is_lowpoly = True
@@ -768,7 +769,7 @@ class BM_OT_ITEM_Highpoly_Table_Remove(bpy.types.Operator):
             # set hl_is_highpoly to False for chosen highpoly on remove
             BM_ITEM_PROPS_hl_remove_highpoly_Update(object.hl_highpoly_table[object.hl_highpoly_table_active_index], context)
             object.hl_highpoly_table.remove(object.hl_highpoly_table_active_index)
-            BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
+            BM_ITEM_PROPS_hl_highpoly_UpdateOnMoveOT(context)
             if object.hl_highpoly_table_active_index > 0:
                 object.hl_highpoly_table_active_index -= 1
 
@@ -791,6 +792,7 @@ class BM_OT_MAP_Highpoly_Table_Add(bpy.types.Operator):
         new_item.global_holder_index = context.scene.bm_props.global_active_index
         # set chosen highpoly hl_is_highpoly to True on add
         BM_ITEM_PROPS_hl_add_highpoly_Update(new_item, context)
+        BM_ITEM_PROPS_hl_highpoly_UpdateOnMoveOT(context)
         map.hl_highpoly_table_active_index = len(map.hl_highpoly_table) - 1
 
         object.hl_is_lowpoly = True
@@ -814,7 +816,7 @@ class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
             # set hl_is_highpoly to False for chosen highpoly on remove
             BM_ITEM_PROPS_hl_remove_highpoly_Update(map.hl_highpoly_table[map.hl_highpoly_table_active_index], context)
             map.hl_highpoly_table.remove(map.hl_highpoly_table_active_index)
-            BM_ITEM_PROPS_hl_highpoly_UpdateNames(context)
+            BM_ITEM_PROPS_hl_highpoly_UpdateOnMoveOT(context)
             if map.hl_highpoly_table_active_index > 0:
                 map.hl_highpoly_table_active_index -= 1
 
@@ -908,9 +910,9 @@ class BM_OT_SCENE_TextureSets_Table_Remove(bpy.types.Operator):
             table_of_objs = texset.global_textureset_table_of_objects
             for item1 in table_of_objs:
                 context.scene.bm_table_of_objects[item1.global_source_object_index].global_is_included_in_texset = False
-                BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
 
             bm_props.global_texturesets_table.remove(bm_props.global_texturesets_active_index)
+            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context)
             if bm_props.global_texturesets_active_index > 0:
                 bm_props.global_texturesets_active_index -= 1
         return {'FINISHED'}
@@ -929,7 +931,6 @@ class BM_OT_SCENE_TextureSets_Table_Trash(bpy.types.Operator):
             table_of_objs = item.global_textureset_table_of_objects
             for item1 in table_of_objs:
                 context.scene.bm_table_of_objects[item1.global_source_object_index].global_is_included_in_texset = False
-                BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
 
             to_remove.append(index)
         for index in to_remove[::-1]:
@@ -959,29 +960,8 @@ class BM_OT_SCENE_TextureSets_Objects_Table_Add(bpy.types.Operator):
                 new_item.global_source_object_index = index
                 break
         context.scene.bm_table_of_objects[new_item.global_source_object_index].global_is_included_in_texset = True
-        BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
-
-        # recreate subitems
-        item = context.scene.bm_table_of_objects[new_item.global_source_object_index]
-        if item.nm_is_universal_container and context.scene.bm_props.global_use_name_matching:
-            # trash
-            to_remove = []
-            for index, subitem in enumerate(new_item.global_object_name_subitems):
-                to_remove.append(index)
-            for index in sorted(to_remove, reverse=True):
-                new_item.global_object_name_subitems.remove(index)
-            # add
-            local_c_master_index = -1
-            for index, subitem in enumerate(context.scene.bm_table_of_objects):
-                if subitem.nm_item_uni_container_master_index == item.nm_master_index and subitem.nm_is_lowpoly_container:
-                    local_c_master_index = subitem.nm_master_index
-
-                if subitem.nm_item_uni_container_master_index == item.nm_master_index and subitem.nm_item_local_container_master_index == local_c_master_index:
-                    new_subitem = new_item.global_object_name_subitems.add()
-                    new_subitem.global_object_name = subitem.global_object_name
-                    new_subitem.global_object_index = len(new_item.global_object_name_subitems)
-                    new_subitem.global_source_object_index = index
-
+        BM_TEXSET_OBJECT_PROPS_global_object_name_RecreateSubitems(context, new_item)
+        BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context)
         bm_props.global_texturesets_table[bm_props.global_texturesets_active_index].global_textureset_table_of_objects_active_index = len(table) - 1
         return {'FINISHED'}
 
@@ -1004,6 +984,7 @@ class BM_OT_SCENE_TextureSets_Objects_Table_Remove(bpy.types.Operator):
             context.scene.bm_table_of_objects[item.global_source_object_index].global_is_included_in_texset = False
 
             objects.remove(active_texset.global_textureset_table_of_objects_active_index)
+            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context)
             if active_texset.global_textureset_table_of_objects_active_index > 0:
                 active_texset.global_textureset_table_of_objects_active_index -= 1
         return {'FINISHED'}
@@ -1019,9 +1000,7 @@ class BM_OT_SCENE_TextureSets_Objects_Table_Trash(bpy.types.Operator):
         table = bm_props.global_texturesets_table[bm_props.global_texturesets_active_index].global_textureset_table_of_objects
         to_remove = []
         for index, item in enumerate(table):
-
             context.scene.bm_table_of_objects[item.global_source_object_index].global_is_included_in_texset = False
-            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
 
             to_remove.append(index)
         for index in to_remove[::-1]:

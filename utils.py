@@ -1017,12 +1017,22 @@ def BM_TEXSET_OBJECT_PROPS_global_object_name_Update(self, context):
             elif object.global_object_name == self.global_object_name:
                 self.global_source_object_index = index
                 break
-        
         self.global_object_name_include = self.global_object_name
         context.scene.bm_table_of_objects[self.global_source_object_index].global_is_included_in_texset = True
 
         # recreate subitems
         BM_TEXSET_OBJECT_PROPS_global_object_name_RecreateSubitems(context, self)
+        BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context)
+
+def BM_TEXSET_OBJECT_PROPS_global_source_object_index_GetNew(context, self):
+    for index, object in enumerate(context.scene.bm_table_of_objects):
+        if context.scene.bm_props.global_use_name_matching and object.nm_container_name == self.global_object_name_include:
+            return index
+            break
+        elif object.global_object_name == self.global_object_name_include:
+            return index
+            break
+    return -1
 
 def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnRemoveOT(context, removed_index):
     # remove object from texset
@@ -1044,17 +1054,21 @@ def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnRemoveOT(context, removed_
 
             if found_removed:
                 break
+        for texset_item in texset.global_textureset_table_of_objects:
+            new_index = BM_TEXSET_OBJECT_PROPS_global_source_object_index_GetNew(context, texset_item)
+            texset_item.global_source_object_index = new_index
+            if len(items_to_remove) == 0:
+                continue
+            if texset_item.global_object_index > items_to_remove[0]:
+                texset_item.global_object_index -= 1
         if len(items_to_remove) == 0:
             continue
-        for texset_item in texset.global_textureset_table_of_objects:
-            if texset_item.global_object_index > removed_index:
-                texset_item.global_object_index -= 1
         texset.global_textureset_table_of_objects.remove(items_to_remove[0])
         len_of_texset_items = len(texset.global_textureset_table_of_objects)
         if texset.global_textureset_table_of_objects_active_index >= len_of_texset_items:
             texset.global_textureset_table_of_objects_active_index = len_of_texset_items - 1
 
-def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context, moved_from_index: int, moved_to_index: int):
+def BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context, moved_from_index=-2, moved_to_index=-2):
     # update texsets' objects' global_source_object_index property
     texsets = context.scene.bm_props.global_texturesets_table
     for texset in texsets:
@@ -1504,27 +1518,35 @@ def BM_GetObject_from_prop_update(self, context):
     else:
         return BM_Object_Get(None, context)[0]
 
-def BM_Table_of_Objects_Move(scene, context, index_from, index_to):
+def BM_Table_of_Objects_Move(scene, context, moved_from_index, moved_to_index):
     # CollectionProperty.move() replacer
     # with dependant classes update funcs calls
-    scene.bm_table_of_objects.move(index_from, index_to)
-    BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context, index_from, index_to)
-    BM_MAP_PROPS_global_map_object_index_UpdateOnMoveOT(context, index_from, index_to)
-    BM_CHANNELPACK_PROPS_global_channelpack_object_index_UpdateOnMoveOT(context, index_from, index_to)
-    BM_ITEN_PROPS_hl_cage_UpdateOnMoveOT(context, index_from, index_to)
-    BM_ITEM_PROPS_hl_highpoly_UpdateOnMoveOT(context, index_from, index_to)
+    step = 1
+    if moved_to_index < moved_from_index:
+        step = -1
+    for i in range(moved_from_index, moved_to_index, step):
+        index_from = i
+        index_to = i + step
+
+        scene.bm_table_of_objects.move(index_from, index_to)
+        BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context, index_from, index_to)
+        BM_MAP_PROPS_global_map_object_index_UpdateOnMoveOT(context, index_from, index_to)
+        BM_CHANNELPACK_PROPS_global_channelpack_object_index_UpdateOnMoveOT(context, index_from, index_to)
+        BM_ITEN_PROPS_hl_cage_UpdateOnMoveOT(context, index_from, index_to)
+        BM_ITEM_PROPS_hl_highpoly_UpdateOnMoveOT(context, index_from, index_to)
 
 def BM_Table_of_Objects_Remove(scene, context, index_remove, type='OBJECT'):
     # CollectionProperty.remove() replacer
     # with dependant classes update funcs calls
-    BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnRemoveOT(context, index_remove)
     # no for map
     # no for channelpack
     # also called on maps.remove():
     BM_ITEM_PROPS_hl_cage_UpdateOnRemoveOT(context, index_remove, type)
-    # also called on maps.remove():
     BM_ITEM_PROPS_hl_highpoly_UpdateOnRemoveOT(context, index_remove, type)
+    # also called on maps.remove():
     scene.bm_table_of_objects.remove(index_remove)
+    BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnRemoveOT(context, index_remove)
+    BM_ITEM_PROPS_hl_highpoly_UpdateAfterRemoveOT(context)
 
 def BM_Table_of_Objects_Add(scene, context):
     # CollectionProperty.add() replacer
@@ -1775,7 +1797,7 @@ def BM_ITEM_PROPS_hl_cage_UpdateOnRemoveOT(context, removed_index, type: str):
             if lowpoly.hl_use_unique_per_map is False:
                 if lowpoly.hl_use_cage and lowpoly.hl_cage_object_index == removed_index:
                     lowpoly.hl_use_cage = False
-                return
+                continue
             for map in lowpoly.global_maps:
                 if map.hl_use_cage and map.hl_cage_object_index == removed_index:
                     map.hl_use_cage = False
@@ -1886,14 +1908,12 @@ def BM_ITEM_PROPS_hl_add_highpoly_Update(self, context):
         context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_highpoly = True
     self.global_highpoly_object_include = self.global_object_name
     BM_ITEM_PROPS_hl_highpoly_EnsureHighpolyMarked(context)
-    BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
 
 def BM_ITEM_PROPS_hl_remove_highpoly_Update(self, context):
     try: 
         context.scene.bm_table_of_objects[self.global_highpoly_object_index].hl_is_highpoly = False
     except IndexError:
         pass
-    BM_ITEM_PROPS_hl_highpoly_UpdateOnMove(context)
 
 def BM_ITEM_PROPS_hl_highpoly_EnsureHighpolyMarked(context):
     def mark_highpolies(context, data_source):
@@ -1905,7 +1925,7 @@ def BM_ITEM_PROPS_hl_highpoly_EnsureHighpolyMarked(context):
     for object in context.scene.bm_table_of_objects:
         if object.hl_use_unique_per_map is False:
             mark_highpolies(context, object)
-            return
+            continue
         for map in object.global_maps:
             mark_highpolies(context, map)
 
@@ -1928,7 +1948,7 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateOnAddOT(context):
         if object.hl_use_unique_per_map is False:
             BM_ITEM_PROPS_hl_highpoly_unset_none(context, object)
             object.hl_is_lowpoly = len(object.hl_highpoly_table) != 0
-            return
+            continue
 
         len_of_highpolies = 0
         for map in object.global_maps:
@@ -1958,10 +1978,45 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateOnMoveOT(context, moved_from_index=-2, moved
     for object in context.scene.bm_table_of_objects:
         if object.hl_use_unique_per_map is False:
             reset_highpoly_props(object)
-            return
+            continue
         for map in object.global_maps:
             reset_highpoly_props(map)
 
+def BM_ITEM_PROPS_hl_highpoly_global_highpoly_object_index_GetNew(context, self):
+    for index, object in enumerate(context.scene.bm_table_of_objects):
+        if object.global_object_name == self.global_highpoly_object_include and not any([object.nm_is_local_container, object.nm_is_universal_container]):
+            self.global_holder_index = index
+            return index
+            break
+    return -1
+
+def BM_ITEM_PROPS_hl_highpoly_UpdateAfterRemoveOT(context):
+    def updateHighpolyProps_and_removeNone(context, data_source):
+        to_remove = []
+        for highpoly_index, highpoly in enumerate(data_source.hl_highpoly_table):
+            new_index = BM_ITEM_PROPS_hl_highpoly_global_highpoly_object_index_GetNew(context, highpoly)
+            highpoly.global_highpoly_object_index = new_index
+            try:
+                highpoly.global_highpoly_name_old = highpoly.global_highpoly_object_include
+                highpoly.global_object_name = highpoly.global_highpoly_object_include
+            except (ValueError, TypeError):
+                pass
+            if highpoly.global_highpoly_object_index == -1:
+                to_remove.append(highpoly_index)
+        for highpoly_index in sorted(to_remove, reverse=True):
+            data_source.hl_highpoly_table.remove(highpoly_index)
+        len_of_highpolies = len(data_source.hl_highpoly_table)
+        if data_source.hl_highpoly_table_active_index >= len_of_highpolies:
+            data_source.hl_highpoly_table_active_index = len_of_highpolies - 1
+
+    for object in context.scene.bm_table_of_objects:
+        if object.hl_use_unique_per_map is False:
+            updateHighpolyProps_and_removeNone(context, object)
+            continue
+        for map in object.global_maps:
+            updateHighpolyProps_and_removeNone(context, map)
+
+# TODO: replace remove() add() methods in utils.py
 def BM_ITEM_PROPS_hl_highpoly_UpdateOnRemoveOT(context, removed_index, type: str):
     def remove_highpolies(context, data_source):
         to_remove = []
@@ -1971,7 +2026,7 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateOnRemoveOT(context, removed_index, type: str
         for index in sorted(to_remove, reverse=True):
             data_source.hl_highpoly_table.remove(index)
     def set_removed_highpoly_to_none(data_source, removed_index):
-        for highpoly_index, highpoly in enumerate(data_source):
+        for highpoly_index, highpoly in enumerate(data_source.hl_highpoly_table):
             if highpoly.global_highpoly_object_index != removed_index:
                 continue
             highpoly.global_highpoly_object_index = -1
@@ -1986,11 +2041,10 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateOnRemoveOT(context, removed_index, type: str
                 return
             for map in object.global_maps:
                 remove_highpolies(context, map)
-            return
         for object in context.scene.bm_table_of_objects:
             if object.hl_use_unique_per_map is False:
                 set_removed_highpoly_to_none(object, removed_index)
-                return
+                continue
             for map in object.global_maps:
                 set_removed_highpoly_to_none(map, removed_index)
     elif type == 'MAP':
