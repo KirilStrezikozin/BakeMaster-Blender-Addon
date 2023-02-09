@@ -2015,42 +2015,6 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
         items=BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_A,
         update=BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_A)
     R1G1B1A_map_A_index : bpy.props.IntProperty(default=-1)
-
-# class BM_Object_BatchNamingKeyword(bpy.types.PropertyGroup):
-#     global_keyword : bpy.props.EnumProperty(
-#         name="Keyword Type",
-#         description="Choose keyword type for this keyword",
-#         items=BM_BATCHNAMINGKEY_PROPS_global_keyword_Items,
-#         update=BM_BATCHNAMINGKEY_PROPS_global_keyword_Update)
-
-#     global_keyword_index : bpy.props.IntProperty()
-    
-#     global_keyword_old : bpy.props.StringProperty(default="")
-    
-#     global_use_caps : bpy.props.BoolProperty(
-#         name="Use Caps",
-#         description="Use capital letters for this keyword",
-#         default=False)
-
-#     mapres_use_k : bpy.props.BoolProperty(
-#         name="K Resolution",
-#         description="If possible, write resolution in K-format, if not then leave in pixels.\nIf checked, 256 -> 256, 1024 -> 1K, 4096 -> 4K, 7452 -> 7452\nIf unchecked, 256 -> 256, 1024 -> 1024, 4096 -> 4096, 7452 -> 7452",
-#         default=False)
-
-#     maptrans_custom : bpy.props.StringProperty(
-#         name="Write:",
-#         description="What to write if map uses transparent background",
-#         default="trans")
-
-#     mapdenoise_custom : bpy.props.StringProperty(
-#         name="Write:",
-#         description="What to write if map was denoised",
-#         default="denoised")
-    
-#     autouv_custom : bpy.props.StringProperty(
-#         name="Write:",
-#         description="What to write if object was auto uv unwrapped",
-        # default="autouv")
     
 class BM_Object(bpy.types.PropertyGroup):
     global_object_name : bpy.props.StringProperty()
@@ -2579,16 +2543,6 @@ class BM_Object(bpy.types.PropertyGroup):
         description="How to name the subfolder",
         default="Maps",
         update=BM_ITEM_PROPS_bake_subfolder_name_Update)
-
-    # bake_batch_name_table : bpy.props.CollectionProperty(type=BM_Object_BatchNamingKeyword)
-
-    # bake_batch_name_table_active_index : bpy.props.IntProperty(
-    #     name="Batch Naming Keyword",
-    #     default=0)
-    
-    # bake_batch_name_use_custom : bpy.props.BoolProperty(
-    #     name="Use Custom Batch Name",
-    #     default=False)
         
     bake_batchname : bpy.props.StringProperty(
         name="Batch Name",
