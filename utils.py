@@ -2022,18 +2022,25 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateAfterRemoveOT(context):
                 pass
             if highpoly.global_highpoly_object_index == -1:
                 to_remove.append(highpoly_index)
+            else:
+                context.scene.bm_table_of_objects[highpoly.global_highpoly_object_index].hl_is_highpoly = True
         for highpoly_index in sorted(to_remove, reverse=True):
             data_source.hl_highpoly_table.remove(highpoly_index)
         len_of_highpolies = len(data_source.hl_highpoly_table)
         if data_source.hl_highpoly_table_active_index >= len_of_highpolies:
             data_source.hl_highpoly_table_active_index = len_of_highpolies - 1
+        if len_of_highpolies == 0:
+            return False
+        else:
+            return True
 
     for object in context.scene.bm_table_of_objects:
         if object.hl_use_unique_per_map is False:
-            updateHighpolyProps_and_removeNone(context, object)
+            leave_lowpoly = updateHighpolyProps_and_removeNone(context, object)
             continue
         for map in object.global_maps:
-            updateHighpolyProps_and_removeNone(context, map)
+            leave_lowpoly = updateHighpolyProps_and_removeNone(context, map)
+        object.hl_is_lowpoly = leave_lowpoly
 
 def BM_ITEM_PROPS_hl_highpoly_UpdateOnRemoveOT(context, removed_index, type: str):
     def remove_highpolies(context, data_source):
