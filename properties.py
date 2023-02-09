@@ -144,6 +144,11 @@ class BM_SceneProps_TextureSet(bpy.types.PropertyGroup):
         min=0.0,
         max=1.0)
     
+    uvp_use_average_islands_scale : bpy.props.BoolProperty(
+        name="Average Islands Scale",
+        description="Average the size of separate UV islands, based on their area in 3D space",
+        default=True)
+    
     global_textureset_naming : bpy.props.EnumProperty(
         name="Naming",
         description="Choose output Image texture naming format",

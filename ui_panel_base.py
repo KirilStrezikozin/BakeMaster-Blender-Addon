@@ -1684,6 +1684,7 @@ class BM_PT_TextureSetsBase(bpy.types.Panel):
                 if texset.uvp_use_uv_repack:
                     texset_column.prop(texset, 'uvp_use_islands_rotate')
                     texset_column.prop(texset, 'uvp_pack_margin')
+                    texset_column.prop(texset, 'uvp_use_average_islands_scale')
             
                 texset_row = texsets_box.row()
                 texset_row.use_property_split = True
