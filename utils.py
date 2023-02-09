@@ -1828,7 +1828,7 @@ def BM_ITEM_PROPS_hl_cage_UpdateOnRemoveOT(context, removed_index, type: str):
         if object.hl_is_cage:
             find_cage_link_and_unset(context, object, removed_index)
     elif type == 'MAP':
-        object = BM_Object_Get(None, context)
+        object = BM_Object_Get(None, context)[0]
         if object.hl_use_unique_per_map is False:
             return
         map = object.global_maps[removed_index]
@@ -2167,6 +2167,14 @@ def BM_ITEM_PROPS_out_use_unique_per_map_Update(self, context):
 ###############################################################
 ### Map Props Funcs ###
 ###############################################################
+def BM_Table_of_Maps_Remove(maps, context, index_remove, type='MAP'):
+    # CollectionProperty.remove() replacer
+    # with dependant classes update funcs calls
+    BM_ITEM_PROPS_hl_cage_UpdateOnRemoveOT(context, index_remove, type)
+    BM_ITEM_PROPS_hl_highpoly_UpdateOnRemoveOT(context, index_remove, type)
+    maps.remove(index_remove)
+    BM_ITEM_PROPS_hl_highpoly_UpdateAfterRemoveOT(context)
+
 def BM_MAP_PROPS_global_map_object_index_UpdateOnMoveOT(context, moved_from_index: int, moved_to_index: int):
     # update objects' maps' global_map_object_index property
     for map in context.scene.bm_table_of_objects[moved_from_index].global_maps:
