@@ -363,7 +363,7 @@ def BM_SCENE_PROPS_global_use_name_matching_Update(self, context):
         ### constructing Table_of_Objects items
         for index, shell in enumerate(groups):
             # adding universal container to the bm_table_of_objects
-            universal_container = context.scene.bm_table_of_objects.add()
+            universal_container = BM_Table_of_Objects_Add(context.scene, context)
             universal_container.nm_master_index = index
             last_uni_c_index = index
             # name is set to the root_name of the first object in the shell
@@ -409,7 +409,7 @@ def BM_SCENE_PROPS_global_use_name_matching_Update(self, context):
 
                 if len(local_names):
                     local_containers_index += 1
-                    local_container = context.scene.bm_table_of_objects.add()
+                    local_container = BM_Table_of_Objects_Add(context.scene, context)
                     local_container.nm_master_index = local_containers_index
                     local_container.nm_container_name_old = names_starters[local_index]
                     local_container.nm_container_name = names_starters[local_index]
@@ -423,7 +423,7 @@ def BM_SCENE_PROPS_global_use_name_matching_Update(self, context):
                         # do not add detached names
                         if object_name in detached:
                             continue
-                        new_item = context.scene.bm_table_of_objects.add()
+                        new_item = BM_Table_of_Objects_Add(context.scene, context)
                         new_item.global_object_name = object_name
                         new_item.nm_master_index = obj_index
                         new_item.nm_this_indent = 2
@@ -438,7 +438,7 @@ def BM_SCENE_PROPS_global_use_name_matching_Update(self, context):
         # adding detached as regular items
         last_uni_c_index += 1
         for index, object_name in enumerate(detached):
-            new_item = context.scene.bm_table_of_objects.add()
+            new_item = BM_Table_of_Objects_Add(context.scene, context)
             new_item.global_object_name = object_name
             new_item.nm_is_detached = True
             new_item.nm_master_index = index + last_uni_c_index
@@ -2016,7 +2016,6 @@ def BM_ITEM_PROPS_hl_highpoly_UpdateAfterRemoveOT(context):
         for map in object.global_maps:
             updateHighpolyProps_and_removeNone(context, map)
 
-# TODO: replace remove() add() methods in utils.py
 def BM_ITEM_PROPS_hl_highpoly_UpdateOnRemoveOT(context, removed_index, type: str):
     def remove_highpolies(context, data_source):
         to_remove = []
