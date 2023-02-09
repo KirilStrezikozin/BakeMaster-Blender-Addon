@@ -1115,6 +1115,13 @@ def BM_CHANNELPACK_PROPS_global_channelpack_object_index_UpdateOnMoveOT(context,
     for channelpack in context.scene.bm_table_of_objects[moved_to_index].chnlp_channelpacking_table:
         channelpack.global_channelpack_object_index = moved_from_index
 
+def BM_CHANNELPACK_PROPS_global_channelpack_object_index_UpdateOnRemoveOT(context, index_remove):
+    for object in context.scene.bm_table_of_objects:
+        for channelpack in object.chnlp_channelpacking_table:
+            if channelpack.global_channelpack_object_index <= index_remove:
+                continue
+            channelpack.global_channelpack_object_index -= 1
+
 def BM_CHANNELPACK_PROPS_map_Items_GetAllChosen(self):
     chosen_data = {
         'R1G1B' : ['_map_R', '_map_G', '_map_B'],
@@ -1538,8 +1545,8 @@ def BM_Table_of_Objects_Move(scene, context, moved_from_index, moved_to_index):
 def BM_Table_of_Objects_Remove(scene, context, index_remove, type='OBJECT'):
     # CollectionProperty.remove() replacer
     # with dependant classes update funcs calls
-    # no for map
-    # no for channelpack
+    BM_MAP_PROPS_global_map_object_index_UpdateOnRemoveOT(context, index_remove)
+    BM_CHANNELPACK_PROPS_global_channelpack_object_index_UpdateOnRemoveOT(context, index_remove)
     # also called on maps.remove():
     BM_ITEM_PROPS_hl_cage_UpdateOnRemoveOT(context, index_remove, type)
     BM_ITEM_PROPS_hl_highpoly_UpdateOnRemoveOT(context, index_remove, type)
@@ -2154,6 +2161,13 @@ def BM_MAP_PROPS_global_map_object_index_UpdateOnMoveOT(context, moved_from_inde
         map.global_map_object_index = moved_to_index
     for map in context.scene.bm_table_of_objects[moved_to_index].global_maps:
         map.global_map_object_index = moved_from_index
+
+def BM_MAP_PROPS_global_map_object_index_UpdateOnRemoveOT(context, index_remove):
+    for object in context.scene.bm_table_of_objects:
+        for map in object.global_maps:
+            if map.global_map_object_index <= index_remove:
+                continue
+            map.global_map_object_index -= 1
 
 def BM_MAP_PROPS_map_type_Items(self, context):
     # if self.uv_bake_data == 'VERTEX_COLORS':
