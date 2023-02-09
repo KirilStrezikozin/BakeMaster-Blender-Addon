@@ -21,8 +21,8 @@ This branch is a dev branch for the 3.0 update which is in progress. Check out [
 
 Below is the new features implementation order:
 - [x] [BUG: Dropdown lists values are lost when moving objects' order](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/10)
-- [ ] [REQUEST: UV Repack -> add checkbox to average island sizes](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/18)
-- [ ] [REQUEST: Panels' scroll bars](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/17)
+- [x] [REQUEST: UV Repack -> add checkbox to average island sizes](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/18)
+- [x] [REQUEST: Panels' scroll bars](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/17)
 - [ ] [REQUEST: Displacement map: choose multires subdiv level](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/16)
 - [ ] [REQUEST: Bake Jobs](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/14)
 - [ ] [REQUEST: Baking Pipeline Manager](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/15)
