@@ -1137,7 +1137,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     pass
                 map_settings_column.prop(map, 'map_displacement_data')
                 map_settings_column.prop(map, 'map_displacement_result')
-                if map.map_displacement_data == 'HIGHPOLY':
+                if map.map_displacement_data in ['HIGHPOLY', 'MULTIRES']:
                     map_settings_column.prop(map, 'map_displacement_subdiv_levels')
                     try:
                         object_pointer = scene.objects[object.global_object_name]
