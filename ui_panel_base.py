@@ -1640,6 +1640,7 @@ class BM_PT_BakeBase(bpy.types.Panel):
         # bake body
         layout.prop(scene.bm_props, 'global_use_bake_overwrite')
         layout.prop(scene.bm_props, 'global_use_bakemaster_reset')
+        layout.prop(scene.bm_props, 'global_use_scene_color_management')
 
         bake_column = layout.column(align=True)
         bake_column_bake_this = bake_column.row()

@@ -270,6 +270,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Remove baked objects from BakeMaster Table of Objects after the bake",
         default=False)
 
+    global_use_scene_color_management : bpy.props.BoolProperty(
+        name="Scene Color Management",
+        description="Affect baked images by scene color management settings",
+        default=False)
+
     global_bake_instruction : bpy.props.StringProperty(
         name="Bake Operator Instruction",
         default="Short Bake Instruction",
