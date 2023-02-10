@@ -2289,6 +2289,15 @@ def BM_MAP_PROPS_map_normal_data_Items(self, context):
              ('MATERIAL', "Object/Materials", "Bake normals from object data")]
     return items 
 
+def BM_MAO_PROPS_map_get_subdivided_face_count(context, object, map):
+    face_count = 0
+    try:
+        object_pointer = context.scene.objects[object.global_object_name]
+        face_count = len(object_pointer.data.polygons) * 4 ** map.map_displacement_subdiv_levels
+    except KeyError:
+        pass
+    return face_count
+
 def BM_MAP_PROPS_map_displacement_data_Items(self, context):
     object = BM_Object_Get(self, context)[0]
     if object.hl_use_unique_per_map:

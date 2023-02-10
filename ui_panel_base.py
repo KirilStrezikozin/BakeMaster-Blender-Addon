@@ -1128,6 +1128,10 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                         sub.prop(map, 'map_normal_r', text="Swizzle R")
                         sub.prop(map, 'map_normal_g', text="G")
                         sub.prop(map, 'map_normal_b', text="B")
+                if map.map_normal_data == 'MULTIRES':
+                    map_settings_column.prop(map, 'map_displacement_subdiv_levels')
+                    face_count = BM_MAO_PROPS_map_get_subdivided_face_count(context, object, map)
+                    map_settings_column.label(text="Face count while baking: " + str(face_count))
 
             elif map.global_map_type == 'DISPLACEMENT':
                 try:
@@ -1139,12 +1143,8 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 map_settings_column.prop(map, 'map_displacement_result')
                 if map.map_displacement_data in ['HIGHPOLY', 'MULTIRES']:
                     map_settings_column.prop(map, 'map_displacement_subdiv_levels')
-                    try:
-                        object_pointer = scene.objects[object.global_object_name]
-                        face_count = len(object_pointer.data.polygons) * 4 ** map.map_displacement_subdiv_levels # future face count
-                        map_settings_column.label(text="Face count while baking: " + str(face_count))
-                    except KeyError:
-                        pass
+                    face_count = BM_MAO_PROPS_map_get_subdivided_face_count(context, object, map)
+                    map_settings_column.label(text="Face count while baking: " + str(face_count))
         
             elif map.global_map_type == 'VECTOR_DISPLACEMENT':
                 map_settings_column.prop(map, 'map_vector_displacement_use_negative')
