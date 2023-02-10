@@ -1145,6 +1145,8 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     map_settings_column.prop(map, 'map_displacement_subdiv_levels')
                     face_count = BM_MAO_PROPS_map_get_subdivided_face_count(context, object, map)
                     map_settings_column.label(text="Face count while baking: " + str(face_count))
+                if map.map_displacement_data in ['HIGHPOLY', 'MULTIRES']:
+                    map_settings_column.prop(map, 'map_displacement_lowresmesh')
         
             elif map.global_map_type == 'VECTOR_DISPLACEMENT':
                 map_settings_column.prop(map, 'map_vector_displacement_use_negative')

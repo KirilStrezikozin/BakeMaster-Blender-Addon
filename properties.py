@@ -1170,6 +1170,12 @@ class BM_Map(bpy.types.PropertyGroup):
         max=10,
         update=BM_MAP_PROPS_map_displacement_subdiv_levels_Update)
     
+    map_displacement_lowresmesh : bpy.props.BoolProperty(
+        name="Heights against lowpoly",
+        description="Calculate heights against unsubdivided low resolution mesh",
+        default=False,
+        update=BM_MAP_PROPS_map_displacement_lowresmesh_Update)
+    
 # Vector Displacement Map Props
     map_VECTOR_DISPLACEMENT_prefix : bpy.props.StringProperty(
         name="Prefix",

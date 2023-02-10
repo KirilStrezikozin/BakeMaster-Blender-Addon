@@ -371,6 +371,7 @@ class BM_AddPresetBase():
                                     "map_displacement_data",
                                     "map_displacement_result",
                                     "map_displacement_subdiv_levels",
+                                    "map_displacement_lowresmesh",
 
                                     "map_VECTOR_DISPLACEMENT_prefix",
                                     # "map_VECTOR_DISPLACEMENT_use_preview",
@@ -959,6 +960,7 @@ class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_map.map_displacement_data",
         "bm_map.map_displacement_result",
         "bm_map.map_displacement_subdiv_levels",
+        "bm_map.map_displacement_lowresmesh",
 
         "bm_map.map_VECTOR_DISPLACEMENT_prefix",
         #bm_map. "map_VECTOR_DISPLACEMENT_use_preview",

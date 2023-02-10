@@ -813,6 +813,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                         'map_displacement_data' : map.map_displacement_data,
                         'map_displacement_result' : map.map_displacement_result,
                         'map_displacement_subdiv_levels' : map.map_displacement_subdiv_levels,
+                        'map_displacement_lowresmesh': map.map_displacement_lowresmesh,
 
                         'map_VECTOR_DISPLACEMENT_prefix' : map.map_VECTOR_DISPLACEMENT_prefix,
                         # 'map_VECTOR_DISPLACEMENT_use_preview' : map.map_VECTOR_DISPLACEMENT_use_preview,
@@ -2791,6 +2792,9 @@ def BM_MAP_PROPS_map_displacement_result_Update(self, context):
 def BM_MAP_PROPS_map_displacement_subdiv_levels_Update(self, context):
     name = "Map: Displacement subdiv levels"
     BM_LastEditedProp_Write(context, name, "map_displacement_subdiv_levels", getattr(self, "map_displacement_subdiv_levels"), True)
+def BM_MAP_PROPS_map_displacement_lowresmesh_Update(self, context):
+    name = "Map: Heights against lowpoly"
+    BM_LastEditedProp_Write(context, name, "map_displacement_lowresmesh", getattr(self, "map_displacement_lowresmesh"), True)
 def BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_prefix_Update(self, context):
     name = "Map: Vector Displacement prefix"
     BM_LastEditedProp_Write(context, name, "map_VECTOR_DISPLACEMENT_prefix", getattr(self, "map_VECTOR_DISPLACEMENT_prefix"), True)
