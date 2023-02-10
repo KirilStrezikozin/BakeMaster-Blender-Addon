@@ -1157,9 +1157,9 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Result to",
         description="How to apply baked displacement map",
         default="MODIFIER",
-        items=[('MODIFIER', "Modifiers", "Add displace modifier to the object with bake displacement displace texture"),
-               ('MATERIAL', "Material Displacement", "Add baked displacement to every object material displacement socket"),
-               ('IMAGE_ONLY', "Only Image Texture", "Bake displacement and just save output image")],
+        items=[('IMAGE_ONLY', "Only Image Texture", "Bake displacement and just save output image"),
+               ('MODIFIER', "Modifiers", "Add displace modifier to the object with bake displacement displace texture"),
+               ('MATERIAL', "Material Displacement", "Add baked displacement to every object material displacement socket")],
         update=BM_MAP_PROPS_map_displacement_result_Update)
 
     map_displacement_subdiv_levels : bpy.props.IntProperty(
@@ -1199,9 +1199,9 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Result to",
         description="How to apply baked displacement map",
         default="MODIFIER",
-        items=[('MODIFIER', "Modifiers", "Add displace modifier to the object with bake vector displacement displace texture"),
-               ('MATERIAL', "Material Displacement", "Add baked vector displacement to every object material displacement socket"),
-               ('IMAGE_ONLY', "Only Image Texture", "Bake vector displacement and just save output image")],
+        items=[('IMAGE_ONLY', "Only Image Texture", "Bake vector displacement and just save output image"),
+               ('MODIFIER', "Modifiers", "Add displace modifier to the object with bake vector displacement displace texture"),
+               ('MATERIAL', "Material Displacement", "Add baked vector displacement to every object material displacement socket")],
         update=BM_MAP_PROPS_map_vector_displacement_result_Update)
 
     map_vector_displacement_subdiv_levels : bpy.props.IntProperty(
