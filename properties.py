@@ -270,11 +270,6 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Remove baked objects from BakeMaster Table of Objects after the bake",
         default=False)
 
-    global_use_scene_color_management : bpy.props.BoolProperty(
-        name="Scene Color Management",
-        description="Affect baked images by scene color management settings",
-        default=False)
-
     global_bake_instruction : bpy.props.StringProperty(
         name="Bake Operator Instruction",
         default="Short Bake Instruction",
@@ -489,6 +484,12 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Denoise and Discpeckle baked maps as a post-process filter. For external bake only",
         default=False,
         update=BM_MAP_PROPS_out_use_denoise_Update)
+
+    out_use_scene_color_management : bpy.props.BoolProperty(
+        name="Scene Color Management",
+        description="Affect baked map by scene color management settings and compositor nodes. For external bake only",
+        default=False,
+        update=BM_MAP_PROPS_out_use_scene_color_management_Update)
 
     out_file_format : bpy.props.EnumProperty(
         name="File Format",
@@ -2259,6 +2260,12 @@ class BM_Object(bpy.types.PropertyGroup):
         description="Denoise and Discpeckle baked maps as a post-process filter. For external bake only",
         default=False,
         update=BM_ITEM_PROPS_out_use_denoise_Update)
+
+    out_use_scene_color_management : bpy.props.BoolProperty(
+        name="Scene Color Management",
+        description="Affect baked map by scene color management settings and compositor nodes. For external bake only",
+        default=False,
+        update=BM_ITEM_PROPS_out_use_scene_color_management_Update)
 
     out_file_format : bpy.props.EnumProperty(
         name="File Format",

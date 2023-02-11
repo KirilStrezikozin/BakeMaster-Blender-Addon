@@ -980,9 +980,10 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                         format_box_column.prop(format_prop_collection, 'out_min_samples')
                     else:
                         format_box_column.prop(format_prop_collection, 'out_samples')
-                    format_box_denoise_prop = format_box.row()
-                    format_box_denoise_prop.prop(format_prop_collection, 'out_use_denoise')            
-                    format_box_denoise_prop.active = not object.bake_save_internal
+                    format_box_denoise_col = format_box.column(align=True)
+                    format_box_denoise_col.prop(format_prop_collection, 'out_use_denoise')
+                    format_box_denoise_col.prop(format_prop_collection, 'out_use_scene_color_management')
+                    format_box_denoise_col.active = not object.bake_save_internal
 
             # map settings column
             map_settings_column = maps_table_box.column()
@@ -1640,7 +1641,6 @@ class BM_PT_BakeBase(bpy.types.Panel):
         # bake body
         layout.prop(scene.bm_props, 'global_use_bake_overwrite')
         layout.prop(scene.bm_props, 'global_use_bakemaster_reset')
-        layout.prop(scene.bm_props, 'global_use_scene_color_management')
 
         bake_column = layout.column(align=True)
         bake_column_bake_this = bake_column.row()

@@ -619,6 +619,7 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.csh_highpoly_smoothing_groups_name_contains",
 
         "bm_item.out_use_denoise",
+        "bm_item.out_use_scene_color_management",
         "bm_item.out_file_format",
         "bm_item.out_exr_codec",
         "bm_item.out_compression",
@@ -821,6 +822,7 @@ class BM_OT_OUT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 
     preset_values = [
         "bm_map.out_use_denoise",
+        "bm_map.out_use_scene_color_management",
         "bm_map.out_file_format",
         "bm_map.out_exr_codec",
         "bm_map.out_compression",

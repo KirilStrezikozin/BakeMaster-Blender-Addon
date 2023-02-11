@@ -625,6 +625,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'uv_auto_unwrap_use_scale_to_bounds' : self.uv_auto_unwrap_use_scale_to_bounds,
             'uv_use_unique_per_map' : self.uv_use_unique_per_map,
             'out_use_denoise' : self.out_use_denoise,
+            'out_use_scene_color_management' : self.out_use_scene_color_management,
             'out_file_format' : self.out_file_format,
             'out_exr_codec' : self.out_exr_codec,
             'out_compression' : self.out_compression,
@@ -712,6 +713,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                         'uv_snap_islands_to_pixels' : map.uv_snap_islands_to_pixels,
 
                         'out_use_denoise' : map.out_use_denoise,
+                        'out_use_scene_color_management' : map.out_use_scene_color_management,
                         'out_file_format' : map.out_file_format,
                         'out_exr_codec' : map.out_exr_codec,
                         'out_compression' : map.out_compression,
@@ -2166,6 +2168,7 @@ def BM_ITEM_PROPS_out_use_unique_per_map_Update(self, context):
             'out_samples' : object.out_samples,
             'out_min_samples' : object.out_min_samples,
             'out_use_denoise' : object.out_use_denoise,
+            'out_use_scene_color_management' : object.out_use_scene_color_management,
         }
 
         for map in object.global_maps:
@@ -2574,6 +2577,9 @@ def BM_MAP_PROPS_uv_snap_islands_to_pixels_Update(self, context):
 def BM_MAP_PROPS_out_use_denoise_Update(self, context):
     name = "Map Format: Denoise"
     BM_LastEditedProp_Write(context, name, "out_use_denoise", getattr(self, "out_use_denoise"), True)
+def BM_MAP_PROPS_out_use_scene_color_management_Update(self, context):
+    name = "Map Format: Scene Color Management"
+    BM_LastEditedProp_Write(context, name, "out_use_scene_color_management", getattr(self, "out_use_scene_color_management"), True)
 def BM_MAP_PROPS_out_file_format_Update(self, context):
     name = "Map Format: File Format"
     BM_LastEditedProp_Write(context, name, "out_file_format", getattr(self, "out_file_format"), True)
@@ -3199,6 +3205,9 @@ def BM_ITEM_PROPS_uv_auto_unwrap_use_scale_to_bounds_Update(self, context):
 def BM_ITEM_PROPS_out_use_denoise_Update(self, context):
     name = "Object Format: Denoise"
     BM_LastEditedProp_Write(context, name, "out_use_denoise", getattr(self, "out_use_denoise"), False)
+def BM_ITEM_PROPS_out_use_scene_color_management_Update(self, context):
+    name = "Object Format: Scene Color Management"
+    BM_LastEditedProp_Write(context, name, "out_use_scene_color_management", getattr(self, "out_use_scene_color_management"), False)
 def BM_ITEM_PROPS_out_file_format_Update(self, context):
     name = "Object Format: File Format"
     BM_LastEditedProp_Write(context, name, "out_file_format", getattr(self, "out_file_format"), False)
