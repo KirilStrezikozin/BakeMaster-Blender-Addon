@@ -967,16 +967,15 @@ def BM_TEXSET_OBJECT_PROPS_syncer_Items(self, context):
     for texset_item in self.global_textureset_table_of_objects:
         source_object = context.scene.bm_table_of_objects[texset_item.global_source_object_index]
         if not source_object.nm_is_universal_container:
-            items.append((texset_item.global_source_object_index, texset_item.global_object_name_include, "Object in the current texset"))
+            items.append((str(texset_item.global_source_object_index), texset_item.global_object_name_include, "Object in the current texset"))
         elif source_object.nm_uni_container_is_global:
-            items.append((texset_item.global_source_object_index, texset_item.global_object_name_include, "Global Container in the current texset"))
+            items.append((strtexset_item.global_source_object_index), texset_item.global_object_name_include, "Global Container in the current texset"))
         else:
-            items += [(subitem.global_source_object_index, subitem.global_object_name, "Subobject in the current texset") for subitem in texset_item.global_object_name_subitems]
+            items += [(str(subitem.global_source_object_index), subitem.global_object_name, "Subobject in the current texset") for subitem in texset_item.global_object_name_subitems]
     return items
 
 def BM_TEXSET_OBJECT_PROPS_syncer_Sync(self, context):
     pass
-
 
 def BM_TEXSET_OBJECT_PROPS_global_object_name_Items(self, context):
     new_items = []
