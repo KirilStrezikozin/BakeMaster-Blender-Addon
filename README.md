@@ -26,6 +26,7 @@ Below is the new features implementation order:
 - [x] [BUG: Image color edging when baking from multires](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/12)
 - [x] [REQUEST: Displacement map: choose multires subdiv level](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/16)
 - [x] [REQUEST: Blender's Color Management on for bake](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/13)
+- [x] [BUG: Image format (.png) is occasionally written twice (.png.png)](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/22)
 - [ ] [REQUEST: Bake Jobs](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/14)
 - [ ] [REQUEST: Baking Pipeline Manager](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/15)
 - [ ] [REQUEST: Bake History Manager](https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/20)
