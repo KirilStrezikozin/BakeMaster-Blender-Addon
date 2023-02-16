@@ -1210,9 +1210,10 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
 
         # apply to selected objects
         else:
+            was_error = False
             for object1 in context.scene.bm_table_of_objects:
                 if object1.nm_is_universal_container:
-                    items = [item for item in bm_props.global_alep_objects if item.object_name == object1.nm_container_name]
+                    items = [item for item in bm_props.global_alep_objects if item.object_name == object1.nm_container_name + " Container"]
                 else:
                     items = [item for item in bm_props.global_alep_objects if item.object_name == object1.global_object_name]
                 if len(items) == 0:
@@ -1223,10 +1224,23 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
                 try:
                     setattr(object1, prop, prop_value_real)
                 except TypeError:
-                    self.report({'ERROR'}, "Cannot apply property, aborting")
-                    return {'FINISHED'}
+                    print("BakeMaster Error: Cannot apply property: %s, skipping" % prop)
+                    was_error = True
 
-        self.report({'INFO'}, "Property succesfully applied")
+                if object1.nm_is_universal_container:
+                    for object2 in context.scene.bm_table_of_objects:
+                        if object2.nm_item_uni_container_master_index != object1.nm_master_index:
+                            continue
+                        try:
+                            setattr(object2, prop, prop_value_real)
+                        except TypeError:
+                            print("BakeMaster Error: Cannot apply property: %s, skipping" % prop)
+                            was_error = True
+
+        if was_error:
+            self.report({'WARNING'}, "Success but some properties weren't applied")
+        else:
+            self.report({'INFO'}, "Property succesfully applied")
         return {'FINISHED'}
 
     def draw(self, context):
@@ -1352,7 +1366,7 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
                 elif object1.nm_is_universal_container and object1.nm_uni_container_is_global:
                     add_object = True
                     global_uni_c_master_index = object1.nm_master_index
-                elif not any([object1.hl_is_highpoly, object1.hl_is_cage, object1.nm_item_uni_container_master_index == global_uni_c_master_index, object1.nm_is_local_container]) and object1.nm_item_uni_container_master_index != -1:
+                elif not any([object1.hl_is_highpoly, object1.hl_is_cage, object1.nm_is_local_container]) and object1.nm_item_uni_container_master_index != -1:
                     add_object = True
             elif not any([object1.hl_is_highpoly, object1.hl_is_cage]):
                 add_object = True

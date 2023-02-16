@@ -20,31 +20,6 @@
 
 import bpy
 from .utils_map_previews import *
-from .labels import BM_Labels
-
-###############################################################
-### BM Gets Funcs ###
-###############################################################
-def BM_Object_Get(self, context):
-    if self is None:
-        object = [context.scene.bm_table_of_objects[context.scene.bm_props.global_active_index], True] 
-    else:
-        if hasattr(self, "global_map_object_index"):
-            object1 = context.scene.bm_table_of_objects[self.global_map_object_index]
-        else:
-            object1 = self
-        object = [object1, True]
-    try:
-        context.scene.objects[object[0].global_object_name]
-    except (KeyError, AttributeError, UnboundLocalError):
-        object[1] = False
-    return object
-
-def BM_Map_Get(self, object):
-    if self is not None and hasattr(self, "global_map_object_index"):
-        return self
-    map = object.global_maps[object.global_maps_active_index]
-    return map
 
 ###############################################################
 ### Name Matching Funcs ###
@@ -1364,6 +1339,13 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context, object=None, map=None
             return "*Object has no Maps*"
         map = object.global_maps[object.global_maps_active_index]
         global_active_index = context.scene.bm_props.global_active_index
+
+    out_container = object
+    if object.out_use_unique_per_map:
+        out_container = map
+    uv_container = object
+    if object.out_use_unique_per_map:
+        uv_container = map
      
     gen_keywords_values = {
         "$objectindex" : global_active_index,
@@ -1373,14 +1355,14 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context, object=None, map=None
         "$texsetname" : get_texsetname(self),
         "$mapindex" : map.global_map_index,
         "$mapname" : getattr(map, 'map_{}_prefix'.format(map.global_map_type)),
-        "$mapres" : get_mapres(map),
-        "$mapbit" : "32bit" if map.out_use_32bit else "8bit",
-        "$maptrans" : "transbg" if map.out_use_transbg else "",
-        "$mapssaa" : map.out_super_sampling_aa,
-        "$mapsamples" : map.out_samples,
-        "$mapdenoise" : "denoised" if map.out_use_denoise else "",
+        "$mapres" : get_mapres(out_container),
+        "$mapbit" : "32bit" if out_container.out_use_32bit else "8bit",
+        "$maptrans" : "transbg" if out_container.out_use_transbg else "",
+        "$mapssaa" : out_container.out_super_sampling_aa,
+        "$mapsamples" : out_container.out_samples,
+        "$mapdenoise" : "denoised" if out_container.out_use_denoise else "",
         "$mapnormal" : get_mapnormal(map),
-        "$mapuv" : map.uv_active_layer,
+        "$mapuv" : uv_container.uv_active_layer,
         "$engine" : self.bake_device,
         "$autouv" : "autouv" if self.uv_use_auto_unwrap else "",
     }
@@ -2325,13 +2307,6 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
              ('MULTIRES', "Multires Modifier", "Bake displacement from existing Multires modifier"),
              ('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
     return items
-
-def BM_IterableData_GetNewUniqueName_Simple(data, name_starter):
-    index = 0
-    for d in data:
-        if d.name.find(name_starter) != -1:
-            index += 1
-    return "%s.%d" % (name_starter, index)
 
 # Map Preview Funcs
 # the same, no attention to bm mats removal, because they are not added anyway

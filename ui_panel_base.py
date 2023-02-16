@@ -750,7 +750,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                         if object.hl_decals_use_separate_texset:
                             hl_box_decal.prop(object, 'hl_decals_separate_texset_prefix')
                     # cage
-                    if len(object.hl_highpoly_table) and draw_all:
+                    if len(object.hl_highpoly_table):
                         hl_box_cage = hl_box.column(align=True)
                         # hl_box_cage.prop(object, 'hl_cage_type')
                         # if object.hl_cage_type == 'STANDARD':
@@ -1147,7 +1147,6 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                     map_settings_column.prop(map, 'map_displacement_subdiv_levels')
                     face_count = BM_MAO_PROPS_map_get_subdivided_face_count(context, object, map)
                     map_settings_column.label(text="Face count while baking: " + str(face_count))
-                if map.map_displacement_data in ['HIGHPOLY', 'MULTIRES']:
                     map_settings_column.prop(map, 'map_displacement_lowresmesh')
         
             elif map.global_map_type == 'VECTOR_DISPLACEMENT':

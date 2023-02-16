@@ -19,6 +19,8 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
+from .utils_bm_gets import *
+from .labels import BM_Labels
 
 # Map Preview Configurators
 def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
@@ -30,6 +32,13 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
 
 def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
     pass
+
+def BM_IterableData_GetNewUniqueName_Simple(data, name_starter):
+    index = 0
+    for d in data:
+        if d.name.find(name_starter) != -1:
+            index += 1
+    return "%s.%d" % (name_starter, index)
 
 def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
     pass

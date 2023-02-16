@@ -580,7 +580,7 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     preset_values = [
         "bm_item.decal_is_decal",
         "bm_item.decal_use_custom_camera",
-        # "bm_item.decal_custom_camera",
+        "bm_item.decal_custom_camera",
         "bm_item.decal_upper_coordinate",
         "bm_item.decal_boundary_offset",
 
@@ -597,7 +597,7 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.uv_use_unique_per_map",
         "bm_item.uv_bake_data",
         "bm_item.uv_bake_target",
-        # "bm_item.uv_active_layer",
+        "bm_item.uv_active_layer",
         "bm_item.uv_type",
         "bm_item.uv_snap_islands_to_pixels",
         "bm_item.uv_use_auto_unwrap",
@@ -631,8 +631,8 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.out_use_32bit",
         "bm_item.out_use_alpha",
         "bm_item.out_use_transbg",
-        # "bm_item.out_udim_start_tile",
-        # "bm_item.out_udim_end_tile",
+        "bm_item.out_udim_start_tile",
+        "bm_item.out_udim_end_tile",
         "bm_item.out_super_sampling_aa",
         "bm_item.out_samples",
         "bm_item.out_use_adaptive_sampling",
@@ -641,7 +641,7 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.out_use_unique_per_map",
 
         "bm_item.bake_save_internal",
-        # "bm_item.bake_output_filepath",
+        "bm_item.bake_output_filepath",
         "bm_item.bake_create_subfolder",
         "bm_item.bake_subfolder_name",
         "bm_item.bake_batchname",
@@ -650,7 +650,7 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.bake_assign_modifiers",
         "bm_item.bake_device",
         "bm_item.bake_hide_when_inactive",
-        # "bm_item.bake_vg_index",
+        "bm_item.bake_vg_index",
     ]
 
 class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
@@ -668,7 +668,7 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     preset_values = [
         "bm_item.decal_is_decal",
         "bm_item.decal_use_custom_camera",
-        # "bm_item.decal_custom_camera",
+        "bm_item.decal_custom_camera",
         "bm_item.decal_upper_coordinate",
         "bm_item.decal_boundary_offset",
 
@@ -685,7 +685,7 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.uv_use_unique_per_map",
         "bm_item.uv_bake_data",
         "bm_item.uv_bake_target",
-        # "bm_item.uv_active_layer",
+        "bm_item.uv_active_layer",
         "bm_item.uv_type",
         "bm_item.uv_snap_islands_to_pixels",
         "bm_item.uv_use_auto_unwrap",
@@ -722,7 +722,7 @@ class BM_OT_DECAL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     preset_values = [
         "bm_item.decal_is_decal",
         "bm_item.decal_use_custom_camera",
-        # "bm_item.decal_custom_camera",
+        "bm_item.decal_custom_camera",
         "bm_item.decal_upper_coordinate",
         "bm_item.decal_boundary_offset",
     ]
@@ -770,7 +770,7 @@ class BM_OT_UV_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     preset_values = [
         "bm_map.uv_bake_data",
         "bm_map.uv_bake_target",
-        # "bm_map.uv_active_layer",
+        "bm_map.uv_active_layer",
         "bm_map.uv_type",
         "bm_map.uv_snap_islands_to_pixels",
         "bm_item.uv_use_auto_unwrap",
@@ -834,8 +834,8 @@ class BM_OT_OUT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_map.out_use_32bit",
         "bm_map.out_use_alpha",
         "bm_map.out_use_transbg",
-        # "bm_map.out_udim_start_tile",
-        # "bm_map.out_udim_end_tile",
+        "bm_map.out_udim_start_tile",
+        "bm_map.out_udim_end_tile",
         "bm_map.out_super_sampling_aa",
         "bm_map.out_samples",
         "bm_map.out_use_adaptive_sampling",
@@ -1128,7 +1128,7 @@ class BM_OT_BAKE_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 
     preset_values = [
         "bm_item.bake_save_internal",
-        # "bm_item.bake_output_filepath",
+        "bm_item.bake_output_filepath",
         "bm_item.bake_create_subfolder",
         "bm_item.bake_subfolder_name",
         "bm_item.bake_batchname",
@@ -1137,7 +1137,7 @@ class BM_OT_BAKE_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.bake_assign_modifiers",
         "bm_item.bake_device",
         "bm_item.bake_hide_when_inactive",
-        # "bm_item.bake_vg_index",
+        "bm_item.bake_vg_index",
     ]
 
 ###########################################################

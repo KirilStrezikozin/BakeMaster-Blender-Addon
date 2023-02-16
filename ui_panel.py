@@ -71,3 +71,4 @@ class BM_PT_Help(BM_PT_HelpBase):
     bl_region_type = bm_region_type
     bl_category = bm_category
     bl_parent_id = BM_PT_Main.bl_idname
+
