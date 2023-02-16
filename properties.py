@@ -127,6 +127,22 @@ class BM_SceneProps_TextureSet(bpy.types.PropertyGroup):
 
     global_textureset_index : bpy.props.IntProperty()
 
+    syncer_use : bpy.props.BoolProperty(
+        name="",
+        description="Enable one object to dictate maps, channel packs, and bake settings for all others in the current texture set",
+        default=False)
+    
+    syncer_object_name : bpy.props.EnumProperty(
+        name="Sync with",
+        description="Choose an object from the ones in the current texture set",
+        items=BM_TEXSET_OBJECT_PROPS_syncer_Items,
+        update=BM_TEXSET_OBJECT_PROPS_syncer_Sync)
+    
+    syncer_use_dictate_bake_output : bpy.props.BoolProperty(
+        name="Sync Bake Output Settings",
+        description="Channel packs and maps settings are synced with enabling 'Sync with', check this option to sync bake settings as well",
+        default=True)
+    
     uvp_use_uv_repack : bpy.props.BoolProperty(
         name="UV Repack",
         description="Enable UV Repacking for Texture Set Objects.\nWarning: if Objects have materials that depend on UV Layout, enabling this option might change the result of these materials",

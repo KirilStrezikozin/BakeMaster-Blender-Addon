@@ -1605,6 +1605,15 @@ class BM_PT_TextureSetsBase(bpy.types.Panel):
                 texset_column.use_property_split = True
                 texset_column.use_property_decorate = False
 
+                texset_syncer_column = texset_column.column(align=True)
+                texset_column_syncer_row = texset_syncer_column.row(align=True)
+                texset_column_syncer_row.prop(texset, 'syncer_use', text="")
+                texset_column_syncer_row.prop(texset, 'syncer_object_name')
+                if texset.syncer_use:
+                    texset_syncer_column.prop(texset, 'syncer_use_dictate_bake_output')
+                texset_syncer_column.active = texset.syncer_use
+                texset_column.separator(factor=1.0)
+
                 texset_column.prop(texset, 'uvp_use_uv_repack')
                 if texset.uvp_use_uv_repack:
                     texset_column.prop(texset, 'uvp_use_islands_rotate')
