@@ -19,6 +19,7 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
+from .utils_map_previews import *
 from .labels import BM_Labels
 
 ###############################################################
@@ -2325,18 +2326,6 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
              ('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
     return items
 
-# Map Preview Funcs
-def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
-    pass
-
-def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
-    pass
-
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag)
-
-def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
-    pass
-
 def BM_IterableData_GetNewUniqueName_Simple(data, name_starter):
     index = 0
     for d in data:
@@ -2344,15 +2333,7 @@ def BM_IterableData_GetNewUniqueName_Simple(data, name_starter):
             index += 1
     return "%s.%d" % (name_starter, index)
 
-def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
-    pass
-
-def BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(self, context):
-    pass
-
-def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context):
-    pass
-
+# Map Preview Funcs
 # the same, no attention to bm mats removal, because they are not added anyway
 BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove = BM_MAP_PROPS_MapPreview_CustomNodes_Remove
 

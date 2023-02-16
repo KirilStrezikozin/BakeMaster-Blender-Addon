@@ -22,6 +22,7 @@ import bpy
 from .operators import *
 from .operator_bake import BM_OT_ITEM_Bake
 from .utils import BM_Object_Get
+from .labels import BM_Labels
 from .presets import *
 
 class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
@@ -1027,7 +1028,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 pass
             else:
                 map_settings_column_preview = map_settings_column.row()
-                map_settings_column_preview.prop(map, 'map_%s_use_preview' % map.global_map_type, text="Preview (Full Version)")
+                map_settings_column_preview.prop(map, 'map_%s_use_preview' % map.global_map_type, text=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_NAME)
                 if any([object.nm_is_universal_container, object.hl_is_highpoly, object.hl_is_cage]):
                     map_settings_column_preview.active = False
             try:
