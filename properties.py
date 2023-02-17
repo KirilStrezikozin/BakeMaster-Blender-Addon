@@ -135,8 +135,7 @@ class BM_SceneProps_TextureSet(bpy.types.PropertyGroup):
     syncer_object_name : bpy.props.EnumProperty(
         name="Sync with",
         description="Choose an object from the ones in the current texture set",
-        items=BM_TEXSET_OBJECT_PROPS_syncer_Items,
-        update=BM_TEXSET_OBJECT_PROPS_syncer_Sync)
+        items=BM_TEXSET_OBJECT_PROPS_syncer_Items)
     
     syncer_use_dictate_bake_output : bpy.props.BoolProperty(
         name="Sync Bake Output Settings",

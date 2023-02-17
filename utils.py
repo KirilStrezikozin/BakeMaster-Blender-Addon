@@ -613,8 +613,8 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'out_use_32bit' : self.out_use_32bit,
             'out_use_alpha' : self.out_use_alpha,
             'out_use_transbg' : self.out_use_transbg,
-            # 'out_udim_start_tile' : self.out_udim_start_tile,
-            # 'out_udim_end_tile' : self.out_udim_end_tile,
+            'out_udim_start_tile' : self.out_udim_start_tile,
+            'out_udim_end_tile' : self.out_udim_end_tile,
             'out_super_sampling_aa' : self.out_super_sampling_aa,
             'out_samples' : self.out_samples,
             'out_use_adaptive_sampling' : self.out_use_adaptive_sampling,
@@ -684,7 +684,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
 
                         'uv_bake_data' : map.uv_bake_data,
                         'uv_bake_target' : map.uv_bake_target,
-                        # 'uv_active_layer' : map.uv_active_layer,
+                        'uv_active_layer' : map.uv_active_layer,
                         'uv_type' : map.uv_type,
                         'uv_snap_islands_to_pixels' : map.uv_snap_islands_to_pixels,
 
@@ -701,8 +701,8 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                         'out_use_32bit' : map.out_use_32bit,
                         'out_use_alpha' : map.out_use_alpha,
                         'out_use_transbg' : map.out_use_transbg,
-                        # 'out_udim_start_tile' : map.out_udim_start_tile,
-                        # 'out_udim_end_tile' : map.out_udim_end_tile,
+                        'out_udim_start_tile' : map.out_udim_start_tile,
+                        'out_udim_end_tile' : map.out_udim_end_tile,
                         'out_super_sampling_aa' : map.out_super_sampling_aa,
                         'out_samples' : map.out_samples,
                         'out_use_adaptive_sampling' : map.out_use_adaptive_sampling,
@@ -969,13 +969,306 @@ def BM_TEXSET_OBJECT_PROPS_syncer_Items(self, context):
         if not source_object.nm_is_universal_container:
             items.append((str(texset_item.global_source_object_index), texset_item.global_object_name_include, "Object in the current texset"))
         elif source_object.nm_uni_container_is_global:
-            items.append((strtexset_item.global_source_object_index), texset_item.global_object_name_include, "Global Container in the current texset"))
+            items.append((str(texset_item.global_source_object_index), texset_item.global_object_name_include, "Global Container in the current texset"))
         else:
             items += [(str(subitem.global_source_object_index), subitem.global_object_name, "Subobject in the current texset") for subitem in texset_item.global_object_name_subitems]
     return items
 
 def BM_TEXSET_OBJECT_PROPS_syncer_Sync(self, context):
-    pass
+    dictator_object_index = int(self.syncer_object_name)
+    dictator_object = context.scene.bm_table_of_objects[dictator_object_index]
+    sync_objects = []
+    for texset_item in self.global_textureset_table_of_objects:
+        if texset_item.global_source_object_index == dictator_object_index:
+            continue
+        source_object = context.scene.bm_table_of_objects[texset_item.global_source_object_index]
+        if not source_object.nm_is_universal_container:
+            sync_objects.append([texset_item.global_source_object_index, source_object])
+        elif source_object.nm_uni_container_is_global:
+            sync_objects.append([texset_item.global_source_object_index, source_object])
+        else:
+            sync_objects += [[subitem.global_source_object_index, context.scene.bm_table_of_objects[subitem.global_source_object_index]] for subitem in texset_item.global_object_name_subitems if subitem.global_source_object_index != dictator_object_index]
+
+    props_object_format = {
+        'out_use_denoise',
+        'out_use_scene_color_management',
+        'out_file_format',
+        'out_exr_codec',
+        'out_compression',
+        'out_res',
+        'out_res_height',
+        'out_res_width',
+        'out_margin',
+        'out_margin_type',
+        'out_use_32bit',
+        'out_use_alpha',
+        'out_use_transbg',
+        'out_udim_start_tile',
+        'out_udim_end_tile',
+        'out_super_sampling_aa',
+        'out_samples',
+        'out_use_adaptive_sampling',
+        'out_adaptive_threshold',
+        'out_min_samples',
+        'out_use_unique_per_map',
+    }
+    props_object_bake = {
+        'bake_save_internal',
+        'bake_output_filepath',
+        'bake_create_subfolder',
+        'bake_subfolder_name',
+        'bake_batchname',
+        'bake_batchname_use_caps',
+        'bake_create_material',
+        'bake_assign_modifiers',
+        'bake_device',
+    }
+    props_channelpack = {
+        'global_channelpack_type',
+        'R1G1B_use_R',
+        'R1G1B_map_R',
+        'R1G1B_use_G',
+        'R1G1B_map_G',
+        'R1G1B_use_B',
+        'R1G1B_map_B',
+        'RGB1A_use_RGB',
+        'RGB1A_map_RGB',
+        'RGB1A_use_A',
+        'RGB1A_map_A',
+        'R1G1B1A_use_R',
+        'R1G1B1A_map_R',
+        'R1G1B1A_use_G',
+        'R1G1B1A_map_G',
+        'R1G1B1A_use_B',
+        'R1G1B1A_map_B',
+        'R1G1B1A_use_A',
+        'R1G1B1A_map_A',
+    }
+    props_map = {
+        "global_use_bake",
+        "global_map_type",
+        "global_affect_by_hl",
+
+        "map_ALBEDO_prefix",
+
+        "map_METALNESS_prefix",
+
+        "map_ROUGHNESS_prefix",
+
+        "map_DIFFUSE_prefix",
+
+        "map_SPECULAR_prefix",
+
+        "map_GLOSSINESS_prefix",
+
+        "map_OPACITY_prefix",
+
+        "map_EMISSION_prefix",
+
+        "map_PASS_prefix",
+        # "map_PASS_use_preview",
+        "map_pass_type",
+
+        "map_DECAL_prefix",
+        # "map_DECAL_use_preview",
+        "map_decal_pass_type",
+        "map_decal_height_opacity_invert",
+        "map_decal_normal_preset",
+        "map_decal_normal_custom_preset",
+        "map_decal_normal_r",
+        "map_decal_normal_g",
+        "map_decal_normal_b",
+
+        "map_VERTEX_COLOR_LAYER_prefix",
+        # "map_VERTEX_COLOR_LAYER_use_preview",
+        # "map_vertexcolor_layer",
+
+        "map_C_COMBINED_prefix",
+
+        "map_C_AO_prefix",
+
+        "map_C_SHADOW_prefix",
+
+        "map_C_POSITION_prefix",
+
+        "map_C_NORMAL_prefix",
+
+        "map_C_UV_prefix",
+
+        "map_C_ROUGHNESS_prefix",
+
+        "map_C_EMIT_prefix",
+
+        "map_C_ENVIRONMENT_prefix",
+
+        "map_C_DIFFUSE_prefix",
+
+        "map_C_GLOSSY_prefix",
+
+        "map_C_TRANSMISSION_prefix",
+
+        "map_cycles_use_pass_direct",
+        "map_cycles_use_pass_indirect",
+        "map_cycles_use_pass_color",
+        "map_cycles_use_pass_diffuse",
+        "map_cycles_use_pass_glossy",
+        "map_cycles_use_pass_transmission",
+        "map_cycles_use_pass_ambient_occlusion",
+        "map_cycles_use_pass_emit",
+
+        "map_NORMAL_prefix",
+        # "map_NORMAL_use_preview",
+        "map_normal_data",
+        "map_normal_space",
+        "map_normal_preset",
+        "map_normal_custom_preset",
+        "map_normal_r",
+        "map_normal_g",
+        "map_normal_b",
+
+        "map_DISPLACEMENT_prefix",
+        # "map_DISPLACEMENT_use_preview",
+        "map_displacement_data",
+        "map_displacement_result",
+        "map_displacement_subdiv_levels",
+        "map_displacement_lowresmesh",
+
+        "map_VECTOR_DISPLACEMENT_prefix",
+        # "map_VECTOR_DISPLACEMENT_use_preview",
+        "map_vector_displacement_use_negative",
+        "map_vector_displacement_result",
+        "map_vector_displacement_subdiv_levels",
+
+        "map_POSITION_prefix",
+        # "map_POSITION_use_preview",
+
+        "map_AO_prefix",
+        # "map_AO_use_preview",
+        "map_AO_use_default",
+        "map_ao_samples",
+        "map_ao_distance",
+        "map_ao_black_point",
+        "map_ao_white_point",
+        "map_ao_brightness",
+        "map_ao_contrast",
+        "map_ao_opacity",
+        "map_ao_use_local",
+        "map_ao_use_invert",
+
+        "map_CAVITY_prefix",
+        # "map_CAVITY_use_preview",
+        "map_CAVITY_use_default",
+        "map_cavity_black_point",
+        "map_cavity_white_point",
+        "map_cavity_power",
+        "map_cavity_use_invert",
+
+        "map_CURVATURE_prefix",
+        # "map_CURVATURE_use_preview",
+        "map_CURVATURE_use_default",
+        "map_curv_samples",
+        "map_curv_radius",
+        "map_curv_black_point",
+        "map_curv_mid_point",
+        "map_curv_white_point",
+        "map_curv_body_gamma",
+
+        "map_THICKNESS_prefix",
+        # "map_THICKNESS_use_preview",
+        "map_THICKNESS_use_default",
+        "map_thick_samples",
+        "map_thick_distance",
+        "map_thick_black_point",
+        "map_thick_white_point",
+        "map_thick_brightness",
+        "map_thick_contrast",
+        "map_thick_use_invert",
+
+        "map_ID_prefix",
+        # "map_ID_use_preview",
+        "map_matid_data",
+        "map_matid_vertex_groups_name_contains",
+        "map_matid_algorithm",
+        "map_matid_jilter",
+
+        "map_MASK_prefix",
+        # "map_MASK_use_preview",
+        "map_mask_data",
+        "map_mask_vertex_groups_name_contains",
+        "map_mask_materials_name_contains",
+        "map_mask_color1",
+        "map_mask_color2",
+        "map_mask_use_invert",
+
+        "map_XYZMASK_prefix",
+        # "map_XYZMASK_use_preview",
+        "map_XYZMASK_use_default",
+        "map_xyzmask_use_x",
+        "map_xyzmask_use_y",
+        "map_xyzmask_use_z",
+        "map_xyzmask_coverage",
+        "map_xyzmask_saturation",
+        "map_xyzmask_opacity",
+        "map_xyzmask_use_invert",
+
+        "map_GRADIENT_prefix",
+        # "map_GRADIENT_use_preview",
+        "map_GRADIENT_use_default",
+        "map_gmask_type",
+        "map_gmask_location_x",
+        "map_gmask_location_y",
+        "map_gmask_location_z",
+        "map_gmask_rotation_x",
+        "map_gmask_rotation_y",
+        "map_gmask_rotation_z",
+        "map_gmask_scale_x",
+        "map_gmask_scale_y",
+        "map_gmask_scale_z",
+        "map_gmask_coverage",
+        "map_gmask_contrast",
+        "map_gmask_saturation",
+        "map_gmask_opacity",
+        "map_gmask_use_invert",
+
+        "map_EDGE_prefix",
+        # "map_EDGE_use_preview",
+        "map_EDGE_use_default",
+        "map_edgemask_samples",
+        "map_edgemask_radius",
+        "map_edgemask_edge_contrast",
+        "map_edgemask_body_contrast",
+        "map_edgemask_use_invert",
+
+        "map_WIREFRAME_prefix",
+        # "map_WIREFRAME_use_preview",
+        "map_wireframemask_line_thickness",
+        "map_wireframemask_use_invert",
+    }
+
+    def sync(from_object, to_object, property_name: str):
+        setattr(to_object, property_name, getattr(from_object, property_name))
+
+    global_active_index_old = context.scene.bm_props.global_active_index
+    for object_index, object in sync_objects:
+        context.scene.bm_props.global_active_index = object_index
+        bpy.ops.bakemaster.item_channelpack_table_trash()
+        bpy.ops.bakemaster.item_maps_table(control='TRASH')
+
+        for dictator_map in dictator_object.global_maps:
+            bpy.ops.bakemaster.item_maps_table(control='ADD')
+            map = object.global_maps[object.global_maps_active_index]
+            [sync(dictator_map, map, prop_name) for prop_name in props_map]
+
+        for dictator_chnlp in dictator_object.chnlp_channelpacking_table:
+            bpy.ops.bakemaster.item_channelpack_table_add()
+            chnlp = object.chnlp_channelpacking_table[object.chnlp_channelpacking_table_active_index]
+            [sync(dictator_chnlp, chnlp, prop_name) for prop_name in props_channelpack]
+
+        [sync(dictator_object, object, prop_name) for prop_name in props_object_format]
+        if not self.syncer_use_dictate_bake_output:
+            continue
+        [sync(dictator_object, object, prop_name) for prop_name in props_object_bake]
+    context.scene.bm_props.global_active_index = global_active_index_old
 
 def BM_TEXSET_OBJECT_PROPS_global_object_name_Items(self, context):
     new_items = []

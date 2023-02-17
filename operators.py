@@ -32,7 +32,7 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
     control : bpy.props.EnumProperty(
         items = [('UP', "Up", ""), ('DOWN', "Down", "")])
 
-    def invoke(self, context, event):
+    def execute(self, context):
         scene = context.scene
         global_active_index = scene.bm_props.global_active_index
 
@@ -236,6 +236,9 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                     # updating nm master_indexes
                     BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)
         return {'FINISHED'}
+
+    def invoke(self, context, event):
+        return self.execute(context)
 
 class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
     bl_idname = 'bakemaster.table_of_objects_add'
@@ -1043,7 +1046,7 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
     control : bpy.props.EnumProperty(
         items = [('ADD', "Add", ""), ('REMOVE', "Remove", ""), ('TRASH', "Trash", "")])
 
-    def invoke(self, context, event):
+    def execute(self, context):
         object = BM_Object_Get(None, context)[0]
         global_active_index = object.global_maps_active_index
 
@@ -1098,6 +1101,9 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
             object.global_maps_active_index = len(object.global_maps) - 1
 
         return {'FINISHED'}
+    
+    def invoke(self, context, event):
+        return self.execute(context)
 
 class BM_OT_ApplyLastEditedProp_SelectAll(bpy.types.Operator):
     bl_label = "Select All"
