@@ -975,6 +975,8 @@ def BM_TEXSET_OBJECT_PROPS_syncer_Items(self, context):
     return items
 
 def BM_TEXSET_OBJECT_PROPS_syncer_Sync(self, context):
+    if self.syncer_use is False:
+        return
     dictator_object_index = int(self.syncer_object_name)
     dictator_object = context.scene.bm_table_of_objects[dictator_object_index]
     sync_objects = []
