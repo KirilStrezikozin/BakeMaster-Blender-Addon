@@ -38,6 +38,7 @@ class BM_Labels:
     PROP_ITEM_CAGEEXTRUSION_DESCRIPTION = "Inflate the active object by the specified distance for baking. This helps matching to points nearer to the outside of the selected object meshes"
     PROP_ITEM_MAXCAGEEXTRUSION_DESCRIPTION = "The maximum ray distance for matching points between the active and selected objects. If zero, there is no limit"
     PROP_ITEM_CAGEOBJECT_DESCRIPTION = "Object to use as cage instead of calculating the cage from the active object with cage extrusion"
+    PROP_ITEM_MATGROUPS_INDEX_DESCRIPTION = "Divide materials into separate groups by assigning an according group index.\nBy default, BakeMaster will merge all materials, meaning if you, let's say, had Diffuse Color data output in every material and chose to bake Diffuse map, a single Diffuse image texture will be baked. Baked map sets for materials with different group indexes will be separated"
     PROP_ITEM_ACTIVEUV_DESCRIPTION = "Choose active UVMap layer among created to use in the bake.\nIf mesh has got no UV layers, auto UV unwrap will be proceeded"
     PROP_ITEM_UVTYPE_DESCRIPTION = "UVMap type"
     PROP_ITEM_UVTILEDINDEXES_DESCRIPTION = "UDIM tile index of UDIM tiles baking range.\nUDIMs baking range is used for defining UDIM tiles baking boundaries. Bake result will only affect specified range of tiles (Start Tile Index - End Tile Index)"

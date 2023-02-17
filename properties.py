@@ -241,6 +241,10 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Expand/Collapse UV Settings panel",
         default=False)
 
+    global_is_matgroups_panel_expanded : bpy.props.BoolProperty(
+        name="Expand/Collapse Material Groups panel",
+        default=False)
+
     global_is_csh_panel_expanded : bpy.props.BoolProperty(
         name="Expand/Collapse Shading Settings panel",
         default=False)
@@ -2049,6 +2053,18 @@ class BM_Object_ChannelPack(bpy.types.PropertyGroup):
         items=BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_A,
         update=BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_A)
     R1G1B1A_map_A_index : bpy.props.IntProperty(default=-1)
+
+class BM_MATGROUPS_Item(bpy.types.PropertyGroup):
+    global_material_name : bpy.props.StringProperty(
+        name="Object's material" + BM_Labels.PROP_ITEM_MATGROUPS_INDEX_DESCRIPTION,
+        default="")
+
+    global_group_index : bpy.props.IntProperty(
+        name="Material Group Index",
+        description=BM_Labels.PROP_ITEM_MATGROUPS_INDEX_DESCRIPTION,
+        default=1,
+        min=1,
+        step=1)
     
 class BM_Object(bpy.types.PropertyGroup):
     global_object_name : bpy.props.StringProperty()
@@ -2262,6 +2278,13 @@ class BM_Object(bpy.types.PropertyGroup):
         description="Scale UV coordinates to bounds to fill the whole UV tile area",
         default=True,
         update=BM_ITEM_PROPS_uv_auto_unwrap_use_scale_to_bounds_Update)
+
+# Item Material Groups Props:
+    matgroups_table_of_mats : bpy.props.CollectionProperty(type=BM_MATGROUPS_Item)
+
+    matgroups_table_of_mats_active_index : bpy.props.IntProperty(
+        name="Object's material",
+        default=-1)
 
 # Item Output Props:
     out_use_unique_per_map : bpy.props.BoolProperty(

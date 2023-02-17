@@ -1754,18 +1754,16 @@ def BM_ActiveIndexUpdate(self, context):
     # if context.scene.bm_props.global_bake_available is False:
         # return
     if len(context.scene.bm_table_of_objects):
-        source_object = BM_Object_Get(None, context)
-        if source_object[1]:
-            source_object = context.scene.objects[source_object[0].global_object_name]
-            
-            if not source_object.visible_get():
-                return
-
-            for ob in context.scene.objects:
-                ob.select_set(False)
-
-            source_object.select_set(True)
-            context.view_layer.objects.active = source_object
+        object = BM_Object_Get(None, context)
+        if not object[1]:
+            return
+        source_object = context.scene.objects[object[0].global_object_name]
+        if not source_object.visible_get():
+            return
+        for ob in context.scene.objects:
+            ob.select_set(False)
+        source_object.select_set(True)
+        context.view_layer.objects.active = source_object
 
 def BM_LastEditedProp_Write(context, name: str, prop: str, value: any, is_map: bool):
     context.scene.bm_props.global_last_edited_prop = prop
@@ -2434,6 +2432,20 @@ def BM_ITEM_PROPS_uv_bake_target_Items(self, context):
         items = [('IMAGE_TEXTURES', "Image Textures", "Bake to image texture files (image files)")]
     
     return items
+
+###############################################################
+### matgroups Props Funcs ###
+###############################################################
+def BM_ITEM_PROPS_matgroups_Refresh(object, source_object):
+    for matgroup_item_index in range(len(object.matgroups_table_of_mats) - 1, -1, -1):
+        object.matgroups_table_of_mats.remove(matgroup_item_index)
+    for material_index, material in enumerate(source_object.data.materials):
+        new_matgroup_item = object.matgroups_table_of_mats.add()
+        new_matgroup_item.global_group_index = material_index
+        new_matgroup_item.global_material_name = material.name
+    len_of_mats_exact = len(object.matgroups_table_of_mats) - 1
+    if object.matgroups_table_of_mats_active_index > len_of_mats_exact:
+        object.matgroups_table_of_mats_active_index = len_of_mats_exact 
 
 ###############################################################
 ### out Props Funcs ###

@@ -834,6 +834,21 @@ class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
                 object.hl_is_lowpoly = False
         return {'FINISHED'}
 
+class BM_OT_ITEM_MatGroups_Table_Refresh(bpy.types.Operator):
+    bl_idname = 'bakemaster.item_matgroups_table_refresh'
+    bl_label = ""
+    bl_description = "Refresh Object's materials if they have changed"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        object = BM_Object_Get(None, context)
+        if not object[1]:
+            return {'FINISHED'}
+        print('hey')
+        source_object = context.scene.objects[object[0].global_object_name]
+        BM_ITEM_PROPS_matgroups_Refresh(object[0], source_object)
+        return {'FINISHED'}
+
 class BM_OT_ITEM_ChannelPack_Table_Add(bpy.types.Operator):
     bl_idname = 'bakemaster.item_channelpack_table_add'
     bl_label = ""

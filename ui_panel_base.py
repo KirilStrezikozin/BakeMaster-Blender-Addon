@@ -280,6 +280,19 @@ class BM_UL_Table_of_Objects_Item_Highpoly(bpy.types.UIList):
     def invoke(self, context, event):
         pass
 
+class BM_UL_Table_of_MatGroups_Item(bpy.types.UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        split = layout.row().split(factor=1.0 - 0.12*len(str(item.global_group_index)))
+        split.column().label(text=item.global_material_name + " ", icon='MATERIAL')
+        index_column = split.column()
+        index_column.prop(item, 'global_group_index', text="")
+
+    def draw_filter(self, context, layout):
+        pass
+    
+    def invoke(self, context, event):
+        pass
+
 class BM_UL_Table_of_Maps_Item(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         index_value = item.global_map_index
@@ -771,47 +784,74 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                         # else:
                             # hl_box_cage.prop(object, 'hl_cage_extrusion', text="Extrusion")
         
-        # highs and cage are drawn for global uni_c objects
+        # highs, cage, and matgroups are drawn for global uni_c objects
         # everything else not
-        if draw_all is False:
+        if draw_all:
+            # uv
+            uv_box = layout.box()
+            uv_box.use_property_split = True
+            uv_box.use_property_decorate = False
+
+            # uv header
+            uv_box_header = uv_box.row(align=True)
+            uv_box_header.use_property_split = False
+            uv_box_header.emboss = 'NONE'
+            icon = 'TRIA_DOWN' if scene.bm_props.global_is_uv_panel_expanded else 'TRIA_RIGHT'
+            uv_box_header.prop(scene.bm_props, 'global_is_uv_panel_expanded', text="", icon=icon)
+            uv_box_header.emboss = 'NORMAL'
+            uv_box_header.label(text="UVs and Layers")
+            BM_PT_UV_Presets.draw_panel_header(uv_box_header)
+
+            # uv body
+            if scene.bm_props.global_is_uv_panel_expanded:
+                uv_box.prop(object, 'uv_use_unique_per_map')
+
+                if object.uv_use_unique_per_map is False:
+                    # uv
+                    uv_box_column = uv_box.column(align=True)
+                    uv_box_column.prop(object, 'uv_bake_data')
+                    uv_box_column.prop(object, 'uv_bake_target')
+                    if object.uv_bake_target == 'IMAGE_TEXTURES':
+                        uv_box_column = uv_box.column(align=True)
+                        uv_box_column.prop(object, 'uv_active_layer')
+                        uv_box_column.prop(object, 'uv_type')
+                        uv_box_column.prop(object, 'uv_snap_islands_to_pixels')
+                        uv_box_column = uv_box.column(align=True)
+                        if object.uv_active_layer != 'NONE_AUTO_CREATE':
+                            uv_box_column.prop(object, 'uv_use_auto_unwrap')
+                        if object.uv_use_auto_unwrap or object.uv_active_layer == 'NONE_AUTO_CREATE':
+                            uv_box_column.prop(object, 'uv_auto_unwrap_angle_limit')
+                            uv_box_column.prop(object, 'uv_auto_unwrap_island_margin')
+                            uv_box_column.prop(object, 'uv_auto_unwrap_use_scale_to_bounds')
+
+        # matgroups
+        matgroups_box = layout.box()
+        matgroups_box.use_property_split = True
+        matgroups_box.use_property_decorate = False
+
+        # matgroups_box header
+        matgroups_box_header = matgroups_box.row(align=True)
+        matgroups_box_header.use_property_split = False
+        matgroups_box_header.emboss = 'NONE'
+        icon = 'TRIA_DOWN' if scene.bm_props.global_is_matgroups_panel_expanded else 'TRIA_RIGHT'
+        matgroups_box_header.prop(scene.bm_props, 'global_is_matgroups_panel_expanded', text="", icon=icon)
+        matgroups_box_header.emboss = 'NORMAL'
+        matgroups_box_header.label(text="Material Groups")
+        # no presets
+
+        # matgroups body
+        if scene.bm_props.global_is_matgroups_panel_expanded:
+            # maps table
+            mg_table_box = layout.box()
+            mg_table_row = mg_table_box.row()
+
+            rows = BM_template_list_get_rows(object.matgroups_table_of_mats, 4, 0, 5, False)
+            mg_table_row.template_list('BM_UL_Table_of_MatGroups_Item', "", object, 'matgroups_table_of_mats', object, 'matgroups_table_of_mats_active_index', rows=rows)
+            mg_table_column = mg_table_row.column(align=True)
+            mg_table_column.operator(BM_OT_ITEM_MatGroups_Table_Refresh.bl_idname, text="", icon='FILE_REFRESH')
+
+        if not draw_all:
             return
-
-        # uv
-        uv_box = layout.box()
-        uv_box.use_property_split = True
-        uv_box.use_property_decorate = False
-
-        # uv header
-        uv_box_header = uv_box.row(align=True)
-        uv_box_header.use_property_split = False
-        uv_box_header.emboss = 'NONE'
-        icon = 'TRIA_DOWN' if scene.bm_props.global_is_uv_panel_expanded else 'TRIA_RIGHT'
-        uv_box_header.prop(scene.bm_props, 'global_is_uv_panel_expanded', text="", icon=icon)
-        uv_box_header.emboss = 'NORMAL'
-        uv_box_header.label(text="UVs and Layers")
-        BM_PT_UV_Presets.draw_panel_header(uv_box_header)
-
-        # uv body
-        if scene.bm_props.global_is_uv_panel_expanded:
-            uv_box.prop(object, 'uv_use_unique_per_map')
-
-            if object.uv_use_unique_per_map is False:
-                # uv
-                uv_box_column = uv_box.column(align=True)
-                uv_box_column.prop(object, 'uv_bake_data')
-                uv_box_column.prop(object, 'uv_bake_target')
-                if object.uv_bake_target == 'IMAGE_TEXTURES':
-                    uv_box_column = uv_box.column(align=True)
-                    uv_box_column.prop(object, 'uv_active_layer')
-                    uv_box_column.prop(object, 'uv_type')
-                    uv_box_column.prop(object, 'uv_snap_islands_to_pixels')
-                    uv_box_column = uv_box.column(align=True)
-                    if object.uv_active_layer != 'NONE_AUTO_CREATE':
-                        uv_box_column.prop(object, 'uv_use_auto_unwrap')
-                    if object.uv_use_auto_unwrap or object.uv_active_layer == 'NONE_AUTO_CREATE':
-                        uv_box_column.prop(object, 'uv_auto_unwrap_angle_limit')
-                        uv_box_column.prop(object, 'uv_auto_unwrap_island_margin')
-                        uv_box_column.prop(object, 'uv_auto_unwrap_use_scale_to_bounds')
 
         # shading
         csh_box = layout.box()
