@@ -444,7 +444,7 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
 
                 ### constructing new Table_of_Objects items
                 for index, shell in enumerate(groups):
-                    new_container = BM_Table_of_Objects_Add(scene, context)
+                    universal_container = BM_Table_of_Objects_Add(scene, context)
 
                     # name is set to the root_name of the first object in the shell
                     universal_container.nm_container_name_old = BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, CombineToRaw(roots[shell[0]][0]))

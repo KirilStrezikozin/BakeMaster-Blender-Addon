@@ -659,12 +659,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                 for map_index, map in enumerate(object.global_maps):
                     to_remove.append(map_index)
                 for map_index in sorted(to_remove, reverse=True):
-                    # unset highpolies
-                    BM_ITEM_PROPS_hl_highpoly_SyncedRemoval(context, map_index, 'MAP', False)
-                    # update use_cage
-                    BM_ITEM_PROPS_hl_cage_UpdateOnRemove(context, map_index, 'MAP')
-                    object.global_maps.remove(map_index)
-                    BM_ITEM_PROPS_hl_highpoly_EnsureHighpolyMarked(context)
+                    BM_Table_of_Maps_Remove(object.global_maps, context, map_index)
                 object.global_maps_active_index = 0
 
                 # add
@@ -2255,7 +2250,7 @@ def BM_ITEM_PROPS_hl_highpoly_unset_none(context, container):
 
     for index in sorted(to_remove, reverse=True):
         container.hl_highpoly_table.remove(index)
-    container.hl_highpoly_table_active_index = highpoly_index
+    container.hl_highpoly_table_active_index = highpoly_index - 1
 
 def BM_ITEM_PROPS_hl_highpoly_UpdateOnAddOT(context):
     for object in context.scene.bm_table_of_objects:
