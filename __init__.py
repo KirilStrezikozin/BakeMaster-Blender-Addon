@@ -122,6 +122,8 @@ classes = (
     BM_OT_MAP_Highpoly_Table_Add,
     BM_OT_MAP_Highpoly_Table_Remove,
     BM_OT_ITEM_MatGroups_Table_Refresh,
+    BM_OT_ITEM_MatGroups_Table_EqualizeGroups,
+    BM_OT_ITEM_MatGroups_Table_UnequalizeGroups,
     BM_OT_ITEM_ChannelPack_Table_Add,
     BM_OT_ITEM_ChannelPack_Table_Remove,
     BM_OT_ITEM_ChannelPack_Table_Trash,

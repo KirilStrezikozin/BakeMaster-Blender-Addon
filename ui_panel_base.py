@@ -849,6 +849,11 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
             mg_table_row.template_list('BM_UL_Table_of_MatGroups_Item', "", object, 'matgroups_table_of_mats', object, 'matgroups_table_of_mats_active_index', rows=rows)
             mg_table_column = mg_table_row.column(align=True)
             mg_table_column.operator(BM_OT_ITEM_MatGroups_Table_Refresh.bl_idname, text="", icon='FILE_REFRESH')
+            mg_table_column.separator(factor=1.0)
+            mg_table_column.operator(BM_OT_ITEM_MatGroups_Table_EqualizeGroups.bl_idname, text="", icon='STICKY_UVS_LOC')
+            mg_table_column.operator(BM_OT_ITEM_MatGroups_Table_UnequalizeGroups.bl_idname, text="", icon='STICKY_UVS_DISABLE')
+            mg_table_props = mg_table_box.column(align=True)
+            mg_table_props.prop(object, 'matgroups_batch_naming_type')
 
         if not draw_all:
             return

@@ -599,6 +599,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'uv_auto_unwrap_angle_limit' : self.uv_auto_unwrap_angle_limit,
             'uv_auto_unwrap_island_margin' : self.uv_auto_unwrap_island_margin,
             'uv_auto_unwrap_use_scale_to_bounds' : self.uv_auto_unwrap_use_scale_to_bounds,
+            'matgroups_batch_naming_type' : self.matgroups_batch_naming_type,
             'uv_use_unique_per_map' : self.uv_use_unique_per_map,
             'out_use_denoise' : self.out_use_denoise,
             'out_use_scene_color_management' : self.out_use_scene_color_management,
@@ -2441,7 +2442,7 @@ def BM_ITEM_PROPS_matgroups_Refresh(object, source_object):
         object.matgroups_table_of_mats.remove(matgroup_item_index)
     for material_index, material in enumerate(source_object.data.materials):
         new_matgroup_item = object.matgroups_table_of_mats.add()
-        new_matgroup_item.global_group_index = material_index
+        new_matgroup_item.global_group_index = 1
         new_matgroup_item.global_material_name = material.name
     len_of_mats_exact = len(object.matgroups_table_of_mats) - 1
     if object.matgroups_table_of_mats_active_index > len_of_mats_exact:
@@ -3480,6 +3481,9 @@ def BM_ITEM_PROPS_uv_auto_unwrap_island_margin_Update(self, context):
 def BM_ITEM_PROPS_uv_auto_unwrap_use_scale_to_bounds_Update(self, context):
     name = "Object UVs & Layers: Auto unwrap scale to bounds"
     BM_LastEditedProp_Write(context, name, "uv_auto_unwrap_use_scale_to_bounds", getattr(self, "uv_auto_unwrap_use_scale_to_bounds"), False)
+def BM_ITEM_PROPS_matgroups_batch_naming_type_Update(self, context):
+    name = "Object MatGroups: Mat Groups naming"
+    BM_LastEditedProp_Write(context, name, "matgroups_batch_naming_type", getattr(self, "matgroups_batch_naming_type"), False)
 def BM_ITEM_PROPS_out_use_denoise_Update(self, context):
     name = "Object Format: Denoise"
     BM_LastEditedProp_Write(context, name, "out_use_denoise", getattr(self, "out_use_denoise"), False)

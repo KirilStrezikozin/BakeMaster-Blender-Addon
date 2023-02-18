@@ -837,16 +837,39 @@ class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
 class BM_OT_ITEM_MatGroups_Table_Refresh(bpy.types.Operator):
     bl_idname = 'bakemaster.item_matgroups_table_refresh'
     bl_label = ""
-    bl_description = "Refresh Object's materials if they have changed"
+    bl_description = "Recreate Object's materials groups"
     bl_options = {'INTERNAL', 'UNDO'}
 
     def execute(self, context):
         object = BM_Object_Get(None, context)
         if not object[1]:
             return {'FINISHED'}
-        print('hey')
         source_object = context.scene.objects[object[0].global_object_name]
         BM_ITEM_PROPS_matgroups_Refresh(object[0], source_object)
+        return {'FINISHED'}
+
+class BM_OT_ITEM_MatGroups_Table_EqualizeGroups(bpy.types.Operator):
+    bl_idname = 'bakemaster.item_matgroups_table_equalizegroups'
+    bl_label = ""
+    bl_description = "Make all materials sit in the same material group"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        object = BM_Object_Get(None, context)[0]
+        for matgroup in object.matgroups_table_of_mats:
+            matgroup.global_group_index = 1
+        return {'FINISHED'}
+
+class BM_OT_ITEM_MatGroups_Table_UnequalizeGroups(bpy.types.Operator):
+    bl_idname = 'bakemaster.item_matgroups_table_unequalizegroups'
+    bl_label = ""
+    bl_description = "Make all materials sit in different material groups"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        object = BM_Object_Get(None, context)[0]
+        for matgroup_index, matgroup in enumerate(object.matgroups_table_of_mats):
+            matgroup.global_group_index = matgroup_index + 1
         return {'FINISHED'}
 
 class BM_OT_ITEM_ChannelPack_Table_Add(bpy.types.Operator):

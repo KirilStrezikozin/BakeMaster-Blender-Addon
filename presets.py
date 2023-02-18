@@ -506,8 +506,11 @@ class BM_AddPresetBase():
                                 file_preset.write("%s\n" % line)
 
                     for rna_path in self.preset_values:
-                        value = eval(rna_path)
-                        rna_recursive_attr_expand(value, rna_path, 1, add_except, except_type, except_for)
+                        try:
+                            value = eval(rna_path)
+                            rna_recursive_attr_expand(value, rna_path, 1, add_except, except_type, except_for)
+                        except Exception as error:
+                            print("BakeMaster: Error while evaluating preset rnas: %s" % error)
 
                     # Custom for BakeMaster ended
 
@@ -594,7 +597,6 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.hl_max_ray_distance",
         # "bm_item.hl_cage",
 
-        "bm_item.uv_use_unique_per_map",
         "bm_item.uv_bake_data",
         "bm_item.uv_bake_target",
         # "bm_item.uv_active_layer",
@@ -605,6 +607,8 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.uv_auto_unwrap_island_margin",
         "bm_item.uv_auto_unwrap_use_scale_to_bounds",
         "bm_item.uv_use_unique_per_map",
+
+        "bm_item.matgroups_batch_naming_type",
 
         "bm_item.csh_use_triangulate_lowpoly",
         "bm_item.csh_use_lowpoly_recalc_normals",
@@ -682,7 +686,6 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.hl_max_ray_distance",
         # "bm_item.hl_cage",
 
-        "bm_item.uv_use_unique_per_map",
         "bm_item.uv_bake_data",
         "bm_item.uv_bake_target",
         # "bm_item.uv_active_layer",
@@ -693,6 +696,8 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.uv_auto_unwrap_island_margin",
         "bm_item.uv_auto_unwrap_use_scale_to_bounds",
         "bm_item.uv_use_unique_per_map",
+
+        "bm_item.matgroups_batch_naming_type",
 
         "bm_item.csh_use_triangulate_lowpoly",
         "bm_item.csh_use_lowpoly_recalc_normals",
@@ -777,7 +782,7 @@ class BM_OT_UV_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.uv_auto_unwrap_angle_limit",
         "bm_item.uv_auto_unwrap_island_margin",
         "bm_item.uv_auto_unwrap_use_scale_to_bounds",
-        "bm_map.uv_use_unique_per_map",
+        "bm_item.uv_use_unique_per_map",
     ]
 
 class BM_OT_CSH_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
@@ -841,7 +846,7 @@ class BM_OT_OUT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_map.out_use_adaptive_sampling",
         "bm_map.out_adaptive_threshold",
         "bm_map.out_min_samples",
-        "bm_map.out_use_unique_per_map",
+        "bm_item.out_use_unique_per_map",
     ]
 
 class BM_OT_FULL_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):

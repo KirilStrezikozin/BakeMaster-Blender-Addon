@@ -1,6 +1,6 @@
 {
     "files.autoSave": "afterDelay",
-    "workbench.colorTheme": "Monokai Alt",
+    "workbench.colorTheme": "GitHub Dark Dimmed",
     "files.exclude": {
         "**/.git": true,
         "**/__pycache__": true
