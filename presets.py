@@ -653,6 +653,7 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.bake_create_material",
         "bm_item.bake_assign_modifiers",
         "bm_item.bake_device",
+        "bm_item.bake_view_from",
         "bm_item.bake_hide_when_inactive",
         "bm_item.bake_vg_index",
     ]
@@ -1141,6 +1142,7 @@ class BM_OT_BAKE_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.bake_create_material",
         "bm_item.bake_assign_modifiers",
         "bm_item.bake_device",
+        "bm_item.bake_view_from",
         "bm_item.bake_hide_when_inactive",
         "bm_item.bake_vg_index",
     ]

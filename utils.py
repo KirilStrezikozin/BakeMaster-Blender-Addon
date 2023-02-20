@@ -642,6 +642,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'bake_create_material' : self.bake_create_material,
             'bake_assign_modifiers' : self.bake_assign_modifiers,
             'bake_device' : self.bake_device,
+            'bake_view_from' : self.bake_view_from,
         }
 
         # apply props values to all container objects
@@ -1020,6 +1021,7 @@ def BM_TEXSET_OBJECT_PROPS_syncer_Sync(self, context):
         'bake_create_material',
         'bake_assign_modifiers',
         'bake_device',
+        'bake_view_from',
     }
     props_channelpack = {
         'global_channelpack_type',
@@ -3596,6 +3598,9 @@ def BM_ITEM_PROPS_bake_assign_modifiers_Update(self, context):
 def BM_ITEM_PROPS_bake_device_Update(self, context):
     name = "Object Bake Output: Device"
     BM_LastEditedProp_Write(context, name, "bake_device", getattr(self, "bake_device"), False)
+def BM_ITEM_PROPS_bake_view_from_Update(self, context):
+    name = "Object Bake Output: View from"
+    BM_LastEditedProp_Write(context, name, "bake_view_from", getattr(self, "bake_view_from"), False)
 def BM_ITEM_PROPS_bake_hide_when_inactive_Update(self, context):
     name = "Object Bake Output: Hide when Inactive"
     BM_LastEditedProp_Write(context, name, "bake_hide_when_inactive", getattr(self, "bake_hide_when_inactive"), False)

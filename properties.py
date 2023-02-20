@@ -2651,6 +2651,14 @@ class BM_Object(bpy.types.PropertyGroup):
                ('CPU', "CPU", "Use CPU for baking")],
         update=BM_ITEM_PROPS_bake_device_Update)
 
+    bake_view_from : bpy.props.EnumProperty(
+        name="Bake View from",
+        description="Source of reflection ray directions",
+        default='ABOVE_SURFACE',
+        items=[('ABOVE_SURFACE', "Above Surface", "Cast rays from above the surface. Default"),
+               ('ACTIVE_CAMERA', "Active Camera", "Use the active scene camera's position to cast rays")],
+        update=BM_ITEM_PROPS_bake_view_from_Update)
+
     bake_hide_when_inactive : bpy.props.BoolProperty(
         name="Hide when Inactive",
         description="If checked, Object's Mesh will not affect any other Objects while baking",

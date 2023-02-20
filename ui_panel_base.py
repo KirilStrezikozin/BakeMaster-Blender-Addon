@@ -1566,6 +1566,8 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
                 bake_layout_device.active = True
             else:
                 bake_layout_device.active = context.preferences.addons['cycles'].preferences.has_active_device()
+            if bpy.app.version >= (3, 4, 0):
+                bake_box_column.prop(object, 'bake_view_from')
             bake_box_column.prop(object, 'bake_create_material')
             bake_box_column.prop(object, 'bake_assign_modifiers')
             # bake_box_column.prop(scene.bm_props, 'global_bake_use_save_log')
