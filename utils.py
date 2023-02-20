@@ -1639,6 +1639,9 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context, object=None, map=None
             return map.map_normal_preset
         else:
             return map.map_normal_custom_preset
+
+    def get_matgroup(container):
+        return "#"
     
     if object is None:
         object = BM_Object_Get(self, context)[0]
@@ -1671,6 +1674,7 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context, object=None, map=None
         "$mapdenoise" : "denoised" if out_container.out_use_denoise else "",
         "$mapnormal" : get_mapnormal(map),
         "$mapuv" : uv_container.uv_active_layer,
+        "$matgroup" : get_matgroup(object),
         "$engine" : self.bake_device,
         "$autouv" : "autouv" if self.uv_use_auto_unwrap else "",
     }
@@ -1678,6 +1682,7 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context, object=None, map=None
     preview = ""
     temp_preview = ""
     finding_keyword = False
+    matgroup_tags_poses = []
     for index, char in enumerate(self.bake_batchname):
         # adding chars until $ found - means that we need to insert keyword
         if finding_keyword is False:
@@ -1701,6 +1706,10 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context, object=None, map=None
                 if index == len(self.bake_batchname) - 1:
                     preview += temp_preview
             else:
+                # saving matgroup tags positions to neglect translation
+                if temp_preview.lower() == "$matgroup":
+                    matgroup_tags_poses.append(len(preview))
+
                 # keyword found, add its value to preview
                 if gen_keywords_values[temp_preview.lower()] is None:
                     finding_keyword = False
@@ -1724,8 +1733,19 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context, object=None, map=None
 
     # translate
     trans = str.maketrans({char: "_" for char in " |!@#$%^&*(){}:\";'[]<>,.\\/?"})
-    preview = preview.translate(trans).strip("_")
+    preview = preview.translate(trans)
 
+    # reinsert matgroup tags
+    matgroup_tag_value = get_matgroup(object)
+    preview_l = list(preview)
+    for pos in matgroup_tags_poses:
+        try:
+            preview_l[pos] = matgroup_tag_value
+        except IndexError:
+            preview_l.insert(pos, matgroup_tag_value)
+    preview = "".join(preview_l)
+
+    preview = preview.strip("_")
     return preview
 
 def BM_ITEM_PROPS_bake_batchname_use_caps_Update(self, context):
