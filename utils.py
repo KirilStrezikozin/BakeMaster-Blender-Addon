@@ -2455,11 +2455,19 @@ def BM_ITEM_PROPS_uv_bake_target_Items(self, context):
 ### matgroups Props Funcs ###
 ###############################################################
 def BM_ITEM_PROPS_matgroups_Refresh(object, source_object):
+    config_old = {}
     for matgroup_item_index in range(len(object.matgroups_table_of_mats) - 1, -1, -1):
+        matgroup_item = object.matgroups_table_of_mats[matgroup_item_index]
+        config_old[matgroup_item.global_material_name] = matgroup_item.global_group_index
         object.matgroups_table_of_mats.remove(matgroup_item_index)
     for material_index, material in enumerate(source_object.data.materials):
+        if material is None:
+            continue
         new_matgroup_item = object.matgroups_table_of_mats.add()
-        new_matgroup_item.global_group_index = 1
+        try:
+            new_matgroup_item.global_group_index = config_old[material.name]
+        except KeyError:
+            new_matgroup_item.global_group_index = 1
         new_matgroup_item.global_material_name = material.name
     len_of_mats_exact = len(object.matgroups_table_of_mats) - 1
     if object.matgroups_table_of_mats_active_index > len_of_mats_exact:
