@@ -282,7 +282,8 @@ class BM_UL_Table_of_Objects_Item_Highpoly(bpy.types.UIList):
 
 class BM_UL_Table_of_MatGroups_Item(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        split = layout.row().split(factor=1.0 - 0.12*len(str(item.global_group_index)))
+        factor=1.0 - 0.13*len(str(item.global_group_index))
+        split = layout.row().split(factor=factor)
         split.column().label(text=item.global_material_name + " ", icon='MATERIAL')
         index_column = split.column()
         index_column.prop(item, 'global_group_index', text="")
@@ -842,7 +843,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
         # matgroups body
         if scene.bm_props.global_is_matgroups_panel_expanded:
             # maps table
-            mg_table_box = layout.box()
+            mg_table_box = matgroups_box.box()
             mg_table_row = mg_table_box.row()
 
             rows = BM_template_list_get_rows(object.matgroups_table_of_mats, 4, 0, 5, False)

@@ -2288,7 +2288,7 @@ class BM_Object(bpy.types.PropertyGroup):
 
     matgroups_batch_naming_type : bpy.props.EnumProperty(
         name="Mat Groups naming",
-        description="How to name material groups in the output image batch name if it contains $matgroups",
+        description="How to name material groups in the output image batch name if it contains $matgroup tag",
         default='GROUP_INDEX',
         items=[('GROUP_INDEX', 'Index', "Put material group index into the batch name"),
                ('GROUP_NAMES', 'Materials names', "Put material names with the same group index into the batch name")],
