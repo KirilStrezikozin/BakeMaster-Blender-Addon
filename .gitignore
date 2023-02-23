@@ -1,5 +1,8 @@
-# Compiled python
+.idea/
+.DS_Store
+
+# ignore compiled python
 __pycache__/
 
-# Sphinx documentation
+# ignore sphinx builds
 docs/_build

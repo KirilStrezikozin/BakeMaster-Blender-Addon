@@ -18,8 +18,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-import bpy
-from .ui_panel_base import *
+from .ui_base import *
 
 bm_space_type = 'VIEW_3D'
 bm_region_type = 'UI'

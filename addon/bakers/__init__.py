@@ -18,9 +18,3 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-
-# This file is used by addon's dev.
-# This file is not included with the addon.
-# Addon's actual tree is located in ./addon/
-
-import addon

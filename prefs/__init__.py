@@ -1,5 +1,3 @@
-#! /bin/bash
-
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
 # "BakeMaster" Add-on
@@ -19,26 +17,4 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
-
-
-# Minimal bash file for addon's dev commands execution
-
-# Sync non-version-dependant files
-# (copy those files from the given path into the current directory)
-# Example: ./run sync-files path/to/dir
-if [[ "$1" == "sync-files" ]]; then
-    FROM_DIR=$2 
-    cp $FROM_DIR/.gitignore ./
-    cp $FROM_DIR/LICENSE ./
-    cp $FROM_DIR/README.md ./
-    cp $FROM_DIR/README.txt ./
-    cp $FROM_DIR/__init__.py ./
-    cp $FROM_DIR/operators.py ./
-    cp $FROM_DIR/presets.py ./
-    cp $FROM_DIR/properties.py ./
-    cp $FROM_DIR/ui_panel.py ./
-    cp $FROM_DIR/ui_panel_base.py ./
-    cp $FROM_DIR/utils.py ./
-    cp $FROM_DIR/utils_bm_gets.py ./
-fi
 

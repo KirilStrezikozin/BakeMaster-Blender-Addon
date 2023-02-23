@@ -378,12 +378,6 @@ class BM_Map(bpy.types.PropertyGroup):
     
     global_map_index : bpy.props.IntProperty()
 
-    global_affect_by_hl : bpy.props.BoolProperty(
-        name="Affect by High to Lowpoly Settings",
-        description="Use High to Lowpoly Settigns for baking this map. If checked, bake will be performed from highpoly to lowpoly, otherwise just bake lowpoly",
-        default=True,
-        update=BM_MAP_PROPS_global_affect_by_hl_Update)
-
     global_map_object_index : bpy.props.IntProperty(default=-1)
     
 # Map High to Lowpoly props:
