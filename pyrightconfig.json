@@ -1,0 +1,10 @@
+{
+    "reportGeneralTypeIssues": false,
+    "disable": ["F722"],
+    "venvPath": ".venv",
+    "reportMissingTypeStubs": false,
+    "reportMissingImports": false,
+    "useLibraryCodeForTypes": true,
+    "pythonPath": "/usr/bin/python3",
+    "extraPaths": [],
+}
