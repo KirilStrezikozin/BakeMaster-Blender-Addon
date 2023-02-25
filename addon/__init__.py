@@ -18,12 +18,15 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-from bpy.utils import register_class as bpy_utils_register_class
+from bpy.utils import (
+    register_class as bpy_utils_register_class,
+    unregister_class as bpy_utils_unregister_class,
+)
 from bpy.types import Scene as bpy_types_Scene
 from bpy.props import PointerProperty
 
-import ui_panels
-import properties
+from . import ui_panels
+from . import properties
 
 if "bpy_utils_register_class" in locals():
     from importlib import reload as module_reload
@@ -63,7 +66,7 @@ def register():
 
 def unregister():
     for cls in reversed(classes):
-        bpy_utils_register_class(cls)
+        bpy_utils_unregister_class(cls)
     del bpy_types_Scene.bakemaster
 
 

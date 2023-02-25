@@ -27,25 +27,21 @@ from .utils.ui import (
 
 
 class BM_PT_MainBase(Panel):
-    """
-    BakeMaster Bake Jobs' and other panels' base.
-    """
-    bl_label = "BakeMaster",
-    bl_idname = 'bakemaster.ui_panel_main'
+    bl_label = "BakeMaster"
+    bl_idname = 'BM_PT_MainBase'
 
     @classmethod
     def poll(cls, context):
-        return hasattr(context.scene.bakemaster)
+        return hasattr(context.scene, "bakemaster")
 
     def draw(self, context):
         scene = context.scene
         bakemaster = scene.bakemaster
         layout = self.layout
 
-        box = layout.box()
-        row = box.row()
-        rows = bm_utils_ui_get_uilist_rows(bakemaster.bm_bakejobs, min=1,
-                                           max=5)
+        row = layout.row()
+        rows = bm_utils_ui_get_uilist_rows(bakemaster.bm_bakejobs, min_rows=1,
+                                           max_rows=5)
         row.template_list('BM_UL_BakeJobs_Item', "", bakemaster,
                           'bm_bakejobs', bakemaster,
                           'bm_bakejobs_active_index', rows=rows)

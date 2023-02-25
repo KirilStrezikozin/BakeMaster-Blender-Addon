@@ -31,6 +31,9 @@ bm_category = "BakeMaster"
 
 
 class BM_PT_Main(BM_PT_MainBase):
+    """
+    BakeMaster panel for Bake Jobs and all subpanels.
+    """
     bl_space_type = bm_space_type
     bl_region_type = bm_region_type
     bl_category = bm_category

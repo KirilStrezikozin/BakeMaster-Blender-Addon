@@ -18,5 +18,5 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-def get_uilist_rows(property_group, min: int, max: int):
-    return min(max, max(min, len(property_group)))
+def get_uilist_rows(property_group, min_rows: int, max_rows: int):
+    return min(max_rows, max(min_rows, len(property_group)))
