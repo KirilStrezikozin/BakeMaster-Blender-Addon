@@ -19,15 +19,17 @@
 # ##### END GPL LICENSE BLOCK #####
 
 from bpy.utils import register_class as bpy_utils_register_class
-# from bpy.types import Scene as bpy_types_Scene
-# from bpy.props import CollectionProperty, PointerProperty
+from bpy.types import Scene as bpy_types_Scene
+from bpy.props import PointerProperty
 
 import ui_panels
+import properties
 
 if "bpy_utils_register_class" in locals():
     from importlib import reload as module_reload
 
     module_reload(ui_panels)
+    module_reload(properties)
 
 bl_info = {
     "name": "BakeMaster",
@@ -45,21 +47,24 @@ bl_info = {
 
 classes = (
     ui_panels.BM_PT_Main,
+    ui_panels.BM_UL_BakeJobs_Item,
+
+    properties.BM_PROPS_Local_bakejob,
+    properties.BM_PROPS_Global,
 )
 
 
 def register():
     for cls in classes:
         bpy_utils_register_class(cls)
-    # bpy_types_Scene.bm_table_of_objects = CollectionProperty(type=BM_Object)
-    # bpy_types_Scene.bm_props = PointerProperty(type=BM_SceneProps)
+    bpy_types_Scene.bakemaster = PointerProperty(
+            type=properties.BM_PROPS_Global)
 
 
 def unregister():
     for cls in reversed(classes):
         bpy_utils_register_class(cls)
-    # del bpy_types_Scene.bm_table_of_objects
-    # del bpy_types_Scene.bm_props
+    del bpy_types_Scene.bakemaster
 
 
 if __name__ == "__main__":
