@@ -23,4 +23,25 @@
 # This file is not included with the addon.
 # Addon's actual tree is located in ./addon/
 
-import addon
+from . import addon
+
+bl_info = {
+    "name": "BakeMaster",
+    "description":
+        "Bake various PBR-based or Cycles maps with ease and comfort",
+    "author": "kemplerart",
+    "version": (3, 0, 0),
+    "blender": (2, 83, 0),
+    "location": "View3D > Sidebar > BakeMaster",
+    "warning": "",
+    "wiki_url": "",
+    "tracker_url": "",
+    "category": "Material"
+}
+
+register = addon.register
+unregister = addon.unregister
+
+
+if __name__ == "__main__":
+    register()
