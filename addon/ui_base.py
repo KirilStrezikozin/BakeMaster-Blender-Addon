@@ -19,11 +19,22 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
+from .presets import (BM_PT_FULL_OBJECT_Presets,
+                      BM_PT_OBJECT_Presets,
+                      BM_PT_DECAL_Presets,
+                      BM_PT_HL_Presets,
+                      BM_PT_UV_Presets,
+                      BM_PT_CSH_Presets,
+                      BM_PT_FULL_MAP_Presets,
+                      BM_PT_MAP_Presets,
+                      BM_PT_OUT_Presets,
+                      BM_PT_CHNLP_Presets,
+                      BM_PT_BAKE_Presets)
 from .operators import *
 from .operator_bake import BM_OT_ITEM_Bake
-from .utils import BM_Object_Get
 from .labels import BM_Labels
-from .presets import *
+from utils.bm_utils import source_object as BM_GETUTILS_source_object
+
 
 class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
     bl_idname = __package__
@@ -41,13 +52,13 @@ class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
         layout.prop(bm_props, 'global_use_hide_notbaked')
         layout = self.layout.column(align=True)
         layout.prop(bm_props, 'global_bake_match_maps_type')
-        
+
+
 class BM_ALEP_UL_Objects_Item(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, active_data, active_propname, index):
-        source_object = [object for object in context.scene.bm_table_of_objects if object.global_object_name == item.object_name]
-        if len(source_object) == 0:
-            icon = 'TRIA_RIGHT'
-        else:
+    def draw_item(self, context, layout, data, item, active_data,
+                  active_propname, index):
+        source_object = BM_GETUTILS_source_object(context, item.object_name)
+        if source_object:
             object = source_object[0]
             try:
                 context.scene.objects[object.global_object_name]
@@ -60,6 +71,8 @@ class BM_ALEP_UL_Objects_Item(bpy.types.UIList):
                 icon = 'MESH_PLANE'
             if object.decal_is_decal:
                 icon = 'XRAY'
+        else:
+            icon = 'TRIA_RIGHT'
 
         row = layout.row()
         split = row.split(factor=0.1)
@@ -76,8 +89,10 @@ class BM_ALEP_UL_Objects_Item(bpy.types.UIList):
     def draw_filter(self, context, layout):
         pass
 
+
 class BM_ALEP_UL_Maps_Item(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, active_data, active_propname, index):
+    def draw_item(self, context, layout, data, item, active_data,
+                  active_propname, index):
         row = layout.row()
         split = row.split(factor=0.1)
         column = split.row()
@@ -93,9 +108,12 @@ class BM_ALEP_UL_Maps_Item(bpy.types.UIList):
     def draw_filter(self, context, layout):
         pass
 
+
 class BM_CAUC_UL_Objects_Item(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, active_data, active_propname, index):
-        source_object = [object for object in context.scene.bm_table_of_objects if object.global_object_name == item.object_name]
+    def draw_item(self, context, layout, data, item, active_data,
+                  active_propname, index):
+        source_object = [object for object in context.scene.bm_table_of_objects
+                         if object.global_object_name == item.object_name]
         if len(source_object) == 0:
             layout.label(text="ERROR. Object not found", icon='ERROR')
             return
@@ -974,14 +992,14 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
 
                 # draw format for all maps
                 if object.out_use_unique_per_map is False:
-                    format_box_header.label(text="Format")
-                    BM_PT_OUT_Presets.draw_panel_header(format_box_header)
+                    label = "Format"
                     format_prop_collection = object
                 # draw format unique per map
                 else:
-                    format_box_header.label(text="Map Format")
-                    BM_PT_OUT_Presets.draw_panel_header(format_box_header)
+                    label = "Map Format"
                     format_prop_collection = map
+                format_box_header.label(text=label)
+                BM_PT_OUT_Presets.draw_panel_header(format_box_header)
 
                 # format body
                 if scene.bm_props.global_is_format_panel_expanded:

@@ -19,44 +19,50 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from .utils import *
-from .labels import BM_Labels
+from utils.properties import *
+from labels import BM_Labels
 
-#################################################
-### Apply Lastly Edited Prop Props ###
-#################################################
+
 class BM_ALEP_Object(bpy.types.PropertyGroup):
-    object_name : bpy.props.StringProperty(
+    name: bpy.props.StringProperty(
         name="Object name",
         default="")
-    
-    use_affect : bpy.props.BoolProperty(
+
+    bm_object_index: bpy.props.IntProperty(default=-1)
+
+    use_affect: bpy.props.BoolProperty(
         name="Apply",
         description="Apply property for this object",
         default=True)
 
+
 class BM_ALEP_Map(bpy.types.PropertyGroup):
-    map_name : bpy.props.StringProperty(
+    name: bpy.props.StringProperty(
         name="Map name",
         default="")
-    
+
+    bm_object_index: bpy.props.IntProperty(default=-1)
+
+    bm_map_index: bpy.props.IntProperty(default=-1)
+
     use_affect : bpy.props.BoolProperty(
         name="Apply",
         description="Apply property for this map",
         default=True)
 
+
 class BM_CAUC_Object(bpy.types.PropertyGroup):
-    object_name : bpy.props.StringProperty(
+    name: bpy.props.StringProperty(
         name="Object name",
         default="")
     
-    use_include : bpy.props.BoolProperty(
+    use_include: bpy.props.BoolProperty(
         name="Inlcude as Lowpoly",
         description="Include this object as a regular or Lowpoly Object in new Artificial Container",
         default=False,
         update=BM_CAUC_Object_use_include_Update)
 
-    is_highpoly : bpy.props.BoolProperty(
+    is_highpoly: bpy.props.BoolProperty(
         name="Include as Highpoly",
         description="Include this object as a Highpoly Object in new Artificial Container",
         default=False,

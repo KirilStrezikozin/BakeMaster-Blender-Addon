@@ -18,10 +18,22 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+from os import (makedirs as os_makedirs,
+                remove as os_remove)
+from os.path import (join as os_path_join,
+                     exists as os_path_exists,
+                     isfile as os_path_isfile,
+                     basename as os_path_basename,
+                     splitext as os_path_splitext)
 import bpy
-import os
-# from bl_operators.presets import AddPresetBase
 from bpy.types import Menu
+from bpy.utils import (user_resource as bpy_utils_user_resource,
+                       preset_paths as bpy_utils_preset_paths)
+from bpy.props import (StringProperty as bpy_props_SringProperty,
+                       BoolProperty as bpy_props_BoolProperty)
+from bpy.path import (
+        display_name_to_filepath as bpy_path_display_name_to_filepath
+        )
 
 ###########################################################
 ### Presets Directory Setup ###

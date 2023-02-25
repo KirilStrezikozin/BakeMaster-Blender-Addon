@@ -29,8 +29,8 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
     bl_description = "Move the bake priority of object in the list up and down.\nWhen Name Matching is on, moving Containers bake priority is possible"
     bl_options = {'INTERNAL', 'UNDO'}
 
-    control : bpy.props.EnumProperty(
-        items = [('UP', "Up", ""), ('DOWN', "Down", "")])
+    control: bpy.props.EnumProperty(
+        items=[('UP', "Up", ""), ('DOWN', "Down", "")])
 
     def execute(self, context):
         scene = context.scene
