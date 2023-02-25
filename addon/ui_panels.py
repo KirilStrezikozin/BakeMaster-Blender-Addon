@@ -1,6 +1,6 @@
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
-# "BakeMaster" Add-on
+# "BakeMaster" Add-on (version 3.0.0)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
 # This program is free software; you can redistribute it and/or modify
@@ -18,56 +18,16 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-from .ui_base import *
+from .ui_base import (
+        BM_PT_MainBase,
+        )
 
 bm_space_type = 'VIEW_3D'
 bm_region_type = 'UI'
 bm_category = "BakeMaster"
 
+
 class BM_PT_Main(BM_PT_MainBase):
     bl_space_type = bm_space_type
     bl_region_type = bm_region_type
     bl_category = bm_category
-
-class BM_PT_Item(BM_PT_ItemBase):
-    bl_space_type = bm_space_type
-    bl_region_type = bm_region_type
-    bl_category = bm_category
-    bl_parent_id = BM_PT_Main.bl_idname
-
-class BM_PT_Item_Object(BM_PT_Item_ObjectBase):
-    bl_space_type = bm_space_type
-    bl_region_type = bm_region_type
-    bl_category = bm_category
-    bl_parent_id = BM_PT_Item.bl_idname
-
-class BM_PT_Item_Maps(BM_PT_Item_MapsBase):
-    bl_space_type = bm_space_type
-    bl_region_type = bm_region_type
-    bl_category = bm_category
-    bl_parent_id = BM_PT_Item.bl_idname
-
-class BM_PT_Item_Output(BM_PT_Item_OutputBase):
-    bl_space_type = bm_space_type
-    bl_region_type = bm_region_type
-    bl_category = bm_category
-    bl_parent_id = BM_PT_Item.bl_idname
-
-class BM_PT_TextureSets(BM_PT_TextureSetsBase):
-    bl_space_type = bm_space_type
-    bl_region_type = bm_region_type
-    bl_category = bm_category
-    bl_parent_id = BM_PT_Main.bl_idname
-
-class BM_PT_Bake(BM_PT_BakeBase):
-    bl_space_type = bm_space_type
-    bl_region_type = bm_region_type
-    bl_category = bm_category
-    bl_parent_id = BM_PT_Main.bl_idname
-
-class BM_PT_Help(BM_PT_HelpBase):
-    bl_space_type = bm_space_type
-    bl_region_type = bm_region_type
-    bl_category = bm_category
-    bl_parent_id = BM_PT_Main.bl_idname
-
