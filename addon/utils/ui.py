@@ -1,6 +1,6 @@
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
-# "BakeMaster" Add-on
+# "BakeMaster" Add-on (3.0.0)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
 # This program is free software; you can redistribute it and/or modify
@@ -18,3 +18,5 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+def get_uilist_rows(property_group, min: int, max: int):
+    return min(max, max(min, len(property_group)))
