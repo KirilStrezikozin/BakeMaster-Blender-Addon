@@ -19,8 +19,11 @@
 # ##### END GPL LICENSE BLOCK #####
 
 from .ui_base import (
-        BM_PT_MainBase,
-        )
+    BM_PT_MainBase,
+)
+from bpy.types import (
+    UIList,
+)
 
 bm_space_type = 'VIEW_3D'
 bm_region_type = 'UI'
@@ -31,3 +34,15 @@ class BM_PT_Main(BM_PT_MainBase):
     bl_space_type = bm_space_type
     bl_region_type = bm_region_type
     bl_category = bm_category
+
+
+class BM_UL_BakeJobs_Item(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data,
+                  active_propname, index):
+        self.layout.prop(item, "name")
+
+    def draw_filter(self, context, layout):
+        pass
+
+    def invoke(self, context, event):
+        pass

@@ -20,23 +20,10 @@
 
 from bpy.types import (
     Panel,
-    UIList,
 )
 from .utils.ui import (
-        get_uilist_rows as bm_utils_ui_get_uilist_rows,
+    get_uilist_rows as bm_utils_ui_get_uilist_rows,
 )
-
-
-class BM_UL_BakeJobs_Item(UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data,
-                  active_propname, index):
-        self.layout.prop(item, "name")
-
-    def draw_filter(self, context, layout):
-        pass
-
-    def invoke(self, context, event):
-        pass
 
 
 class BM_PT_MainBase(Panel):
