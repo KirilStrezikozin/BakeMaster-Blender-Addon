@@ -17,3 +17,48 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
+
+from bpy.types import (
+    Panel,
+    UIList,
+)
+from .utils.ui import (
+        get_uilist_rows as bm_utils_ui_get_uilist_rows,
+)
+
+
+class BM_UL_BakeJobs_Item(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data,
+                  active_propname, index):
+        self.layout.prop(item, "name")
+
+    def draw_filter(self, context, layout):
+        pass
+
+    def invoke(self, context, event):
+        pass
+
+
+class BM_PT_MainBase(Panel):
+    """
+    BakeMaster Bake Jobs' and other panels' base.
+    """
+    bl_label = "BakeMaster",
+    bl_idname = 'bakemaster.ui_panel_main'
+
+    @classmethod
+    def poll(cls, context):
+        return hasattr(context.scene.bakemaster)
+
+    def draw(self, context):
+        scene = context.scene
+        bakemaster = scene.bakemaster
+        layout = self.layout
+
+        box = layout.box()
+        row = box.row()
+        rows = bm_utils_ui_get_uilist_rows(bakemaster.bm_bakejobs, min=1,
+                                           max=5)
+        row.template_list('BM_UL_BakeJobs_Item', "", bakemaster,
+                          'bm_bakejobs', bakemaster,
+                          'bm_bakejobs_active_index', rows=rows)
