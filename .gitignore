@@ -6,3 +6,6 @@ __pycache__/
 
 # ignore sphinx builds
 docs/_build
+
+# python virtual env
+venv/
