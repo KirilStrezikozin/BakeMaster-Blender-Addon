@@ -17,3 +17,26 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 # ##### END GPL LICENSE BLOCK #####
+
+from bpy.types import (
+    PropertyGroup,
+)
+from bpy.props import (
+    CollectionProperty,
+    IntProperty,
+    StringProperty,
+)
+
+
+class BM_PROPS_Local_bakejob(PropertyGroup):
+    name: StringProperty(
+        name="Bake Job",
+        description="None",
+        default="")
+
+    index: IntProperty(default=-1)
+
+
+class BM_PROPS_Global(PropertyGroup):
+    bm_bakejobs: CollectionProperty(type=BM_PROPS_Local_bakejob)
+    bm_bakejobs_active_index: IntProperty(default=-1)
