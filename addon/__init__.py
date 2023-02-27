@@ -54,20 +54,22 @@ bl_info = {
 
 classes = (
     ui_panels.BM_PT_BakeJobs,
-    ui_panels.BM_PT_Pipeline,
-    ui_panels.BM_PT_Manager,
-    ui_panels.BM_PT_Objects,
-    ui_panels.BM_PT_Maps,
-    ui_panels.BM_PT_Output,
-    ui_panels.BM_PT_TextureSets,
-    ui_panels.BM_PT_Bake,
+    # ui_panels.BM_PT_Pipeline,
+    # ui_panels.BM_PT_Manager,
+    # ui_panels.BM_PT_Objects,
+    # ui_panels.BM_PT_Maps,
+    # ui_panels.BM_PT_Output,
+    # ui_panels.BM_PT_TextureSets,
+    # ui_panels.BM_PT_Bake,
 
     ui_panels.BM_UL_BakeJobs_Item,
 
     properties.BM_PROPS_Local_bakejob,
     properties.BM_PROPS_Global,
 
-    operators_ui.BM_OT_BakeJobs,
+    operators_ui.BM_OT_BakeJobs_AddRemove,
+    operators_ui.BM_OT_BakeJobs_Move,
+    operators_ui.BM_OT_BakeJobs_Trash,
 )
 
 

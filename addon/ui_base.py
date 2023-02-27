@@ -26,9 +26,9 @@ from .utils.ui import (
 )
 
 
-class BM_PT_MainBase(Panel):
-    bl_label = "BakeMaster"
-    bl_idname = 'BM_PT_MainBase'
+class BM_PT_BakeJobsBase(Panel):
+    bl_label = "Bake Jobs"
+    bl_idname = 'BM_PT_BakeJobsBase'
 
     @classmethod
     def poll(cls, context):
@@ -39,38 +39,39 @@ class BM_PT_MainBase(Panel):
         bakemaster = scene.bakemaster
         layout = self.layout
 
-        len_of_bakejobs = len(bakemaster.bakejobs)
-
         box = layout.box()
         row = box.row()
-        min_rows = 1 if len_of_bakejobs < 2 else 5
-        rows = bm_utils_ui_get_uilist_rows(len_of_bakejobs,
+        min_rows = 1 if bakemaster.bakejobs_len < 2 else 5
+        rows = bm_utils_ui_get_uilist_rows(bakemaster.bakejobs_len,
                                            min_rows=min_rows,
                                            max_rows=5)
         row.template_list('BM_UL_BakeJobs_Item', "", bakemaster,
                           'bakejobs', bakemaster,
                           'bakejobs_active_index', rows=rows)
         col = row.column(align=True)
-        col.operator('bakemaster.bakejobs', text="",
+        col.operator('bakemaster.bakejobs_addremove', text="",
                      icon='ADD').action = 'ADD'
-        if len_of_bakejobs >= 2:
-            col.operator('bakemaster.bakejobs', text="",
-                         icon='REMOVE').action = 'REMOVE'
-            col.separator(factor=1.0)
 
-            is_move_up_active = bakemaster.bakejobs_active_index - 1 >= 0
-            is_move_down_active = bakemaster.bakejobs_active_index + 1 < len(
-                    bakemaster.bakejobs)
-            move_up_row = col.row()
-            move_up_row.operator('bakemaster.bakejobs', text="",
-                                 icon='TRIA_UP').action = 'MOVE_UP'
-            move_up_row.active = is_move_up_active
-            move_down_row = col.row()
-            move_down_row.operator('bakemaster.bakejobs', text="",
-                                   icon='TRIA_DOWN').action = 'MOVE_DOWN'
-            move_down_row.active = is_move_down_active
+        if bakemaster.bakejobs_len < 1:
+            return
 
-            col.separator(factor=1.0)
-            col.emboss = 'NONE'
-            col.operator('bakemaster.bakejobs', text="",
-                         icon='TRASH').action = 'TRASH'
+        col.operator('bakemaster.bakejobs_addremove', text="",
+                     icon='REMOVE').action = 'REMOVE'
+
+        if bakemaster.bakejobs_len < 2:
+            return
+
+        col.separator(factor=1.0)
+        move_up_row = col.row()
+        move_up_row.operator('bakemaster.bakejobs_move', text="",
+                             icon='TRIA_UP').action = 'MOVE_UP'
+        move_up_row.active = bakemaster.bakejobs_active_index - 1 >= 0
+        move_down_row = col.row()
+        move_down_row.operator('bakemaster.bakejobs_move', text="",
+                               icon='TRIA_DOWN').action = 'MOVE_DOWN'
+        move_down_row.active = False
+        if bakemaster.bakejobs_active_index + 1 < bakemaster.bakejobs_len:
+            move_down_row.active = True
+        col.separator(factor=1.0)
+        col.emboss = 'NONE'
+        col.operator('bakemaster.bakejobs_trash', text="", icon='TRASH')
