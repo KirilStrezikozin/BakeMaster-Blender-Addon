@@ -87,6 +87,7 @@ class BM_PT_BakeJobsBase(Panel):
 class BM_PT_PipelineBase(Panel):
     bl_label = "Pipeline"
     bl_idname = 'BM_PT_PipelineBase'
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
@@ -108,6 +109,7 @@ class BM_PT_PipelineBase(Panel):
 class BM_PT_ManagerBase(Panel):
     bl_label = "Manager"
     bl_idname = 'BM_PT_ManagerBase'
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
@@ -150,6 +152,7 @@ class BM_PT_ObjectsBase(Panel):
 class BM_PT_MapsBase(Panel):
     bl_label = "Maps"
     bl_idname = 'BM_PT_MapsBase'
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
@@ -171,6 +174,7 @@ class BM_PT_MapsBase(Panel):
 class BM_PT_OutputBase(Panel):
     bl_label = "Output"
     bl_idname = 'BM_PT_OutputBase'
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
@@ -192,6 +196,7 @@ class BM_PT_OutputBase(Panel):
 class BM_PT_TextureSetsBase(Panel):
     bl_label = "Texture Sets"
     bl_idname = 'BM_PT_TextureSetsBase'
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
