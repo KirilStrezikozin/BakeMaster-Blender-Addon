@@ -31,12 +31,18 @@ from bpy.props import (
 class BM_PROPS_Local_bakejob(PropertyGroup):
     name: StringProperty(
         name="Bake Job",
-        description="None",
-        default="")
+        description="Double click to rename",
+        default="Bake Job")
 
     index: IntProperty(default=-1)
 
 
 class BM_PROPS_Global(PropertyGroup):
     bakejobs: CollectionProperty(type=BM_PROPS_Local_bakejob)
-    bakejobs_active_index: IntProperty(default=-1)
+
+    bakejobs_active_index: IntProperty(
+        name="Bake Job",
+        description="Active Bake Job",
+        default=-1)
+
+    bakejobs_len: IntProperty(default=0)
