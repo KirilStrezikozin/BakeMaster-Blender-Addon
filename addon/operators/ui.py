@@ -24,37 +24,30 @@ from bpy.types import (
 from bpy.props import (
     EnumProperty,
 )
-from ..labels import BM_LABELS_Operators
 
 
-class BM_OT_BakeJobs(Operator):
-    """
-    Bake Jobs Operator for adding and removing bake jobs.
-    """
-    bl_idname = 'bakemaster.bakejobs'
-    bl_label = ""
-    bl_description = BM_LABELS_Operators('BM_OT_BakeJobs', "description").get()
+class BM_OT_BakeJobs_AddRemove(Operator):
+    bl_idname = 'bakemaster.bakejobs_addremove'
+    bl_label = "Add/Remove"
+    bl_description = "Add or Remove Bake Job from the list on the left"
     bl_options = {'INTERNAL', 'UNDO'}
 
     action: EnumProperty(
         items=[('ADD', "Add", ""),
-               ('REMOVE', "Remove", ""),
-               ('TRASH', "Trash", ""),
-               ('MOVE_UP', "Move up", ""),
-               ('MOVE_DOWN', "Move down", "")])
+               ('REMOVE', "Remove", "")])
 
     def invoke(self, context, event):
         return self.execute(context)
 
     def execute(self, context):
         bakemaster = context.scene.bakemaster
-        len_of_bakejobs = len(bakemaster.bakejobs)
 
         if self.action == 'ADD':
             new_bakejob = bakemaster.bakejobs.add()
-            new_bakejob.index = len_of_bakejobs
+            new_bakejob.index = bakemaster.bakejobs_len
             new_bakejob.name = "Bake Job %d" % (new_bakejob.index + 1)
             bakemaster.bakejobs_active_index = new_bakejob.index
+            bakemaster.bakejobs_len += 1
             return {'FINISHED'}
 
         try:
@@ -63,30 +56,64 @@ class BM_OT_BakeJobs(Operator):
             return {'FINISHED'}
 
         if self.action == 'REMOVE':
-            for index in range(bakejob.index, len_of_bakejobs):
+            for index in range(bakejob.index + 1, bakemaster.bakejobs_len):
                 bakemaster.bakejobs[index].index -= 1
-            bakemaster.bakejobs.remove(bakejob.index + 1)
-            if bakemaster.bakejobs_active_index >= len_of_bakejobs - 1:
-                bakemaster.bakejobs_active_index = len_of_bakejobs - 2
-            return {'FINISHED'}
-        elif self.action == 'TRASH':
-            [bakemaster.bakejobs.remove(index) for index in
-             reversed(range(len_of_bakejobs))]
-            bakemaster.bakejobs_active_index = -1
+            bakemaster.bakejobs.remove(bakejob.index)
+            bakemaster.bakejobs_len -= 1
+            if not bakemaster.bakejobs_active_index < bakemaster.bakejobs_len:
+                bakemaster.bakejobs_active_index = bakemaster.bakejobs_len - 1
             return {'FINISHED'}
 
-        mover_indexes = {
+
+class BM_OT_BakeJobs_Move(Operator):
+    bl_idname = 'bakemaster.bakejobs_move'
+    bl_label = "Move"
+    bl_description = "Move the current selected Bake Job up or down (change its bake order)"  # noqa: E261
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    action: EnumProperty(
+        default='MOVE_UP',
+        items=[('MOVE_UP', "Move up", ""),
+               ('MOVE_DOWN', "Move down", "")])
+
+    def invoke(self, context, event):
+        self.mover_indexes = {
             'MOVE_UP': -1,
             'MOVE_DOWN': 1
         }
+        return self.execute(context)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
         try:
-            move_to_index = bakejob.index + mover_indexes[self.action]
-            bakejob_next = bakemaster.bakejobs[move_to_index]
-            if move_to_index < 0 or move_to_index > len_of_bakejobs:
-                raise IndexError
+            bakejob = bakemaster.bakejobs[bakemaster.bakejobs_active_index]
         except IndexError:
-            return {'FINISHED'}
+            return {'CANCELLED'}
+
+        move_to_index = bakejob.index + self.mover_indexes[self.action]
+        if move_to_index < 0 or move_to_index >= bakemaster.bakejobs_len:
+            return {'CANCELLED'}
+
+        bakejob_next = bakemaster.bakejobs[move_to_index]
         bakemaster.bakejobs.move(bakejob.index, bakejob_next.index)
         bakejob.index, bakejob_next.index = bakejob_next.index, bakejob.index
         bakemaster.bakejobs_active_index = bakejob_next.index
+        return {'FINISHED'}
+
+
+class BM_OT_BakeJobs_Trash(Operator):
+    bl_idname = 'bakemaster.bakejobs_trash'
+    bl_label = "Trash"
+    bl_description = "Remove all Bake Jobs from the list on the left"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def invoke(self, context, event):
+        return self.execute(context)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+        [bakemaster.bakejobs.remove(index) for index in
+         reversed(range(bakemaster.bakejobs_len))]
+        bakemaster.bakejobs_active_index = -1
+        bakemaster.bakejobs_len = 0
         return {'FINISHED'}
