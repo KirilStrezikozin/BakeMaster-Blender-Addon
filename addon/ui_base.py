@@ -35,6 +35,9 @@ class BM_PT_BakeJobsBase(Panel):
         return hasattr(context.scene, "bakemaster")
 
     def draw_header_preset(self, context):
+        bakemaster = context.scene.bakemaster
+        if not bakemaster.show_help:
+            return
         self.layout.row().operator('bakemaster.help', text="",
                                    icon='HELP').action = 'BAKEJOBS'
 
@@ -90,6 +93,9 @@ class BM_PT_PipelineBase(Panel):
         return hasattr(context.scene, "bakemaster")
 
     def draw_header_preset(self, context):
+        bakemaster = context.scene.bakemaster
+        if not bakemaster.show_help:
+            return
         self.layout.row().operator('bakemaster.help', text="",
                                    icon='HELP').action = 'PIPELINE'
 
@@ -108,6 +114,9 @@ class BM_PT_ManagerBase(Panel):
         return hasattr(context.scene, "bakemaster")
 
     def draw_header_preset(self, context):
+        bakemaster = context.scene.bakemaster
+        if not bakemaster.show_help:
+            return
         self.layout.row().operator('bakemaster.help', text="",
                                    icon='HELP').action = 'MANAGER'
 
@@ -126,6 +135,9 @@ class BM_PT_ObjectsBase(Panel):
         return hasattr(context.scene, "bakemaster")
 
     def draw_header_preset(self, context):
+        bakemaster = context.scene.bakemaster
+        if not bakemaster.show_help:
+            return
         self.layout.row().operator('bakemaster.help', text="",
                                    icon='HELP').action = 'OBJECTS'
 
@@ -144,6 +156,9 @@ class BM_PT_MapsBase(Panel):
         return hasattr(context.scene, "bakemaster")
 
     def draw_header_preset(self, context):
+        bakemaster = context.scene.bakemaster
+        if not bakemaster.show_help:
+            return
         self.layout.row().operator('bakemaster.help', text="",
                                    icon='HELP').action = 'MAPS'
 
@@ -162,6 +177,9 @@ class BM_PT_OutputBase(Panel):
         return hasattr(context.scene, "bakemaster")
 
     def draw_header_preset(self, context):
+        bakemaster = context.scene.bakemaster
+        if not bakemaster.show_help:
+            return
         self.layout.row().operator('bakemaster.help', text="",
                                    icon='HELP').action = 'OUTPUT'
 
@@ -180,6 +198,9 @@ class BM_PT_TextureSetsBase(Panel):
         return hasattr(context.scene, "bakemaster")
 
     def draw_header_preset(self, context):
+        bakemaster = context.scene.bakemaster
+        if not bakemaster.show_help:
+            return
         self.layout.row().operator('bakemaster.help', text="",
                                    icon='HELP').action = 'TEXSETS'
 
@@ -198,6 +219,9 @@ class BM_PT_BakeBase(Panel):
         return hasattr(context.scene, "bakemaster")
 
     def draw_header_preset(self, context):
+        bakemaster = context.scene.bakemaster
+        if not bakemaster.show_help:
+            return
         self.layout.row().operator('bakemaster.help', text="",
                                    icon='HELP').action = 'BAKE'
 

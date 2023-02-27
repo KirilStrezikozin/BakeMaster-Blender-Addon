@@ -25,6 +25,7 @@ from bpy.props import (
     CollectionProperty,
     IntProperty,
     StringProperty,
+    BoolProperty,
 )
 
 
@@ -38,6 +39,11 @@ class BM_PROPS_Local_bakejob(PropertyGroup):
 
 
 class BM_PROPS_Global(PropertyGroup):
+    show_help: BoolProperty(
+        name="Show Help buttons",
+        description="Allow help buttons in panels' headers",
+        default=True)
+
     bakejobs: CollectionProperty(type=BM_PROPS_Local_bakejob)
 
     bakejobs_active_index: IntProperty(
