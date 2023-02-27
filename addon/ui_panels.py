@@ -42,7 +42,8 @@ class BM_PT_Main(BM_PT_MainBase):
 class BM_UL_BakeJobs_Item(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
-        self.layout.prop(item, "name")
+        layout.emboss = 'NONE'
+        layout.prop(item, "name", text="", icon='SEQUENCE')
 
     def draw_filter(self, context, layout):
         pass

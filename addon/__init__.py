@@ -27,12 +27,16 @@ from bpy.props import PointerProperty
 
 from . import ui_panels
 from . import properties
+from .operators import (
+    ui as operators_ui,
+)
 
 if "bpy_utils_register_class" in locals():
     from importlib import reload as module_reload
 
     module_reload(ui_panels)
     module_reload(properties)
+    module_reload(operators_ui)
 
 bl_info = {
     "name": "BakeMaster",
@@ -54,6 +58,8 @@ classes = (
 
     properties.BM_PROPS_Local_bakejob,
     properties.BM_PROPS_Global,
+
+    operators_ui.BM_OT_BakeJobs,
 )
 
 

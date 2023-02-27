@@ -38,5 +38,5 @@ class BM_PROPS_Local_bakejob(PropertyGroup):
 
 
 class BM_PROPS_Global(PropertyGroup):
-    bm_bakejobs: CollectionProperty(type=BM_PROPS_Local_bakejob)
-    bm_bakejobs_active_index: IntProperty(default=-1)
+    bakejobs: CollectionProperty(type=BM_PROPS_Local_bakejob)
+    bakejobs_active_index: IntProperty(default=-1)

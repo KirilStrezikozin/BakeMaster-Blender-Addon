@@ -39,9 +39,38 @@ class BM_PT_MainBase(Panel):
         bakemaster = scene.bakemaster
         layout = self.layout
 
-        row = layout.row()
-        rows = bm_utils_ui_get_uilist_rows(bakemaster.bm_bakejobs, min_rows=1,
+        len_of_bakejobs = len(bakemaster.bakejobs)
+
+        box = layout.box()
+        row = box.row()
+        min_rows = 1 if len_of_bakejobs < 2 else 5
+        rows = bm_utils_ui_get_uilist_rows(len_of_bakejobs,
+                                           min_rows=min_rows,
                                            max_rows=5)
         row.template_list('BM_UL_BakeJobs_Item', "", bakemaster,
-                          'bm_bakejobs', bakemaster,
-                          'bm_bakejobs_active_index', rows=rows)
+                          'bakejobs', bakemaster,
+                          'bakejobs_active_index', rows=rows)
+        col = row.column(align=True)
+        col.operator('bakemaster.bakejobs', text="",
+                     icon='ADD').action = 'ADD'
+        if len_of_bakejobs >= 2:
+            col.operator('bakemaster.bakejobs', text="",
+                         icon='REMOVE').action = 'REMOVE'
+            col.separator(factor=1.0)
+
+            is_move_up_active = bakemaster.bakejobs_active_index - 1 >= 0
+            is_move_down_active = bakemaster.bakejobs_active_index + 1 < len(
+                    bakemaster.bakejobs)
+            move_up_row = col.row()
+            move_up_row.operator('bakemaster.bakejobs', text="",
+                                 icon='TRIA_UP').action = 'MOVE_UP'
+            move_up_row.active = is_move_up_active
+            move_down_row = col.row()
+            move_down_row.operator('bakemaster.bakejobs', text="",
+                                   icon='TRIA_DOWN').action = 'MOVE_DOWN'
+            move_down_row.active = is_move_down_active
+
+            col.separator(factor=1.0)
+            col.emboss = 'NONE'
+            col.operator('bakemaster.bakejobs', text="",
+                         icon='TRASH').action = 'TRASH'

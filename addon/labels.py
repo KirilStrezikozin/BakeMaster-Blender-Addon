@@ -23,7 +23,7 @@ class BM_LABELS_Props():
     }
 
     def __init__(self, property_group: str, property_name: str,
-                 property_arg: str) -> None:
+                 property_arg: str):
         self.property_group = property_group
         self.property_name = property_name
         self.property_arg = property_arg
@@ -32,6 +32,25 @@ class BM_LABELS_Props():
         try:
             label = self.labels[self.property_group][self.property_name][
                     self.property_arg]
+        except KeyError:
+            label = None
+        return label
+
+
+class BM_LABELS_Operators():
+    labels = {
+        'BM_OT_BakeJobs': {
+            "description": "Add/remove/trash/move order of bake jobs in the table on the left"  # noqa: E501
+        }
+    }
+
+    def __init__(self, operator_name: str, property_name: str):
+        self.operator_name = operator_name
+        self.property_name = property_name
+
+    def get(self):
+        try:
+            label = self.labels[self.operator_name][self.property_name]
         except KeyError:
             label = None
         return label
