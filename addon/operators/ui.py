@@ -24,6 +24,7 @@ from bpy.types import (
 from bpy.props import (
     EnumProperty,
 )
+from ..labels import BM_URLs
 
 
 class BM_OT_BakeJobs_AddRemove(Operator):
@@ -68,7 +69,7 @@ class BM_OT_BakeJobs_AddRemove(Operator):
 class BM_OT_BakeJobs_Move(Operator):
     bl_idname = 'bakemaster.bakejobs_move'
     bl_label = "Move"
-    bl_description = "Move the current selected Bake Job up or down (change its bake order)"  # noqa: E261
+    bl_description = "Move the current selected Bake Job up or down (change its bake order)"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     action: EnumProperty(
@@ -116,4 +117,32 @@ class BM_OT_BakeJobs_Trash(Operator):
          reversed(range(bakemaster.bakejobs_len))]
         bakemaster.bakejobs_active_index = -1
         bakemaster.bakejobs_len = 0
+        return {'FINISHED'}
+
+
+class BM_OT_Help(Operator):
+    bl_idname = 'bakemaster.help'
+    bl_label = "Help"
+    bl_description = "Press to visit the according BakeMaster's online documentation page"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    action: EnumProperty(
+        default='INDEX',
+        items=[('INDEX', "Index", ""),
+               ('BAKEJOBS', "Bake Jobs", ""),
+               ('PIPELINE', "Pipeline", ""),
+               ('MANAGER', "Manager", ""),
+               ('OBJECTS', "Objects", ""),
+               ('MAPS', "Maps", ""),
+               ('OUTPUT', "Output", ""),
+               ('TEXSETS', "Texture Sets", ""),
+               ('BAKE', "Bake", "")])
+
+    def invoke(self, context, event):
+        self.url = BM_URLs("latest").get(self.action)
+        return self.execute(context)
+
+    def execute(self, context):
+        from webbrowser import open as webbrowser_open
+        webbrowser_open(self.url)
         return {'FINISHED'}

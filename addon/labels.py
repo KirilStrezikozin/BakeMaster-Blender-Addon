@@ -39,9 +39,6 @@ class BM_LABELS_Props():
 
 class BM_LABELS_Operators():
     labels = {
-        'BM_OT_BakeJobs': {
-            "description": "Add/remove/trash/move order of bake jobs in the table on the left"  # noqa: E501
-        }
     }
 
     def __init__(self, operator_name: str, property_name: str):
@@ -54,3 +51,29 @@ class BM_LABELS_Operators():
         except KeyError:
             label = None
         return label
+
+
+class BM_URLs:
+    """
+    Get url to bakemaster's online documentation by giving addon_version
+    and page identifier.
+    """
+
+    def __init__(self, addon_version: str):
+        self.addon_version = addon_version
+
+    def get(self, identifier: str):
+        urls = {
+            'INDEX': r'%s/',
+            'BAKEJOBS': r'%s/',
+            'PIPELINE': r'%s/',
+            'MANAGER': r'%s/',
+            'OBJECTS': r'%s/',
+            'MAPS': r'%s/',
+            'OUTPUT': r'%s/',
+            'TEXSETS': r'%s/',
+            'BAKE': r'%s/',
+        }
+        return urls[identifier] % (
+                "https://bakemaster-blender-addon.readthedocs.io/en/" +
+                self.addon_version)

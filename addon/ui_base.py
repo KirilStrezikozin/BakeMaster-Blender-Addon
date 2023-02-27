@@ -34,6 +34,10 @@ class BM_PT_BakeJobsBase(Panel):
     def poll(cls, context):
         return hasattr(context.scene, "bakemaster")
 
+    def draw_header_preset(self, context):
+        self.layout.row().operator('bakemaster.help', text="",
+                                   icon='HELP').action = 'BAKEJOBS'
+
     def draw(self, context):
         scene = context.scene
         bakemaster = scene.bakemaster
@@ -85,6 +89,10 @@ class BM_PT_PipelineBase(Panel):
     def poll(cls, context):
         return hasattr(context.scene, "bakemaster")
 
+    def draw_header_preset(self, context):
+        self.layout.row().operator('bakemaster.help', text="",
+                                   icon='HELP').action = 'PIPELINE'
+
     def draw(self, context):
         scene = context.scene
         bakemaster = scene.bakemaster
@@ -98,6 +106,10 @@ class BM_PT_ManagerBase(Panel):
     @classmethod
     def poll(cls, context):
         return hasattr(context.scene, "bakemaster")
+
+    def draw_header_preset(self, context):
+        self.layout.row().operator('bakemaster.help', text="",
+                                   icon='HELP').action = 'MANAGER'
 
     def draw(self, context):
         scene = context.scene
@@ -113,6 +125,10 @@ class BM_PT_ObjectsBase(Panel):
     def poll(cls, context):
         return hasattr(context.scene, "bakemaster")
 
+    def draw_header_preset(self, context):
+        self.layout.row().operator('bakemaster.help', text="",
+                                   icon='HELP').action = 'OBJECTS'
+
     def draw(self, context):
         scene = context.scene
         bakemaster = scene.bakemaster
@@ -126,6 +142,10 @@ class BM_PT_MapsBase(Panel):
     @classmethod
     def poll(cls, context):
         return hasattr(context.scene, "bakemaster")
+
+    def draw_header_preset(self, context):
+        self.layout.row().operator('bakemaster.help', text="",
+                                   icon='HELP').action = 'MAPS'
 
     def draw(self, context):
         scene = context.scene
@@ -141,6 +161,10 @@ class BM_PT_OutputBase(Panel):
     def poll(cls, context):
         return hasattr(context.scene, "bakemaster")
 
+    def draw_header_preset(self, context):
+        self.layout.row().operator('bakemaster.help', text="",
+                                   icon='HELP').action = 'OUTPUT'
+
     def draw(self, context):
         scene = context.scene
         bakemaster = scene.bakemaster
@@ -155,6 +179,10 @@ class BM_PT_TextureSetsBase(Panel):
     def poll(cls, context):
         return hasattr(context.scene, "bakemaster")
 
+    def draw_header_preset(self, context):
+        self.layout.row().operator('bakemaster.help', text="",
+                                   icon='HELP').action = 'TEXSETS'
+
     def draw(self, context):
         scene = context.scene
         bakemaster = scene.bakemaster
@@ -168,6 +196,10 @@ class BM_PT_BakeBase(Panel):
     @classmethod
     def poll(cls, context):
         return hasattr(context.scene, "bakemaster")
+
+    def draw_header_preset(self, context):
+        self.layout.row().operator('bakemaster.help', text="",
+                                   icon='HELP').action = 'BAKE'
 
     def draw(self, context):
         scene = context.scene

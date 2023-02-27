@@ -70,6 +70,7 @@ classes = (
     operators_ui.BM_OT_BakeJobs_AddRemove,
     operators_ui.BM_OT_BakeJobs_Move,
     operators_ui.BM_OT_BakeJobs_Trash,
+    operators_ui.BM_OT_Help,
 )
 
 
