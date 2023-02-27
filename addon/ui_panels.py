@@ -30,10 +30,49 @@ bm_region_type = 'UI'
 bm_category = "BakeMaster"
 
 
-class BM_PT_Main(BM_PT_MainBase):
-    """
-    BakeMaster panel for Bake Jobs and all subpanels.
-    """
+class BM_PT_BakeJobs(BM_PT_BakeJobsBase):
+    bl_space_type = bm_space_type
+    bl_region_type = bm_region_type
+    bl_category = bm_category
+
+
+class BM_PT_Pipeline(BM_PT_PipelineBase):
+    bl_space_type = bm_space_type
+    bl_region_type = bm_region_type
+    bl_category = bm_category
+
+
+class BM_PT_Manager(BM_PT_ManagerBase):
+    bl_space_type = bm_space_type
+    bl_region_type = bm_region_type
+    bl_category = bm_category
+
+
+class BM_PT_Objects(BM_PT_ObjectsBase):
+    bl_space_type = bm_space_type
+    bl_region_type = bm_region_type
+    bl_category = bm_category
+
+
+class BM_PT_Maps(BM_PT_MapsBase):
+    bl_space_type = bm_space_type
+    bl_region_type = bm_region_type
+    bl_category = bm_category
+
+
+class BM_PT_Output(BM_PT_OutputBase):
+    bl_space_type = bm_space_type
+    bl_region_type = bm_region_type
+    bl_category = bm_category
+
+
+class BM_PT_TextureSets(BM_PT_TextureSetsBase):
+    bl_space_type = bm_space_type
+    bl_region_type = bm_region_type
+    bl_category = bm_category
+
+
+class BM_PT_Bake(BM_PT_BakeBase):
     bl_space_type = bm_space_type
     bl_region_type = bm_region_type
     bl_category = bm_category
