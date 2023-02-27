@@ -90,6 +90,9 @@ class BM_UL_BakeJobs_Item(UIList):
                   active_propname, index):
         layout.emboss = 'NONE'
         layout.prop(item, "name", text="", icon='SEQUENCE')
+        icon = 'RESTRICT_RENDER_OFF' if item.use_bake else 'RESTRICT_RENDER_ON'
+        layout.prop(item, 'use_bake', text="", icon=icon, emboss=False)
+        layout.active = item.use_bake
 
     def draw_filter(self, context, layout):
         pass

@@ -37,6 +37,11 @@ class BM_PROPS_Local_bakejob(PropertyGroup):
 
     index: IntProperty(default=-1)
 
+    # TODO: alep update
+    use_bake: BoolProperty(
+        name="Include/Exclude Bake Job from baking",
+        default=True)
+
 
 class BM_PROPS_Global(PropertyGroup):
     show_help: BoolProperty(
