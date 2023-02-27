@@ -75,3 +75,101 @@ class BM_PT_BakeJobsBase(Panel):
         col.separator(factor=1.0)
         col.emboss = 'NONE'
         col.operator('bakemaster.bakejobs_trash', text="", icon='TRASH')
+
+
+class BM_PT_PipelineBase(Panel):
+    bl_label = "Pipeline"
+    bl_idname = 'BM_PT_PipelineBase'
+
+    @classmethod
+    def poll(cls, context):
+        return hasattr(context.scene, "bakemaster")
+
+    def draw(self, context):
+        scene = context.scene
+        bakemaster = scene.bakemaster
+        layout = self.layout
+
+
+class BM_PT_ManagerBase(Panel):
+    bl_label = "Manager"
+    bl_idname = 'BM_PT_ManagerBase'
+
+    @classmethod
+    def poll(cls, context):
+        return hasattr(context.scene, "bakemaster")
+
+    def draw(self, context):
+        scene = context.scene
+        bakemaster = scene.bakemaster
+        layout = self.layout
+
+
+class BM_PT_ObjectsBase(Panel):
+    bl_label = "Objects"
+    bl_idname = 'BM_PT_ObjectsBase'
+
+    @classmethod
+    def poll(cls, context):
+        return hasattr(context.scene, "bakemaster")
+
+    def draw(self, context):
+        scene = context.scene
+        bakemaster = scene.bakemaster
+        layout = self.layout
+
+
+class BM_PT_MapsBase(Panel):
+    bl_label = "Maps"
+    bl_idname = 'BM_PT_MapsBase'
+
+    @classmethod
+    def poll(cls, context):
+        return hasattr(context.scene, "bakemaster")
+
+    def draw(self, context):
+        scene = context.scene
+        bakemaster = scene.bakemaster
+        layout = self.layout
+
+
+class BM_PT_OutputBase(Panel):
+    bl_label = "Output"
+    bl_idname = 'BM_PT_OutputBase'
+
+    @classmethod
+    def poll(cls, context):
+        return hasattr(context.scene, "bakemaster")
+
+    def draw(self, context):
+        scene = context.scene
+        bakemaster = scene.bakemaster
+        layout = self.layout
+
+
+class BM_PT_TextureSetsBase(Panel):
+    bl_label = "Texture Sets"
+    bl_idname = 'BM_PT_TextureSetsBase'
+
+    @classmethod
+    def poll(cls, context):
+        return hasattr(context.scene, "bakemaster")
+
+    def draw(self, context):
+        scene = context.scene
+        bakemaster = scene.bakemaster
+        layout = self.layout
+
+
+class BM_PT_BakeBase(Panel):
+    bl_label = "Bake"
+    bl_idname = 'BM_PT_BakeBase'
+
+    @classmethod
+    def poll(cls, context):
+        return hasattr(context.scene, "bakemaster")
+
+    def draw(self, context):
+        scene = context.scene
+        bakemaster = scene.bakemaster
+        layout = self.layout
