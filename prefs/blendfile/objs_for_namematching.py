@@ -59,4 +59,3 @@ for name in names:
     new_object.name = name
 
 print("%s: demo scene load finished" % __file__)
-
