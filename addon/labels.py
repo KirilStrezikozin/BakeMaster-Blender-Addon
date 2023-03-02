@@ -20,6 +20,12 @@
 
 class BM_LABELS_Props():
     labels = {
+        'BM_PROPS_Local_map_highpoly': {
+            "name": {
+                "name": "Highpoly",
+                "description": "Choose Highpoly for the current Object from the list (Highpoly should be added to the Bake Job's Objects)",
+            }
+        }
     }
 
     def __init__(self, property_group: str, property_name: str,
