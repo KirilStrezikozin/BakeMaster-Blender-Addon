@@ -77,6 +77,41 @@ def get_highpoly_object_index(hl_container):
     return h_object_index
 
 
+def get_object_ui_label(scene, objects, object):
+    label = ""
+    icon = ''
+    exists = True
+    if object.nm_is_uc:
+        label = "Universal Container"
+        icon = 'TRIA_RIGHT'
+    elif object.nm_is_lc:
+        label = "Local Container"
+        icon = 'TRIA_RIGHT'
+    elif object.decal_is_decal or object.hl_is_decal:
+        label = "Decal Object"
+        icon = 'XRAY'
+    elif object.hl_is_highpoly:
+        label = "Highpoly Object"
+        icon = 'VIEW_ORTHO'
+    elif object.hl_is_cage:
+        label = "Cage Object"
+        icon = 'SELECT_SET'
+    elif object.nm_is_detached:
+        label = "Object"
+        icon = 'OUTLINE_OB_MESH'
+    elif object.nm_uc_is_global:
+        name = objects[object.nm_uc_index].name
+        label = "Settings configured by %s" % name
+
+    try:
+        scene.objects[object.name]
+    except KeyError:
+        label = "Object cannot be found"
+        icon = 'GHOST_DISABLED'
+        exists = False
+    return exists, label, icon
+
+
 def ui_draw_hl(layout, bakemaster, bakejob, object, hl_container,
                bpy_app_version):
     box = layout.box()
