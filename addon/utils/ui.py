@@ -66,6 +66,17 @@ def is_mapsettings_active(object, map):
     return True
 
 
+def get_highpoly_object_index(hl_container):
+    h_object_index = -1
+    try:
+        highpoly = hl_container.hl_highpolies[
+                hl_container.hl_highpolies_active_index]
+        h_object_index = highpoly.object_index
+    except IndexError:
+        pass
+    return h_object_index
+
+
 def ui_draw_hl(layout, bakemaster, bakejob, object, hl_container,
                bpy_app_version):
     box = layout.box()
@@ -82,14 +93,19 @@ def ui_draw_hl(layout, bakemaster, bakejob, object, hl_container,
     header.prop(bakemaster, 'local_is_hl_panel_expanded', text="",
                 icon=icon)
     header.emboss = 'NORMAL'
+    text = ""
     if object.hl_use_unique_per_map:
-        header.label(text="Map High to Lowpoly")
-    else:
-        header.label(text="High to Lowpoly")
+        text = "Map "
+    header.label(text="%sHigh to Lowpoly" % text)
     BM_PT_HL_Presets.draw_panel_header(header)
 
     if not bakemaster.local_is_hl_panel_expanded:
         return
+
+    if hasattr(hl_container, 'hl_use_unique_per_map'):
+        box.prop(object, 'hl_use_unique_per_map')
+        if object.hl_use_unique_per_map:
+            return
 
     # hl body
     split = box.split(factor=0.4)
@@ -114,13 +130,7 @@ def ui_draw_hl(layout, bakemaster, bakejob, object, hl_container,
         return
 
     col = box.column(align=True)
-    h_object_index = -1
-    try:
-        highpoly = hl_container.hl_highpolies[
-                hl_container.hl_highpolies_active_index]
-        h_object_index = highpoly.object_index
-    except IndexError:
-        pass
+    h_object_index = get_highpoly_object_index(hl_container)
     if h_object_index != -1:
         col.prop(bakejob.objects[h_object_index], 'hl_is_decal')
     col.prop(object, 'hl_decals_use_separate_texset')
@@ -135,13 +145,13 @@ def ui_draw_hl(layout, bakemaster, bakejob, object, hl_container,
     col.prop(hl_container, 'hl_cage_type')
     if hl_container.hl_cage_type == 'SMART':
         col.prop(hl_container, 'hl_cage_extrusion', text="Extrusion")
-    else:
-        col.prop(hl_container, 'hl_cage_extrusion', text=label)
-        if bpy_app_version >= (2, 90, 0):
-            col.prop(hl_container, 'hl_max_ray_distance')
-        col.prop(hl_container, 'hl_use_cage')
-        if hl_container.hl_use_cage:
-            col.prop(hl_container, 'hl_cage')
+        return
+    col.prop(hl_container, 'hl_cage_extrusion', text=label)
+    if bpy_app_version >= (2, 90, 0):
+        col.prop(hl_container, 'hl_max_ray_distance')
+    col.prop(hl_container, 'hl_use_cage')
+    if hl_container.hl_use_cage:
+        col.prop(hl_container, 'hl_cage')
 
 
 def ui_draw_uv(layout, bakemaster, object, uv_container):
@@ -266,6 +276,125 @@ def ui_draw_out(layout, bakemaster, object, map):
         out_header.emboss = 'NORMAL'
         out_header.label(text=label)
         BM_PT_OUT_Presets.draw_panel_header(out_header)
+
+
+def ui_draw_decal(layout, bakemaster, object):
+    box = layout.box()
+    box.use_property_split = True
+    box.use_property_decorate = False
+
+    # inactive if baking internally
+    text = ""
+    if object.bake_save_internal:
+        box.active = False
+        text = " (External Bake only)"
+
+    header = box.row(align=True)
+    header.use_property_split = False
+    header.emboss = 'NONE'
+    icon = 'TRIA_DOWN' if bakemaster.is_decal_panel_expanded else 'TRIA_RIGHT'
+    header.prop(bakemaster, 'is_decal_panel_expanded', text="", icon=icon)
+    header.emboss = 'NORMAL'
+    header.label(text="Decal %s" % text)
+    BM_PT_DECAL_Presets.draw_panel_header(header)
+
+    if not bakemaster.is_decal_panel_expanded:
+        return
+
+    if not object.nm_uc_is_global:
+        box.prop(object, 'decal_is_decal')
+    if object.decal_is_decal or object.nm_uc_is_global:
+        decal_box_column = box.column(align=True)
+        decal_box_column.prop(object, 'decal_use_custom_camera')
+        if object.decal_use_custom_camera:
+            decal_box_column.prop(object, 'decal_custom_camera')
+        box.prop(object, 'decal_upper_coordinate')
+        box.prop(object, 'decal_boundary_offset')
+
+
+def ui_draw_matgroups(layout, bakemaster, object):
+    box = layout.box()
+    box.use_property_split = True
+    box.use_property_decorate = False
+
+    header = box.row(align=True)
+    header.use_property_split = False
+    header.emboss = 'NONE'
+    icon = 'TRIA_DOWN'
+    if bakemaster.is_matgroups_panel_expanded:
+        icon = 'TRIA_RIGHT'
+    header.prop(bakemaster, 'is_matgroups_panel_expanded',
+                text="", icon=icon)
+    header.emboss = 'NORMAL'
+    header.label(text="Material Groups")
+
+    if not bakemaster.is_matgroups_panel_expanded:
+        return
+
+    box = box.box()
+    row = box.row()
+    rows = get_uilist_rows(object.matgroups_len, 3, 5)
+    row.template_list('BM_UL_Table_of_MatGroups_Item', "", object, 'matgroups',
+                      object, 'matgroups_active_index', rows=rows)
+    col = row.column(align=True)
+    col.operator(BM_OT_ITEM_MatGroups_Table_Refresh.bl_idname, text="",
+                 icon='FILE_REFRESH')
+    col.separator(factor=1.0)
+    col.operator(BM_OT_ITEM_MatGroups_Table_EqualizeGroups.bl_idname, text="",
+                 icon='STICKY_UVS_LOC')
+    col.operator(BM_OT_ITEM_MatGroups_Table_UnequalizeGroups.bl_idname,
+                 text="", icon='STICKY_UVS_DISABLE')
+    col = box.column(align=True)
+    col.prop(object, 'matgroups_batch_naming_type')
+
+
+def ui_draw_csh_props(box, object, tag="lowpoly", counter=1):
+    if counter == 0:
+        return
+    text = tag
+    if counter > 1:
+        text = text[:-1].capitalize() + "ies"
+
+    box.prop(object, 'csh_use_triangulate_%s' % tag)
+    col = box.column()
+    col.prop(object, 'csh_use_%s_recalc_normals' % tag,
+             text="Recalculate %s Normals Outside" % text)
+    col.prop(object, 'csh_%s_use_smooth' % tag)
+    if getattr(object, 'csh_%s_use_smooth' % tag):
+        col.prop(object, 'csh_%s_smoothing_groups_enum' % tag, text="Type")
+        if getattr(object, 'csh_%s_smoothing_groups_enum' % tag) == 'AUTO':
+            col.prop(object, 'csh_%s_smoothing_groups_angle' % tag)
+        if getattr(object, 'csh_%s_smoothing_groups_enum' %
+                   tag) == 'VERTEX_GROUPS':
+            col.prop(object, 'csh_%s_smoothing_groups_name_contains' % tag)
+
+
+def ui_draw_csh(layout, bakemaster, object):
+    box = layout.box()
+    box.use_property_split = True
+    box.use_property_decorate = False
+
+    # shading header
+    header = box.row(align=True)
+    header.use_property_split = False
+    header.emboss = 'NONE'
+    icon = 'TRIA_DOWN'
+    if bakemaster.is_csh_panel_expanded:
+        icon = 'TRIA_RIGHT'
+    header.prop(bakemaster, 'is_csh_panel_expanded', text="", icon=icon)
+    header.emboss = 'NORMAL'
+    header.label(text="Shading")
+    BM_PT_CSH_Presets.draw_panel_header(header)
+
+    if not bakemaster.is_csh_panel_expanded:
+        return
+
+    ui_draw_csh_props(box, object)
+    if object.hl_use_unique_per_map:
+        len_of_highs = sum([map.hl_highplies_len for map in object.maps])
+    else:
+        len_of_highs = object.hl_highpolies_len
+    ui_draw_csh_props(box, object, "highpoly", len_of_highs)
 
 
 def ui_draw_mapsettings_PASS(context, col, row_mapprev, object, map,
