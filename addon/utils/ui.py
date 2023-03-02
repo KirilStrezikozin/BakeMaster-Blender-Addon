@@ -18,8 +18,33 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+
 def get_uilist_rows(len_of_idprop, min_rows: int, max_rows: int):
     return min(max_rows, max(min_rows, len_of_idprop))
+
+
+def get_active_bakejob_and_object(context):
+    try:
+        bakejob = context.scene.bakemaster.bakejobs[
+                context.scene.bakemaster.bakejobs_active_index]
+        object = bakejob.objects[bakejob.objects_active_index]
+    except (IndexError, AttributeError):
+        return None, None
+    else:
+        return bakejob, object
+
+
+def are_object_props_drawable(bakejob, object):
+    if bakejob is None or object is None:
+        return False
+
+    if any([object.nm_is_lc, object.hl_is_highpoly, object.hl_is_cage]):
+        return False
+    if object.nm_is_detached:
+        return True
+    if object.nm_is_uc:
+        return object.nm_uc_is_global
+    return not bakejob.objects[object.nm_uc_index].nm_uc_is_global
 
 
 def BM_UTILS_Highpoly_get_items(self, self_object, objects, include: list):
