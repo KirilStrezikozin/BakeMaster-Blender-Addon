@@ -23,6 +23,7 @@ from .ui_base import (
     BM_PT_PipelineBase,
     BM_PT_ManagerBase,
     BM_PT_ObjectsBase,
+    BM_PT_ObjectBase,
     BM_PT_MapsBase,
     BM_PT_OutputBase,
     BM_PT_TextureSetsBase,
@@ -59,6 +60,13 @@ class BM_PT_Objects(BM_PT_ObjectsBase):
     bl_space_type = bm_space_type
     bl_region_type = bm_region_type
     bl_category = bm_category
+
+
+class BM_PT_Objec(BM_PT_ObjectBase):
+    bl_space_type = bm_space_type
+    bl_region_type = bm_region_type
+    bl_category = bm_category
+    bl_parent_id = BM_PT_Objects.bl_idname
 
 
 class BM_PT_Maps(BM_PT_MapsBase):
