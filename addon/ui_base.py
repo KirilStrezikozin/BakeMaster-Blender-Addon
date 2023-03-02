@@ -23,6 +23,8 @@ from bpy.types import (
 )
 from .utils.ui import (
     get_uilist_rows as bm_utils_ui_get_uilist_rows,
+    get_active_bakejob_and_object as bm_utils_get_active_bakejob_and_object,
+    are_object_props_drawable as bm_utils_are_object_props_drawable,
 )
 
 
@@ -149,13 +151,21 @@ class BM_PT_ObjectsBase(Panel):
 
 
 class BM_PT_MapsBase(Panel):
-    bl_label = "Maps"
-    bl_idname = 'BM_PT_MapsBase'
+    bl_label = " "
+    bl_idname = 'BM_PT_Item_Maps'
     bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
-        return hasattr(context.scene, "bakemaster")
+        if not hasattr(context.scene, "bakemaster"):
+            return False
+        bakejob, object = bm_utils_get_active_bakejob_and_object(context)
+        return bm_utils_are_object_props_drawable(bakejob, object)
+
+    def draw_header(self, context):
+        label = "Maps"
+        self.layout.label(text=label)
+        BM_PT_FULL_MAP_Presets.draw_panel_header(self.layout)
 
     def draw_header_preset(self, context):
         bakemaster = context.scene.bakemaster
@@ -169,6 +179,487 @@ class BM_PT_MapsBase(Panel):
         bakemaster = scene.bakemaster
         layout = self.layout
 
+        bakejob = bakemaster.bakejobs[bakemaster.bakejobs_active_index]
+        object = bakejob.objects[bakejob.objects_active_index]
+
+        # maps table
+        box = layout.box()
+        row = box.row()
+
+        min_rows = 1 if object.maps_len < 2 else 3
+        rows = bm_utils_ui_get_uilist_rows(object.maps_len, min_rows, 5)
+        row.template_list('BM_UL_Table_of_Maps_Item', "", object, 'maps',
+                          object, 'maps_active_index', rows=rows)
+        col = row.column(align=True)
+        col.operator(BM_OT_ITEM_Maps.bl_idname, text="",
+                     icon='ADD').control = 'ADD'
+        if object.maps_len > 0:
+            col.operator(BM_OT_ITEM_Maps.bl_idname, text="",
+                         icon='REMOVE').control = 'REMOVE'
+            col.separator(factor=1.0)
+            BM_PT_MAP_Presets.draw_panel_header(col)
+        if object.maps_len > 1:
+            col.separator(factor=1.0)
+            col.operator(BM_OT_ITEM_Maps.bl_idname, text="",
+                         icon='TRASH').control = 'TRASH'
+
+        if object.maps_len == 0:
+            return
+        map = object.maps[object.maps_active_index]
+
+        # map settings
+        col = box.column()
+        col.use_property_split = True
+        col.use_property_decorate = False
+
+        uv_container = object
+        if object.uv_use_unique_per_map:
+            uv_container = map
+
+        if uv_container.uv_bake_target == 'VERTEX_COLORS':
+            if map.map_type != 'VERTEX_COLOR_LAYER':
+                col.enabled = False
+            elif all([map.map_type == 'NORMAL',
+                      map.map_normal_data == 'MULTIRES']):
+                col.enabled = False
+            elif all([map.map_type == 'DISPLACEMENT',
+                      map.map_displacement_data in ['HIGHPOLY', 'MULTIRES']]):
+                col.enabled = False
+        if map.map_type == 'DECAL' and object.bake_save_internal:
+            col.enabled = False
+
+        # map settings body
+        col.prop(map, 'map_%s_prefix' % map.map_type)
+
+        try:
+            getattr(map, 'map_%s_use_preview' % map.map_type)
+        except AttributeError:
+            row_map_preview = None
+        else:
+            row_map_preview = col.row()
+            row_map_preview.prop(map, 'map_%s_use_preview' % map.map_type,
+                                 text=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_NAME)
+            if object.nm_is_uc:
+                row_map_preview.active = False
+        try:
+            getattr(map, 'map_%s_use_default' % map.map_type)
+        except AttributeError:
+            pass
+        else:
+            col.prop(map, 'map_%s_use_default' % map.map_type)
+
+        # Pass and Cycles Maps
+        if map.map_type == 'PASS':
+            col.prop(map, 'map_pass_type')
+
+        elif map.map_type == 'DECAL':
+            col.prop(map, 'map_decal_pass_type')
+            if map.map_decal_pass_type == 'NORMAL':
+                col.prop(map, 'map_decal_normal_preset')
+                if map.map_decal_normal_preset == 'CUSTOM':
+                    sub = col.column(align=True)
+                    sub.prop(map, 'map_decal_normal_custom_preset')
+                    # if map.map_decal_normal_custom_preset == 'CUSTOM':
+                    #     sub.prop(map, 'map_decal_normal_r', text="Swizzle R")
+                    #     sub.prop(map, 'map_decal_normal_g', text="G")
+                    #     sub.prop(map, 'map_decal_normal_b', text="B")
+            else:
+                col.prop(map, 'map_decal_height_opacity_invert')
+
+        elif map.map_type == 'VERTEX_COLOR_LAYER':
+            col.prop(map, 'map_vertexcolor_layer')
+
+        elif map.map_type == 'C_NORMAL':
+            col.prop(map, 'map_normal_space', text="Space")
+            sub = col.column(align=True)
+            sub.prop(map, 'map_normal_r', text="Swizzle R")
+            sub.prop(map, 'map_normal_g', text="G")
+            sub.prop(map, 'map_normal_b', text="B")
+
+        elif map.map_type == 'C_COMBINED':
+            row = col.row(align=True)
+            row.use_property_split = False
+            row.prop(map, 'map_cycles_use_pass_direct', toggle=True)
+            row.prop(map, 'map_cycles_use_pass_indirect', toggle=True)
+            flow = col.grid_flow(row_major=False, columns=0,
+                                 even_columns=False, even_rows=False,
+                                 align=True)
+            flow.active = any([map.map_cycles_use_pass_direct,
+                               map.map_cycles_use_pass_indirect])
+            flow.prop(map, 'map_cycles_use_pass_diffuse')
+            flow.prop(map, 'map_cycles_use_pass_glossy')
+            flow.prop(map, 'map_cycles_use_pass_transmission')
+            if bpy.app.version < (3, 0, 0):
+                flow.prop(map, 'map_cycles_use_pass_ambient_occlusion')
+            flow.prop(map, 'map_cycles_use_pass_emit')
+
+        elif map.map_type in ['C_DIFFUSE', 'C_GLOSSY', 'C_TRANSMISSION']:
+            row = col.row(align=True)
+            row.use_property_split = False
+            row.prop(map, 'map_cycles_use_pass_direct', toggle=True)
+            row.prop(map, 'map_cycles_use_pass_indirect', toggle=True)
+            row.prop(map, 'map_cycles_use_pass_color', toggle=True)
+
+        # Object-based Maps
+        elif map.map_type == 'NORMAL':
+            if map.map_normal_data != 'MATERIAL':
+                try:
+                    if row_map_preview is not None:
+                        row_map_preview.active = False
+                except NameError:
+                    pass
+            col.prop(map, 'map_normal_data')
+            col.prop(map, 'map_normal_space')
+            col.prop(map, 'map_normal_preset')
+            if map.map_normal_preset == 'CUSTOM':
+                sub = col.column(align=True)
+                sub.prop(map, 'map_normal_custom_preset')
+                if map.map_normal_custom_preset == 'CUSTOM':
+                    sub.prop(map, 'map_normal_r', text="Swizzle R")
+                    sub.prop(map, 'map_normal_g', text="G")
+                    sub.prop(map, 'map_normal_b', text="B")
+            if map.map_normal_data == 'MULTIRES':
+                col.prop(map, 'map_displacement_subdiv_levels')
+                face_count = BM_MAO_PROPS_map_get_subdivided_face_count(
+                        context, object, map)
+                col.label(text="Face count while baking: " + str(face_count))
+
+        elif map.map_type == 'DISPLACEMENT':
+            if map.map_normal_data != 'MATERIAL':
+                try:
+                    if row_map_preview is not None:
+                        row_map_preview.active = False
+                except NameError:
+                    pass
+            col.prop(map, 'map_displacement_data')
+            col.prop(map, 'map_displacement_result')
+            if map.map_displacement_data in ['HIGHPOLY', 'MULTIRES']:
+                col.prop(map, 'map_displacement_subdiv_levels')
+                face_count = BM_MAO_PROPS_map_get_subdivided_face_count(
+                        context, object, map)
+                col.label(text="Face count while baking: " + str(face_count))
+                col.prop(map, 'map_displacement_lowresmesh')
+
+        elif map.map_type == 'VECTOR_DISPLACEMENT':
+            col.prop(map, 'map_vector_displacement_use_negative')
+            col.prop(map, 'map_vector_displacement_result')
+
+        # Masks and Details Maps
+        elif map.map_type == 'AO':
+            if map.map_AO_use_default is False:
+                col.prop(map, 'map_ao_samples', slider=True)
+                col.prop(map, 'map_ao_distance')
+                sub = col.column(align=True)
+                sub.prop(map, 'map_ao_black_point', slider=True)
+                sub.prop(map, 'map_ao_white_point', slider=True)
+                sub = col.column(align=True)
+                sub.prop(map, 'map_ao_brightness')
+                sub.prop(map, 'map_ao_contrast')
+                sub.prop(map, 'map_ao_opacity', slider=True)
+                sub = col.column()
+                sub.prop(map, 'map_ao_use_local')
+                sub.prop(map, 'map_ao_use_invert', slider=True)
+
+        elif map.map_type == 'CAVITY':
+            if map.map_CAVITY_use_default is False:
+                sub = col.column(align=True)
+                sub.prop(map, 'map_cavity_black_point', slider=True)
+                sub.prop(map, 'map_cavity_white_point', slider=True)
+                sub = col.column()
+                sub.prop(map, 'map_cavity_power')
+                sub.prop(map, 'map_cavity_use_invert', slider=True)
+
+        elif map.map_type == 'CURVATURE':
+            if map.map_CURVATURE_use_default is False:
+                col.prop(map, 'map_curv_samples', slider=True)
+                col.prop(map, 'map_curv_radius')
+                sub = col.column(align=True)
+                sub.prop(map, 'map_curv_black_point', slider=True)
+                sub.prop(map, 'map_curv_mid_point', slider=True)
+                sub.prop(map, 'map_curv_white_point', slider=True)
+                sub = col.column()
+                sub.prop(map, 'map_curv_body_gamma')
+
+        elif map.map_type == 'THICKNESS':
+            if map.map_THICKNESS_use_default is False:
+                col.prop(map, 'map_thick_samples', slider=True)
+                col.prop(map, 'map_thick_distance')
+                sub = col.column(align=True)
+                sub.prop(map, 'map_thick_black_point', slider=True)
+                sub.prop(map, 'map_thick_white_point', slider=True)
+                sub = col.column(align=True)
+                sub.prop(map, 'map_thick_brightness')
+                sub.prop(map, 'map_thick_contrast')
+                sub = col.column()
+                sub.prop(map, 'map_thick_use_invert', slider=True)
+
+        elif map.map_type == 'ID':
+            col.prop(map, 'map_matid_data')
+            if map.map_matid_data == 'VERTEX_GROUPS':
+                col.prop(map, 'map_matid_vertex_groups_name_contains')
+            col.prop(map, 'map_matid_algorithm')
+            col.prop(map, 'map_matid_jilter')
+
+        elif map.map_type == 'MASK':
+            col.prop(map, 'map_mask_data')
+            if map.map_mask_data == 'VERTEX_GROUPS':
+                col.prop(map, 'map_mask_vertex_groups_name_contains')
+            elif map.map_mask_data == 'MATERIALS':
+                col.prop(map, 'map_mask_materials_name_contains')
+            col.prop(map, 'map_mask_color1')
+            col.prop(map, 'map_mask_color2')
+            col.prop(map, 'map_mask_use_invert', slider=True)
+
+        elif map.map_type == 'XYZMASK':
+            sub = col.column(align=True)
+            sub.prop(map, 'map_xyzmask_use_x')
+            sub.prop(map, 'map_xyzmask_use_y')
+            sub.prop(map, 'map_xyzmask_use_z')
+            if not map.map_XYZMASK_use_default:
+                sub = col.column(align=True)
+                sub.prop(map, 'map_xyzmask_coverage')
+                sub.prop(map, 'map_xyzmask_saturation')
+                sub = col.column(align=True)
+                sub.prop(map, 'map_xyzmask_opacity', slider=True)
+                sub.prop(map, 'map_xyzmask_use_invert', slider=True)
+
+        elif map.map_type == 'GRADIENT':
+            col.prop(map, 'map_gmask_type')
+            sub = col.column(align=True)
+            sub.prop(map, 'map_gmask_location_x')
+            sub.prop(map, 'map_gmask_location_y')
+            sub.prop(map, 'map_gmask_location_z')
+            sub = col.column(align=True)
+            sub.prop(map, 'map_gmask_rotation_x')
+            sub.prop(map, 'map_gmask_rotation_y')
+            sub.prop(map, 'map_gmask_rotation_z')
+            if not map.map_GRADIENT_use_default:
+                sub = col.column(align=True)
+                sub.prop(map, 'map_gmask_scale_x')
+                sub.prop(map, 'map_gmask_scale_y')
+                sub.prop(map, 'map_gmask_scale_z')
+                sub = col.column(align=True)
+                sub.prop(map, 'map_gmask_coverage')
+                sub.prop(map, 'map_gmask_contrast')
+                sub = col.column(align=True)
+                sub.prop(map, 'map_gmask_saturation')
+                sub.prop(map, 'map_gmask_opacity', slider=True)
+                sub.prop(map, 'map_gmask_use_invert', slider=True)
+
+        elif map.map_type == 'EDGE':
+            if map.map_EDGE_use_default is False:
+                col.prop(map, 'map_edgemask_samples', slider=True)
+                col.prop(map, 'map_edgemask_radius')
+                sub = col.column(align=True)
+                sub.prop(map, 'map_edgemask_edge_contrast')
+                sub.prop(map, 'map_edgemask_body_contrast')
+                sub = col.column()
+                sub.prop(map, 'map_edgemask_use_invert')
+
+        elif map.map_type == 'WIREFRAME':
+            col.prop(map, 'map_wireframemask_line_thickness')
+            col.prop(map, 'map_wireframemask_use_invert')
+
+        # format
+        if object.out_use_unique_per_map:
+            label = "Map Format"
+            out_container = map
+        else:
+            label = "Format"
+            out_container = object
+        if out_container.uv_bake_target != 'VERTEX_COLORS':
+            out_box = layout.box()
+            out_box.use_property_split = True
+            out_box.use_property_decorate = False
+
+            # format header
+            out_header = out_box.row()
+            out_header.use_property_split = False
+            out_header.emboss = 'NONE'
+            icon = 'TRIA_DOWN'
+            if bakemaster.is_format_panel_expanded:
+                icon = 'TRIA_RIGHT'
+
+                # format body
+                out_box.prop(object, 'out_use_unique_per_map')
+                col = out_box.column(align=True)
+                col.prop(out_container, 'out_file_format')
+                if out_container.out_file_format == 'PSD':
+                    col.prop(out_container, 'out_psd_include')
+                elif out_container.out_file_format == 'OPEN_EXR':
+                    col.prop(out_container, 'out_exr_codec')
+                elif out_container.out_file_format == 'PNG':
+                    col.prop(out_container, 'out_compression')
+                col = out_box.column(align=True)
+                col.prop(out_container, 'out_res', text="Resolution")
+                if out_container.out_res == 'CUSTOM':
+                    col.prop(out_container, 'out_res_height')
+                    col.prop(out_container, 'out_res_width')
+                    split = col.split(factor=0.4)
+                    split.column()
+                    col = split.column()
+                    col.operator(BM_OT_ITEM_and_MAP_Format_MatchResolution.bl_idname,
+                                 icon='FULLSCREEN_ENTER')
+                elif out_container.out_res == 'TEXEL':
+                    col.prop(out_container, 'out_texel_density_value')
+                    col.prop(out_container, 'out_texel_density_match')
+                col = out_box.column(align=True)
+                if bpy.app.version >= (3, 1, 0):
+                    col.prop(out_container, 'out_margin_type')
+                col.prop(out_container, 'out_margin')
+                col = out_box.column(align=True)
+                col.prop(out_container, 'out_use_32bit')
+                col.prop(out_container, 'out_use_alpha')
+                col.prop(out_container, 'out_use_transbg')
+                if out_container.uv_type == 'TILED':
+                    col = out_box.column(align=True)
+                    col.prop(out_container, 'out_udim_start_tile',
+                             text="Start Tile")
+                    col.prop(out_container, 'out_udim_end_tile',
+                             text="End Tile")
+                out_box.prop(out_container, 'out_super_sampling_aa')
+                col = out_box.column(align=True)
+                col.prop(out_container, 'out_use_adaptive_sampling')
+                if out_container.out_use_adaptive_sampling:
+                    col.prop(out_container, 'out_adaptive_threshold')
+                    col.prop(out_container, 'out_samples',
+                             text="Bake Max Samples")
+                    col.prop(out_container, 'out_min_samples')
+                else:
+                    col.prop(out_container, 'out_samples')
+                col = out_box.column(align=True)
+                col.prop(out_container, 'out_use_denoise')
+                col.prop(out_container, 'out_use_scene_color_management')
+                col.active = not object.bake_save_internal
+
+            out_header.prop(bakemaster, 'is_format_panel_expanded', text="",
+                            icon=icon)
+            out_header.emboss = 'NORMAL'
+
+            out_header.label(text=label)
+            BM_PT_OUT_Presets.draw_panel_header(out_header)
+
+        # skip drawing hl, uv, csh subpanels
+        if not object.decal_is_decal and object.hl_use_unique_per_map:
+            box = layout.box()
+            box.use_property_split = True
+            box.use_property_decorate = False
+            hl_draw = True
+
+            # hl header
+            header = box.row(align=True)
+            header.use_property_split = False
+            header.emboss = 'NONE'
+            icon = 'TRIA_DOWN'
+            if bakemaster.local_is_hl_panel_expanded:
+                icon = 'TRIA_RIGHT'
+
+                # hl body
+                split = box.split(factor=0.4)
+                split.column()
+                col = split.column()
+                label = "Highpoly"
+                if map.hl_highpolies_len > 1:
+                    label = "Highpolies"
+                if object.nm_is_uc and object.nm_uc_is_global:
+                    label += " (automatic)"
+                    hl_draw = False
+                    col.label(text=label)
+                if hl_draw:
+                    row = col.column().row()
+                    rows = bm_utils_ui_get_uilist_rows(map.hl_highpolies_len,
+                                                       1, 5)
+                    row.template_list('BM_UL_Table_of_Maps_Item_Highpoly', "",
+                                      map, 'hl_highpolies', map,
+                                      'hl_highpolies_active_index', rows=rows)
+                    col = row.column(align=True)
+                    col.operator(BM_OT_MAP_Highpoly_Table_Add.bl_idname,
+                                 text="", icon='ADD')
+                    col.operator(BM_OT_MAP_Highpoly_Table_Remove.bl_idname,
+                                 text="", icon='REMOVE')
+
+                col = box.column(align=True)
+                try:
+                    highpoly = map.hl_highpolies[
+                            map.hl_highpolies_active_index]
+                    highpoly_object = bakejob.objects[highpoly.object_index]
+                    if highpoly.object_index == -1:
+                        raise IndexError
+                except IndexError:
+                    pass
+                else:
+                    col.prop(highpoly_object, 'hl_is_decal')
+                col.prop(object, 'hl_decals_use_separate_texset')
+                if object.hl_decals_use_separate_texset:
+                    col.prop(object, 'hl_decals_separate_texset_prefix')
+
+                # cage
+                label = "Extrusion"
+                if map.hl_use_cage:
+                    label = "Cage Extrusion"
+                if map.hl_highpolies_len or hl_draw:
+                    col = box.column(align=True)
+                    col.prop(map, 'hl_cage_type')
+                    if map.hl_cage_type == 'SMART':
+                        col.prop(map, 'hl_cage_extrusion', text="Extrusion")
+                    else:
+                        col.prop(map, 'hl_cage_extrusion', text=label)
+                        if bpy.app.version >= (2, 90, 0):
+                            col.prop(map, 'hl_max_ray_distance')
+                        col.prop(map, 'hl_use_cage')
+                        if map.hl_use_cage:
+                            col.prop(map, 'hl_cage')
+
+            header.prop(bakemaster, 'local_is_hl_panel_expanded', text="",
+                        icon=icon)
+            header.emboss = 'NORMAL'
+            header.label(text="Map High to Lowpoly")
+            BM_PT_HL_Presets.draw_panel_header(header)
+
+        # uv
+        if not object.uv_use_unique_per_map:
+            return
+
+        box = layout.box()
+        box.use_property_split = True
+        box.use_property_decorate = False
+
+        # uv header
+        header = box.row(align=True)
+        header.use_property_split = False
+        header.emboss = 'NONE'
+        icon = 'TRIA_DOWN'
+        if bakemaster.local_is_uv_panel_expanded:
+            icon = 'TRIA_RIGHT'
+        header.prop(bakemaster, 'local_is_uv_panel_expanded',
+                    text="", icon=icon)
+        header.emboss = 'NORMAL'
+        header.label(text="Map UVs and Layers")
+        BM_PT_UV_Presets.draw_panel_header(header)
+
+        if not bakemaster.local_is_uv_panel_expanded:
+            return
+
+        # uv body
+        col = box.column(align=True)
+        col.prop(map, 'uv_bake_data')
+        col.prop(map, 'uv_bake_target')
+        if map.uv_bake_target != 'IMAGE_TEXTURES':
+            return
+
+        col = box.column(align=True)
+        col.prop(map, 'uv_active_layer')
+        col.prop(map, 'uv_type')
+        col.prop(map, 'uv_snap_islands_to_pixels')
+        col = box.column(align=True)
+        if object.uv_active_layer != 'NONE_AUTO_CREATE':
+            col.prop(object, 'uv_use_auto_unwrap')
+        if any([object.uv_active_layer == 'NONE_AUTO_CREATE',
+                object.uv_use_auto_unwrap]):
+            col.prop(object, 'uv_auto_unwrap_angle_limit')
+            col.prop(object, 'uv_auto_unwrap_island_margin')
+            col.prop(object, 'uv_auto_unwrap_use_scale_to_bounds')
+
 
 class BM_PT_OutputBase(Panel):
     bl_label = " "
@@ -179,20 +670,8 @@ class BM_PT_OutputBase(Panel):
     def poll(cls, context):
         if not hasattr(context.scene, "bakemaster"):
             return False
-        try:
-            bakejob = context.scene.bakemaster.bakejobs[
-                    context.scene.bakemaster.bakejobs_active_index]
-            object = bakejob.objects[bakejob.objects_active_index]
-        except IndexError:
-            return False
-
-        if any([object.nm_is_lc, object.hl_is_highpoly, object.hl_is_cage]):
-            return False
-        if object.nm_is_detached:
-            return True
-        if object.nm_is_uc:
-            return object.nm_uc_is_global
-        return not bakejob.objects[object.nm_uc_index].nm_uc_is_global
+        bakejob, object = bm_utils_get_active_bakejob_and_object(context)
+        return bm_utils_are_object_props_drawable(bakejob, object)
 
     def draw_header(self, context):
         label = "Output"
@@ -210,8 +689,7 @@ class BM_PT_OutputBase(Panel):
         bakemaster = scene.bakemaster
         layout = self.layout
 
-        bakejob = context.scene.bakemaster.bakejobs[
-                context.scene.bakemaster.bakejobs_active_index]
+        bakejob = bakemaster.bakejobs[bakemaster.bakejobs_active_index]
         object = bakejob.objects[bakejob.objects_active_index]
 
         # channel packing
@@ -241,7 +719,7 @@ class BM_PT_OutputBase(Panel):
             if object.chnlps_len > 0:
                 col.operator(BM_OT_ITEM_ChannelPack_Table_Remove.bl_idname,
                              text="", icon='REMOVE')
-            if object.chnlps_len > 2:
+            if object.chnlps_len > 1:
                 col.separator(factor=1.0)
                 col.emboss = 'NONE'
                 BM_PT_CHNLP_Presets.draw_panel_header(col)
@@ -399,7 +877,7 @@ class BM_PT_TextureSetsBase(Panel):
         if bakejob.texsets_len > 0:
             col.operator(BM_OT_SCENE_TextureSets_Table_Remove.bl_idname,
                          text="", icon='REMOVE')
-        if bakejob.texsets_len > 2:
+        if bakejob.texsets_len > 1:
             col.separator(factor=1.0)
             col.emboss = 'NONE'
             col.operator(BM_OT_SCENE_TextureSets_Table_Trash.bl_idname,
@@ -436,7 +914,7 @@ class BM_PT_TextureSetsBase(Panel):
         if texset.texset_objects_len > 0:
             col.operator(BM_OT_SCENE_TextureSets_Objects_Table_Remove.bl_idname,
                          text="", icon='REMOVE')
-        if texset.texset_objects_len > 2:
+        if texset.texset_objects_len > 1:
             col.separator(factor=1.0)
             col.emboss = 'NONE'
             col.operator(BM_OT_SCENE_TextureSets_Objects_Table_Trash.bl_idname,
@@ -1317,120 +1795,120 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
 
         else:
             # hl
-            hl_box = layout.box()
-            hl_box.use_property_split = True
-            hl_box.use_property_decorate = False
+            box = layout.box()
+            box.use_property_split = True
+            box.use_property_decorate = False
             hl_draw = True
 
             # hl header
-            hl_box_header = hl_box.row(align=True)
-            hl_box_header.use_property_split = False
-            hl_box_header.emboss = 'NONE'
+            header = box.row(align=True)
+            header.use_property_split = False
+            header.emboss = 'NONE'
             icon = 'TRIA_DOWN' if bakemaster.is_hl_panel_expanded else 'TRIA_RIGHT'
-            hl_box_header.prop(bakejob, 'is_hl_panel_expanded', text="", icon=icon)
-            hl_box_header.emboss = 'NORMAL'
-            hl_box_header.label(text="High to Lowpoly")
-            BM_PT_HL_Presets.draw_panel_header(hl_box_header)
+            header.prop(bakejob, 'is_hl_panel_expanded', text="", icon=icon)
+            header.emboss = 'NORMAL'
+            header.label(text="High to Lowpoly")
+            BM_PT_HL_Presets.draw_panel_header(header)
 
             # hl body
             if bakemaster.is_hl_panel_expanded:
                 if object.nm_uc_is_global is False and draw_all:
-                    hl_box.prop(object, 'hl_use_unique_per_map')
+                    box.prop(object, 'hl_use_unique_per_map')
 
                 if object.hl_use_unique_per_map is False or draw_all is False:
                     # highpoly
-                    hl_box_highpoly_frame = hl_box.split(factor=0.4)
-                    hl_box_highpoly_frame.column()
-                    hl_box_highpoly = hl_box_highpoly_frame.column()
-                    label = "Highpoly" if len(object.hl_highpoly_table) <= 1 else "Highpolies"
+                    split = box.split(factor=0.4)
+                    split.column()
+                    col = split.column()
+                    label = "Highpoly" if len(object.hl_highpolies) <= 1 else "Highpolies"
                     if object.nm_is_uc and object.nm_uc_is_global:
                         label += " (automatic)"
                         hl_draw = False
-                    hl_box_highpoly.label(text=label)
+                    col.label(text=label)
                     if hl_draw:
-                        hl_box_highpoly_table = hl_box_highpoly.column().row()
-                        rows = BM_template_list_get_rows(object.hl_highpoly_table, 1, 1, 5, True)
-                        hl_box_highpoly_table.template_list('BM_UL_Table_of_Objects_Item_Highpoly', "", object, 'hl_highpoly_table', object, 'hl_highpoly_table_active_index', rows=rows)
-                        hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
-                        hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
-                        hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
+                        row = col.column().row()
+                        rows = BM_template_list_get_rows(object.hl_highpolies, 1, 1, 5, True)
+                        row.template_list('BM_UL_Table_of_Objects_Item_Highpoly', "", object, 'hl_highpolies', object, 'hl_highpolies_active_index', rows=rows)
+                        col = row.column(align=True)
+                        col.operator(BM_OT_ITEM_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
+                        col.operator(BM_OT_ITEM_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
                     # highpoly as decal
-                    if len(object.hl_highpoly_table):
-                        highpoly_object_index = object.hl_highpoly_table[object.hl_highpoly_table_active_index].highpoly_object_index
-                        hl_box_decal = hl_box.column(align=True)
+                    if len(object.hl_highpolies):
+                        highpoly_object_index = object.hl_highpolies[object.hl_highpolies_active_index].highpoly_object_index
+                        col = box.column(align=True)
                         if highpoly_object_index != -1:
                             source_object = scene.bm_table_of_objects[highpoly_object_index]
-                            hl_box_decal.prop(source_object, 'hl_is_decal')
+                            col.prop(source_object, 'hl_is_decal')
                         if draw_all:
-                            hl_box_decal.prop(object, 'hl_decals_use_separate_texset')
+                            col.prop(object, 'hl_decals_use_separate_texset')
                             if object.hl_decals_use_separate_texset:
-                                hl_box_decal.prop(object, 'hl_decals_separate_texset_prefix')
+                                col.prop(object, 'hl_decals_separate_texset_prefix')
                     if hl_draw is False:
-                        hl_box_decal = hl_box.column(align=True)
-                        hl_box_decal.prop(object, 'hl_decals_use_separate_texset')
+                        col = box.column(align=True)
+                        col.prop(object, 'hl_decals_use_separate_texset')
                         if object.hl_decals_use_separate_texset:
-                            hl_box_decal.prop(object, 'hl_decals_separate_texset_prefix')
+                            col.prop(object, 'hl_decals_separate_texset_prefix')
                     # cage
-                    if len(object.hl_highpoly_table):
-                        hl_box_cage = hl_box.column(align=True)
-                        # hl_box_cage.prop(object, 'hl_cage_type')
+                    if len(object.hl_highpolies):
+                        col = box.column(align=True)
+                        # col.prop(object, 'hl_cage_type')
                         # if object.hl_cage_type == 'STANDARD':
                         if object.hl_use_cage is False:
                             label = "Extrusion"
-                            hl_box_cage.prop(object, 'hl_cage_extrusion', text=label)
+                            col.prop(object, 'hl_cage_extrusion', text=label)
                             if bpy.app.version >= (2, 90, 0):
-                                hl_box_cage.prop(object, 'hl_max_ray_distance')
-                            hl_box_cage.prop(object, 'hl_use_cage')
+                                col.prop(object, 'hl_max_ray_distance')
+                            col.prop(object, 'hl_use_cage')
                         else:
                             label = "Cage Extrusion"
-                            hl_box_cage.prop(object, 'hl_cage_extrusion', text=label)
+                            col.prop(object, 'hl_cage_extrusion', text=label)
                             if hl_draw:
-                                hl_box_cage.prop(object, 'hl_use_cage')
-                                hl_box_cage.prop(object, 'hl_cage')
+                                col.prop(object, 'hl_use_cage')
+                                col.prop(object, 'hl_cage')
                             else:
-                                hl_box_cage.prop(object, 'hl_use_cage', text="Use Cage Object (automatic)")
+                                col.prop(object, 'hl_use_cage', text="Use Cage Object (automatic)")
                         # else:
-                            # hl_box_cage.prop(object, 'hl_cage_extrusion', text="Extrusion")
+                            # col.prop(object, 'hl_cage_extrusion', text="Extrusion")
         
         # highs, cage, and matgroups are drawn for global uni_c objects
         # everything else not
         if draw_all:
             # uv
-            uv_box = layout.box()
-            uv_box.use_property_split = True
-            uv_box.use_property_decorate = False
+            box = layout.box()
+            box.use_property_split = True
+            box.use_property_decorate = False
 
             # uv header
-            uv_box_header = uv_box.row(align=True)
-            uv_box_header.use_property_split = False
-            uv_box_header.emboss = 'NONE'
+            header = box.row(align=True)
+            header.use_property_split = False
+            header.emboss = 'NONE'
             icon = 'TRIA_DOWN' if bakemaster.is_uv_panel_expanded else 'TRIA_RIGHT'
-            uv_box_header.prop(bakejob, 'is_uv_panel_expanded', text="", icon=icon)
-            uv_box_header.emboss = 'NORMAL'
-            uv_box_header.label(text="UVs and Layers")
-            BM_PT_UV_Presets.draw_panel_header(uv_box_header)
+            header.prop(bakejob, 'is_uv_panel_expanded', text="", icon=icon)
+            header.emboss = 'NORMAL'
+            header.label(text="UVs and Layers")
+            BM_PT_UV_Presets.draw_panel_header(header)
 
             # uv body
             if bakemaster.is_uv_panel_expanded:
-                uv_box.prop(object, 'uv_use_unique_per_map')
+                box.prop(object, 'uv_use_unique_per_map')
 
                 if object.uv_use_unique_per_map is False:
                     # uv
-                    uv_box_column = uv_box.column(align=True)
-                    uv_box_column.prop(object, 'uv_bake_data')
-                    uv_box_column.prop(object, 'uv_bake_target')
+                    col = box.column(align=True)
+                    col.prop(object, 'uv_bake_data')
+                    col.prop(object, 'uv_bake_target')
                     if object.uv_bake_target == 'IMAGE_TEXTURES':
-                        uv_box_column = uv_box.column(align=True)
-                        uv_box_column.prop(object, 'uv_active_layer')
-                        uv_box_column.prop(object, 'uv_type')
-                        uv_box_column.prop(object, 'uv_snap_islands_to_pixels')
-                        uv_box_column = uv_box.column(align=True)
+                        col = box.column(align=True)
+                        col.prop(object, 'uv_active_layer')
+                        col.prop(object, 'uv_type')
+                        col.prop(object, 'uv_snap_islands_to_pixels')
+                        col = box.column(align=True)
                         if object.uv_active_layer != 'NONE_AUTO_CREATE':
-                            uv_box_column.prop(object, 'uv_use_auto_unwrap')
+                            col.prop(object, 'uv_use_auto_unwrap')
                         if object.uv_use_auto_unwrap or object.uv_active_layer == 'NONE_AUTO_CREATE':
-                            uv_box_column.prop(object, 'uv_auto_unwrap_angle_limit')
-                            uv_box_column.prop(object, 'uv_auto_unwrap_island_margin')
-                            uv_box_column.prop(object, 'uv_auto_unwrap_use_scale_to_bounds')
+                            col.prop(object, 'uv_auto_unwrap_angle_limit')
+                            col.prop(object, 'uv_auto_unwrap_island_margin')
+                            col.prop(object, 'uv_auto_unwrap_use_scale_to_bounds')
 
         # matgroups
         matgroups_box = layout.box()
@@ -1497,10 +1975,10 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
             # highpoly shading
             len_of_highs = 0
             if object.hl_use_unique_per_map is False:
-                len_of_highs = len(object.hl_highpoly_table)
+                len_of_highs = len(object.hl_highpolies)
             else:
                 for map in object.maps:
-                    len_of_highs += len(map.hl_highpoly_table)
+                    len_of_highs += len(map.hl_highpolies)
             # draw if uni_c is global
             hl_draw = True
             if object.nm_is_uc and object.nm_uc_is_global:
@@ -1516,529 +1994,3 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                         csh_box_column.prop(object, 'csh_highpoly_smoothing_groups_angle')
                     if object.csh_highpoly_smoothing_groups_enum == 'VERTEX_GROUPS':
                         csh_box_column.prop(object, 'csh_highpoly_smoothing_groups_name_contains')
-
-class BM_PT_Item_MapsBase(bpy.types.Panel):
-    bl_label = " "
-    bl_idname = 'BM_PT_Item_Maps'
-    bl_options = {'DEFAULT_CLOSED'}
-    
-    @classmethod
-    def poll(cls, context):
-        object = BM_Object_Get(None, context)
-        if object[0].nm_is_uc:
-            return object[0].nm_uc_is_global
-        elif object[0].nm_is_lc:
-            return False
-        elif any([object[0].hl_is_highpoly, object[0].hl_is_cage]):
-            return False
-        elif bakemaster.use_name_matching and object[0].nm_is_detached is False:
-            for object1 in context.scene.bm_table_of_objects:
-                if object1.nm_is_uc and object1.nm_master_index == object[0].nm_item_uni_container_master_index:
-                    return not object1.nm_uc_is_global
-        return object[1]
-
-    def draw_header(self, context):
-        label = "Maps"
-        self.layout.label(text=label)
-        BM_PT_FULL_MAP_Presets.draw_panel_header(self.layout)
-
-    def draw(self, context):
-        layout = self.layout
-        scene = context.scene
-        object = BM_Object_Get(None, context)[0]
-    
-        # maps table
-        maps_table_box = layout.box()
-        maps_table_row = maps_table_box.row()
-
-        rows = BM_template_list_get_rows(object.maps, 4, 0, 5, False)
-        maps_table_row.template_list('BM_UL_Table_of_Maps_Item', "", object, 'maps', object, 'global_maps_active_index', rows=rows)
-        maps_table_column = maps_table_row.column(align=True)
-        maps_table_column.operator(BM_OT_ITEM_Maps.bl_idname, text="", icon='ADD').control = 'ADD'
-        maps_table_column.operator(BM_OT_ITEM_Maps.bl_idname, text="", icon='REMOVE').control = 'REMOVE'
-        maps_table_column.separator(factor=1.0)
-        if len(object.maps):
-            BM_PT_MAP_Presets.draw_panel_header(maps_table_column)
-            maps_table_column.separator(factor=1.0)
-        maps_table_column.operator(BM_OT_ITEM_Maps.bl_idname, text="", icon='TRASH').control = 'TRASH'
-
-        # map settings
-        if len(object.maps):
-            map = BM_Map_Get(None, object)
-            # format 
-            if (object.uv_use_unique_per_map is False and object.uv_bake_target != 'VERTEX_COLORS') or (object.uv_use_unique_per_map and map.uv_bake_target != 'VERTEX_COLORS'):
-                format_box = layout.box()
-                format_box.use_property_split = True
-                format_box.use_property_decorate = False
-
-                # format header
-                format_box_header = format_box.row()
-                format_box_header.use_property_split = False
-                format_box_header.emboss = 'NONE'
-                icon = 'TRIA_DOWN' if bakemaster.is_format_panel_expanded else 'TRIA_RIGHT'
-                format_box_header.prop(bakejob, 'is_format_panel_expanded', text="", icon=icon)
-                format_box_header.emboss = 'NORMAL'
-
-                # draw format for all maps
-                if object.out_use_unique_per_map is False:
-                    label = "Format"
-                    format_prop_collection = object
-                # draw format unique per map
-                else:
-                    label = "Map Format"
-                    format_prop_collection = map
-                format_box_header.label(text=label)
-                BM_PT_OUT_Presets.draw_panel_header(format_box_header)
-
-                # format body
-                if bakemaster.is_format_panel_expanded:
-                    format_box.prop(object, 'out_use_unique_per_map')
-                    # format
-                    format_box_column = format_box.column(align=True)
-                    format_box_column.prop(format_prop_collection, 'out_file_format')
-                    # if format_prop_collection.out_file_format == 'PSD':
-                        # format_box_column.prop(format_prop_collection, 'out_psd_include')
-                    if format_prop_collection.out_file_format == 'OPEN_EXR':
-                        format_box_column.prop(format_prop_collection, 'out_exr_codec')
-                    elif format_prop_collection.out_file_format == 'PNG':
-                        format_box_column.prop(format_prop_collection, 'out_compression')
-                    format_box_column = format_box.column(align=True)
-                    format_box_column.prop(format_prop_collection, 'out_res', text="Resolution")
-                    if format_prop_collection.out_res == 'CUSTOM':
-                        format_box_column.prop(format_prop_collection, 'out_res_height')
-                        format_box_column.prop(format_prop_collection, 'out_res_width')
-                        format_split = format_box_column.split(factor=0.4)
-                        format_split.column()
-                        format_split.column().operator(BM_OT_ITEM_and_MAP_Format_MatchResolution.bl_idname, icon='FULLSCREEN_ENTER')
-                    # elif format_prop_collection.out_res == 'TEXEL':
-                        # format_box_column.prop(format_prop_collection, 'out_texel_density_value')
-                        # format_box_column.prop(format_prop_collection, 'out_texel_density_match')
-                    format_box_column = format_box.column(align=True)
-                    if bpy.app.version >= (3, 1, 0):
-                        format_box_column.prop(format_prop_collection, 'out_margin_type')
-                    format_box_column.prop(format_prop_collection, 'out_margin')
-                    format_box_column = format_box.column(align=True)
-                    format_box_column.prop(format_prop_collection, 'out_use_32bit')
-                    format_box_column.prop(format_prop_collection, 'out_use_alpha')
-                    format_box_column.prop(format_prop_collection, 'out_use_transbg')
-                    if format_prop_collection.uv_type == 'TILED':
-                        format_box_column = format_box.column(align=True)
-                        format_box_column.prop(format_prop_collection, 'out_udim_start_tile', text="Start Tile")
-                        format_box_column.prop(format_prop_collection, 'out_udim_end_tile', text="End Tile")
-                    format_box.prop(format_prop_collection, 'out_super_sampling_aa')
-                    format_box_column = format_box.column(align=True)
-                    format_box_column.prop(format_prop_collection, 'out_use_adaptive_sampling')
-                    if format_prop_collection.out_use_adaptive_sampling:
-                        format_box_column.prop(format_prop_collection, 'out_adaptive_threshold')
-                        format_box_column.prop(format_prop_collection, 'out_samples', text="Bake Max Samples")
-                        format_box_column.prop(format_prop_collection, 'out_min_samples')
-                    else:
-                        format_box_column.prop(format_prop_collection, 'out_samples')
-                    format_box_denoise_col = format_box.column(align=True)
-                    format_box_denoise_col.prop(format_prop_collection, 'out_use_denoise')
-                    format_box_denoise_col.prop(format_prop_collection, 'out_use_scene_color_management')
-                    format_box_denoise_col.active = not object.bake_save_internal
-
-            # map settings column
-            map_settings_column = maps_table_box.column()
-            map_settings_column.use_property_split = True
-            map_settings_column.use_property_decorate = False
-
-            if object.uv_use_unique_per_map:
-                uv_container = map
-            else:
-                uv_container = object
-
-            if uv_container.uv_bake_data == 'VERTEX_COLORS':
-                if map.map_type != 'VERTEX_COLOR_LAYER':
-                    map_settings_column.enabled = False
-            if uv_container.uv_bake_target == 'VERTEX_COLORS':
-                if map.map_type == 'NORMAL' and map.map_normal_data == 'MULTIRES':
-                    map_settings_column.enabled = False
-                elif map.map_type == 'DISPLACEMENT' and map.map_displacement_data in ['HIGHPOLY', 'MULTIRES']:
-                    map_settings_column.enabled = False
-            if map.map_type == 'DECAL' and object.bake_save_internal:
-                    map_settings_column.enabled = False
-
-            # map settings body
-
-            # (affect_by_hl prop is useless)
-            # draw_affect_by_hl = False
-            # if object.hl_use_unique_per_map and len(map.hl_highpoly_table):
-            #     draw_affect_by_hl = True
-            # elif len(object.hl_highpoly_table):
-            #     draw_affect_by_hl = True
-            # if object.decal_is_decal and object.nm_uc_is_global is False:
-            #     draw_affect_by_hl = False
-            # if draw_affect_by_hl and map.map_type not in ['NORMAL', 'DISPLACEMENT']:
-            #     map_settings_column.prop(map, 'affect_by_hl', text="Affect by Highpoly")
-            
-            map_settings_column.prop(map, 'map_%s_prefix' % map.map_type)
-            
-            try:
-                getattr(map, 'map_%s_use_preview' % map.map_type)
-            except AttributeError:
-                pass
-            else:
-                map_settings_column_preview = map_settings_column.row()
-                map_settings_column_preview.prop(map, 'map_%s_use_preview' % map.map_type, text=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_NAME)
-                if any([object.nm_is_uc, object.hl_is_highpoly, object.hl_is_cage]):
-                    map_settings_column_preview.active = False
-            try:
-                getattr(map, 'map_%s_use_default' % map.map_type)
-            except AttributeError:
-                pass
-            else:
-                map_settings_column.prop(map, 'map_%s_use_default' % map.map_type)
-
-
-            # map_types_settings = [
-            #     'NORMAL',
-            #     'DISPLACEMENT',
-            #     'VECTOR_DISPLACEMENT',
-            #     'AO',
-            #     'CAVITY',
-            #     'CURVATURE',
-            #     'THICKNESS',
-            #     'ID',
-            #     'MASK',
-            #     'XYZMASK',
-            #     'GRADIENT',
-            #     'EDGE',
-            #     'WIREFRAME',
-            #     'PASS',
-            #     'C_COMBINED',
-            #     'C_NORMAL',
-            #     'C_DIFFUSE',
-            #     'C_GLOSSY',
-            #     'C_TRANSMISSION']
-            # if map.map_type in map_types_settings:
-            #     map_settings_column = maps_table_box.column()#align=True)
-            #     map_settings_column.use_property_split = True
-            #     map_settings_column.use_property_decorate = False
-
-            # Pass and Cycles Maps
-            if map.map_type == 'PASS':
-                map_settings_column.prop(map, 'map_pass_type')
-
-            elif map.map_type == 'DECAL':
-                map_settings_column.prop(map, 'map_decal_pass_type')
-                if map.map_decal_pass_type == 'NORMAL':
-                    map_settings_column.prop(map, 'map_decal_normal_preset')
-                    if map.map_decal_normal_preset == 'CUSTOM':
-                        sub = map_settings_column.column(align=True)
-                        sub.prop(map, 'map_decal_normal_custom_preset')
-                        # if map.map_decal_normal_custom_preset == 'CUSTOM':
-                        #     sub.prop(map, 'map_decal_normal_r', text="Swizzle R")
-                        #     sub.prop(map, 'map_decal_normal_g', text="G")
-                        #     sub.prop(map, 'map_decal_normal_b', text="B")
-                else:
-                    map_settings_column.prop(map, 'map_decal_height_opacity_invert')
-
-            elif map.map_type == 'VERTEX_COLOR_LAYER':
-                map_settings_column.prop(map, 'map_vertexcolor_layer')
-            
-            elif map.map_type == 'C_NORMAL':
-                map_settings_column.prop(map, 'map_normal_space', text="Space")
-                sub = map_settings_column.column(align=True)
-                sub.prop(map, 'map_normal_r', text="Swizzle R")
-                sub.prop(map, 'map_normal_g', text="G")
-                sub.prop(map, 'map_normal_b', text="B")
-
-            elif map.map_type == 'C_COMBINED':
-                row = map_settings_column.row(align=True)
-                row.use_property_split = False
-                row.prop(map, 'map_cycles_use_pass_direct', toggle=True)
-                row.prop(map, 'map_cycles_use_pass_indirect', toggle=True)
-                flow = map_settings_column.grid_flow(row_major=False, columns=0, even_columns=False, even_rows=False, align=True)
-                flow.active = map.map_cycles_use_pass_direct or map.map_cycles_use_pass_indirect
-                flow.prop(map, 'map_cycles_use_pass_diffuse')
-                flow.prop(map, 'map_cycles_use_pass_glossy')
-                flow.prop(map, 'map_cycles_use_pass_transmission')
-                if bpy.app.version < (3, 0, 0):
-                    flow.prop(map, 'map_cycles_use_pass_ambient_occlusion')
-                flow.prop(map, 'map_cycles_use_pass_emit')
-
-            elif map.map_type in ['C_DIFFUSE', 'C_GLOSSY', 'C_TRANSMISSION']:
-                row = map_settings_column.row(align=True)
-                row.use_property_split = False
-                row.prop(map, 'map_cycles_use_pass_direct', toggle=True)
-                row.prop(map, 'map_cycles_use_pass_indirect', toggle=True)
-                row.prop(map, 'map_cycles_use_pass_color', toggle=True)
-            
-            # Object-based Maps
-            elif map.map_type == 'NORMAL':
-                try:
-                    if map.map_normal_data != 'MATERIAL':
-                        map_settings_column_preview.active = False
-                except NameError:
-                    pass
-                map_settings_column.prop(map, 'map_normal_data')
-                map_settings_column.prop(map, 'map_normal_space')
-                map_settings_column.prop(map, 'map_normal_preset')
-                if map.map_normal_preset == 'CUSTOM':
-                    sub = map_settings_column.column(align=True)
-                    sub.prop(map, 'map_normal_custom_preset')
-                    if map.map_normal_custom_preset == 'CUSTOM':
-                        sub.prop(map, 'map_normal_r', text="Swizzle R")
-                        sub.prop(map, 'map_normal_g', text="G")
-                        sub.prop(map, 'map_normal_b', text="B")
-                if map.map_normal_data == 'MULTIRES':
-                    map_settings_column.prop(map, 'map_displacement_subdiv_levels')
-                    face_count = BM_MAO_PROPS_map_get_subdivided_face_count(context, object, map)
-                    map_settings_column.label(text="Face count while baking: " + str(face_count))
-
-            elif map.map_type == 'DISPLACEMENT':
-                try:
-                    if map.map_displacement_data != 'MATERIAL':
-                        map_settings_column_preview.active = False
-                except NameError:
-                    pass
-                map_settings_column.prop(map, 'map_displacement_data')
-                map_settings_column.prop(map, 'map_displacement_result')
-                if map.map_displacement_data in ['HIGHPOLY', 'MULTIRES']:
-                    map_settings_column.prop(map, 'map_displacement_subdiv_levels')
-                    face_count = BM_MAO_PROPS_map_get_subdivided_face_count(context, object, map)
-                    map_settings_column.label(text="Face count while baking: " + str(face_count))
-                    map_settings_column.prop(map, 'map_displacement_lowresmesh')
-        
-            elif map.map_type == 'VECTOR_DISPLACEMENT':
-                map_settings_column.prop(map, 'map_vector_displacement_use_negative')
-                map_settings_column.prop(map, 'map_vector_displacement_result')
-                # if map.map_vector_displacement_result == 'MODIFIER':
-                #     map_settings_column.prop(map, 'map_vector_displacement_subdiv_levels')
-                #     try:
-                #         object_pointer = scene.objects[object.object_name]
-                #         face_count = len(object_pointer.data.polygons) * 4 ** map.map_vector_displacement_subdiv_levels # future face count
-                #         map_settings_column.label(text="Face count while baking: " + str(face_count))
-                #     except KeyError:
-                #         pass
-
-            # Masks and Details Maps
-            elif map.map_type == 'AO':
-                if map.map_AO_use_default is False:
-                    map_settings_column.prop(map, 'map_ao_samples', slider=True)
-                    map_settings_column.prop(map, 'map_ao_distance')
-                    sub = map_settings_column.column(align=True)
-                    sub.prop(map, 'map_ao_black_point', slider=True)
-                    sub.prop(map, 'map_ao_white_point', slider=True)
-                    sub = map_settings_column.column(align=True)
-                    sub.prop(map, 'map_ao_brightness')
-                    sub.prop(map, 'map_ao_contrast')
-                    sub.prop(map, 'map_ao_opacity', slider=True)
-                    sub = map_settings_column.column()
-                    sub.prop(map, 'map_ao_use_local')
-                    sub.prop(map, 'map_ao_use_invert', slider=True)
-
-            elif map.map_type == 'CAVITY':
-                if map.map_CAVITY_use_default is False:
-                    sub = map_settings_column.column(align=True)
-                    sub.prop(map, 'map_cavity_black_point', slider=True)
-                    sub.prop(map, 'map_cavity_white_point', slider=True)
-                    sub = map_settings_column.column()
-                    sub.prop(map, 'map_cavity_power')
-                    sub.prop(map, 'map_cavity_use_invert', slider=True)
-
-            elif map.map_type == 'CURVATURE':
-                if map.map_CURVATURE_use_default is False:
-                    map_settings_column.prop(map, 'map_curv_samples', slider=True)
-                    map_settings_column.prop(map, 'map_curv_radius')
-                    sub = map_settings_column.column(align=True)
-                    sub.prop(map, 'map_curv_black_point', slider=True)
-                    sub.prop(map, 'map_curv_mid_point', slider=True)
-                    sub.prop(map, 'map_curv_white_point', slider=True)
-                    sub = map_settings_column.column()
-                    sub.prop(map, 'map_curv_body_gamma')
-
-            elif map.map_type == 'THICKNESS':
-                if map.map_THICKNESS_use_default is False:
-                    map_settings_column.prop(map, 'map_thick_samples', slider=True)
-                    map_settings_column.prop(map, 'map_thick_distance')
-                    sub = map_settings_column.column(align=True)
-                    sub.prop(map, 'map_thick_black_point', slider=True)
-                    sub.prop(map, 'map_thick_white_point', slider=True)
-                    sub = map_settings_column.column(align=True)
-                    sub.prop(map, 'map_thick_brightness')
-                    sub.prop(map, 'map_thick_contrast')
-                    sub = map_settings_column.column()
-                    sub.prop(map, 'map_thick_use_invert', slider=True)
-
-            elif map.map_type == 'ID':
-                map_settings_column.prop(map, 'map_matid_data')
-                if map.map_matid_data == 'VERTEX_GROUPS':
-                    map_settings_column.prop(map, 'map_matid_vertex_groups_name_contains')
-                map_settings_column.prop(map, 'map_matid_algorithm')
-                map_settings_column.prop(map, 'map_matid_jilter')
-            
-            elif map.map_type == 'MASK':
-                map_settings_column.prop(map, 'map_mask_data')
-                if map.map_mask_data == 'VERTEX_GROUPS':
-                    map_settings_column.prop(map, 'map_mask_vertex_groups_name_contains')
-                elif map.map_mask_data == 'MATERIALS':
-                    map_settings_column.prop(map, 'map_mask_materials_name_contains')
-                map_settings_column.prop(map, 'map_mask_color1')
-                map_settings_column.prop(map, 'map_mask_color2')
-                map_settings_column.prop(map, 'map_mask_use_invert', slider=True)
-
-            elif map.map_type == 'XYZMASK':
-                sub = map_settings_column.column(align=True)
-                sub.prop(map, 'map_xyzmask_use_x')
-                sub.prop(map, 'map_xyzmask_use_y')
-                sub.prop(map, 'map_xyzmask_use_z')
-                if not map.map_XYZMASK_use_default:
-                    sub = map_settings_column.column(align=True)
-                    sub.prop(map, 'map_xyzmask_coverage')
-                    sub.prop(map, 'map_xyzmask_saturation')
-                    sub = map_settings_column.column(align=True)
-                    sub.prop(map, 'map_xyzmask_opacity', slider=True)
-                    sub.prop(map, 'map_xyzmask_use_invert', slider=True)
-
-            elif map.map_type == 'GRADIENT':
-                map_settings_column.prop(map, 'map_gmask_type')
-                sub = map_settings_column.column(align=True)
-                sub.prop(map, 'map_gmask_location_x')
-                sub.prop(map, 'map_gmask_location_y')
-                sub.prop(map, 'map_gmask_location_z')
-                sub = map_settings_column.column(align=True)
-                sub.prop(map, 'map_gmask_rotation_x')
-                sub.prop(map, 'map_gmask_rotation_y')
-                sub.prop(map, 'map_gmask_rotation_z')
-                if not map.map_GRADIENT_use_default: 
-                    sub = map_settings_column.column(align=True)
-                    sub.prop(map, 'map_gmask_scale_x')
-                    sub.prop(map, 'map_gmask_scale_y')
-                    sub.prop(map, 'map_gmask_scale_z')
-                    sub = map_settings_column.column(align=True)
-                    sub.prop(map, 'map_gmask_coverage')
-                    sub.prop(map, 'map_gmask_contrast')
-                    sub = map_settings_column.column(align=True)
-                    sub.prop(map, 'map_gmask_saturation')
-                    sub.prop(map, 'map_gmask_opacity', slider=True)
-                    sub.prop(map, 'map_gmask_use_invert', slider=True)
-
-            elif map.map_type == 'EDGE':
-                if map.map_EDGE_use_default is False:
-                    map_settings_column.prop(map, 'map_edgemask_samples', slider=True)
-                    map_settings_column.prop(map, 'map_edgemask_radius')
-                    sub = map_settings_column.column(align=True)
-                    sub.prop(map, 'map_edgemask_edge_contrast')
-                    sub.prop(map, 'map_edgemask_body_contrast')
-                    sub = map_settings_column.column()
-                    sub.prop(map, 'map_edgemask_use_invert')
-            
-            elif map.map_type == 'WIREFRAME':
-                map_settings_column.prop(map, 'map_wireframemask_line_thickness')
-                map_settings_column.prop(map, 'map_wireframemask_use_invert')
-        
-            # unique map settings
-
-            # skip drawing hl, uv, csh subpanels
-            if object.decal_is_decal and object.nm_uc_is_global is False:
-                # return
-                pass
-            else:
-
-                # hl
-                if object.hl_use_unique_per_map:
-                    hl_box = layout.box()
-                    hl_box.use_property_split = True
-                    hl_box.use_property_decorate = False
-                    hl_draw = True
-            
-                    # hl header
-                    hl_box_header = hl_box.row(align=True)
-                    hl_box_header.use_property_split = False
-                    hl_box_header.emboss = 'NONE'
-                    icon = 'TRIA_DOWN' if bakemaster.local_is_hl_panel_expanded else 'TRIA_RIGHT'
-                    hl_box_header.prop(bakejob, 'local_is_hl_panel_expanded', text="", icon=icon)
-                    hl_box_header.emboss = 'NORMAL'
-                    hl_box_header.label(text="Map High to Lowpoly")
-                    BM_PT_HL_Presets.draw_panel_header(hl_box_header)
-
-                    # hl body
-                    if bakemaster.local_is_hl_panel_expanded:
-                        hl_box_highpoly_frame = hl_box.split(factor=0.4)
-                        hl_box_highpoly_frame.column()
-                        hl_box_highpoly = hl_box_highpoly_frame.column()
-                        label = "Highpoly" if len(map.hl_highpoly_table) <= 1 else "Highpolies"
-                        if object.nm_is_uc and object.nm_uc_is_global:
-                            label += " (automatic)"
-                            hl_draw = False
-                            hl_box_highpoly.label(text=label)
-                        if hl_draw:
-                            hl_box_highpoly_table = hl_box_highpoly.column().row()
-                            rows = BM_template_list_get_rows(map.hl_highpoly_table, 1, 1, 5, True)
-                            hl_box_highpoly_table.template_list('BM_UL_Table_of_Maps_Item_Highpoly', "", map, 'hl_highpoly_table', map, 'hl_highpoly_table_active_index', rows=rows)
-                            hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
-                            hl_highpoly_table_column.operator(BM_OT_MAP_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
-                            hl_highpoly_table_column.operator(BM_OT_MAP_Highpoly_Table_Remove.bl_idname, text="", icon='REMOVE')
-                        # highpoly as decal
-                        if len(map.hl_highpoly_table):
-                            highpoly_object_index = map.hl_highpoly_table[map.hl_highpoly_table_active_index].highpoly_object_index
-                            hl_box_decal = hl_box.column(align=True)
-                            if highpoly_object_index != -1:
-                                source_object = scene.bm_table_of_objects[highpoly_object_index]
-                                hl_box_decal.prop(source_object, 'hl_is_decal')
-                            hl_box_decal.prop(object, 'hl_decals_use_separate_texset')
-                            if object.hl_decals_use_separate_texset:
-                                hl_box_decal.prop(object, 'hl_decals_separate_texset_prefix')
-                        if hl_draw is False:
-                            hl_box_decal = hl_box.column(align=True)
-                            hl_box_decal.prop(object, 'hl_decals_use_separate_texset')
-                            if object.hl_decals_use_separate_texset:
-                                hl_box_decal.prop(object, 'hl_decals_separate_texset_prefix')
-                        # cage
-                        if len(map.hl_highpoly_table) or hl_draw is False:
-                            hl_box_cage = hl_box.column(align=True)
-                            hl_box_cage.prop(map, 'hl_cage_type')
-                            if map.hl_cage_type == 'STANDARD':
-                                if map.hl_use_cage is False:
-                                    label = "Extrusion"
-                                    hl_box_cage.prop(map, 'hl_cage_extrusion', text=label)
-                                    if bpy.app.version >= (2, 90, 0):
-                                        hl_box_cage.prop(map, 'hl_max_ray_distance')
-                                    hl_box_cage.prop(map, 'hl_use_cage')
-                                else:
-                                    label = "Cage Extrusion"
-                                    hl_box_cage.prop(map, 'hl_cage_extrusion', text=label)
-                                    if hl_draw:
-                                        hl_box_cage.prop(map, 'hl_use_cage')
-                                        hl_box_cage.prop(map, 'hl_cage')
-                                    else:
-                                        hl_box_cage.prop(map, 'hl_use_cage', text="Use Cage Object (auto)")
-                            else:
-                                hl_box_cage.prop(map, 'hl_cage_extrusion', text="Extrusion")
-        
-            # uv
-            if object.uv_use_unique_per_map:
-                uv_box = layout.box()
-                uv_box.use_property_split = True
-                uv_box.use_property_decorate = False
-
-                # uv header
-                uv_box_header = uv_box.row(align=True)
-                uv_box_header.use_property_split = False
-                uv_box_header.emboss = 'NONE'
-                icon = 'TRIA_DOWN' if bakemaster.local_is_uv_panel_expanded else 'TRIA_RIGHT'
-                uv_box_header.prop(bakejob, 'local_is_uv_panel_expanded', text="", icon=icon)
-                uv_box_header.emboss = 'NORMAL'
-                uv_box_header.label(text="Map UVs and Layers")
-                BM_PT_UV_Presets.draw_panel_header(uv_box_header)
-
-                # uv body
-                if bakemaster.local_is_uv_panel_expanded:
-                    uv_box_column = uv_box.column(align=True)
-                    uv_box_column.prop(map, 'uv_bake_data')
-                    uv_box_column.prop(map, 'uv_bake_target')
-                    if map.uv_bake_target == 'IMAGE_TEXTURES':
-                        uv_box_column = uv_box.column(align=True)
-                        uv_box_column.prop(map, 'uv_active_layer')
-                        uv_box_column.prop(map, 'uv_type')
-                        uv_box_column.prop(map, 'uv_snap_islands_to_pixels')
-                        uv_box_column = uv_box.column(align=True)
-                        if object.uv_active_layer != 'NONE_AUTO_CREATE':
-                            uv_box_column.prop(object, 'uv_use_auto_unwrap')
-                        if object.uv_use_auto_unwrap or object.uv_active_layer == 'NONE_AUTO_CREATE':
-                            uv_box_column.prop(object, 'uv_auto_unwrap_angle_limit')
-                            uv_box_column.prop(object, 'uv_auto_unwrap_island_margin')
-                            uv_box_column.prop(object, 'uv_auto_unwrap_use_scale_to_bounds')
