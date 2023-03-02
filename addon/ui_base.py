@@ -26,6 +26,7 @@ from .utils.ui import (
     get_uilist_rows as bm_utils_ui_get_uilist_rows,
     get_active_bakejob_and_object as bm_utils_get_active_bakejob_and_object,
     are_object_props_drawable as bm_utils_are_object_props_drawable,
+    get_object_ui_label as bm_utils_get_object_ui_label,
     is_mapsettings_active as bm_utils_is_mapsettings_active,
     ui_draw_hl as bm_utils_ui_draw_hl,
     ui_draw_uv as bm_utils_ui_draw_uv,
@@ -140,24 +141,23 @@ class BM_PT_ManagerBase(Panel):
 
 class BM_PT_ObjectsBase(Panel):
     bl_label = " "
-    bl_idname = 'BM_PT_Item_Object'
+    bl_idname = 'BM_PT_Objects'
 
     @classmethod
     def poll(cls, context):
         if not hasattr(context.scene, "bakemaster"):
             return False
-        bakejob, object = bm_utils_get_active_bakejob_and_object
-        return bm_utils_are_object_props_drawable(bakejob, object)
+        try:
+            context.scene.bakemaster.bakejobs[
+                    context.scene.bakemaster.bakejobs_active_index]
+        except IndexError:
+            return False
+        else:
+            return True
 
     def draw_header(self, context):
-        _, object = bm_utils_get_active_bakejob_and_object
-        label = "Object"
-        if any([object.nm_is_uc, object.nm_is_lc]):
-            label = "Container"
-        row = self.layout.row(align=True)
-        row.use_property_split = False
-        row.label(text=label)
-        BM_PT_OBJECT_Presets.draw_panel_header(row)
+        label = "Objects"
+        self.layout.label(text=label)
 
     def draw_header_preset(self, context):
         bakemaster = context.scene.bakemaster
@@ -170,6 +170,87 @@ class BM_PT_ObjectsBase(Panel):
         scene = context.scene
         bakemaster = scene.bakemaster
         layout = self.layout
+
+        bakejob = bakemaster.bakejobs[bakemaster.bakejobs_active_index]
+
+        box = layout.box()
+        row = box.row(align=True)
+        row.operator(BM_OT_Table_of_Objects_Add.bl_idname, text="Add",
+                     icon='ADD')
+        row.operator(BM_OT_Table_of_Objects_Remove.bl_idname, text="Remove",
+                     icon='REMOVE')
+        row.scale_y = 1.15
+
+        rows = 5 if bakejob.object_len >= 1 else 4
+        refresh = False
+        for object in bakejob.objects:
+            try:
+                scene.objects[object.name]
+            except KeyError:
+                if any([object.nm_is_uc, object.nm_is_lc]):
+                    continue
+                refresh = True
+                rows += 1
+                break
+
+        row = box.row()
+        row.template_list('BM_UL_Table_of_Objects_Item', "", bakejob,
+                          'objects', bakejob, 'objects_active_index',
+                          rows=rows)
+        col = row.column(align=True)
+        col.operator(BM_OT_Table_of_Objects.bl_idname, text="",
+                     icon='TRIA_UP').control = 'UP'
+        col.operator(BM_OT_Table_of_Objects.bl_idname, text="",
+                     icon='TRIA_DOWN').control = 'DOWN'
+        col.separator()
+        col.prop(bakejob, 'use_name_matching', text="",
+                 icon='OUTLINER_OB_FONT')
+        col.emboss = 'NONE'
+
+        if refresh:
+            col.separator()
+            col.operator(BM_OT_Table_of_Objects_Refresh.bl_idname,
+                         text="", icon='FILE_REFRESH')
+        col.separator()
+        BM_PT_FULL_OBJECT_Presets.draw_panel_header(col)
+        col.separator()
+        col.operator(BM_OT_Table_of_Objects_Trash.bl_idname, text="",
+                     icon='TRASH')
+
+
+class BM_PT_ObjectBase(Panel):
+    bl_label = " "
+    bl_idname = 'BM_PT_Object'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    object_exists = True
+
+    @classmethod
+    def poll(cls, context):
+        if not hasattr(context.scene, "bakemaster"):
+            return False
+        bakejob, object = bm_utils_get_active_bakejob_and_object
+        return bm_utils_are_object_props_drawable(bakejob, object)
+
+    def draw_header(self, context):
+        bakejob, object = bm_utils_get_active_bakejob_and_object
+        packed = bm_utils_get_object_ui_label(context.scene, bakejob.objects,
+                                              object)
+        self.object_exists, label, icon = packed
+        row = self.layout.row(align=True)
+        row.use_property_split = False
+        row.label(text=label, icon=icon)
+
+        if object.nm_is_uc:
+            row.prop(object, 'nm_uc_is_global', text="", icon='NETWORK_DRIVE')
+        BM_PT_OBJECT_Presets.draw_panel_header(row)
+
+    def draw(self, context):
+        scene = context.scene
+        bakemaster = scene.bakemaster
+        layout = self.layout
+
+        layout.active = self.object_exists
 
         bakejob, object = bm_utils_get_active_bakejob_and_object
         draw_all = any([not bakejob.objects[
@@ -1196,134 +1277,3 @@ class BM_UL_Table_of_Objects_Item_BatchNamingTable_Item(bpy.types.UIList):
     
     def invoke(self, context, event):
         pass
-
-class BM_PT_MainBase(bpy.types.Panel):
-    bl_label = "BakeMaster"
-    bl_idname = 'BM_PT_Main'
-
-    def draw(self, context):
-        layout = self.layout
-        scene = context.scene
-
-        box = layout.box()
-        row = box.row(align=True)
-        row.operator(BM_OT_Table_of_Objects_Add.bl_idname, text="Add", icon='ADD')
-        row.operator(BM_OT_Table_of_Objects_Remove.bl_idname, text="Remove", icon='REMOVE')
-        row.scale_y = 1.15
-
-        full_len = len(scene.bm_table_of_objects)
-        rows = 5 if full_len >= 1 else 4
-        refresh = False
-        for object in scene.bm_table_of_objects:
-            try:
-                scene.objects[object.object_name]
-            except (KeyError, AttributeError, UnboundLocalError):
-                if bakemaster.use_name_matching and any([object.nm_is_uc, object.nm_is_lc]):
-                    continue
-                refresh = True
-                rows += 1
-                break
-        if full_len and BM_Object_Get(None, context)[1] is False:
-            if bakemaster.use_name_matching and any([object.nm_is_uc, object.nm_is_lc]):
-                rows += 1
-            rows -= 1
-        
-        row = box.row()
-        row.template_list('BM_UL_Table_of_Objects_Item', "", scene, 'bm_table_of_objects', bakemaster, 'active_index', rows=rows)
-        col = row.column(align=True)
-        col.operator(BM_OT_Table_of_Objects.bl_idname, text="", icon='TRIA_UP').control = 'UP'
-        col.operator(BM_OT_Table_of_Objects.bl_idname, text="", icon='TRIA_DOWN').control = 'DOWN'
-        col.separator()
-
-        col.prop(bakejob, 'use_name_matching', text="", icon='OUTLINER_OB_FONT')
-
-        col.emboss = 'NONE'
-
-        if refresh:
-            col.separator()
-            col.operator(BM_OT_Table_of_Objects_Refresh.bl_idname, text="", icon='FILE_REFRESH')
-        col.separator()
-
-        if len(scene.bm_table_of_objects):
-            object = BM_Object_Get(None, context)
-            if (object[1] is True) or (bakemaster.use_name_matching and any([object[0].nm_is_uc, object[0].nm_is_lc])): # and object[0].use_source is False:
-                BM_PT_FULL_OBJECT_Presets.draw_panel_header(col)
-                col.separator()
-
-        col.operator(BM_OT_Table_of_Objects_Trash.bl_idname, text="", icon='TRASH')
-
-class BM_PT_ItemBase(bpy.types.Panel):
-    bl_label = " "
-    bl_idname = 'BM_PT_Item'
-    bl_options = {'DEFAULT_CLOSED'}
-    
-    @classmethod
-    def poll(cls, context):
-        return len(context.scene.bm_table_of_objects) > 0
-
-    def draw_header(self, context):
-        object = BM_Object_Get(None, context)
-        label = object[0].object_name
-        label_end = ""
-        icon = 'PROPERTIES'
-        draw_unique_per_object = False
-        if bakemaster.use_name_matching and any([object[0].nm_is_uc, object[0].nm_is_lc]):
-            label_end = "Container"
-            if object[0].nm_is_uc:
-                label = object[0].nm_container_name
-                draw_unique_per_object = True
-            else:
-                for object1 in context.scene.bm_table_of_objects:
-                    if object1.nm_is_uc and object1.nm_mindex == object[0].nm_uc_mindex:
-                        label = object1.nm_container_name
-                        label_end = "{} Container".format(object[0].nm_container_name)
-                        break
-        row = self.layout.row(align=True)
-        row.label(text="{} {}".format(label, label_end), icon=icon)
-        if draw_unique_per_object:
-            row.prop(object[0], 'nm_uc_is_global', text="", icon='NETWORK_DRIVE')
-
-    def draw(self, context):
-        object = BM_Object_Get(None, context)
-        label = ""
-        icon = ''
-        draw_label = False
-        if bakemaster.use_name_matching and object[0].nm_is_uc:
-            if object[0].nm_uc_is_global:
-                return
-            label = "Universal Container"
-            icon = 'TRIA_RIGHT'
-            draw_label = True
-        elif bakemaster.use_name_matching and object[0].nm_is_lc:
-            label = "Local Container"
-            icon = 'TRIA_RIGHT'
-            draw_label = True
-        elif object[1] is False:
-            label = "Object cannot be found"
-            icon = 'GHOST_DISABLED'
-            draw_label = True
-        elif object[0].hl_is_highpoly and object[0].hl_is_decal:
-            label = "Decal Object"
-            icon = 'XRAY'
-            draw_label = True
-        elif object[0].hl_is_highpoly:
-            label = "Highpoly Object" 
-            icon = 'VIEW_ORTHO'
-            draw_label = True
-        elif object[0].hl_is_cage:
-            label = "Cage Object" 
-            icon = 'SELECT_SET'
-            draw_label = True
-        if bakemaster.use_name_matching and object[0].nm_is_detached is False:
-            container_name = ""
-            draw_configured = False
-            for object1 in context.scene.bm_table_of_objects:
-                if object1.nm_is_uc and object1.nm_mindex == object[0].nm_uc_mindex:
-                    container_name = object1.nm_container_name
-                    draw_configured = object1.nm_uc_is_global
-                    break
-            if draw_configured:
-                label = "Settings configured by %s" % container_name
-                draw_label = True
-        if draw_label:
-            self.layout.label(text=label)
