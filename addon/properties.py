@@ -77,6 +77,8 @@ class BM_Map(PropertyGroup):
         name="Highpoly Object",
         default=0)
 
+    hl_highpolies_len: IntProperty(default=0)
+
     hl_use_cage: BoolProperty(
         name="Use Cage Object",
         description="Cast rays to Object from cage",
@@ -1762,20 +1764,22 @@ class BM_PROPS_Local_object(PropertyGroup):
 
 # Name matching props:
     nm_is_detached: BoolProperty(default=False)
-    nm_master_index: IntProperty(default=-1)
+    nm_mindex: IntProperty(default=-1)
     nm_container_name: StringProperty(default="", update=BM_ITEM_PROPS_nm_container_name_Update)  # noqa: E501
     nm_container_name_old: StringProperty(default="")
     nm_this_indent: IntProperty(default=0)
-    nm_is_universal_container: BoolProperty(default=False)
-    nm_is_local_container: BoolProperty(default=False)
+    nm_is_uc: BoolProperty(default=False)
+    nm_is_lc: BoolProperty(default=False)
     nm_is_expanded: BoolProperty(default=True)
-    nm_item_uni_container_master_index: IntProperty(default=-1)
-    nm_item_local_container_master_index: IntProperty(default=-1)
-    nm_is_lowpoly_container: BoolProperty(default=False)
-    nm_is_highpoly_container: BoolProperty(default=False)
-    nm_is_cage_container: BoolProperty(default=False)
+    nm_uc_mindex: IntProperty(default=-1)
+    nm_lc_mindex: IntProperty(default=-1)
+    nm_uc_index: IntProperty(default=-1)
+    nm_lc_index: IntProperty(default=-1)
+    nm_is_lowc: BoolProperty(default=False)
+    nm_is_highc: BoolProperty(default=False)
+    nm_is_cagec: BoolProperty(default=False)
 
-    nm_uni_container_is_global: BoolProperty(
+    nm_uc_is_global: BoolProperty(
         name="Is Global Container",
         description="If checked, all Container's Objects settings will be configured by Container settings",  # noqa: E501
         default=False,
@@ -1964,11 +1968,13 @@ class BM_PROPS_Local_object(PropertyGroup):
         update=BM_ITEM_PROPS_uv_auto_unwrap_use_scale_to_bounds_Update)
 
 # Item Material Groups Props:
-    matgroups_table_of_mats: CollectionProperty(type=BM_MATGROUPS_Item)
+    matgroups: CollectionProperty(type=BM_MATGROUPS_Item)
 
-    matgroups_table_of_mats_active_index: IntProperty(
+    matgroups_active_index: IntProperty(
         name="Object's material",
         default=-1)
+
+    matgroups_len: IntProperty(default=0)
 
     matgroups_batch_naming_type: EnumProperty(
         name="Mat Groups naming",
