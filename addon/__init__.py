@@ -27,6 +27,7 @@ from bpy.props import PointerProperty
 
 from . import ui_panels
 from . import properties
+from . import presets
 from .operators import (
     ui as operators_ui,
 )
@@ -36,6 +37,7 @@ if "bpy_utils_register_class" in locals():
 
     module_reload(ui_panels)
     module_reload(properties)
+    module_reload(presets)
     module_reload(operators_ui)
 
 bl_info = {
@@ -80,6 +82,29 @@ classes = (
 
     properties.BM_PROPS_Local_bakejob,
     properties.BM_PROPS_Global,
+
+    presets.BM_PT_FULL_OBJECT_Presets,
+    presets.BM_PT_OBJECT_Presets,
+    presets.BM_PT_DECAL_Presets,
+    presets.BM_PT_HL_Presets,
+    presets.BM_PT_UV_Presets,
+    presets.BM_PT_CSH_Presets,
+    presets.BM_PT_OUT_Presets,
+    presets.BM_PT_FULL_MAP_Presets,
+    presets.BM_PT_MAP_Presets,
+    presets.BM_PT_CHNLP_Presets,
+    presets.BM_PT_BAKE_Presets,
+    presets.BM_MT_FULL_OBJECT_Presets,
+    presets.BM_MT_OBJECT_Presets,
+    presets.BM_MT_DECAL_Presets,
+    presets.BM_MT_HL_Presets,
+    presets.BM_MT_UV_Presets,
+    presets.BM_MT_CSH_Presets,
+    presets.BM_MT_OUT_Presets,
+    presets.BM_MT_FULL_MAP_Presets,
+    presets.BM_MT_MAP_Presets,
+    presets.BM_MT_CHNLP_Presets,
+    presets.BM_MT_BAKE_Presets,
 
     operators_ui.BM_OT_BakeJobs_AddRemove,
     operators_ui.BM_OT_BakeJobs_Move,
