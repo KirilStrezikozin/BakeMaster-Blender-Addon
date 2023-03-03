@@ -20,6 +20,7 @@
 
 from bpy.types import (
     PropertyGroup,
+    Camera as bpy_types_Camera,
 )
 from bpy.props import (
     CollectionProperty,
@@ -28,21 +29,24 @@ from bpy.props import (
     BoolProperty,
     EnumProperty,
     FloatProperty,
+    FloatVectorProperty,
+    PointerProperty,
 )
 from .labels import BM_LABELS_Props
 from .utils.ui import (
     BM_UTILS_Highpoly_Items,
     BM_UTILS_Highpoly_Update,
 )
+from .utils import properties as bm_props_utils
 
 
-class F(PropertyGroup):
+# class F():
 
 
 class BM_PROPS_Local_map_highpoly(PropertyGroup):
     name: EnumProperty(
-        name=BM_LABELS_Props('BM_PROPS_Local_map_highpoly', "name", "name"),
-        description=BM_LABELS_Props('BM_PROPS_Local_map_highpoly', "name", "description"),  # noqa: E501
+        name="Highpoly Object",
+        description="Choose a highpoly among available (highpoly should be added to Bake Job's Objects",  # noqa: E501
         items=BM_UTILS_Highpoly_Items,
         update=BM_UTILS_Highpoly_Update)
 
@@ -59,13 +63,13 @@ class BM_PROPS_Local_map(PropertyGroup):
     use_bake: BoolProperty(
         name="Include/exclude map from being baked",
         default=True,
-        update=BM_MAP_PROPS_use_bake_Update)
+        update=bm_props_utils.Map_use_bake_Update)
 
     map_type: EnumProperty(
         name="Choose Map Type",
         description="Type of the current map pass",
-        items=BM_MAP_PROPS_map_type_Items,
-        update=BM_MAP_PROPS_map_type_Update)
+        items=bm_props_utils.Map_map_type_Items,
+        update=bm_props_utils.Map_map_type_Update)
 
     index: IntProperty(default=-1)
     object_index: IntProperty(default=-1)
@@ -84,14 +88,14 @@ class BM_PROPS_Local_map(PropertyGroup):
         name="Use Cage Object",
         description="Cast rays to Object from cage",
         default=False,
-        update=BM_ITEM_PROPS_hl_use_cage_Update)
+        update=bm_props_utils.Object_hl_use_cage_Update)
 
     hl_cage_type: EnumProperty(
         name="Cage type",
         description="Type of Cage properties to use",
         items=[('STANDARD', "Standard", "Standard Cage properties.\nSet extrusion, ray distance, and choose a cage object"),  # noqa: E501
                ('SMART', "Smart", "Auto cage creation using lowpoly mesh displace. Saves time with simple cage")],  # noqa: E501
-        update=BM_MAP_PROPS_hl_cage_type_Update)
+        update=bm_props_utils.Map_hl_cage_type_Update)
 
     hl_cage_extrusion: FloatProperty(
         name="Cage Extrusion",
@@ -101,7 +105,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         max=1,
         precision=2,
         subtype='DISTANCE',
-        update=BM_MAP_PROPS_hl_cage_extrusion_Update)
+        update=bm_props_utils.Map_hl_cage_extrusion_Update)
 
     hl_max_ray_distance: FloatProperty(
         name="Max Ray Distance",
@@ -111,13 +115,13 @@ class BM_PROPS_Local_map(PropertyGroup):
         max=1,
         precision=2,
         subtype='DISTANCE',
-        update=BM_MAP_PROPS_hl_max_ray_distance_Update)
+        update=bm_props_utils.Map_hl_max_ray_distance_Update)
 
     hl_cage: EnumProperty(
         name="Cage Object",
         description="Object to use as cage instead of calculating with cage extrusion",  # noqa: E501
-        items=BM_ITEM_PROPS_hl_cage_Items,
-        update=BM_ITEM_PROPS_hl_cage_Update)
+        items=bm_props_utils.Object_hl_cage_Items,
+        update=bm_props_utils.Object_hl_cage_Update)
 
     hl_cage_name_old: StringProperty()
 
@@ -132,34 +136,34 @@ class BM_PROPS_Local_map(PropertyGroup):
         default='OBJECT_MATERIALS',
         items=[('OBJECT_MATERIALS', "Object/Materials", "Use Object and Materials data for baking regular maps"),  # noqa: E501
                ('VERTEX_COLORS', "Vertex Colors", "Bake VertexColor Layers to Image Textures")],  # noqa: E501
-        update=BM_MAP_PROPS_uv_bake_data_Update)
+        update=bm_props_utils.Map_uv_bake_data_Update)
 
     uv_bake_target: EnumProperty(
         name="Bake Target",
         description="Choose Baked Maps output target",
-        items=BM_ITEM_PROPS_uv_bake_target_Items,
-        update=BM_MAP_PROPS_uv_bake_target_Update)
+        items=bm_props_utils.Object_uv_bake_target_Items,
+        update=bm_props_utils.Map_uv_bake_target_Update)
 
     uv_active_layer: EnumProperty(
         name="Active UV Map",
         description="Choose active UVMap layer to use in the bake.\nIf mesh has got no UV layers and at least one map to be baked to image texture, auto UV unwrap will be proceeded",  # noqa: E501
-        items=BM_ITEM_PROPS_uv_active_layer_Items)
+        items=bm_props_utils.Object_uv_active_layer_Items)
 
     uv_type: EnumProperty(
         name="UV Map Type",
         description="Choose UV Map type for the chosen Active UV Map",
-        items=BM_ITEM_PROPS_uv_type_Items,
-        update=BM_MAP_PROPS_uv_type_Update)
+        items=bm_props_utils.Object_uv_type_Items,
+        update=bm_props_utils.Map_uv_type_Update)
 
     uv_snap_islands_to_pixels: BoolProperty(
         name="Snap UV to pixels",
         description="Make chosen UV Layer pixel perfect by aligning UV Coordinates to pixels' corners/edges (will depend on chosen map resolution)",  # noqa: E501
-        update=BM_MAP_PROPS_uv_snap_islands_to_pixels_Update)
+        update=bm_props_utils.Map_uv_snap_islands_to_pixels_Update)
 
     # uv_use_auto_unwrap: BoolProperty(
     #     name="Auto Unwrap",
     #     description="Auto UV Unwrap object using smart project",
-    #     update=BM_ITEM_PROPS_UVSettings_Update)
+    #     update=bm_props_utils.Object_UVSettings_Update)
 
     # uv_auto_unwrap_angle_limit: IntProperty(
     #     name="Angle Limit",
@@ -168,7 +172,7 @@ class BM_PROPS_Local_map(PropertyGroup):
     #     min=0,
     #     max=89,
     #     subtype='ANGLE',
-    #     update=BM_ITEM_PROPS_UVSettings_Update)
+    #     update=bm_props_utils.Object_UVSettings_Update)
 
     # uv_auto_unwrap_island_margin: FloatProperty(
     #     name="Island Margin",
@@ -176,26 +180,26 @@ class BM_PROPS_Local_map(PropertyGroup):
     #     default=0.01,
     #     min=0,
     #     max=1,
-    #     update=BM_ITEM_PROPS_UVSettings_Update)
+    #     update=bm_props_utils.Object_UVSettings_Update)
 
     # uv_auto_unwrap_use_scale_to_bounds: BoolProperty(
     #     name="Scale to Bounds",
     #     description="Scale UV coordinates to bounds to fill the whole UV tile area",  # noqa: E501
     #     default=True,
-    #     update=BM_ITEM_PROPS_UVSettings_Update)
+    #     update=bm_props_utils.Object_UVSettings_Update)
 
     # Map out Props
     out_use_denoise: BoolProperty(
         name="Denoise",
         description="Denoise and Discpeckle baked maps as a post-process filter. For external bake only",  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_out_use_denoise_Update)
+        update=bm_props_utils.Map_out_use_denoise_Update)
 
     out_use_scene_color_management: BoolProperty(
         name="Scene Color Management",
         description="Affect baked map by scene color management settings and compositor nodes. For external bake only",  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_out_use_scene_color_management_Update)
+        update=bm_props_utils.Map_out_use_scene_color_management_Update)
 
     out_file_format: EnumProperty(
         name="File Format",
@@ -207,14 +211,14 @@ class BM_PROPS_Local_map(PropertyGroup):
                ('TIFF', "TIFF", "Output image in TIFF format. Photographic file standard in print"),  # noqa: E501
                ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps")],  # noqa: E501
                # ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps with PSD set as file format for current Object will be saved to a single .psd file")],  # noqa: E501
-        update=BM_MAP_PROPS_out_file_format_Update)
+        update=bm_props_utils.Map_out_file_format_Update)
 
     # out_psd_include: EnumProperty(
     #     name="PSD includes",
     #     description="What maps to put into one PSD file",
     #     default='MAP',
     #     items=[('MAP', "One map", "Each baked map - separate psd file")],
-    #     update=BM_ITEM_PROPS_OutputSettings_Update)
+    #     update=bm_props_utils.Object_OutputSettings_Update)
 
     out_exr_codec: EnumProperty(
         name="Codec",
@@ -228,7 +232,7 @@ class BM_PROPS_Local_map(PropertyGroup):
                ('ZIPS', "ZIPS (lossless)", ""),
                ('DWAA', "DWAA (lossy)", ""),
                ('DWAB', "DWAB (lossy)", "")],
-        update=BM_MAP_PROPS_out_exr_codec_Update)
+        update=bm_props_utils.Map_out_exr_codec_Update)
 
     out_compression: IntProperty(
         name="Compression",
@@ -237,7 +241,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0,
         max=100,
         subtype='PERCENTAGE',
-        update=BM_MAP_PROPS_out_compression_Update)
+        update=bm_props_utils.Map_out_compression_Update)
 
     out_res: EnumProperty(
         name="Map Texture Resolution",
@@ -250,7 +254,7 @@ class BM_PROPS_Local_map(PropertyGroup):
                ('8192', "8K (8192x8192)", ""),
                ('CUSTOM', "Custom", "Enter custom height and width")],
                #  ('TEXEL', "Texel Density defined", "Define image resolution based on object's texel density")],  # noqa: E501
-        update=BM_MAP_PROPS_out_res_Update)
+        update=bm_props_utils.Map_out_res_Update)
 
     out_res_height: IntProperty(
         name="Height",
@@ -259,7 +263,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=1,
         max=65536,
         subtype='PIXEL',
-        update=BM_MAP_PROPS_out_res_height_Update)
+        update=bm_props_utils.Map_out_res_height_Update)
 
     out_res_width: IntProperty(
         name="Width",
@@ -268,7 +272,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=1,
         max=65536,
         subtype='PIXEL',
-        update=BM_MAP_PROPS_out_res_width_Update)
+        update=bm_props_utils.Map_out_res_width_Update)
 
     # out_texel_density_value: IntProperty(
     #     name="Texel Density",
@@ -277,7 +281,7 @@ class BM_PROPS_Local_map(PropertyGroup):
     #     min=1,
     #     max=65536,
     #     subtype='PIXEL',
-    #     update=BM_ITEM_PROPS_OutputSettings_Update)
+    #     update=bm_props_utils.Object_OutputSettings_Update)
 
     # out_texel_density_match: BoolProperty(
     #     name="Match to Common",
@@ -291,7 +295,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0,
         max=64,
         subtype='PIXEL',
-        update=BM_MAP_PROPS_out_margin_Update)
+        update=bm_props_utils.Map_out_margin_Update)
 
     out_margin_type: EnumProperty(
         name="Margin Type",
@@ -299,25 +303,25 @@ class BM_PROPS_Local_map(PropertyGroup):
         default='ADJACENT_FACES',
         items=[('ADJACENT_FACES', "Adjacent Faces", "Use pixels from adjacent faces across UV seams"),  # noqa: E501
                ('EXTEND', "Extend", "Extend face border pixels outwards")],
-        update=BM_MAP_PROPS_out_margin_type_Update)
+        update=bm_props_utils.Map_out_margin_type_Update)
 
     out_use_32bit: BoolProperty(
         name="32bit",
         description="Create image texture with 32 bit floating point depth.\nStores more color data in the image this way",  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_out_use_32bit_Update)
+        update=bm_props_utils.Map_out_use_32bit_Update)
 
     out_use_alpha: BoolProperty(
         name="Alpha",
         description="Create image texture with Alpha color channel",
         default=False,
-        update=BM_MAP_PROPS_out_use_alpha_Update)
+        update=bm_props_utils.Map_out_use_alpha_Update)
 
     out_use_transbg: BoolProperty(
         name="Transparent BG",
         description="Create image texture with transparent background instead of solid black",  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_out_use_transbg_Update)
+        update=bm_props_utils.Map_out_use_transbg_Update)
 
     out_udim_start_tile: IntProperty(
         name="UDIM Start Tile Index",
@@ -325,7 +329,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         default=1001,
         min=1001,
         max=2000,
-        update=BM_MAP_PROPS_out_udim_start_tile_Update)
+        update=bm_props_utils.Map_out_udim_start_tile_Update)
 
     out_udim_end_tile: IntProperty(
         name="UDIM End Tile Index",
@@ -333,7 +337,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         default=1001,
         min=1001,
         max=2000,
-        update=BM_MAP_PROPS_out_udim_end_tile_Update)
+        update=bm_props_utils.Map_out_udim_end_tile_Update)
 
     out_super_sampling_aa: EnumProperty(
         name="SuperSampling AA",
@@ -344,7 +348,7 @@ class BM_PROPS_Local_map(PropertyGroup):
                ('4', "4x4", "Bake at 4x the chosen resolution and then downscale"),  # noqa: E501
                ('8', "8x8", "Bake at 8x the chosen resolution and then downscale"),  # noqa: E501
                ('16', "16x16", "Bake at 16x the chosen resolution and then downscale")],  # noqa: E501
-        update=BM_MAP_PROPS_out_super_sampling_aa_Update)
+        update=bm_props_utils.Map_out_super_sampling_aa_Update)
 
     out_samples: IntProperty(
         name="Bake Samples",
@@ -352,13 +356,13 @@ class BM_PROPS_Local_map(PropertyGroup):
         default=128,
         min=1,
         max=16777216,
-        update=BM_MAP_PROPS_out_samples_Update)
+        update=bm_props_utils.Map_out_samples_Update)
 
     out_use_adaptive_sampling: BoolProperty(
         name="Adaptive Sampling",
         description="Automatically reduce the number of samples per pixel based on estimated noise level",  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_out_use_adaptive_sampling_Update)
+        update=bm_props_utils.Map_out_use_adaptive_sampling_Update)
 
     out_adaptive_threshold: FloatProperty(
         name="Noise Threshold",
@@ -369,7 +373,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         soft_min=0.001,
         step=3,
         precision=4,
-        update=BM_MAP_PROPS_out_adaptive_threshold_Update)
+        update=bm_props_utils.Map_out_adaptive_threshold_Update)
 
     out_min_samples: IntProperty(
         name="Bake Min Samples",
@@ -377,124 +381,124 @@ class BM_PROPS_Local_map(PropertyGroup):
         default=0,
         min=0,
         max=4096,
-        update=BM_MAP_PROPS_out_min_samples_Update)
+        update=bm_props_utils.Map_out_min_samples_Update)
 
 # Albedo Map Props
     map_ALBEDO_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="ALBEDO",
-        update=BM_MAP_PROPS_map_ALBEDO_prefix_Update)
+        update=bm_props_utils.Map_map_ALBEDO_prefix_Update)
 
     map_ALBEDO_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_ALBEDO_use_preview_Update)
+        update=bm_props_utils.Map_map_ALBEDO_use_preview_Update)
 
 # Metalness Map Props
     map_METALNESS_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="METAL",
-        update=BM_MAP_PROPS_map_METALNESS_prefix_Update)
+        update=bm_props_utils.Map_map_METALNESS_prefix_Update)
 
     map_METALNESS_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_METALNESS_use_preview_Update)
+        update=bm_props_utils.Map_map_METALNESS_use_preview_Update)
 
 # Roughness Map Props
     map_ROUGHNESS_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="ROUGH",
-        update=BM_MAP_PROPS_map_ROUGHNESS_prefix_Update)
+        update=bm_props_utils.Map_map_ROUGHNESS_prefix_Update)
 
     map_ROUGHNESS_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_ROUGHNESS_use_preview_Update)
+        update=bm_props_utils.Map_map_ROUGHNESS_use_preview_Update)
 
 # Diffuse Map Props
     map_DIFFUSE_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="DIFFUSE",
-        update=BM_MAP_PROPS_map_DIFFUSE_prefix_Update)
+        update=bm_props_utils.Map_map_DIFFUSE_prefix_Update)
 
     map_DIFFUSE_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_DIFFUSE_use_preview_Update)
+        update=bm_props_utils.Map_map_DIFFUSE_use_preview_Update)
 
 # Specular Map Props
     map_SPECULAR_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="SPECULAR",
-        update=BM_MAP_PROPS_map_SPECULAR_prefix_Update)
+        update=bm_props_utils.Map_map_SPECULAR_prefix_Update)
 
     map_SPECULAR_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_SPECULAR_use_preview_Update)
+        update=bm_props_utils.Map_map_SPECULAR_use_preview_Update)
 
 # Glossiness Map Props
     map_GLOSSINESS_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="GLOSS",
-        update=BM_MAP_PROPS_map_GLOSSINESS_prefix_Update)
+        update=bm_props_utils.Map_map_GLOSSINESS_prefix_Update)
 
     map_GLOSSINESS_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_GLOSSINESS_use_preview_Update)
+        update=bm_props_utils.Map_map_GLOSSINESS_use_preview_Update)
 
 # Opacity Map Props
     map_OPACITY_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="OPACITY",
-        update=BM_MAP_PROPS_map_OPACITY_prefix_Update)
+        update=bm_props_utils.Map_map_OPACITY_prefix_Update)
 
     map_OPACITY_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_OPACITY_use_preview_Update)
+        update=bm_props_utils.Map_map_OPACITY_use_preview_Update)
 
 # Emission Map Props
     map_EMISSION_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="EMISSION",
-        update=BM_MAP_PROPS_map_EMISSION_prefix_Update)
+        update=bm_props_utils.Map_map_EMISSION_prefix_Update)
 
     map_EMISSION_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_EMISSION_use_preview_Update)
+        update=bm_props_utils.Map_map_EMISSION_use_preview_Update)
 
 # Pass Map Props
     map_PASS_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="BSDFPASS",
-        update=BM_MAP_PROPS_map_PASS_prefix_Update)
+        update=bm_props_utils.Map_map_PASS_prefix_Update)
 
     map_PASS_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_PASS_use_preview_Update)
+        update=bm_props_utils.Map_map_PASS_use_preview_Update)
 
     map_pass_type: EnumProperty(
         name="Pass",
@@ -513,20 +517,20 @@ class BM_PROPS_Local_map(PropertyGroup):
                ('EMISSION', "Emission", ""),
                ('ALPHA', "Alpha", ""),
                ('NORMAL', "Normal", "")],
-        update=BM_MAP_PROPS_map_pass_type_Update)
+        update=bm_props_utils.Map_map_pass_type_Update)
 
 # Decal Pass Map Props
     map_DECAL_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="DECAL",
-        update=BM_MAP_PROPS_map_DECAL_prefix_Update)
+        update=bm_props_utils.Map_map_DECAL_prefix_Update)
 
     map_DECAL_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_DECAL_use_preview_Update)
+        update=bm_props_utils.Map_map_DECAL_use_preview_Update)
 
     map_decal_pass_type: EnumProperty(
         name="Pass Type",
@@ -535,13 +539,13 @@ class BM_PROPS_Local_map(PropertyGroup):
         items=[('NORMAL', "Normal", "Normals Pass"),
                ('HEIGHT', "Height", "How high mesh parts are from the world ground level"),  # noqa: E501
                ('OPACITY', "Opacity", "Decal Object - white, empty space - black")],  # noqa: E501
-        update=BM_MAP_PROPS_map_decal_pass_type_Update)
+        update=bm_props_utils.Map_map_decal_pass_type_Update)
 
     map_decal_height_opacity_invert: BoolProperty(
         name="Invert",
         description="Invert colors of the map",
         default=False,
-        update=BM_MAP_PROPS_map_decal_height_opacity_invert_Update)
+        update=bm_props_utils.Map_map_decal_height_opacity_invert_Update)
 
     map_decal_normal_preset: EnumProperty(
         name="Preset",
@@ -564,7 +568,7 @@ class BM_PROPS_Local_map(PropertyGroup):
                ('UNITY_OPENGL', "Unity", "Unity uses OpenGL format"),
                ('VRAY_OPENGL', "VRay", "VRay uses OpenGL format"),
                ('ZBRUSH_OPENGL', "ZBrush", "ZBrush uses OpenGL format")],
-        update=BM_MAP_PROPS_map_decal_normal_preset_Update)
+        update=bm_props_utils.Map_map_decal_normal_preset_Update)
 
     map_decal_normal_custom_preset: EnumProperty(
         name="Custom Format",
@@ -573,7 +577,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         items=[('OPEN_GL', "OpenGL", "OpenGL Normal Map format. Green Channel Axis is +Y"),  # noqa: E501
                ('DIRECTX', "DirectX", "DirectX Normal Map format. Green Channel Axis is -Y")],  # noqa: E501
                # ('CUSTOM', "Custom", "Set custom axes for channels")],
-        update=BM_MAP_PROPS_map_decal_normal_custom_preset_Update)
+        update=bm_props_utils.Map_map_decal_normal_custom_preset_Update)
 
     map_decal_normal_r: EnumProperty(
         name="Normal Space",
@@ -585,7 +589,7 @@ class BM_PROPS_Local_map(PropertyGroup):
                ('NEG_X', "-X", ""),
                ('NEG_Y', "-Y", ""),
                ('NEG_Z', "-Z", "")],
-        update=BM_MAP_PROPS_map_decal_normal_r_Update)
+        update=bm_props_utils.Map_map_decal_normal_r_Update)
 
     map_decal_normal_g: EnumProperty(
         name="Normal Space",
@@ -597,7 +601,7 @@ class BM_PROPS_Local_map(PropertyGroup):
                ('NEG_X', "-X", ""),
                ('NEG_Y', "-Y", ""),
                ('NEG_Z', "-Z", "")],
-        update=BM_MAP_PROPS_map_decal_normal_g_Update)
+        update=bm_props_utils.Map_map_decal_normal_g_Update)
 
     map_decal_normal_b: EnumProperty(
         name="Normal Space",
@@ -609,166 +613,166 @@ class BM_PROPS_Local_map(PropertyGroup):
                ('NEG_X', "-X", ""),
                ('NEG_Y', "-Y", ""),
                ('NEG_Z', "-Z", "")],
-        update=BM_MAP_PROPS_map_decal_normal_b_Update)
+        update=bm_props_utils.Map_map_decal_normal_b_Update)
 
 # Vertex Color Layer Map Props
     map_VERTEX_COLOR_LAYER_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="VERTEXCOLOR",
-        update=BM_MAP_PROPS_map_VERTEX_COLOR_LAYER_prefix_Update)
+        update=bm_props_utils.Map_map_VERTEX_COLOR_LAYER_prefix_Update)
 
     map_VERTEX_COLOR_LAYER_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_VERTEX_COLOR_LAYER_use_preview_Update)
+        update=bm_props_utils.Map_map_VERTEX_COLOR_LAYER_use_preview_Update)
 
     map_vertexcolor_layer: EnumProperty(
         name="Layer",
         description="Vertex Color Layer to bake",
-        items=BM_MAP_PROPS_map_vertexcolor_layer_Items,
-        update=BM_MAP_PROPS_map_vertexcolor_layer_Update)
+        items=bm_props_utils.Map_map_vertexcolor_layer_Items,
+        update=bm_props_utils.Map_map_vertexcolor_layer_Update)
 
 # Cycles Map Props
     map_C_COMBINED_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="COMBINED",
-        update=BM_MAP_PROPS_map_C_COMBINED_prefix_Update)
+        update=bm_props_utils.Map_map_C_COMBINED_prefix_Update)
 
     map_C_AO_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="AO",
-        update=BM_MAP_PROPS_map_C_AO_prefix_Update)
+        update=bm_props_utils.Map_map_C_AO_prefix_Update)
 
     map_C_SHADOW_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="SHADOW",
-        update=BM_MAP_PROPS_map_C_SHADOW_prefix_Update)
+        update=bm_props_utils.Map_map_C_SHADOW_prefix_Update)
 
     map_C_POSITION_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="POS",
-        update=BM_MAP_PROPS_map_C_POSITION_prefix_Update)
+        update=bm_props_utils.Map_map_C_POSITION_prefix_Update)
 
     map_C_NORMAL_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="NORMAL",
-        update=BM_MAP_PROPS_map_C_NORMAL_prefix_Update)
+        update=bm_props_utils.Map_map_C_NORMAL_prefix_Update)
 
     map_C_UV_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="UV",
-        update=BM_MAP_PROPS_map_C_UV_prefix_Update)
+        update=bm_props_utils.Map_map_C_UV_prefix_Update)
 
     map_C_ROUGHNESS_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="ROUGH",
-        update=BM_MAP_PROPS_map_C_ROUGHNESS_prefix_Update)
+        update=bm_props_utils.Map_map_C_ROUGHNESS_prefix_Update)
 
     map_C_EMIT_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="EMIT",
-        update=BM_MAP_PROPS_map_C_EMIT_prefix_Update)
+        update=bm_props_utils.Map_map_C_EMIT_prefix_Update)
 
     map_C_ENVIRONMENT_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="ENV",
-        update=BM_MAP_PROPS_map_C_ENVIRONMENT_prefix_Update)
+        update=bm_props_utils.Map_map_C_ENVIRONMENT_prefix_Update)
 
     map_C_DIFFUSE_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="DIFFUSE",
-        update=BM_MAP_PROPS_map_C_DIFFUSE_prefix_Update)
+        update=bm_props_utils.Map_map_C_DIFFUSE_prefix_Update)
 
     map_C_GLOSSY_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="GLOSS",
-        update=BM_MAP_PROPS_map_C_GLOSSY_prefix_Update)
+        update=bm_props_utils.Map_map_C_GLOSSY_prefix_Update)
 
     map_C_TRANSMISSION_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="TRANS",
-        update=BM_MAP_PROPS_map_C_TRANSMISSION_prefix_Update)
+        update=bm_props_utils.Map_map_C_TRANSMISSION_prefix_Update)
 
     map_cycles_use_pass_direct: BoolProperty(
         name="Direct",
         description="Add direct lighting contribution",
         default=True,
-        update=BM_MAP_PROPS_map_cycles_use_pass_direct_Update)
+        update=bm_props_utils.Map_map_cycles_use_pass_direct_Update)
 
     map_cycles_use_pass_indirect: BoolProperty(
         name="Indirect",
         description="Add indirect lighting contribution",
         default=True,
-        update=BM_MAP_PROPS_map_cycles_use_pass_indirect_Update)
+        update=bm_props_utils.Map_map_cycles_use_pass_indirect_Update)
 
     map_cycles_use_pass_color: BoolProperty(
         name="Color",
         description="Color the pass",
         default=True,
-        update=BM_MAP_PROPS_map_cycles_use_pass_color_Update)
+        update=bm_props_utils.Map_map_cycles_use_pass_color_Update)
 
     map_cycles_use_pass_diffuse: BoolProperty(
         name="Diffuse",
         description="Add %s contribution" % "Diffuse",
         default=True,
-        update=BM_MAP_PROPS_map_cycles_use_pass_diffuse_Update)
+        update=bm_props_utils.Map_map_cycles_use_pass_diffuse_Update)
 
     map_cycles_use_pass_glossy: BoolProperty(
         name="Glossy",
         description="Add %s contribution" % "Glossy",
         default=True,
-        update=BM_MAP_PROPS_map_cycles_use_pass_glossy_Update)
+        update=bm_props_utils.Map_map_cycles_use_pass_glossy_Update)
 
     map_cycles_use_pass_transmission: BoolProperty(
         name="Transmission",
         description="Add %s contribution" % "Transmission",
         default=True,
-        update=BM_MAP_PROPS_map_cycles_use_pass_transmission_Update)
+        update=bm_props_utils.Map_map_cycles_use_pass_transmission_Update)
 
     map_cycles_use_pass_ambient_occlusion: BoolProperty(
         name="Ambient Occlusion",
         description="Add %s contribution" % "Ambient Occlusion",
         default=True,
-        update=BM_MAP_PROPS_map_cycles_use_pass_ambient_occlusion_Update)
+        update=bm_props_utils.Map_map_cycles_use_pass_ambient_occlusion_Update)
 
     map_cycles_use_pass_emit: BoolProperty(
         name="Emit",
         description="Add %s contribution" % "Emit",
         default=True,
-        update=BM_MAP_PROPS_map_cycles_use_pass_emit_Update)
+        update=bm_props_utils.Map_map_cycles_use_pass_emit_Update)
 
 # Normal Map Props
     map_NORMAL_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="NORMAL",
-        update=BM_MAP_PROPS_map_NORMAL_prefix_Update)
+        update=bm_props_utils.Map_map_NORMAL_prefix_Update)
 
     map_NORMAL_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_NORMAL_use_preview_Update)
+        update=bm_props_utils.Map_map_NORMAL_use_preview_Update)
 
     map_normal_data: EnumProperty(
         name="Data",
         description="Data for Normal map",
-        items=BM_MAP_PROPS_map_normal_data_Items,
-        update=BM_MAP_PROPS_map_normal_data_Update)
+        items=bm_props_utils.Map_map_normal_data_Items,
+        update=bm_props_utils.Map_map_normal_data_Update)
 
     map_normal_space: EnumProperty(
         name="Normal Space",
@@ -776,7 +780,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         default='TANGENT',
         items=[('TANGENT', "Tangent", "Blue colors. Tangent space normal map"),
                ('OBJECT', "Object", "Rainbow colors. Object space normal map with local coordinates")],  # noqa: E501
-        update=BM_MAP_PROPS_map_normal_space_Update)
+        update=bm_props_utils.Map_map_normal_space_Update)
 
     map_normal_preset: EnumProperty(
         name="Preset",
@@ -799,7 +803,7 @@ class BM_PROPS_Local_map(PropertyGroup):
                ('UNITY_OPENGL', "Unity", "Unity uses OpenGL format"),
                ('VRAY_OPENGL', "VRay", "VRay uses OpenGL format"),
                ('ZBRUSH_OPENGL', "ZBrush", "ZBrush uses OpenGL format")],
-        update=BM_MAP_PROPS_map_normal_preset_Update)
+        update=bm_props_utils.Map_map_normal_preset_Update)
 
     map_normal_custom_preset: EnumProperty(
         name="Custom Format",
@@ -808,7 +812,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         items=[('OPEN_GL', "OpenGL", "OpenGL Normal Map format. Green Channel Axis is +Y"),  # noqa: E501
                ('DIRECTX', "DirectX", "DirectX Normal Map format. Green Channel Axis is -Y"),  # noqa: E501
                ('CUSTOM', "Custom", "Set custom axes for channels")],
-        update=BM_MAP_PROPS_map_normal_custom_preset_Update)
+        update=bm_props_utils.Map_map_normal_custom_preset_Update)
 
     map_normal_r: EnumProperty(
         name="Normal Space",
@@ -820,7 +824,7 @@ class BM_PROPS_Local_map(PropertyGroup):
                ('NEG_X', "-X", ""),
                ('NEG_Y', "-Y", ""),
                ('NEG_Z', "-Z", "")],
-        update=BM_MAP_PROPS_map_normal_r_Update)
+        update=bm_props_utils.Map_map_normal_r_Update)
 
     map_normal_g: EnumProperty(
         name="Normal Space",
@@ -832,7 +836,7 @@ class BM_PROPS_Local_map(PropertyGroup):
                ('NEG_X', "-X", ""),
                ('NEG_Y', "-Y", ""),
                ('NEG_Z', "-Z", "")],
-        update=BM_MAP_PROPS_map_normal_g_Update)
+        update=bm_props_utils.Map_map_normal_g_Update)
 
     map_normal_b: EnumProperty(
         name="Normal Space",
@@ -844,26 +848,26 @@ class BM_PROPS_Local_map(PropertyGroup):
                ('NEG_X', "-X", ""),
                ('NEG_Y', "-Y", ""),
                ('NEG_Z', "-Z", "")],
-        update=BM_MAP_PROPS_map_normal_b_Update)
+        update=bm_props_utils.Map_map_normal_b_Update)
 
 # Displacement Map Props
     map_DISPLACEMENT_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="DISP",
-        update=BM_MAP_PROPS_map_DISPLACEMENT_prefix_Update)
+        update=bm_props_utils.Map_map_DISPLACEMENT_prefix_Update)
 
     map_DISPLACEMENT_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_DISPLACEMENT_use_preview_Update)
+        update=bm_props_utils.Map_map_DISPLACEMENT_use_preview_Update)
 
     map_displacement_data: EnumProperty(
         name="Data",
         description="Data for Displacement map",
-        items=BM_MAP_PROPS_map_displacement_data_Items,
-        update=BM_MAP_PROPS_map_displacement_data_Update)
+        items=bm_props_utils.Map_map_displacement_data_Items,
+        update=bm_props_utils.Map_map_displacement_data_Update)
 
     map_displacement_result: EnumProperty(
         name="Result to",
@@ -872,7 +876,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         items=[('IMAGE_ONLY', "Only Image Texture", "Bake displacement and just save output image"),  # noqa: E501
                ('MODIFIER', "Modifiers", "Add displace modifier to the object with bake displacement displace texture"),  # noqa: E501
                ('MATERIAL', "Material Displacement", "Add baked displacement to every object material displacement socket")],  # noqa: E501
-        update=BM_MAP_PROPS_map_displacement_result_Update)
+        update=bm_props_utils.Map_map_displacement_result_Update)
 
     map_displacement_subdiv_levels: IntProperty(
         name="Subdivision Levels",
@@ -880,32 +884,32 @@ class BM_PROPS_Local_map(PropertyGroup):
         default=1,
         min=1,
         max=10,
-        update=BM_MAP_PROPS_map_displacement_subdiv_levels_Update)
+        update=bm_props_utils.Map_map_displacement_subdiv_levels_Update)
 
     map_displacement_lowresmesh: BoolProperty(
         name="Heights against lowpoly",
         description="Calculate heights against unsubdivided low resolution mesh",  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_displacement_lowresmesh_Update)
+        update=bm_props_utils.Map_map_displacement_lowresmesh_Update)
 
 # Vector Displacement Map Props
     map_VECTOR_DISPLACEMENT_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="VD",
-        update=BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_prefix_Update)
+        update=bm_props_utils.Map_map_VECTOR_DISPLACEMENT_prefix_Update)
 
     map_VECTOR_DISPLACEMENT_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_VECTOR_DISPLACEMENT_use_preview_Update)
+        update=bm_props_utils.Map_map_VECTOR_DISPLACEMENT_use_preview_Update)
 
     map_vector_displacement_use_negative: BoolProperty(
         name="Include Negative",
         description="Remap color values to include negative values for displacement",  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_vector_displacement_use_negative_Update)
+        update=bm_props_utils.Map_map_vector_displacement_use_negative_Update)
 
     map_vector_displacement_result: EnumProperty(
         name="Result to",
@@ -914,7 +918,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         items=[('IMAGE_ONLY', "Only Image Texture", "Bake vector displacement and just save output image"),  # noqa: E501
                ('MODIFIER', "Modifiers", "Add displace modifier to the object with bake vector displacement displace texture"),  # noqa: E501
                ('MATERIAL', "Material Displacement", "Add baked vector displacement to every object material displacement socket")],  # noqa: E501
-        update=BM_MAP_PROPS_map_vector_displacement_result_Update)
+        update=bm_props_utils.Map_map_vector_displacement_result_Update)
 
     map_vector_displacement_subdiv_levels: IntProperty(
         name="Subdivision Levels",
@@ -922,39 +926,39 @@ class BM_PROPS_Local_map(PropertyGroup):
         default=1,
         min=1,
         max=10,
-        update=BM_MAP_PROPS_map_vector_displacement_subdiv_levels_Update)
+        update=bm_props_utils.Map_map_vector_displacement_subdiv_levels_Update)
 
 # Position Map Props
     map_POSITION_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="POS",
-        update=BM_MAP_PROPS_map_POSITION_prefix_Update)
+        update=bm_props_utils.Map_map_POSITION_prefix_Update)
 
     map_POSITION_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_POSITION_use_preview_Update)
+        update=bm_props_utils.Map_map_POSITION_use_preview_Update)
 
 # AO Map Props
     map_AO_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="AO",
-        update=BM_MAP_PROPS_map_AO_prefix_Update)
+        update=bm_props_utils.Map_map_AO_prefix_Update)
 
     map_AO_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_AO_use_preview_Update)
+        update=bm_props_utils.Map_map_AO_use_preview_Update)
 
     map_AO_use_default: BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_PROPS_map_AO_use_default_Update)
+        update=bm_props_utils.Map_map_AO_use_default_Update)
 
     map_ao_samples: IntProperty(
         name="Samples",
@@ -962,14 +966,14 @@ class BM_PROPS_Local_map(PropertyGroup):
         default=16,
         min=1,
         max=128,
-        update=BM_MAP_PROPS_map_ao_samples_Update)
+        update=bm_props_utils.Map_map_ao_samples_Update)
 
     map_ao_distance: FloatProperty(
         name="Distance",
         description="Distance up to which other objects are considered to occlude the shading point",  # noqa: E501
         default=1,
         min=0,
-        update=BM_MAP_PROPS_map_ao_distance_Update)
+        update=bm_props_utils.Map_map_ao_distance_Update)
 
     map_ao_black_point: FloatProperty(
         name="Blacks",
@@ -978,7 +982,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_PROPS_map_ao_black_point_Update)
+        update=bm_props_utils.Map_map_ao_black_point_Update)
 
     map_ao_white_point: FloatProperty(
         name="Whites",
@@ -987,34 +991,34 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_PROPS_map_ao_white_point_Update)
+        update=bm_props_utils.Map_map_ao_white_point_Update)
 
     map_ao_brightness: FloatProperty(
         name="Brightness",
         default=-0.3,
         min=-100.0,
         max=100.0,
-        update=BM_MAP_PROPS_map_ao_brightness_Update)
+        update=bm_props_utils.Map_map_ao_brightness_Update)
 
     map_ao_contrast: FloatProperty(
         name="Contrast",
         default=0.3,
         min=-100.0,
         max=100.0,
-        update=BM_MAP_PROPS_map_ao_contrast_Update)
+        update=bm_props_utils.Map_map_ao_contrast_Update)
 
     map_ao_opacity: FloatProperty(
         name="Opacity",
         default=0.67,
         min=0.0,
         max=1.0,
-        update=BM_MAP_PROPS_map_ao_opacity_Update)
+        update=bm_props_utils.Map_map_ao_opacity_Update)
 
     map_ao_use_local: BoolProperty(
         name="Only Local",
         description="Only detect occlusion from the object itself, and not others",  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_ao_use_local_Update)
+        update=bm_props_utils.Map_map_ao_use_local_Update)
 
     map_ao_use_invert: FloatProperty(
         name="Invert",
@@ -1023,26 +1027,26 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_PROPS_map_ao_use_invert_Update)
+        update=bm_props_utils.Map_map_ao_use_invert_Update)
 
 # Cavity Map Props
     map_CAVITY_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="CAV",
-        update=BM_MAP_PROPS_map_CAVITY_prefix_Update)
+        update=bm_props_utils.Map_map_CAVITY_prefix_Update)
 
     map_CAVITY_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_CAVITY_use_preview_Update)
+        update=bm_props_utils.Map_map_CAVITY_use_preview_Update)
 
     map_CAVITY_use_default: BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_PROPS_map_CAVITY_use_default_Update)
+        update=bm_props_utils.Map_map_CAVITY_use_default_Update)
 
     map_cavity_black_point: FloatProperty(
         name="Blacks",
@@ -1051,7 +1055,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0.0,
         max=1.0,
         precision=3,
-        update=BM_MAP_PROPS_map_cavity_black_point_Update)
+        update=bm_props_utils.Map_map_cavity_black_point_Update)
 
     map_cavity_white_point: FloatProperty(
         name="Whites",
@@ -1060,13 +1064,13 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0.0,
         max=1.0,
         precision=3,
-        update=BM_MAP_PROPS_map_cavity_white_point_Update)
+        update=bm_props_utils.Map_map_cavity_white_point_Update)
 
     map_cavity_power: FloatProperty(
         name="Power",
         description="Cavity map power value",
         default=2.5,
-        update=BM_MAP_PROPS_map_cavity_power_Update)
+        update=bm_props_utils.Map_map_cavity_power_Update)
 
     map_cavity_use_invert: FloatProperty(
         name="Invert",
@@ -1075,26 +1079,26 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_PROPS_map_cavity_use_invert_Update)
+        update=bm_props_utils.Map_map_cavity_use_invert_Update)
 
 # Curvature Map Props
     map_CURVATURE_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="CURV",
-        update=BM_MAP_PROPS_map_CURVATURE_prefix_Update)
+        update=bm_props_utils.Map_map_CURVATURE_prefix_Update)
 
     map_CURVATURE_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_CURVATURE_use_preview_Update)
+        update=bm_props_utils.Map_map_CURVATURE_use_preview_Update)
 
     map_CURVATURE_use_default: BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_PROPS_map_CURVATURE_use_default_Update)
+        update=bm_props_utils.Map_map_CURVATURE_use_default_Update)
 
     map_curv_samples: IntProperty(
         name="Samples",
@@ -1102,14 +1106,14 @@ class BM_PROPS_Local_map(PropertyGroup):
         default=16,
         min=2,
         max=128,
-        update=BM_MAP_PROPS_map_curv_samples_Update)
+        update=bm_props_utils.Map_map_curv_samples_Update)
 
     map_curv_radius: FloatProperty(
         name="Radius",
         default=2.2,
         min=0,
         precision=3,
-        update=BM_MAP_PROPS_map_curv_radius_Update)
+        update=bm_props_utils.Map_map_curv_radius_Update)
 
     map_curv_black_point: FloatProperty(
         name="Blacks",
@@ -1118,7 +1122,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0.0,
         max=1.0,
         precision=3,
-        update=BM_MAP_PROPS_map_curv_black_point_Update)
+        update=bm_props_utils.Map_map_curv_black_point_Update)
 
     map_curv_mid_point: FloatProperty(
         name="Greys",
@@ -1127,7 +1131,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0.0,
         max=1.0,
         precision=3,
-        update=BM_MAP_PROPS_map_curv_mid_point_Update)
+        update=bm_props_utils.Map_map_curv_mid_point_Update)
 
     map_curv_white_point: FloatProperty(
         name="Whites",
@@ -1136,7 +1140,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0.0,
         max=1.0,
         precision=3,
-        update=BM_MAP_PROPS_map_curv_white_point_Update)
+        update=bm_props_utils.Map_map_curv_white_point_Update)
 
     map_curv_body_gamma: FloatProperty(
         name="Gamma",
@@ -1144,26 +1148,26 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0.001,
         max=10,
         precision=3,
-        update=BM_MAP_PROPS_map_curv_body_gamma_Update)
+        update=bm_props_utils.Map_map_curv_body_gamma_Update)
 
 # Thickness Map Props
     map_THICKNESS_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="THICK",
-        update=BM_MAP_PROPS_map_THICKNESS_prefix_Update)
+        update=bm_props_utils.Map_map_THICKNESS_prefix_Update)
 
     map_THICKNESS_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_THICKNESS_use_preview_Update)
+        update=bm_props_utils.Map_map_THICKNESS_use_preview_Update)
 
     map_THICKNESS_use_default: BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_PROPS_map_THICKNESS_use_default_Update)
+        update=bm_props_utils.Map_map_THICKNESS_use_default_Update)
 
     map_thick_samples: IntProperty(
         name="Samples",
@@ -1171,14 +1175,14 @@ class BM_PROPS_Local_map(PropertyGroup):
         default=16,
         min=1,
         max=128,
-        update=BM_MAP_PROPS_map_thick_samples_Update)
+        update=bm_props_utils.Map_map_thick_samples_Update)
 
     map_thick_distance: FloatProperty(
         name="Distance",
         description="Distance up to which other objects are considered to occlude the shading point",  # noqa: E501
         default=1,
         min=0,
-        update=BM_MAP_PROPS_map_thick_distance_Update)
+        update=bm_props_utils.Map_map_thick_distance_Update)
 
     map_thick_black_point: FloatProperty(
         name="Blacks",
@@ -1187,7 +1191,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_PROPS_map_thick_black_point_Update)
+        update=bm_props_utils.Map_map_thick_black_point_Update)
 
     map_thick_white_point: FloatProperty(
         name="Whites",
@@ -1196,17 +1200,17 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_PROPS_map_thick_white_point_Update)
+        update=bm_props_utils.Map_map_thick_white_point_Update)
 
     map_thick_brightness: FloatProperty(
         name="Brightness",
         default=1,
-        update=BM_MAP_PROPS_map_thick_brightness_Update)
+        update=bm_props_utils.Map_map_thick_brightness_Update)
 
     map_thick_contrast: FloatProperty(
         name="Contrast",
         default=0,
-        update=BM_MAP_PROPS_map_thick_contrast_Update)
+        update=bm_props_utils.Map_map_thick_contrast_Update)
 
     map_thick_use_invert: FloatProperty(
         name="Invert",
@@ -1215,20 +1219,20 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_PROPS_map_thick_use_invert_Update)
+        update=bm_props_utils.Map_map_thick_use_invert_Update)
 
 # Material ID Map Props
     map_ID_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="ID",
-        update=BM_MAP_PROPS_map_ID_prefix_Update)
+        update=bm_props_utils.Map_map_ID_prefix_Update)
 
     map_ID_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_ID_use_preview_Update)
+        update=bm_props_utils.Map_map_ID_use_preview_Update)
 
     map_matid_data: EnumProperty(
         name="Data",
@@ -1238,13 +1242,13 @@ class BM_PROPS_Local_map(PropertyGroup):
                ('MATERIALS', "Materials", "Color each mesh part each material assigned to differently"),  # noqa: E501
                ('MESH_ISLANDS', "Mesh Islands", "Color each mesh part differently"),  # noqa: E501
                ('OBJECTS', "Objects", "Color each highpoly baked onto the Object differently or the whole Object will be in one color if no highpolies")],  # noqa: E501
-        update=BM_MAP_PROPS_map_matid_data_Update)
+        update=bm_props_utils.Map_map_matid_data_Update)
 
     map_matid_vertex_groups_name_contains: StringProperty(
         name="Name Contains",
         description="Use only those vertex groups which name contains this. Leave empty to use all vertex groups",  # noqa: E501
         default="_id",
-        update=BM_MAP_PROPS_map_matid_vertex_groups_name_contains_Update)
+        update=bm_props_utils.Map_map_matid_vertex_groups_name_contains_Update)
 
     map_matid_algorithm: EnumProperty(
         name="Algorithm",
@@ -1253,26 +1257,26 @@ class BM_PROPS_Local_map(PropertyGroup):
         items=[('RANDOM', "Random", "Color each group by unique Random Color"),
                ('HUE', "Hue Shift", "Color each group by unique Hue"),
                ('GRAYSCALE', "Grayscale", "Color each group by unique Grayscale Color")],  # noqa: E501
-        update=BM_MAP_PROPS_map_matid_algorithm_Update)
+        update=bm_props_utils.Map_map_matid_algorithm_Update)
 
     map_matid_jilter: IntProperty(
         name="Jilter",
         description="Shuffle the order of colors. Leave 0 for no shuffle",
         default=0,
-        update=BM_MAP_PROPS_map_matid_jilter_Update)
+        update=bm_props_utils.Map_map_matid_jilter_Update)
 
 # Mask Map Props
     map_MASK_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="MASK",
-        update=BM_MAP_PROPS_map_MASK_prefix_Update)
+        update=bm_props_utils.Map_map_MASK_prefix_Update)
 
     map_MASK_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_MASK_use_preview_Update)
+        update=bm_props_utils.Map_map_MASK_use_preview_Update)
 
     map_mask_data: EnumProperty(
         name="Data",
@@ -1281,21 +1285,21 @@ class BM_PROPS_Local_map(PropertyGroup):
         items=[('SELECTION', "Selection", "Color selected mesh faces in one color, unselected in another"),  # noqa: E501
                ('VERTEX_GROUPS', "Vertex Groups", "Color specified vertex groups in one color, other in another"),  # noqa: E501
                ('MATERIALS', "Materials", "Color specified object materials in one color, other in another")],  # noqa: E501
-        update=BM_MAP_PROPS_map_mask_data_Update)
+        update=bm_props_utils.Map_map_mask_data_Update)
 
     map_mask_vertex_groups_name_contains: StringProperty(
         name="Name Contains",
         description="Use only those vertex groups which names contain this. Leave empty to use all vertex groups",  # noqa: E501
         default="_mask",
-        update=BM_MAP_PROPS_map_mask_vertex_groups_name_contains_Update)
+        update=bm_props_utils.Map_map_mask_vertex_groups_name_contains_Update)
 
     map_mask_materials_name_contains: StringProperty(
         name="Name Contains",
         description="Use only those object materials which names contain this. Leave empty to use all materials",  # noqa: E501
         default="_mask",
-        update=BM_MAP_PROPS_map_mask_materials_name_contains_Update)
+        update=bm_props_utils.Map_map_mask_materials_name_contains_Update)
 
-    map_mask_color1: bpy.props.FloatVectorProperty(
+    map_mask_color1: FloatVectorProperty(
         name="Color1",
         description="What color to use as Color1 for masking",
         default=(0, 0, 0, 1),
@@ -1304,9 +1308,9 @@ class BM_PROPS_Local_map(PropertyGroup):
         max=1,
         precision=3,
         subtype='COLOR',
-        update=BM_MAP_PROPS_map_mask_color1_Update)
+        update=bm_props_utils.Map_map_mask_color1_Update)
 
-    map_mask_color2: bpy.props.FloatVectorProperty(
+    map_mask_color2: FloatVectorProperty(
         name="Color2",
         description="What color to use as Color2 for masking",
         default=(1, 1, 1, 1),
@@ -1315,7 +1319,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         max=1,
         precision=3,
         subtype='COLOR',
-        update=BM_MAP_PROPS_map_mask_color2_Update)
+        update=bm_props_utils.Map_map_mask_color2_Update)
 
     map_mask_use_invert: FloatProperty(
         name="Invert",
@@ -1324,56 +1328,56 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_PROPS_map_mask_use_invert_Update)
+        update=bm_props_utils.Map_map_mask_use_invert_Update)
 
 # XYZMask Map Props
     map_XYZMASK_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="XYZ",
-        update=BM_MAP_PROPS_map_XYZMASK_prefix_Update)
+        update=bm_props_utils.Map_map_XYZMASK_prefix_Update)
 
     map_XYZMASK_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_XYZMASK_use_preview_Update)
+        update=bm_props_utils.Map_map_XYZMASK_use_preview_Update)
 
     map_XYZMASK_use_default: BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_PROPS_map_XYZMASK_use_default_Update)
+        update=bm_props_utils.Map_map_XYZMASK_use_default_Update)
 
     map_xyzmask_use_x: BoolProperty(
         name="X",
         description="Enable/disable X coordinate mask filter",
         default=False,
-        update=BM_MAP_PROPS_map_xyzmask_use_x_Update)
+        update=bm_props_utils.Map_map_xyzmask_use_x_Update)
 
     map_xyzmask_use_y: BoolProperty(
         name="Y",
         description="Enable/disable Y coordinate mask filter",
         default=False,
-        update=BM_MAP_PROPS_map_xyzmask_use_y_Update)
+        update=bm_props_utils.Map_map_xyzmask_use_y_Update)
 
     map_xyzmask_use_z: BoolProperty(
         name="Z",
         description="Enable/disable Z coordinate mask filter",
         default=False,
-        update=BM_MAP_PROPS_map_xyzmask_use_z_Update)
+        update=bm_props_utils.Map_map_xyzmask_use_z_Update)
 
     map_xyzmask_coverage: FloatProperty(
         name="Coverage",
         default=0,
         precision=3,
-        update=BM_MAP_PROPS_map_xyzmask_coverage_Update)
+        update=bm_props_utils.Map_map_xyzmask_coverage_Update)
 
     map_xyzmask_saturation: FloatProperty(
         name="Saturation",
         default=1,
         precision=3,
-        update=BM_MAP_PROPS_map_xyzmask_saturation_Update)
+        update=bm_props_utils.Map_map_xyzmask_saturation_Update)
 
     map_xyzmask_opacity: FloatProperty(
         name="Opacity",
@@ -1381,7 +1385,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_PROPS_map_xyzmask_opacity_Update)
+        update=bm_props_utils.Map_map_xyzmask_opacity_Update)
 
     map_xyzmask_use_invert: FloatProperty(
         name="Invert",
@@ -1390,26 +1394,26 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=-1,
         max=1,
         precision=3,
-        update=BM_MAP_PROPS_map_xyzmask_use_invert_Update)
+        update=bm_props_utils.Map_map_xyzmask_use_invert_Update)
 
 # GradientMask Map Props
     map_GRADIENT_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="GRADIENT",
-        update=BM_MAP_PROPS_map_GRADIENT_prefix_Update)
+        update=bm_props_utils.Map_map_GRADIENT_prefix_Update)
 
     map_GRADIENT_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_GRADIENT_use_preview_Update)
+        update=bm_props_utils.Map_map_GRADIENT_use_preview_Update)
 
     map_GRADIENT_use_default: BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_PROPS_map_GRADIENT_use_default_Update)
+        update=bm_props_utils.Map_map_GRADIENT_use_default_Update)
 
     map_gmask_type: EnumProperty(
         name="Type",
@@ -1421,7 +1425,7 @@ class BM_PROPS_Local_map(PropertyGroup):
                  ("SPHERICAL", "Spherical", "Create a spherical progression"),
                  ("QUADRATIC_SPHERE", "Quadratic Sphere", "Create a quadratic progression in the shape of a sphere"),  # noqa: E501
                  ("RADIAL", "Radial", "Create a radial progression")],
-        update=BM_MAP_PROPS_map_gmask_type_Update)
+        update=bm_props_utils.Map_map_gmask_type_Update)
 
     map_gmask_location_x: FloatProperty(
         name="X Location",
@@ -1429,7 +1433,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         default=0,
         precision=3,
         subtype="DISTANCE",
-        update=BM_MAP_PROPS_map_gmask_location_x_Update)
+        update=bm_props_utils.Map_map_gmask_location_x_Update)
 
     map_gmask_location_y: FloatProperty(
         name="Y Location",
@@ -1437,7 +1441,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         default=0,
         precision=3,
         subtype="DISTANCE",
-        update=BM_MAP_PROPS_map_gmask_location_y_Update)
+        update=bm_props_utils.Map_map_gmask_location_y_Update)
 
     map_gmask_location_z: FloatProperty(
         name="Z Location",
@@ -1445,7 +1449,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         default=0,
         precision=3,
         subtype="DISTANCE",
-        update=BM_MAP_PROPS_map_gmask_location_z_Update)
+        update=bm_props_utils.Map_map_gmask_location_z_Update)
 
     map_gmask_rotation_x: FloatProperty(
         name="X Rotation",
@@ -1453,7 +1457,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         default=0,
         precision=2,
         subtype="ANGLE",
-        update=BM_MAP_PROPS_map_gmask_rotation_x_Update)
+        update=bm_props_utils.Map_map_gmask_rotation_x_Update)
 
     map_gmask_rotation_y: FloatProperty(
         name="Y Rotation",
@@ -1461,7 +1465,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         default=0,
         precision=2,
         subtype="ANGLE",
-        update=BM_MAP_PROPS_map_gmask_rotation_y_Update)
+        update=bm_props_utils.Map_map_gmask_rotation_y_Update)
 
     map_gmask_rotation_z: FloatProperty(
         name="Z Rotation",
@@ -1469,52 +1473,52 @@ class BM_PROPS_Local_map(PropertyGroup):
         default=0,
         precision=2,
         subtype="ANGLE",
-        update=BM_MAP_PROPS_map_gmask_rotation_z_Update)
+        update=bm_props_utils.Map_map_gmask_rotation_z_Update)
 
     map_gmask_scale_x: FloatProperty(
         name="X Scale",
         description="Smoothness. Gradient scale by the local axis X",
         default=1,
         precision=3,
-        update=BM_MAP_PROPS_map_gmask_scale_x_Update)
+        update=bm_props_utils.Map_map_gmask_scale_x_Update)
 
     map_gmask_scale_y: FloatProperty(
         name="Y Scale",
         description="Smoothness. Gradient scale by the local axis Y",
         default=1,
         precision=3,
-        update=BM_MAP_PROPS_map_gmask_scale_y_Update)
+        update=bm_props_utils.Map_map_gmask_scale_y_Update)
 
     map_gmask_scale_z: FloatProperty(
         name="Z Scale",
         description="Smoothness. Gradient scale by the local axis Z",
         default=1,
         precision=3,
-        update=BM_MAP_PROPS_map_gmask_scale_z_Update)
+        update=bm_props_utils.Map_map_gmask_scale_z_Update)
 
     map_gmask_coverage: FloatProperty(
         name="Range of coverage",
         default=0,
         precision=3,
-        update=BM_MAP_PROPS_map_gmask_coverage_Update)
+        update=bm_props_utils.Map_map_gmask_coverage_Update)
 
     map_gmask_contrast: FloatProperty(
         name="Contrast",
         default=1,
         precision=3,
-        update=BM_MAP_PROPS_map_gmask_contrast_Update)
+        update=bm_props_utils.Map_map_gmask_contrast_Update)
 
     map_gmask_saturation: FloatProperty(
         name="Saturation",
         default=1,
-        update=BM_MAP_PROPS_map_gmask_saturation_Update)
+        update=bm_props_utils.Map_map_gmask_saturation_Update)
 
     map_gmask_opacity: FloatProperty(
         name="Opacity",
         default=1,
         min=0,
         max=1,
-        update=BM_MAP_PROPS_map_gmask_opacity_Update)
+        update=bm_props_utils.Map_map_gmask_opacity_Update)
 
     map_gmask_use_invert: FloatProperty(
         name="Invert",
@@ -1523,26 +1527,26 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_PROPS_map_gmask_use_invert_Update)
+        update=bm_props_utils.Map_map_gmask_use_invert_Update)
 
 # Edge Map Props
     map_EDGE_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="EDGE",
-        update=BM_MAP_PROPS_map_EDGE_prefix_Update)
+        update=bm_props_utils.Map_map_EDGE_prefix_Update)
 
     map_EDGE_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_EDGE_use_preview_Update)
+        update=bm_props_utils.Map_map_EDGE_use_preview_Update)
 
     map_EDGE_use_default: BoolProperty(
         name="Default",
         description="Bake texture map using default settings",
         default=True,
-        update=BM_MAP_PROPS_map_EDGE_use_default_Update)
+        update=bm_props_utils.Map_map_EDGE_use_default_Update)
 
     map_edgemask_samples: IntProperty(
         name="Samples",
@@ -1550,26 +1554,26 @@ class BM_PROPS_Local_map(PropertyGroup):
         default=16,
         min=2,
         max=128,
-        update=BM_MAP_PROPS_map_edgemask_samples_Update)
+        update=bm_props_utils.Map_map_edgemask_samples_Update)
 
     map_edgemask_radius: FloatProperty(
         name="Radius",
         default=0.02,
         min=0,
         precision=3,
-        update=BM_MAP_PROPS_map_edgemask_radius_Update)
+        update=bm_props_utils.Map_map_edgemask_radius_Update)
 
     map_edgemask_edge_contrast: FloatProperty(
         name="Edge Contrast",
         default=0,
         precision=3,
-        update=BM_MAP_PROPS_map_edgemask_edge_contrast_Update)
+        update=bm_props_utils.Map_map_edgemask_edge_contrast_Update)
 
     map_edgemask_body_contrast: FloatProperty(
         name="Body Contrast",
         default=1,
         precision=3,
-        update=BM_MAP_PROPS_map_edgemask_body_contrast_Update)
+        update=bm_props_utils.Map_map_edgemask_body_contrast_Update)
 
     map_edgemask_use_invert: FloatProperty(
         name="Invert",
@@ -1578,27 +1582,27 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_PROPS_map_edgemask_use_invert_Update)
+        update=bm_props_utils.Map_map_edgemask_use_invert_Update)
 
 # WireframeMask Map Props
     map_WIREFRAME_prefix: StringProperty(
         name="Prefix",
         description="Map Prefix to write in output file or layer name (if $mapname keyword is added to the Batch Name)",  # noqa: E501
         default="WIRE",
-        update=BM_MAP_PROPS_map_WIREFRAME_prefix_Update)
+        update=bm_props_utils.Map_map_WIREFRAME_prefix_Update)
 
     map_WIREFRAME_use_preview: BoolProperty(
         name="Preview",
-        description=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION,
+        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
-        update=BM_MAP_PROPS_map_WIREFRAME_use_preview_Update)
+        update=bm_props_utils.Map_map_WIREFRAME_use_preview_Update)
 
     map_wireframemask_line_thickness: FloatProperty(
         name="Thickness",
         description="Thickness of uv edge",
         default=0.2,
         min=0,
-        update=BM_MAP_PROPS_map_wireframemask_line_thickness_Update)
+        update=bm_props_utils.Map_map_wireframemask_line_thickness_Update)
 
     map_wireframemask_use_invert: FloatProperty(
         name="Invert",
@@ -1607,7 +1611,7 @@ class BM_PROPS_Local_map(PropertyGroup):
         min=0,
         max=1,
         precision=3,
-        update=BM_MAP_PROPS_map_wireframemask_use_invert_Update)
+        update=bm_props_utils.Map_map_wireframemask_use_invert_Update)
 
 
 class BM_Object_Highpoly(PropertyGroup):
@@ -1653,8 +1657,8 @@ class BM_Object_ChannelPack(PropertyGroup):
     R1G1B_map_R: EnumProperty(
         name="Channel Map",
         description="Choose a map for the Red channel among added to the table of maps",  # noqa: E501
-        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B_R,
-        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B_R)
+        items=bm_props_utils.ChannelPack_map_Items_R1G1B_R,
+        update=bm_props_utils.ChannelPack_map_Update_R1G1B_R)
     R1G1B_map_R_index: IntProperty(default=-1)
 
     R1G1B_use_G: BoolProperty(
@@ -1663,8 +1667,8 @@ class BM_Object_ChannelPack(PropertyGroup):
     R1G1B_map_G: EnumProperty(
         name="Channel Map",
         description="Choose a map for the Green channel among added to the table of maps",  # noqa: E501
-        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B_G,
-        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B_G)
+        items=bm_props_utils.ChannelPack_map_Items_R1G1B_G,
+        update=bm_props_utils.ChannelPack_map_Update_R1G1B_G)
     R1G1B_map_G_index: IntProperty(default=-1)
 
     R1G1B_use_B: BoolProperty(
@@ -1673,8 +1677,8 @@ class BM_Object_ChannelPack(PropertyGroup):
     R1G1B_map_B: EnumProperty(
         name="Channel Map",
         description="Choose a map for the Blue channel among added to the table of maps",  # noqa: E501
-        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B_B,
-        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B_B)
+        items=bm_props_utils.ChannelPack_map_Items_R1G1B_B,
+        update=bm_props_utils.ChannelPack_map_Update_R1G1B_B)
     R1G1B_map_B_index: IntProperty(default=-1)
 
     # RGB+A
@@ -1684,8 +1688,8 @@ class BM_Object_ChannelPack(PropertyGroup):
     RGB1A_map_RGB: EnumProperty(
         name="Channel Map",
         description="Choose a map for the RGB channels among added to the table of maps",  # noqa: E501
-        items=BM_CHANNELPACK_PROPS_map_Items_RGB1A_RGB,
-        update=BM_CHANNELPACK_PROPS_map_Update_RGB1A_RGB)
+        items=bm_props_utils.ChannelPack_map_Items_RGB1A_RGB,
+        update=bm_props_utils.ChannelPack_map_Update_RGB1A_RGB)
     RGB1A_map_RGB_index: IntProperty(default=-1)
 
     RGB1A_use_A: BoolProperty(
@@ -1694,8 +1698,8 @@ class BM_Object_ChannelPack(PropertyGroup):
     RGB1A_map_A: EnumProperty(
         name="Channel Map",
         description="Choose a map for the Alpha channel among added to the table of maps",  # noqa: E501
-        items=BM_CHANNELPACK_PROPS_map_Items_RGB1A_A,
-        update=BM_CHANNELPACK_PROPS_map_Update_RGB1A_A)
+        items=bm_props_utils.ChannelPack_map_Items_RGB1A_A,
+        update=bm_props_utils.ChannelPack_map_Update_RGB1A_A)
     RGB1A_map_A_index: IntProperty(default=-1)
 
     # R+G+B+A
@@ -1705,8 +1709,8 @@ class BM_Object_ChannelPack(PropertyGroup):
     R1G1B1A_map_R: EnumProperty(
         name="Channel Map",
         description="Choose a map for the Red channel among added to the table of maps",  # noqa: E501
-        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_R,
-        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_R)
+        items=bm_props_utils.ChannelPack_map_Items_R1G1B1A_R,
+        update=bm_props_utils.ChannelPack_map_Update_R1G1B1A_R)
     R1G1B1A_map_R_index: IntProperty(default=-1)
 
     R1G1B1A_use_G: BoolProperty(
@@ -1715,8 +1719,8 @@ class BM_Object_ChannelPack(PropertyGroup):
     R1G1B1A_map_G: EnumProperty(
         name="Channel Map",
         description="Choose a map for the Green channel among added to the table of maps",  # noqa: E501
-        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_G,
-        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_G)
+        items=bm_props_utils.ChannelPack_map_Items_R1G1B1A_G,
+        update=bm_props_utils.ChannelPack_map_Update_R1G1B1A_G)
     R1G1B1A_map_G_index: IntProperty(default=-1)
 
     R1G1B1A_use_B: BoolProperty(
@@ -1725,8 +1729,8 @@ class BM_Object_ChannelPack(PropertyGroup):
     R1G1B1A_map_B: EnumProperty(
         name="Channel Map",
         description="Choose a map for the Blue channel among added to the table of maps",  # noqa: E501
-        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_B,
-        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_B)
+        items=bm_props_utils.ChannelPack_map_Items_R1G1B1A_B,
+        update=bm_props_utils.ChannelPack_map_Update_R1G1B1A_B)
     R1G1B1A_map_B_index: IntProperty(default=-1)
 
     R1G1B1A_use_A: BoolProperty(
@@ -1735,19 +1739,19 @@ class BM_Object_ChannelPack(PropertyGroup):
     R1G1B1A_map_A: EnumProperty(
         name="Channel Map",
         description="Choose a map for the Alpha channel among added to the table of maps",  # noqa: E501
-        items=BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_A,
-        update=BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_A)
+        items=bm_props_utils.ChannelPack_map_Items_R1G1B1A_A,
+        update=bm_props_utils.ChannelPack_map_Update_R1G1B1A_A)
     R1G1B1A_map_A_index: IntProperty(default=-1)
 
 
 class BM_MATGROUPS_Item(PropertyGroup):
     material_name: StringProperty(
-        name="Object's material" + BM_Labels.PROP_ITEM_MATGROUPS_INDEX_DESCRIPTION,
+        name="Object's material" + BM_LABELS_Props('BM_MATGROUPS_Item', "group_index", "description").get(),  # noqa: E501
         default="")
 
     group_index: IntProperty(
         name="Material Group Index",
-        description=BM_Labels.PROP_ITEM_MATGROUPS_INDEX_DESCRIPTION,
+        description=BM_LABELS_Props('BM_MATGROUPS_Item', "group_index", "description").get(),  # noqa: E501
         default=1,
         min=1,
         step=1)
@@ -1762,14 +1766,14 @@ class BM_PROPS_Local_object(PropertyGroup):
     use_bake: BoolProperty(
         name="Include/Exclude the object for bake",
         default=True,
-        update=BM_ITEM_PROPS_use_bake_Update)
+        update=bm_props_utils.Object_use_bake_Update)
 
     is_included_in_texset: BoolProperty()
 
 # Name matching props:
     nm_is_detached: BoolProperty(default=False)
     nm_mindex: IntProperty(default=-1)
-    nm_container_name: StringProperty(default="", update=BM_ITEM_PROPS_nm_container_name_Update)  # noqa: E501
+    nm_container_name: StringProperty(default="", update=bm_props_utils.Object_nm_container_name_Update)  # noqa: E501
     nm_container_name_old: StringProperty(default="")
     nm_this_indent: IntProperty(default=0)
     nm_is_uc: BoolProperty(default=False)
@@ -1787,26 +1791,26 @@ class BM_PROPS_Local_object(PropertyGroup):
         name="Is Global Container",
         description="If checked, all Container's Objects settings will be configured by Container settings",  # noqa: E501
         default=False,
-        update=BM_ITEM_PROPS_nm_uni_container_is_Update)
+        update=bm_props_utils.Object_nm_uni_container_is_Update)
 
 # Item Decal Props:
     decal_is_decal: BoolProperty(
         name="Decal Object",
         description="Set the current Object to be Decal Object",
         default=False,
-        update=BM_ITEM_PROPS_decal_is_decal_Update)
+        update=bm_props_utils.Object_decal_is_decal_Update)
 
     decal_use_custom_camera: BoolProperty(
         name="Use Custom Camera",
         description="Use Custom Camera Object for capturing and baking decal maps",  # noqa: E501
         default=False,
-        update=BM_ITEM_PROPS_decal_use_custom_camera_Update)
+        update=bm_props_utils.Object_decal_use_custom_camera_Update)
 
-    decal_custom_camera: bpy.props.PointerProperty(
+    decal_custom_camera: PointerProperty(
         name="Camera",
         description="Choose Camera Object",
-        type=bpy.types.Camera,
-        update=BM_ITEM_PROPS_decal_custom_camera_Update)
+        type=bpy_types_Camera,
+        update=bm_props_utils.Object_decal_custom_camera_Update)
 
     decal_upper_coordinate: EnumProperty(
         name="Upper Coordinate",
@@ -1818,21 +1822,21 @@ class BM_PROPS_Local_object(PropertyGroup):
                ('-X', "-X", ""),
                ('-Y', "-Y", ""),
                ('-Z', "-Z", "")],
-        update=BM_ITEM_PROPS_decal_upper_coordinate_Update)
+        update=bm_props_utils.Object_decal_upper_coordinate_Update)
 
     decal_boundary_offset: FloatProperty(
         name="Boundary Offset",
         description="Distance to use between decal object's bounds and captured image area bounds",  # noqa: E501
         default=0.01,
         min=-0.999,
-        update=BM_ITEM_PROPS_decal_boundary_offset_Update)
+        update=bm_props_utils.Object_decal_boundary_offset_Update)
 
 # Item High to Lowpoly props:
     hl_use_unique_per_map: BoolProperty(
         name="Unique per map",
         description="Set unqiue High to Lowpoly Settings for each map",
         default=False,
-        update=BM_ITEM_PROPS_hl_use_unique_per_map_Update)
+        update=bm_props_utils.Object_hl_use_unique_per_map_Update)
 
     hl_is_highpoly: BoolProperty(default=False)
     hl_is_lowpoly: BoolProperty(default=False)
@@ -1853,26 +1857,26 @@ class BM_PROPS_Local_object(PropertyGroup):
         name="Separate Decals",
         description="If checked, all specified decals will be baked to a separate texture set for the Object,\notherwise, decals map passes will be baked to Object's textures",  # noqa: E501
         default=False,
-        update=BM_ITEM_PROPS_hl_decals_use_separate_texset_Update)
+        update=bm_props_utils.Object_hl_decals_use_separate_texset_Update)
 
     hl_decals_separate_texset_prefix: StringProperty(
         name="Decals TexSet prefix",
         description="What prefix to add in the end of image name for decals texture set",  # noqa: E501
         default="_decals",
-        update=BM_ITEM_PROPS_hl_decals_separate_texset_prefix_Update)
+        update=bm_props_utils.Object_hl_decals_separate_texset_prefix_Update)
 
     hl_use_cage: BoolProperty(
         name="Use Cage Object",
         description="Cast rays to Object from cage",
         default=False,
-        update=BM_ITEM_PROPS_hl_use_cage_Update)
+        update=bm_props_utils.Object_hl_use_cage_Update)
 
     hl_cage_type: EnumProperty(
         name="Cage type",
         description="Type of Cage properties to use",
         items=[('STANDARD', "Standard", "Standard Cage properties of Cycles Bake.\nSet extrusion, ray distance, and choose cage object"),  # noqa: E501
                ('SMART', "Smart", "Auto cage creation using lowpoly mesh displace. Saves time with simple cage")],  # noqa: E501
-        update=BM_ITEM_PROPS_hl_cage_type_Update)
+        update=bm_props_utils.Object_hl_cage_type_Update)
 
     hl_cage_extrusion: FloatProperty(
         name="Cage Extrusion",
@@ -1882,7 +1886,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         max=1,
         precision=2,
         subtype='DISTANCE',
-        update=BM_ITEM_PROPS_hl_cage_extrusion_Update)
+        update=bm_props_utils.Object_hl_cage_extrusion_Update)
 
     hl_max_ray_distance: FloatProperty(
         name="Max Ray Distance",
@@ -1892,13 +1896,13 @@ class BM_PROPS_Local_object(PropertyGroup):
         max=1,
         precision=2,
         subtype='DISTANCE',
-        update=BM_ITEM_PROPS_hl_max_ray_distance)
+        update=bm_props_utils.Object_hl_max_ray_distance)
 
     hl_cage: EnumProperty(
         name="Cage Object",
         description="Object to use as cage instead of calculating with cage extrusion",  # noqa: E501
-        items=BM_ITEM_PROPS_hl_cage_Items,
-        update=BM_ITEM_PROPS_hl_cage_Update)
+        items=bm_props_utils.Object_hl_cage_Items,
+        update=bm_props_utils.Object_hl_cage_Update)
 
     hl_cage_name_old: StringProperty()
 
@@ -1911,7 +1915,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         name="Unique per map",
         description="Set unqiue UV Settings for each map",
         default=False,
-        update=BM_ITEM_PROPS_uv_use_unique_per_map_Update)
+        update=bm_props_utils.Object_uv_use_unique_per_map_Update)
 
     uv_bake_data: EnumProperty(
         name="Bake Data",
@@ -1919,34 +1923,34 @@ class BM_PROPS_Local_object(PropertyGroup):
         default='OBJECT_MATERIALS',
         items=[('OBJECT_MATERIALS', "Object/Materials", "Use Object and Materials data for baking regular maps"),  # noqa: E501
                ('VERTEX_COLORS', "Vertex Colors", "Bake VertexColor Layers to Image Textures")],  # noqa: E501
-        update=BM_ITEM_PROPS_uv_bake_data_Update)
+        update=bm_props_utils.Object_uv_bake_data_Update)
 
     uv_bake_target: EnumProperty(
         name="Bake Target",
         description="Choose Baked Maps output target",
-        items=BM_ITEM_PROPS_uv_bake_target_Items,
-        update=BM_ITEM_PROPS_uv_bake_target_Update)
+        items=bm_props_utils.Object_uv_bake_target_Items,
+        update=bm_props_utils.Object_uv_bake_target_Update)
 
     uv_active_layer: EnumProperty(
         name="Active UV Map",
         description="Choose active UVMap layer to use in the bake.\nIf mesh has got no UV layers and at least one map to be baked to image texture, auto UV unwrap will be proceeded",  # noqa: E501
-        items=BM_ITEM_PROPS_uv_active_layer_Items)
+        items=bm_props_utils.Object_uv_active_layer_Items)
 
     uv_type: EnumProperty(
         name="UV Map Type",
         description="Set the chosen Active UV Map type",
-        items=BM_ITEM_PROPS_uv_type_Items,
-        update=BM_ITEM_PROPS_uv_type_Update)
+        items=bm_props_utils.Object_uv_type_Items,
+        update=bm_props_utils.Object_uv_type_Update)
 
     uv_snap_islands_to_pixels: BoolProperty(
         name="Snap UV to pixels",
         description="Make chosen UV Layer pixel perfect by aligning UV Coordinates to pixels' corners/edges",  # noqa: E501
-        update=BM_ITEM_PROPS_uv_snap_islands_to_pixels_Update)
+        update=bm_props_utils.Object_uv_snap_islands_to_pixels_Update)
 
     uv_use_auto_unwrap: BoolProperty(
         name="Auto Unwrap",
         description="Auto UV Unwrap object using smart project. If UV Type is UDIMs, enabling Auto Unwrap will ignore it.\nWarning: if Object has materials that depend on UV Layout, enabling this option might change the result of these materials",  # noqa: E501
-        update=BM_ITEM_PROPS_uv_use_auto_unwrap_Update)
+        update=bm_props_utils.Object_uv_use_auto_unwrap_Update)
 
     uv_auto_unwrap_angle_limit: IntProperty(
         name="Angle Limit",
@@ -1955,7 +1959,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         min=0,
         max=89,
         subtype='ANGLE',
-        update=BM_ITEM_PROPS_uv_auto_unwrap_angle_limit_Update)
+        update=bm_props_utils.Object_uv_auto_unwrap_angle_limit_Update)
 
     uv_auto_unwrap_island_margin: FloatProperty(
         name="Island Margin",
@@ -1963,13 +1967,13 @@ class BM_PROPS_Local_object(PropertyGroup):
         default=0.01,
         min=0,
         max=1,
-        update=BM_ITEM_PROPS_uv_auto_unwrap_island_margin_Update)
+        update=bm_props_utils.Object_uv_auto_unwrap_island_margin_Update)
 
     uv_auto_unwrap_use_scale_to_bounds: BoolProperty(
         name="Scale to Bounds",
         description="Scale UV coordinates to bounds to fill the whole UV tile area",  # noqa: E501
         default=True,
-        update=BM_ITEM_PROPS_uv_auto_unwrap_use_scale_to_bounds_Update)
+        update=bm_props_utils.Object_uv_auto_unwrap_use_scale_to_bounds_Update)
 
 # Item Material Groups Props:
     matgroups: CollectionProperty(type=BM_MATGROUPS_Item)
@@ -1986,26 +1990,26 @@ class BM_PROPS_Local_object(PropertyGroup):
         default='GROUP_INDEX',
         items=[('GROUP_INDEX', 'Index', "Put material group index into the batch name"),  # noqa: E501
                ('GROUP_NAMES', 'Materials names', "Put material names with the same group index into the batch name")],  # noqa: E501
-        update=BM_ITEM_PROPS_matgroups_batch_naming_type_Update)
+        update=bm_props_utils.Object_matgroups_batch_naming_type_Update)
 
 # Item Output Props:
     out_use_unique_per_map: BoolProperty(
         name="Unique per map",
         description="Set unqiue Output Settings for each map",
         default=False,
-        update=BM_ITEM_PROPS_out_use_unique_per_map_Update)
+        update=bm_props_utils.Object_out_use_unique_per_map_Update)
 
     out_use_denoise: BoolProperty(
         name="Denoise",
         description="Denoise and Discpeckle baked maps as a post-process filter. For external bake only",  # noqa: E501
         default=False,
-        update=BM_ITEM_PROPS_out_use_denoise_Update)
+        update=bm_props_utils.Object_out_use_denoise_Update)
 
     out_use_scene_color_management: BoolProperty(
         name="Scene Color Management",
         description="Affect baked map by scene color management settings and compositor nodes. For external bake only",  # noqa: E501
         default=False,
-        update=BM_ITEM_PROPS_out_use_scene_color_management_Update)
+        update=bm_props_utils.Object_out_use_scene_color_management_Update)
 
     out_file_format: EnumProperty(
         name="File Format",
@@ -2017,7 +2021,7 @@ class BM_PROPS_Local_object(PropertyGroup):
                ('TIFF', "TIFF", "Output image in TIFF format. Photographic file standard in print"),  # noqa: E501
                ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps")],  # noqa: E501
                # ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps for current Object will be saved to a single .psd file")],  # noqa: E501
-        update=BM_ITEM_PROPS_out_file_format_Update)
+        update=bm_props_utils.Object_out_file_format_Update)
 
     # out_psd_include: EnumProperty(
     #     name="PSD includes",
@@ -2025,7 +2029,7 @@ class BM_PROPS_Local_object(PropertyGroup):
     #     default='MAP',
     #     items=[('MAP', "One map", "Each baked map - separate psd file"),
     #          # ('ALL_MAPS', "All object's maps", "All object's maps into single PSD file")],  # noqa: E501
-    #     update=BM_ITEM_PROPS_OutputSettings_Update)
+    #     update=bm_props_utils.Object_OutputSettings_Update)
 
     out_exr_codec: EnumProperty(
         name="Codec",
@@ -2039,7 +2043,7 @@ class BM_PROPS_Local_object(PropertyGroup):
                ('ZIPS', "ZIPS (lossless)", ""),
                ('DWAA', "DWAA (lossy)", ""),
                ('DWAB', "DWAB (lossy)", "")],
-        update=BM_ITEM_PROPS_out_exr_codec_Update)
+        update=bm_props_utils.Object_out_exr_codec_Update)
 
     out_compression: IntProperty(
         name="Compression",
@@ -2048,7 +2052,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         min=0,
         max=100,
         subtype='PERCENTAGE',
-        update=BM_ITEM_PROPS_out_compression_Update)
+        update=bm_props_utils.Object_out_compression_Update)
 
     out_res: EnumProperty(
         name="Map Texture Resolution",
@@ -2061,7 +2065,7 @@ class BM_PROPS_Local_object(PropertyGroup):
                ('8192', "8K (8192x8192)", ""),
                ('CUSTOM', "Custom", "Enter custom height and width")],
                # ('TEXEL', "Texel Density defined", "Define image resolution based on object's texel density")],  # noqa: E501
-        update=BM_ITEM_PROPS_out_res_Update)
+        update=bm_props_utils.Object_out_res_Update)
 
     out_res_height: IntProperty(
         name="Height",
@@ -2070,7 +2074,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         min=1,
         max=65536,
         subtype='PIXEL',
-        update=BM_ITEM_PROPS_out_res_height_Update)
+        update=bm_props_utils.Object_out_res_height_Update)
 
     out_res_width: IntProperty(
         name="Width",
@@ -2079,7 +2083,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         min=1,
         max=65536,
         subtype='PIXEL',
-        update=BM_ITEM_PROPS_out_res_width_Update)
+        update=bm_props_utils.Object_out_res_width_Update)
 
     # out_texel_density_value: IntProperty(
     #     name="Texel Density",
@@ -2088,7 +2092,7 @@ class BM_PROPS_Local_object(PropertyGroup):
     #     min=1,
     #     max=65536,
     #     subtype='PIXEL',
-    #     update=BM_ITEM_PROPS_OutputSettings_Update)
+    #     update=bm_props_utils.Object_OutputSettings_Update)
 
     # out_texel_density_match: BoolProperty(
     #     name="Match to Common",
@@ -2102,7 +2106,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         min=0,
         max=64,
         subtype='PIXEL',
-        update=BM_ITEM_PROPS_out_margin_Update)
+        update=bm_props_utils.Object_out_margin_Update)
 
     out_margin_type: EnumProperty(
         name="Margin Type",
@@ -2110,25 +2114,25 @@ class BM_PROPS_Local_object(PropertyGroup):
         default='ADJACENT_FACES',
         items=[('ADJACENT_FACES', "Adjacent Faces", "Use pixels from adjacent faces across UV seams"),  # noqa: E501
                ('EXTEND', "Extend", "Extend face border pixels outwards")],
-        update=BM_ITEM_PROPS_out_margin_type_Update)
+        update=bm_props_utils.Object_out_margin_type_Update)
 
     out_use_32bit: BoolProperty(
         name="32bit",
         description="Create image texture with 32 bit floating point depth.\nStores more color data in the image this way",  # noqa: E501
         default=False,
-        update=BM_ITEM_PROPS_out_use_32bit_Update)
+        update=bm_props_utils.Object_out_use_32bit_Update)
 
     out_use_alpha: BoolProperty(
         name="Alpha",
         description="Create image texture with Alpha color channel",
         default=False,
-        update=BM_ITEM_PROPS_out_use_alpha_Update)
+        update=bm_props_utils.Object_out_use_alpha_Update)
 
     out_use_transbg: BoolProperty(
         name="Transparent BG",
         description="Create image texture with transparent background instead of solid black",  # noqa: E501
         default=False,
-        update=BM_ITEM_PROPS_out_use_transbg_Update)
+        update=bm_props_utils.Object_out_use_transbg_Update)
 
     out_udim_start_tile: IntProperty(
         name="UDIM Start Tile Index",
@@ -2136,7 +2140,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         default=1001,
         min=1001,
         max=2000,
-        update=BM_ITEM_PROPS_out_udim_start_tile_Update)
+        update=bm_props_utils.Object_out_udim_start_tile_Update)
 
     out_udim_end_tile: IntProperty(
         name="UDIM End Tile Index",
@@ -2144,7 +2148,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         default=1001,
         min=1001,
         max=2000,
-        update=BM_ITEM_PROPS_out_udim_end_tile_Update)
+        update=bm_props_utils.Object_out_udim_end_tile_Update)
 
     out_super_sampling_aa: EnumProperty(
         name="SuperSampling AA",
@@ -2155,7 +2159,7 @@ class BM_PROPS_Local_object(PropertyGroup):
                ('4', "4x4", "Bake at 4x the chosen resolution and then downscale"),  # noqa: E501
                ('8', "8x8", "Bake at 8x the chosen resolution and then downscale"),  # noqa: E501
                ('16', "16x16", "Bake at 16x the chosen resolution and then downscale")],  # noqa: E501
-        update=BM_ITEM_PROPS_out_super_sampling_aa_Update)
+        update=bm_props_utils.Object_out_super_sampling_aa_Update)
 
     out_samples: IntProperty(
         name="Bake Samples",
@@ -2163,13 +2167,13 @@ class BM_PROPS_Local_object(PropertyGroup):
         default=128,
         min=1,
         max=16777216,
-        update=BM_ITEM_PROPS_out_samples)
+        update=bm_props_utils.Object_out_samples)
 
     out_use_adaptive_sampling: BoolProperty(
         name="Adaptive Sampling",
         description="Automatically reduce the number of samples per pixel based on estimated noise level",  # noqa: E501
         default=False,
-        update=BM_ITEM_PROPS_out_use_adaptive_sampling_Update)
+        update=bm_props_utils.Object_out_use_adaptive_sampling_Update)
 
     out_adaptive_threshold: FloatProperty(
         name="Noise Threshold",
@@ -2180,7 +2184,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         soft_min=0.001,
         step=3,
         precision=4,
-        update=BM_ITEM_PROPS_out_adaptive_threshold_Update)
+        update=bm_props_utils.Object_out_adaptive_threshold_Update)
 
     out_min_samples: IntProperty(
         name="Bake Min Samples",
@@ -2188,26 +2192,26 @@ class BM_PROPS_Local_object(PropertyGroup):
         default=0,
         min=0,
         max=4096,
-        update=BM_ITEM_PROPS_out_min_samples_Update)
+        update=bm_props_utils.Object_out_min_samples_Update)
 
 # Item Shading Correction Props
     csh_use_triangulate_lowpoly: BoolProperty(
         name="Triangulate Lowpoly",
         description="Triangulate Lowpoly mesh n-gons. Takes time but improves shading of Lowpoly mesh with redundant uv stretches",  # noqa: E501
         default=False,
-        update=BM_ITEM_PROPS_csh_use_triangulate_lowpoly_Update)
+        update=bm_props_utils.Object_csh_use_triangulate_lowpoly_Update)
 
     csh_use_lowpoly_recalc_normals: BoolProperty(
         name="Recalculate Lowpoly Normals Outside",
         description="Recalculate Lowpoly Vertex and Face Normals Outside",
         default=False,
-        update=BM_ITEM_PROPS_csh_use_lowpoly_recalc_normals_Update)
+        update=bm_props_utils.Object_csh_use_lowpoly_recalc_normals_Update)
 
     csh_lowpoly_use_smooth: BoolProperty(
         name="Smooth Lowpoly",
         description="Use smooth-shaded Lowpoly for baking. Can be kept unchecked if you've set shading on your own",  # noqa: E501
         default=False,
-        update=BM_ITEM_PROPS_csh_lowpoly_use_smooth_Update)
+        update=bm_props_utils.Object_csh_lowpoly_use_smooth_Update)
 
     csh_lowpoly_smoothing_groups_enum: EnumProperty(
         name="Lowpoly Smoothing groups",
@@ -2216,7 +2220,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         items=[('STANDARD', "Standard", "Apply default Shade Smooth to whole object"),  # noqa: E501
                ('AUTO', "Auto Smooth", "Apply Auto Shade Smooth based on angle between faces or mesh split normals data"),  # noqa: E501
                ('VERTEX_GROUPS', "Vertex Groups", "Apply smooth shading to created mesh vertex groups. Vertex group boundary will be marked sharped")],  # noqa: E501
-        update=BM_ITEM_PROPS_csh_lowpoly_smoothing_groups_enum_Update)
+        update=bm_props_utils.Object_csh_lowpoly_smoothing_groups_enum_Update)
 
     csh_lowpoly_smoothing_groups_angle: IntProperty(
         name="Angle",
@@ -2225,25 +2229,25 @@ class BM_PROPS_Local_object(PropertyGroup):
         min=0,
         max=180,
         subtype='ANGLE',
-        update=BM_ITEM_PROPS_csh_lowpoly_smoothing_groups_angle_Update)
+        update=bm_props_utils.Object_csh_lowpoly_smoothing_groups_angle_Update)
 
     csh_lowpoly_smoothing_groups_name_contains: StringProperty(
         name="Name Contains",
         description="Apply smooth shading only to vertex groups which names contain this value. Leave empty to apply to all vertex groups",  # noqa: E501
         default="_smooth",
-        update=BM_ITEM_PROPS_csh_lowpoly_smoothing_groups_name_contains_Update)
+        update=bm_props_utils.Object_csh_lowpoly_smoothing_groups_name_contains_Update)  # noqa: E501
 
     csh_use_highpoly_recalc_normals: BoolProperty(
         name="Recalculate Highpoly Normals Outside",
         description="Recalculate Highpoly Vertex and Face Normals Outside",
         default=False,
-        update=BM_ITEM_PROPS_csh_use_highpoly_recalc_normals_Update)
+        update=bm_props_utils.Object_csh_use_highpoly_recalc_normals_Update)
 
     csh_highpoly_use_smooth: BoolProperty(
         name="Smooth Highpoly",
         description="Use smooth-shaded Highpoly for baking. Can be kept unchecked if you've set shading on your own",  # noqa: E501
         default=False,
-        update=BM_ITEM_PROPS_csh_highpoly_use_smooth_Update)
+        update=bm_props_utils.Object_csh_highpoly_use_smooth_Update)
 
     csh_highpoly_smoothing_groups_enum: EnumProperty(
         name="Highpoly Smoothing groups",
@@ -2252,7 +2256,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         items=[('STANDARD', "Standard", "Apply default Shade Smooth to whole object"),  # noqa: E501
                ('AUTO', "Auto Smooth", "Apply Auto Shade Smooth based on angle between faces or mesh split normals data"),  # noqa: E501
                ('VERTEX_GROUPS', "Vertex Groups", "Apply smooth shading to created mesh vertex groups. Vertex group boundary will be marked sharped")],  # noqa: E501
-        update=BM_ITEM_PROPS_csh_highpoly_smoothing_groups_enum_Update)
+        update=bm_props_utils.Object_csh_highpoly_smoothing_groups_enum_Update)
 
     csh_highpoly_smoothing_groups_angle: IntProperty(
         name="Angle",
@@ -2261,13 +2265,13 @@ class BM_PROPS_Local_object(PropertyGroup):
         min=0,
         max=180,
         subtype='ANGLE',
-        update=BM_ITEM_PROPS_csh_highpoly_smoothing_groups_angle_Update)
+        update=bm_props_utils.Object_csh_highpoly_smoothing_groups_angle_Update)  # noqa: E501
 
     csh_highpoly_smoothing_groups_name_contains: StringProperty(
         name="Name Contains",
         description="Apply smooth shading only to vertex groups which names contain this value",  # noqa: E501
         default="_smooth",
-        update=BM_ITEM_PROPS_csh_highpoly_smoothing_groups_name_contains_Update)
+        update=bm_props_utils.Object_csh_highpoly_smoothing_groups_name_contains_Update)  # noqa: E501
 
 # Item Maps Collection Props
     maps_active_index: IntProperty(
@@ -2292,38 +2296,38 @@ class BM_PROPS_Local_object(PropertyGroup):
         name="Internal",
         description="Pack baked maps into the current Blender file",
         default=True,
-        update=BM_ITEM_PROPS_bake_save_internal_Update)
+        update=bm_props_utils.Object_bake_save_internal_Update)
 
     bake_output_filepath: StringProperty(
         name="Output Path",
         description="Directory path on your disk to save baked maps to",
         default="",
         subtype='DIR_PATH',
-        update=BM_ITEM_PROPS_bake_output_filepath_Update)
+        update=bm_props_utils.Object_bake_output_filepath_Update)
 
     bake_create_subfolder: BoolProperty(
         name="Create Subfolder",
         description="Create subfolder in the Output Path directory and save baked maps there",  # noqa: E501
         default=False,
-        update=BM_ITEM_PROPS_bake_create_subfolder_Update)
+        update=bm_props_utils.Object_bake_create_subfolder_Update)
 
     bake_subfolder_name: StringProperty(
         name="Subfolder Name",
         description="How to name the subfolder",
         default="Maps",
-        update=BM_ITEM_PROPS_bake_subfolder_name_Update)
+        update=bm_props_utils.Object_bake_subfolder_name_Update)
 
     bake_batchname: StringProperty(
         name="Batch Name",
-        description=BM_Labels.PROP_ITEM_bake_batchname_custom_Description,
+        description=BM_LABELS_Props('BM_PROPS_Local_object', "bake_batchname", "description").get(),  # noqa: E501
         default="$objectindex_$objectname_$mapname",
-        update=BM_ITEM_PROPS_bake_batchname_Update)
+        update=bm_props_utils.Object_bake_batchname_Update)
 
     bake_batchname_use_caps: BoolProperty(
         name="Use Caps",
         description="Use capital letters for batch name",
         default=False,
-        update=BM_ITEM_PROPS_bake_batchname_use_caps_Update)
+        update=bm_props_utils.Object_bake_batchname_use_caps_Update)
 
     # bake_batchname_preview: StringProperty(
     #     name="Preview",
@@ -2333,13 +2337,13 @@ class BM_PROPS_Local_object(PropertyGroup):
         name="Create Material",
         description="Assign a new material to the object after bake with all baked maps included",  # noqa: E501
         default=False,
-        update=BM_ITEM_PROPS_bake_create_material_Update)
+        update=bm_props_utils.Object_bake_create_material_Update)
 
     bake_assign_modifiers: BoolProperty(
         name="Assign Modifiers",
         description="If Object maps like Displacement or Vector Displacement have Result to Modifiers, modifiers will be assigned if this is checked. If unchecked, baked maps will be just saved to image textures",  # noqa: E501
         default=True,
-        update=BM_ITEM_PROPS_bake_assign_modifiers_Update)
+        update=bm_props_utils.Object_bake_assign_modifiers_Update)
 
     bake_device: EnumProperty(
         name="Bake Device",
@@ -2347,7 +2351,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         default='CPU',
         items=[('GPU', "GPU", "Use GPU compute device for baking, configured in the system tab in the user preferences"),  # noqa: E501
                ('CPU', "CPU", "Use CPU for baking")],
-        update=BM_ITEM_PROPS_bake_device_Update)
+        update=bm_props_utils.Object_bake_device_Update)
 
     bake_view_from: EnumProperty(
         name="Bake View from",
@@ -2355,13 +2359,13 @@ class BM_PROPS_Local_object(PropertyGroup):
         default='ABOVE_SURFACE',
         items=[('ABOVE_SURFACE', "Above Surface", "Cast rays from above the surface. Default"),  # noqa: E501
                ('ACTIVE_CAMERA', "Active Camera", "Use the active scene camera's position to cast rays")],  # noqa: E501
-        update=BM_ITEM_PROPS_bake_view_from_Update)
+        update=bm_props_utils.Object_bake_view_from_Update)
 
     bake_hide_when_inactive: BoolProperty(
         name="Hide when Inactive",
         description="If checked, Object's Mesh will not affect any other Objects while baking",  # noqa: E501
         default=True,
-        update=BM_ITEM_PROPS_bake_hide_when_inactive_Update)
+        update=bm_props_utils.Object_bake_hide_when_inactive_Update)
 
     bake_vg_index: IntProperty(
         name="VG Index",
@@ -2369,7 +2373,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         default=0,
         min=0,
         step=1,
-        update=BM_ITEM_PROPS_bake_vg_index_Update)
+        update=bm_props_utils.Object_bake_vg_index_Update)
 
 
 class BM_PROPS_Local_redolastaction_object(PropertyGroup):
@@ -2413,19 +2417,19 @@ class BM_PROPS_Local_bakegroup(PropertyGroup):
         name="Inlcude as Lowpoly",
         description="Include this object as a regular or Lowpoly Object in new Artificial Container",  # noqa: E501
         default=False,
-        update=BM_CAUC_Object_use_include_Update)
+        update=bm_props_utils.BakeGroup_use_include_Update)
 
     is_highpoly: BoolProperty(
         name="Include as Highpoly",
         description="Include this object as a Highpoly Object in new Artificial Container",  # noqa: E501
         default=False,
-        update=BM_CAUC_Object_is_highpoly_Update)
+        update=bm_props_utils.BakeGroup_is_highpoly_Update)
 
     is_cage: BoolProperty(
         name="Include as Cage",
         description="Include this object as a Highpoly Object in new Artificial Container",  # noqa: E501
         default=False,
-        update=BM_CAUC_Object_is_cage_Update)
+        update=bm_props_utils.BakeGroup_is_cage_Update)
 
 
 class BM_PROPS_Local_matchres(PropertyGroup):
@@ -2465,8 +2469,8 @@ class BM_PROPS_Local_texset_object(PropertyGroup):
     name: EnumProperty(
         name="Choose Object",
         description="Object from the current Bake Job Objects to inlcude in the current Texture Set.\nIf Container's chosen, all its lowpoly objects will be added to the Texture Set",  # noqa: E501
-        items=BM_TEXSET_OBJECT_PROPS_object_name_Items,
-        update=BM_TEXSET_OBJECT_PROPS_object_name_Update)
+        items=bm_props_utils.TexSet_Object_name_Items,
+        update=bm_props_utils.TexSet_Object_name_Update)
 
     index: IntProperty(default=-1)
     texset_index: IntProperty(default=-1)
@@ -2499,7 +2503,7 @@ class BM_PROPS_Local_texset(PropertyGroup):
     syncer_object_name: EnumProperty(
         name="Sync with",
         description="Choose an object from the ones in the current texture set",  # noqa: E501
-        items=BM_TEXSET_OBJECT_PROPS_syncer_Items)
+        items=bm_props_utils.TexSet_Object_syncer_Items)
 
     syncer_use_dictate_bake_output: BoolProperty(
         name="Sync Bake Output Settings",
@@ -2565,7 +2569,7 @@ class BM_PROPS_Local_bakejob(PropertyGroup):
     objects_active_index: IntProperty(
         name="Mesh Object to bake maps for",
         default=0,
-        update=BM_ActiveIndexUpdate)
+        update=bm_props_utils.BakeJob_objects_active_index_Update)
 
     objects_len: IntProperty(default=0)
 
@@ -2573,7 +2577,7 @@ class BM_PROPS_Local_bakejob(PropertyGroup):
         name="Toggle Name Matching",
         description="If on, High, Lowpoly, and Cage objects will be grouped by their matched names.\nProperties like Highpoly object and Cage will be set automatically if possible, maps and other settings can be configured by the top-parent container",  # noqa: E501
         default=False,
-        update=BM_SCENE_PROPS_use_name_matching_Update)
+        update=bm_props_utils.BakeJob_use_name_matching_Update)
 
     use_save_log: BoolProperty(
         name="Save Log",
@@ -2763,7 +2767,7 @@ class BM_PROPS_Global(PropertyGroup):
     bake_instruction: StringProperty(
         name="Bake Operator Instruction",
         default="Short Bake Instruction",
-        description=BM_Labels.OPERATOR_ITEM_BAKE_FULL_DESCRIPTION)
+        description=BM_LABELS_Props('BM_PROPS_Global', "bake_instruction", "description").get())  # noqa: E501
 
     is_bake_available: BoolProperty(
         default=True)
