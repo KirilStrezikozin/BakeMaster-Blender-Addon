@@ -18,6 +18,3690 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+# "BakeMaster" Add-on
+# Copyright (C) 2023 Kiril Strezikozin aka kemplerart
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTIBILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+# ##### END GPL LICENSE BLOCK #####
+
+import bpy
+from .map_previews import *
+
+###############################################################
+### Name Matching Funcs ###
+###############################################################
+def BM_Table_of_Objects_NameMatching_GetAllObjectNames(context):
+    names = []
+    for object in context.scene.bm_table_of_objects:
+        names.append(object.object_name)
+    return names
+
+def BM_Table_of_Objects_NameMatching_GenerateNameChunks(name: str):
+    chunks = []
+    chunk_start_index = 0
+    for index, char in enumerate(name):
+        if char == "_":
+            chunks.append(name[chunk_start_index:index])
+            chunk_start_index = index + 1
+        if index == len(name) - 1:
+            chunks.append(name[chunk_start_index:len(name)])
+    return [chunk for chunk in chunks if chunk.replace(" ", "") != ""]
+
+def BM_Table_of_Objects_NameMatching_GetNameChunks(chunks: list, combine_type: str, context=None):
+    # get prefixes
+    lowpoly_prefix_raw = context.scene.bm_props.lowpoly_tag
+    highpoly_prefix_raw = context.scene.bm_props.highpoly_tag
+    cage_prefix_raw = context.scene.bm_props.cage_tag
+    decal_prefix_raw = context.scene.bm_props.decal_tag
+    combined_name = []
+
+    if combine_type == 'ROOT':
+        for index, chunk in enumerate(chunks):
+            if chunk in [lowpoly_prefix_raw, highpoly_prefix_raw, cage_prefix_raw]:
+                break
+            else:
+                combined_name.append(chunk)
+
+    elif combine_type == 'TALE':
+        combine_from_index = 0
+        for index, chunk in enumerate(chunks):
+            if chunk in [lowpoly_prefix_raw, highpoly_prefix_raw, cage_prefix_raw]:
+                combine_from_index = index + 1
+                break
+        for index in range(combine_from_index, len(chunks)):
+            combined_name.append(chunks[index])
+
+    elif combine_type == 'FULL':
+        for chunk in chunks:
+            combined_name.append(chunk)
+
+    return combined_name
+
+def BM_Table_of_Objects_NameMatching_CombineToRaw(chunked_name: str):
+    combined_name = ""
+    for chunk in chunked_name:
+        combined_name += chunk + "_"
+    return combined_name[:-1]
+        
+def BM_Table_of_Objects_NameMatching_IndexesIntersaction(indexes: list):
+    # removing empty shells
+    indexes = [shell for shell in indexes if len(shell) != 0]
+    intersaction = []
+    # loop through every number
+    for shell in indexes:
+        for number in shell:
+            # count how many times this number is present
+            number_presents = len([shell1 for shell1 in indexes if number in shell1])
+            # if that count = len of all shells -> presented in all shells
+            if number_presents == len(indexes):
+                intersaction.append(number)
+    # remove duplicates and return
+    return list(dict.fromkeys(intersaction))
+
+def BM_Table_of_Objects_NameMatching_CombineGroups(groups: list):
+    sorted_groups = []
+    groups_lens = []
+    combined = []
+    # sorting each groups' shell and all shells by their len
+    for group in groups:
+        sorted_groups.append(sorted(group))
+        groups_lens.append(len(group))
+    sorted_groups = [g for _, g in sorted(zip(groups_lens, sorted_groups), reverse=False)]
+    combined = [list(g) for g in sorted_groups]
+
+    # remove repetitive indexes
+    deleted = []
+    for index, group in enumerate(sorted_groups):
+        deleted.append([])
+        for n_index, number in enumerate(group):
+            for index_1, group_1 in enumerate(sorted_groups):
+                if number in group_1 and index_1 != index:
+                    try:
+                        # if index was already deleted
+                        deleted[index].index(number)
+                    except (IndexError, ValueError):
+                        try:
+                            # if found was already deleted
+                            deleted[index_1].index(number)
+                        except (IndexError, ValueError):
+                            # delete the index
+                            deleted[index].append(number)
+                            del combined[index][combined[index].index(number)]
+                            break
+                        else:
+                            pass
+                    else:
+                        continue
+    # return non-empty groups
+    return [group for group in combined if len(group)]
+
+def BM_Table_of_Objects_NameMatching_Construct(context, objects_names_input):
+    # funcs pointers
+    NameChunks = BM_Table_of_Objects_NameMatching_GenerateNameChunks
+    GetChunks = BM_Table_of_Objects_NameMatching_GetNameChunks
+    Intersaction = BM_Table_of_Objects_NameMatching_IndexesIntersaction
+    CombineToRaw = BM_Table_of_Objects_NameMatching_CombineToRaw
+    CombineGroups = BM_Table_of_Objects_NameMatching_CombineGroups
+    # get prefixes
+    lowpoly_prefix_raw = context.scene.bm_props.lowpoly_tag
+    highpoly_prefix_raw = context.scene.bm_props.highpoly_tag
+    cage_prefix_raw = context.scene.bm_props.cage_tag
+    decal_prefix_raw = context.scene.bm_props.decal_tag
+    roots = []
+    detached = []
+
+    ### calculating roots[]
+    used_obj_names = []
+    # loop through all names
+    for object_name in objects_names_input:
+        # if name contains 'lowpoly'
+        if lowpoly_prefix_raw in NameChunks(object_name):
+            used_obj_names.append(object_name)
+            
+            # create root_name
+            object_name_chunked = NameChunks(object_name)
+            root_name = GetChunks(object_name_chunked, 'ROOT', context)
+            tale_name = GetChunks(object_name_chunked, 'TALE', context)
+
+            # find any objects in the input_objects with the same root_name and tale_name
+            pairs = [object_name]
+            for object_name_pair in objects_names_input:
+                if object_name_pair in used_obj_names:
+                    continue
+                pair_name_chunked = NameChunks(object_name_pair)
+                pair_name_chunked_no_decal = NameChunks(object_name_pair)
+                try:
+                    pair_name_chunked_no_decal.remove(decal_prefix_raw)
+                except ValueError:
+                    pass
+                pair_root = GetChunks(pair_name_chunked, 'ROOT', context)
+                pair_tale = GetChunks(pair_name_chunked_no_decal, 'TALE', context)
+                if pair_root == root_name and pair_tale == tale_name:
+                    # add it to the current shell
+                    pairs.append(object_name_pair)
+                    used_obj_names.append(object_name_pair)
+            # add current shell to the roots[]
+            roots.append([root_name, pairs])
+
+    # try pairing highs and cages that are left to lowpolies
+    for root in roots:
+        for object_name in objects_names_input:
+            if object_name in root[1] or object_name in used_obj_names:
+                continue
+
+            if highpoly_prefix_raw in NameChunks(object_name) or cage_prefix_raw in NameChunks(object_name):
+
+                object_name_chunked = NameChunks(object_name)
+                try:
+                    object_name_chunked.remove(decal_prefix_raw)
+                except ValueError:
+                    pass
+                root_name = GetChunks(object_name_chunked, 'ROOT', context)
+
+                if CombineToRaw(root_name).find(CombineToRaw(root[0])) == 0:
+                    used_obj_names.append(object_name)
+                    root[1].append(object_name)
+
+    # roots with no pairs - add to detached[], and items not added to roots as well
+    detached = [object_name for root in roots for object_name in root[1] if len(root[1]) <= 1]
+    for object_name in objects_names_input:
+        if len([object_name for root in roots if object_name in root[1]]) == 0:
+            # object_name is nowhere in roots
+            detached.append(object_name)
+    # recalculate roots
+    roots = [root for root in roots if len(root[1]) > 1]
+
+    ### sorting roots from shortest root to longest
+    roots_lens = []
+    for root in roots:
+        roots_lens.append(len(CombineToRaw(root[0])))
+    roots = [root for _, root in sorted(zip(roots_lens, roots), reverse=False)]
+
+    ### grouping roots (finding all pairs)
+    used_root_indexes = []
+    groups = []
+    for index, shell in enumerate(roots):
+        # add current shell to checked
+        used_root_indexes.append(index)
+        root_chunked = shell[0]
+        root_matched_chunks_indexes = []
+
+        # loop through chunked root_name
+        for chunk_index, chunk in enumerate(root_chunked):
+            root_matched_chunks_indexes.append([index])
+            # loop through all roots
+            for index_pair, shell_pair in enumerate(roots):
+                root_pair_chunked = shell_pair[0]
+                # if found root contains the chunk
+                try:
+                    root_pair_chunked.index(chunk)
+                except ValueError:
+                    continue
+                else:
+                    # found root chunk is on the same place as the root_name chunk -> found pair
+                    if root_pair_chunked.index(chunk) == chunk_index:
+                        root_matched_chunks_indexes[chunk_index].append(index_pair)
+                        used_root_indexes.append(index_pair)
+        # add intersaction of matched roots indexes to the groups[] shell
+        groups.append(Intersaction(root_matched_chunks_indexes))
+
+    ### groups checked_combine
+    # combine repetitive groups' shells
+    groups = CombineGroups(groups)
+
+    # return
+    return groups, roots, detached
+
+def BM_Table_of_Objects_NameMatching_Deconstruct(context):
+    to_remove = []
+    for index, object in enumerate(context.scene.bm_table_of_objects):
+        if any([object.nm_is_universal_container, object.nm_is_local_container]):
+            to_remove.append(index)
+        object.nm_is_detached = False
+        object.nm_master_index = -1
+        object.nm_container_name_old = ""
+        object.nm_container_name = ""
+        object.nm_this_indent = 0
+        object.nm_is_universal_container = False
+        object.nm_is_local_container = False
+        object.nm_is_expanded = True
+        object.nm_item_container = ""
+        object.nm_container_items = []
+    for index in to_remove[::-1]:
+        context.scene.bm_table_of_objects.remove(index)
+    context.scene.bm_props.active_index = 0
+
+def BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context):
+    uni_index = -1
+    local_index = -1
+    item_index = -1
+    for object in context.scene.bm_table_of_objects:
+        if object.nm_is_universal_container:
+            uni_index += 1
+            local_index = -1
+            item_index = -1
+            object.nm_master_index = uni_index
+        elif object.nm_is_local_container:
+            local_index += 1
+            item_index = -1
+            object.nm_master_index = local_index
+            object.nm_item_uni_container_master_index = uni_index
+        elif object.nm_is_detached is False:
+            item_index += 1
+            object.nm_master_index = item_index
+            object.nm_item_local_container_master_index = local_index
+            object.nm_item_uni_container_master_index = uni_index
+        else:
+            uni_index += 1
+            local_index = -1
+            item_index = -1
+            object.nm_master_index = uni_index
+
+# NameMatching Update
+def BakeJob_use_name_matching_Update(self, context):
+    if len(context.scene.bm_table_of_objects) == 0:
+        return
+    GetAllObjectNames = BM_Table_of_Objects_NameMatching_GetAllObjectNames
+    NameChunks = BM_Table_of_Objects_NameMatching_GenerateNameChunks
+    CombineToRaw = BM_Table_of_Objects_NameMatching_CombineToRaw
+    # get prefixes
+    lowpoly_prefix_raw = context.scene.bm_props.lowpoly_tag
+    highpoly_prefix_raw = context.scene.bm_props.highpoly_tag
+    cage_prefix_raw = context.scene.bm_props.cage_tag
+    decal_prefix_raw = context.scene.bm_props.decal_tag
+
+    # trash texsets
+    to_remove = []
+    for index, item in enumerate(context.scene.bm_props.texturesets_table):
+        to_remove.append(index)
+    for index in to_remove[::-1]:
+        context.scene.bm_props.texturesets_table.remove(index)
+
+    if self.use_name_matching is True:
+        # trash all highpolies and unset cages
+        for object in context.scene.bm_table_of_objects:
+            object.hl_use_cage = False
+            object.hl_use_unique_per_map = False
+            Object_hl_use_unique_per_map_Update_TrashHighpolies(object, object, context)
+            object.hl_is_lowpoly = False
+            object.hl_is_cage = False
+            object.hl_is_highpoly = False
+            object.hl_is_decal = False
+            
+        BM_Table_of_Objects_NameMatching_Deconstruct(context)
+
+        # get groups, roots, detached from construct
+        groups, roots, detached = BM_Table_of_Objects_NameMatching_Construct(context, GetAllObjectNames(context))
+
+        # trash all from bm_table_of_objects
+        to_remove = []
+        for index, item in enumerate(context.scene.bm_table_of_objects):
+            to_remove.append(index)
+        context.scene.bm_props.active_index = 0
+        for index in to_remove[::-1]:
+            context.scene.bm_table_of_objects.remove(index)
+
+        last_uni_c_index = 0
+        ### constructing Table_of_Objects items
+        for index, shell in enumerate(groups):
+            # adding universal container to the bm_table_of_objects
+            universal_container = BM_Table_of_Objects_Add(context.scene, context)
+            universal_container.nm_master_index = index
+            last_uni_c_index = index
+            # name is set to the root_name of the first object in the shell
+            universal_container.nm_container_name_old = Object_nm_container_name_GlobalUpdate_OnCreate(context, CombineToRaw(roots[shell[0]][0]))
+            universal_container.nm_container_name = universal_container.nm_container_name_old
+            universal_container.nm_this_indent = 0
+            universal_container.nm_is_universal_container = True
+            universal_container.nm_is_expanded = True
+
+            # objs[] : 0 - lowpolies, 1 - highpolies, 2 - cages
+            object_names = [[], [], []]
+            for number in shell:
+                # adding each object_name in the root objects to matched categories
+                # based on if their names contain low_ high_ cage_ prefixes
+                for object_name in roots[number][1]:
+                    try:
+                        NameChunks(object_name).index(lowpoly_prefix_raw)
+                    except ValueError:
+                        pass
+                    else:
+                        object_names[0].append(object_name)
+
+                    try:
+                        NameChunks(object_name).index(highpoly_prefix_raw)
+                    except ValueError:
+                        pass
+                    else:
+                        object_names[1].append(object_name)
+
+                    try:
+                        NameChunks(object_name).index(cage_prefix_raw)
+                    except ValueError:
+                        pass
+                    else:
+                        object_names[2].append(object_name)
+            # adding local containers to the bm_table_of_objects if needed
+            # and adding all object_name in object_names to the bm_table_of_objects
+            names_starters = ["Lowpolies", "Highpolies", "Cages"]
+            prefix_props = ["hl_is_lowpoly", "hl_is_highpoly", "hl_is_cage"]
+            container_types_props = ["nm_is_lowpoly_container", "nm_is_highpoly_container", "nm_is_cage_container"]
+            local_containers_index = -1
+            for local_index, local_names in enumerate(object_names):
+
+                if len(local_names):
+                    local_containers_index += 1
+                    local_container = BM_Table_of_Objects_Add(context.scene, context)
+                    local_container.nm_master_index = local_containers_index
+                    local_container.nm_container_name_old = names_starters[local_index]
+                    local_container.nm_container_name = names_starters[local_index]
+                    local_container.nm_this_indent = 1
+                    local_container.nm_is_local_container = True
+                    local_container.nm_item_uni_container_master_index = index
+                    local_container.nm_is_expanded = True
+                    setattr(local_container, container_types_props[local_index], True)
+
+                    for obj_index, object_name in enumerate(local_names):
+                        # do not add detached names
+                        if object_name in detached:
+                            continue
+                        new_item = BM_Table_of_Objects_Add(context.scene, context)
+                        new_item.object_name = object_name
+                        new_item.nm_master_index = obj_index
+                        new_item.nm_this_indent = 2
+                        new_item.nm_item_uni_container_master_index = index
+                        new_item.nm_item_local_container_master_index = local_index
+                        new_item.nm_is_expanded = True
+                        # setattr(new_item, prefix_props[local_index], True)
+
+            # auto configure decals, highpolies, and cages
+            universal_container.nm_uni_container_is_global = True
+
+        # adding detached as regular items
+        last_uni_c_index += 1
+        for index, object_name in enumerate(detached):
+            new_item = BM_Table_of_Objects_Add(context.scene, context)
+            new_item.object_name = object_name
+            new_item.nm_is_detached = True
+            new_item.nm_master_index = index + last_uni_c_index
+            new_item.nm_is_expanded = True
+        # update uni containers names
+        for index, object in enumerate(context.scene.bm_table_of_objects):
+            if object.nm_is_universal_container:
+                object.nm_container_name = Object_nm_container_name_GlobalUpdate_OnCreate(context, object.nm_container_name, index)
+
+    else:
+        # trash all highpolies and unset cages
+        for object in context.scene.bm_table_of_objects:
+            object.hl_use_cage = False
+            object.hl_use_unique_per_map = False
+            Object_hl_use_unique_per_map_Update_TrashHighpolies(object, object, context)
+            object.hl_is_lowpoly = False
+            object.hl_is_cage = False
+            object.hl_is_highpoly = False
+            object.hl_is_decal = False
+        BM_Table_of_Objects_NameMatching_Deconstruct(context)
+
+def Object_nm_container_name_Update(self, context):
+    # avoid setting name that already exists in the bm_table
+    if self.nm_is_local_container:
+        return
+    if self.nm_container_name != self.nm_container_name_old:
+        wrong_name = False
+        for index, object in enumerate(context.scene.bm_table_of_objects):
+            if object == self:
+                continue
+
+            if context.scene.bm_props.use_name_matching and object.nm_container_name == self.nm_container_name:
+                wrong_name = True
+                break
+            elif object.object_name == self.nm_container_name:
+                wrong_name = True
+                break
+        if wrong_name:
+            self.nm_container_name = self.nm_container_name_old
+        else:
+            self.nm_container_name_old = self.nm_container_name
+
+def Object_nm_container_name_GlobalUpdate_OnCreate(context, name, index=-1):
+    # when creating new container, make sure its name is unique
+    name_index = 0
+    for object_index, object in enumerate(context.scene.bm_table_of_objects):
+        if object_index == index:
+            continue
+        if object.object_name == name:
+            name_index += 1
+    if name_index == 0:
+        return name
+    name_index_str = str(name_index)
+    name_zeros = "0"*(3 - len(name_index_str)) if len(name_index_str) < 3 else ""
+    return "{}.{}{}".format(name, name_zeros, str(name_index_str))
+
+def Object_nm_uni_container_is_Update(self, context):
+    if self.nm_uni_container_is_global:
+        self.hl_use_cage = True
+        container_objects = []
+        for object in context.scene.bm_table_of_objects:
+            if object.nm_item_uni_container_master_index == self.nm_master_index and object.nm_is_local_container is False:
+                container_objects.append(object.object_name)
+
+                # trash highpolies and unset cage
+                object.hl_use_cage = False
+                object.hl_use_unique_per_map = False
+                Object_hl_use_unique_per_map_Update_TrashHighpolies(object, object, context)
+                object.hl_is_lowpoly = False
+                object.hl_is_cage = False
+                object.hl_is_highpoly = False
+                object.hl_is_decal = False
+                object.decal_is_decal = False
+
+        _, roots, detached = BM_Table_of_Objects_NameMatching_Construct(context, container_objects)
+        GetChunks = BM_Table_of_Objects_NameMatching_GenerateNameChunks
+        # get prefixes
+        lowpoly_prefix_raw = context.scene.bm_props.lowpoly_tag
+        highpoly_prefix_raw = context.scene.bm_props.highpoly_tag
+        cage_prefix_raw = context.scene.bm_props.cage_tag
+        decal_prefix_raw = context.scene.bm_props.decal_tag
+
+        # decal objects are likely to be dropped into detached
+        for detached_name in detached:
+            detached_sources = [index for index, object in enumerate(context.scene.bm_table_of_objects) if object.object_name == detached_name]
+            detached_object = None
+            if len(detached_sources):
+                detached_object = context.scene.bm_table_of_objects[detached_sources[0]]
+                context.scene.bm_props.active_index = detached_sources[0]
+            else:
+                continue
+
+            # set object as decal object
+            if decal_prefix_raw in GetChunks(detached_name):
+                detached_object.decal_is_decal = True
+
+        for root in roots:
+            # root[0] - root_name chunks
+            # root[1] - objects' names
+
+            # get object name, source object
+            lowpoly_object_name = root[1][0]
+            lowpoly_sources = [index for index, object in enumerate(context.scene.bm_table_of_objects) if object.object_name == lowpoly_object_name]
+            lowpoly_object = None
+            if len(lowpoly_sources):
+                lowpoly_object = context.scene.bm_table_of_objects[lowpoly_sources[0]]
+                context.scene.bm_props.active_index = lowpoly_sources[0]
+            else:
+                continue
+
+            # set object as decal object, do not set highpolies and cage
+            if decal_prefix_raw in GetChunks(lowpoly_object_name):
+                lowpoly_object.decal_is_decal = True
+                continue
+
+            highpolies = []
+            cage = "NONE"
+            marked_decals = []
+
+            # find highpolies, cage
+            for object_name in root[1]:
+                if object_name == lowpoly_object_name:
+                    continue
+                object_name_chunked = GetChunks(object_name)
+                # found highpoly
+                if highpoly_prefix_raw in object_name_chunked:
+                    highpolies.append(object_name)
+                    if decal_prefix_raw in object_name_chunked:
+                        marked_decals.append(1)
+                    else:
+                        marked_decals.append(0)
+                # found cage
+                elif cage_prefix_raw in object_name_chunked and cage == "NONE":
+                    cage = object_name
+
+            # add highpolies
+            lowpoly_object.hl_highpoly_table_active_index = 0
+            for highpoly_index, highpoly in enumerate(highpolies):
+                new_highpoly = lowpoly_object.hl_highpoly_table.add()
+                new_highpoly.holder_index = lowpoly_sources[0]
+                new_highpoly.item_index = highpoly_index + 1
+                # try:
+                Object_hl_add_highpoly_Update(new_highpoly, context)
+                new_highpoly.object_name = highpoly
+                lowpoly_object.hl_highpoly_table_active_index = len(lowpoly_object.hl_highpoly_table) - 1
+                lowpoly_object.hl_is_lowpoly = True
+                # except TypeError:
+                    # lowpoly_object.hl_highpoly_table.remove(highpoly_index)
+                    # pass
+
+                # mark highpoly source object as decal if decal tag had been found previously
+                if marked_decals[highpoly_index] == 1 and new_highpoly.highpoly_object_index != -1: 
+                    context.scene.bm_table_of_objects[new_highpoly.highpoly_object_index].hl_is_decal = True
+
+            # set cage
+            if cage != "NONE" and len(highpolies) != 0:
+                try:
+                    lowpoly_object.hl_use_cage = True
+                    lowpoly_object.hl_cage = cage
+                except TypeError:
+                    lowpoly_object.hl_use_cage = False
+
+    else:
+        data = {
+            # 'decal_is_decal' : self.decal_is_decal,
+            'decal_use_custom_camera' : self.decal_use_custom_camera,
+            'decal_custom_camera' : self.decal_custom_camera,
+            'decal_upper_coordinate' : self.decal_upper_coordinate,
+            'decal_boundary_offset' : self.decal_boundary_offset,
+            'hl_decals_use_separate_texset' : self.hl_decals_use_separate_texset,
+            'hl_decals_separate_texset_prefix' : self.hl_decals_separate_texset_prefix,
+            # 'hl_use_cage' : self.hl_use_cage,
+            'hl_cage_type' : self.hl_cage_type,
+            'hl_cage_extrusion' : self.hl_cage_extrusion,
+            'hl_max_ray_distance' : self.hl_max_ray_distance,
+            # 'hl_use_unique_per_map' : self.hl_use_unique_per_map,
+            'uv_bake_data' : self.uv_bake_data,
+            'uv_bake_target' : self.uv_bake_target,
+            'uv_type' : self.uv_type,
+            'uv_snap_islands_to_pixels' : self.uv_snap_islands_to_pixels,
+            'uv_use_auto_unwrap' : self.uv_use_auto_unwrap,
+            'uv_auto_unwrap_angle_limit' : self.uv_auto_unwrap_angle_limit,
+            'uv_auto_unwrap_island_margin' : self.uv_auto_unwrap_island_margin,
+            'uv_auto_unwrap_use_scale_to_bounds' : self.uv_auto_unwrap_use_scale_to_bounds,
+            'matgroups_batch_naming_type' : self.matgroups_batch_naming_type,
+            'uv_use_unique_per_map' : self.uv_use_unique_per_map,
+            'out_use_denoise' : self.out_use_denoise,
+            'out_use_scene_color_management' : self.out_use_scene_color_management,
+            'out_file_format' : self.out_file_format,
+            'out_exr_codec' : self.out_exr_codec,
+            'out_compression' : self.out_compression,
+            'out_res' : self.out_res,
+            'out_res_height' : self.out_res_height,
+            'out_res_width' : self.out_res_width,
+            'out_margin' : self.out_margin,
+            'out_margin_type' : self.out_margin_type,
+            'out_use_32bit' : self.out_use_32bit,
+            'out_use_alpha' : self.out_use_alpha,
+            'out_use_transbg' : self.out_use_transbg,
+            'out_udim_start_tile' : self.out_udim_start_tile,
+            'out_udim_end_tile' : self.out_udim_end_tile,
+            'out_super_sampling_aa' : self.out_super_sampling_aa,
+            'out_samples' : self.out_samples,
+            'out_use_adaptive_sampling' : self.out_use_adaptive_sampling,
+            'out_adaptive_threshold' : self.out_adaptive_threshold,
+            'out_min_samples' : self.out_min_samples,
+            'out_use_unique_per_map' : self.out_use_unique_per_map,
+            'csh_use_triangulate_lowpoly' : self.csh_use_triangulate_lowpoly,
+            'csh_use_lowpoly_recalc_normals' : self.csh_use_lowpoly_recalc_normals,
+            'csh_lowpoly_use_smooth' : self.csh_lowpoly_use_smooth,
+            'csh_lowpoly_smoothing_groups_enum' : self.csh_lowpoly_smoothing_groups_enum,
+            'csh_lowpoly_smoothing_groups_angle' : self.csh_lowpoly_smoothing_groups_angle,
+            'csh_lowpoly_smoothing_groups_name_contains' : self.csh_lowpoly_smoothing_groups_name_contains,
+            'csh_use_highpoly_recalc_normals' : self.csh_use_highpoly_recalc_normals,
+            'csh_highpoly_use_smooth' : self.csh_highpoly_use_smooth,
+            'csh_highpoly_smoothing_groups_enum' : self.csh_highpoly_smoothing_groups_enum,
+            'csh_highpoly_smoothing_groups_angle' : self.csh_highpoly_smoothing_groups_angle,
+            'csh_highpoly_smoothing_groups_name_contains' : self.csh_highpoly_smoothing_groups_name_contains,
+            'bake_save_internal' : self.bake_save_internal,
+            'bake_output_filepath' : self.bake_output_filepath,
+            'bake_create_subfolder' : self.bake_create_subfolder,
+            'bake_subfolder_name' : self.bake_subfolder_name,
+            'bake_batchname' : self.bake_batchname,
+            'bake_batchname_use_caps' : self.bake_batchname_use_caps,
+            'bake_create_material' : self.bake_create_material,
+            'bake_assign_modifiers' : self.bake_assign_modifiers,
+            'bake_device' : self.bake_device,
+            'bake_view_from' : self.bake_view_from,
+        }
+
+        # apply props values to all container objects
+        local_c_master_index = -1
+        for object_index, object in enumerate(context.scene.bm_table_of_objects):
+            if object.nm_item_uni_container_master_index == self.nm_master_index and object.nm_is_lowpoly_container:
+                local_c_master_index = object.nm_master_index
+
+            if object.nm_item_uni_container_master_index == self.nm_master_index and object.nm_is_local_container is False and object.nm_item_local_container_master_index == local_c_master_index: 
+                # maps
+                # unset all previews
+                Map_MapPreview_Unset(None, context)
+                # trash
+                to_remove = []
+                for map_index, map in enumerate(object.maps):
+                    to_remove.append(map_index)
+                for map_index in sorted(to_remove, reverse=True):
+                    BM_Table_of_Maps_Remove(object.maps, context, map_index)
+                object.maps_active_index = 0
+
+                # add
+                for map_index, map in enumerate(self.maps):
+                    new_map = object.maps.add()
+                    new_map.map_object_index = object_index
+                    object.maps_active_index = map_index
+                    map_data = {
+                        'map_index' : map_index + 1,
+                        'use_bake' : map.use_bake,
+                        'map_type' : map.map_type,
+                        'affect_by_hl' : map.affect_by_hl,
+
+                        # 'hl_use_cage' : map.hl_use_cage,
+                        'hl_cage_type' : map.hl_cage_type,
+                        'hl_cage_extrusion' : map.hl_cage_extrusion,
+                        'hl_max_ray_distance' : map.hl_max_ray_distance,
+
+                        'uv_bake_data' : map.uv_bake_data,
+                        'uv_bake_target' : map.uv_bake_target,
+                        # 'uv_active_layer' : map.uv_active_layer,
+                        'uv_type' : map.uv_type,
+                        'uv_snap_islands_to_pixels' : map.uv_snap_islands_to_pixels,
+
+                        'out_use_denoise' : map.out_use_denoise,
+                        'out_use_scene_color_management' : map.out_use_scene_color_management,
+                        'out_file_format' : map.out_file_format,
+                        'out_exr_codec' : map.out_exr_codec,
+                        'out_compression' : map.out_compression,
+                        'out_res' : map.out_res,
+                        'out_res_height' : map.out_res_height,
+                        'out_res_width' : map.out_res_width,
+                        'out_margin' : map.out_margin,
+                        'out_margin_type' : map.out_margin_type,
+                        'out_use_32bit' : map.out_use_32bit,
+                        'out_use_alpha' : map.out_use_alpha,
+                        'out_use_transbg' : map.out_use_transbg,
+                        'out_udim_start_tile' : map.out_udim_start_tile,
+                        'out_udim_end_tile' : map.out_udim_end_tile,
+                        'out_super_sampling_aa' : map.out_super_sampling_aa,
+                        'out_samples' : map.out_samples,
+                        'out_use_adaptive_sampling' : map.out_use_adaptive_sampling,
+                        'out_adaptive_threshold' : map.out_adaptive_threshold,
+                        'out_min_samples' : map.out_min_samples,
+
+                        'map_ALBEDO_prefix' : map.map_ALBEDO_prefix,
+
+                        'map_METALNESS_prefix' : map.map_METALNESS_prefix,
+
+                        'map_ROUGHNESS_prefix' : map.map_ROUGHNESS_prefix,
+
+                        'map_DIFFUSE_prefix' : map.map_DIFFUSE_prefix,
+
+                        'map_SPECULAR_prefix' : map.map_SPECULAR_prefix,
+
+                        'map_GLOSSINESS_prefix' : map.map_GLOSSINESS_prefix,
+
+                        'map_OPACITY_prefix' : map.map_OPACITY_prefix,
+
+                        'map_EMISSION_prefix' : map.map_EMISSION_prefix,
+
+                        'map_PASS_prefix' : map.map_PASS_prefix,
+                        # 'map_PASS_use_preview' : map.map_PASS_use_preview,
+                        'map_pass_type' : map.map_pass_type,
+
+                        'map_DECAL_prefix' : map.map_DECAL_prefix,
+                        # 'map_DECAL_use_preview' : map.map_DECAL_use_preview,
+                        'map_decal_pass_type' : map.map_decal_pass_type,
+                        'map_decal_height_opacity_invert' : map.map_decal_height_opacity_invert,
+                        'map_decal_normal_preset' : map.map_decal_normal_preset,
+                        'map_decal_normal_custom_preset' : map.map_decal_normal_custom_preset,
+                        'map_decal_normal_r' : map.map_decal_normal_r,
+                        'map_decal_normal_g' : map.map_decal_normal_g,
+                        'map_decal_normal_b' : map.map_decal_normal_b,
+
+                        'map_VERTEX_COLOR_LAYER_prefix' : map.map_VERTEX_COLOR_LAYER_prefix,
+                        # 'map_VERTEX_COLOR_LAYER_use_preview' : map.map_VERTEX_COLOR_LAYER_use_preview,
+                        # 'map_vertexcolor_layer' : map.map_vertexcolor_layer,
+
+                        'map_C_COMBINED_prefix' : map.map_C_COMBINED_prefix,
+
+                        'map_C_AO_prefix' : map.map_C_AO_prefix,
+
+                        'map_C_SHADOW_prefix' : map.map_C_SHADOW_prefix,
+
+                        'map_C_POSITION_prefix' : map.map_C_POSITION_prefix,
+
+                        'map_C_NORMAL_prefix' : map.map_C_NORMAL_prefix,
+
+                        'map_C_UV_prefix' : map.map_C_UV_prefix,
+
+                        'map_C_ROUGHNESS_prefix' : map.map_C_ROUGHNESS_prefix,
+
+                        'map_C_EMIT_prefix' : map.map_C_EMIT_prefix,
+
+                        'map_C_ENVIRONMENT_prefix' : map.map_C_ENVIRONMENT_prefix,
+
+                        'map_C_DIFFUSE_prefix' : map.map_C_DIFFUSE_prefix,
+
+                        'map_C_GLOSSY_prefix' : map.map_C_GLOSSY_prefix,
+
+                        'map_C_TRANSMISSION_prefix' : map.map_C_TRANSMISSION_prefix,
+
+                        'map_cycles_use_pass_direct' : map.map_cycles_use_pass_direct,
+                        'map_cycles_use_pass_indirect' : map.map_cycles_use_pass_indirect,
+                        'map_cycles_use_pass_color' : map.map_cycles_use_pass_color,
+                        'map_cycles_use_pass_diffuse' : map.map_cycles_use_pass_diffuse,
+                        'map_cycles_use_pass_glossy' : map.map_cycles_use_pass_glossy,
+                        'map_cycles_use_pass_transmission' : map.map_cycles_use_pass_transmission,
+                        'map_cycles_use_pass_ambient_occlusion' : map.map_cycles_use_pass_ambient_occlusion,
+                        'map_cycles_use_pass_emit' : map.map_cycles_use_pass_emit,
+
+                        'map_NORMAL_prefix' : map.map_NORMAL_prefix,
+                        # 'map_NORMAL_use_preview' : map.map_NORMAL_use_preview,
+                        'map_normal_data' : map.map_normal_data,
+                        'map_normal_space' : map.map_normal_space,
+                        'map_normal_preset' : map.map_normal_preset,
+                        'map_normal_custom_preset' : map.map_normal_custom_preset,
+                        'map_normal_r' : map.map_normal_r,
+                        'map_normal_g' : map.map_normal_g,
+                        'map_normal_b' : map.map_normal_b,
+
+                        'map_DISPLACEMENT_prefix' : map.map_DISPLACEMENT_prefix,
+                        # 'map_DISPLACEMENT_use_preview' : map.map_DISPLACEMENT_use_preview,
+                        'map_displacement_data' : map.map_displacement_data,
+                        'map_displacement_result' : map.map_displacement_result,
+                        'map_displacement_subdiv_levels' : map.map_displacement_subdiv_levels,
+                        'map_displacement_lowresmesh': map.map_displacement_lowresmesh,
+
+                        'map_VECTOR_DISPLACEMENT_prefix' : map.map_VECTOR_DISPLACEMENT_prefix,
+                        # 'map_VECTOR_DISPLACEMENT_use_preview' : map.map_VECTOR_DISPLACEMENT_use_preview,
+                        'map_vector_displacement_use_negative' : map.map_vector_displacement_use_negative,
+                        'map_vector_displacement_result' : map.map_vector_displacement_result,
+                        'map_vector_displacement_subdiv_levels' : map.map_vector_displacement_subdiv_levels,
+
+                        'map_POSITION_prefix' : map.map_POSITION_prefix,
+                        # 'map_POSITION_use_preview' : map.map_POSITION_use_preview,
+
+                        'map_AO_prefix' : map.map_AO_prefix,
+                        # 'map_AO_use_preview' : map.map_AO_use_preview,
+                        'map_AO_use_default' : map.map_AO_use_default,
+                        'map_ao_samples' : map.map_ao_samples,
+                        'map_ao_distance' : map.map_ao_distance,
+                        'map_ao_black_point' : map.map_ao_black_point,
+                        'map_ao_white_point' : map.map_ao_white_point,
+                        'map_ao_brightness' : map.map_ao_brightness,
+                        'map_ao_contrast' : map.map_ao_contrast,
+                        'map_ao_opacity' : map.map_ao_opacity,
+                        'map_ao_use_local' : map.map_ao_use_local,
+                        'map_ao_use_invert' : map.map_ao_use_invert,
+
+                        'map_CAVITY_prefix' : map.map_CAVITY_prefix,
+                        # 'map_CAVITY_use_preview' : map.map_CAVITY_use_preview,
+                        'map_CAVITY_use_default' : map.map_CAVITY_use_default,
+                        'map_cavity_black_point' : map.map_cavity_black_point,
+                        'map_cavity_white_point' : map.map_cavity_white_point,
+                        'map_cavity_power' : map.map_cavity_power,
+                        'map_cavity_use_invert' : map.map_cavity_use_invert,
+
+                        'map_CURVATURE_prefix' : map.map_CURVATURE_prefix,
+                        # 'map_CURVATURE_use_preview' : map.map_CURVATURE_use_preview,
+                        'map_CURVATURE_use_default' : map.map_CURVATURE_use_default,
+                        'map_curv_samples' : map.map_curv_samples,
+                        'map_curv_radius' : map.map_curv_radius,
+                        'map_curv_black_point' : map.map_curv_black_point,
+                        'map_curv_mid_point' : map.map_curv_mid_point,
+                        'map_curv_white_point' : map.map_curv_white_point,
+                        'map_curv_body_gamma' : map.map_curv_body_gamma,
+
+                        'map_THICKNESS_prefix' : map.map_THICKNESS_prefix,
+                        # 'map_THICKNESS_use_preview' : map.map_THICKNESS_use_preview,
+                        'map_THICKNESS_use_default' : map.map_THICKNESS_use_default,
+                        'map_thick_samples' : map.map_thick_samples,
+                        'map_thick_distance' : map.map_thick_distance,
+                        'map_thick_black_point' : map.map_thick_black_point,
+                        'map_thick_white_point' : map.map_thick_white_point,
+                        'map_thick_brightness' : map.map_thick_brightness,
+                        'map_thick_contrast' : map.map_thick_contrast,
+                        'map_thick_use_invert' : map.map_thick_use_invert,
+
+                        'map_ID_prefix' : map.map_ID_prefix,
+                        # 'map_ID_use_preview' : map.map_ID_use_preview,
+                        'map_matid_data' : map.map_matid_data,
+                        'map_matid_vertex_groups_name_contains' : map.map_matid_vertex_groups_name_contains,
+                        'map_matid_algorithm' : map.map_matid_algorithm,
+                        'map_matid_jilter' : map.map_matid_jilter,
+
+                        'map_MASK_prefix' : map.map_MASK_prefix,
+                        # 'map_MASK_use_preview' : map.map_MASK_use_preview,
+                        'map_mask_data' : map.map_mask_data,
+                        'map_mask_vertex_groups_name_contains' : map.map_mask_vertex_groups_name_contains,
+                        'map_mask_materials_name_contains' : map.map_mask_materials_name_contains,
+                        'map_mask_color1' : map.map_mask_color1,
+                        'map_mask_color2' : map.map_mask_color2,
+                        'map_mask_use_invert' : map.map_mask_use_invert,
+
+                        'map_XYZMASK_prefix' : map.map_XYZMASK_prefix,
+                        # 'map_XYZMASK_use_preview' : map.map_XYZMASK_use_preview,
+                        'map_XYZMASK_use_default' : map.map_XYZMASK_use_default,
+                        'map_xyzmask_use_x' : map.map_xyzmask_use_x,
+                        'map_xyzmask_use_y' : map.map_xyzmask_use_y,
+                        'map_xyzmask_use_z' : map.map_xyzmask_use_z,
+                        'map_xyzmask_coverage' : map.map_xyzmask_coverage,
+                        'map_xyzmask_saturation' : map.map_xyzmask_saturation,
+                        'map_xyzmask_opacity' : map.map_xyzmask_opacity,
+                        'map_xyzmask_use_invert' : map.map_xyzmask_use_invert,
+
+                        'map_GRADIENT_prefix' : map.map_GRADIENT_prefix,
+                        # 'map_GRADIENT_use_preview' : map.map_GRADIENT_use_preview,
+                        'map_GRADIENT_use_default' : map.map_GRADIENT_use_default,
+                        'map_gmask_type' : map.map_gmask_type,
+                        'map_gmask_location_x' : map.map_gmask_location_x,
+                        'map_gmask_location_y' : map.map_gmask_location_y,
+                        'map_gmask_location_z' : map.map_gmask_location_z,
+                        'map_gmask_rotation_x' : map.map_gmask_rotation_x,
+                        'map_gmask_rotation_y' : map.map_gmask_rotation_y,
+                        'map_gmask_rotation_z' : map.map_gmask_rotation_z,
+                        'map_gmask_scale_x' : map.map_gmask_scale_x,
+                        'map_gmask_scale_y' : map.map_gmask_scale_y,
+                        'map_gmask_scale_z' : map.map_gmask_scale_z,
+                        'map_gmask_coverage' : map.map_gmask_coverage,
+                        'map_gmask_contrast' : map.map_gmask_contrast,
+                        'map_gmask_saturation' : map.map_gmask_saturation,
+                        'map_gmask_opacity' : map.map_gmask_opacity,
+                        'map_gmask_use_invert' : map.map_gmask_use_invert,
+
+                        'map_EDGE_prefix' : map.map_EDGE_prefix,
+                        # 'map_EDGE_use_preview' : map.map_EDGE_use_preview,
+                        'map_EDGE_use_default' : map.map_EDGE_use_default,
+                        'map_edgemask_samples' : map.map_edgemask_samples,
+                        'map_edgemask_radius' : map.map_edgemask_radius,
+                        'map_edgemask_edge_contrast' : map.map_edgemask_edge_contrast,
+                        'map_edgemask_body_contrast' : map.map_edgemask_body_contrast,
+                        'map_edgemask_use_invert' : map.map_edgemask_use_invert,
+
+                        'map_WIREFRAME_prefix' : map.map_WIREFRAME_prefix,
+                        # 'map_WIREFRAME_use_preview' : map.map_WIREFRAME_use_preview,
+                        'map_wireframemask_line_thickness' : map.map_wireframemask_line_thickness,
+                        'map_wireframemask_use_invert' : map.map_wireframemask_use_invert,
+                    }
+
+                    # set
+                    for map_key in map_data:
+                        setattr(new_map, map_key, map_data[map_key])
+                
+                # channel packs
+                # trash
+                to_remove = []
+                for channelpack_index, _ in enumerate(object.chnlp_channelpacking_table):
+                    to_remove.append(channelpack_index)
+                for channelpack_index in sorted(to_remove, reverse=True):
+                    object.chnlp_channelpacking_table.remove(channelpack_index)
+                object.chnlp_channelpacking_table_active_index = 0
+
+                # add 
+                for channelpack_index, channelpack in enumerate(self.chnlp_channelpacking_table):
+                    object.chnlp_channelpacking_table_active_index = channelpack_index
+                    channelpack_data = {
+                        'channelpack_name' : channelpack.channelpack_name,
+                        'channelpack_index' : channelpack_index + 1,
+                        'channelpack_type' : channelpack.channelpack_type,
+
+                        'R1G1B_use_R' : channelpack.R1G1B_use_R,
+                        'R1G1B_map_R' : channelpack.R1G1B_map_R,
+                        'R1G1B_use_G' : channelpack.R1G1B_use_G,
+                        'R1G1B_map_G' : channelpack.R1G1B_map_G,
+                        'R1G1B_use_B' : channelpack.R1G1B_use_B,
+                        'R1G1B_map_B' : channelpack.R1G1B_map_B,
+
+                        'RGB1A_use_RGB' : channelpack.RGB1A_use_RGB,
+                        'RGB1A_map_RGB' : channelpack.RGB1A_map_RGB,
+                        'RGB1A_use_A' : channelpack.RGB1A_use_A,
+                        'RGB1A_map_A' : channelpack.RGB1A_map_A,
+
+                        'R1G1B1A_use_R' : channelpack.R1G1B1A_use_R,
+                        'R1G1B1A_map_R' : channelpack.R1G1B1A_map_R,
+                        'R1G1B1A_use_G' : channelpack.R1G1B1A_use_G,
+                        'R1G1B1A_map_G' : channelpack.R1G1B1A_map_G,
+                        'R1G1B1A_use_B' : channelpack.R1G1B1A_use_B,
+                        'R1G1B1A_map_B' : channelpack.R1G1B1A_map_B,
+                        'R1G1B1A_use_A' : channelpack.R1G1B1A_use_A,
+                        'R1G1B1A_map_A' : channelpack.R1G1B1A_map_A,
+                    }
+
+                    # set
+                    new_channelpack = object.chnlp_channelpacking_table.add()
+                    new_channelpack.channelpack_object_index = object_index
+                    for chnlp_key in channelpack_data:
+                        setattr(new_channelpack, chnlp_key, channelpack_data[chnlp_key])
+
+                # object
+                # set
+                for key in data:
+                    setattr(object, key, data[key])
+
+###############################################################
+### Texture Sets Funcs ###
+###############################################################
+def BM_TEXSET_OBJECT_PROPS_syncer_Items(self, context):
+    items = []
+    for texset_item in self.textureset_table_of_objects:
+        source_object = context.scene.bm_table_of_objects[texset_item.source_object_index]
+        if not source_object.nm_is_universal_container:
+            items.append((str(texset_item.source_object_index), texset_item.object_name_include, "Object in the current texset"))
+        elif source_object.nm_uni_container_is_global:
+            items.append((str(texset_item.source_object_index), texset_item.object_name_include, "Global Container in the current texset"))
+        else:
+            items += [(str(subitem.source_object_index), subitem.object_name, "Subobject in the current texset") for subitem in texset_item.global_object_name_subitems]
+    return items
+
+def BM_TEXSET_OBJECT_PROPS_syncer_Sync(self, context):
+    if self.syncer_use is False:
+        return
+    dictator_object_index = int(self.syncer_object_name)
+    dictator_object = context.scene.bm_table_of_objects[dictator_object_index]
+    sync_objects = []
+    for texset_item in self.textureset_table_of_objects:
+        if texset_item.source_object_index == dictator_object_index:
+            continue
+        source_object = context.scene.bm_table_of_objects[texset_item.source_object_index]
+        if not source_object.nm_is_universal_container:
+            sync_objects.append([texset_item.source_object_index, source_object])
+        elif source_object.nm_uni_container_is_global:
+            sync_objects.append([texset_item.source_object_index, source_object])
+        else:
+            sync_objects += [[subitem.source_object_index, context.scene.bm_table_of_objects[subitem.source_object_index]] for subitem in texset_item.global_object_name_subitems if subitem.global_source_object_index != dictator_object_index]
+
+    props_object_format = {
+        'out_use_denoise',
+        'out_use_scene_color_management',
+        'out_file_format',
+        'out_exr_codec',
+        'out_compression',
+        'out_res',
+        'out_res_height',
+        'out_res_width',
+        'out_margin',
+        'out_margin_type',
+        'out_use_32bit',
+        'out_use_alpha',
+        'out_use_transbg',
+        'out_udim_start_tile',
+        'out_udim_end_tile',
+        'out_super_sampling_aa',
+        'out_samples',
+        'out_use_adaptive_sampling',
+        'out_adaptive_threshold',
+        'out_min_samples',
+        'out_use_unique_per_map',
+    }
+    props_object_bake = {
+        'bake_save_internal',
+        'bake_output_filepath',
+        'bake_create_subfolder',
+        'bake_subfolder_name',
+        'bake_batchname',
+        'bake_batchname_use_caps',
+        'bake_create_material',
+        'bake_assign_modifiers',
+        'bake_device',
+        'bake_view_from',
+    }
+    props_channelpack = {
+        'channelpack_type',
+        'R1G1B_use_R',
+        'R1G1B_map_R',
+        'R1G1B_use_G',
+        'R1G1B_map_G',
+        'R1G1B_use_B',
+        'R1G1B_map_B',
+        'RGB1A_use_RGB',
+        'RGB1A_map_RGB',
+        'RGB1A_use_A',
+        'RGB1A_map_A',
+        'R1G1B1A_use_R',
+        'R1G1B1A_map_R',
+        'R1G1B1A_use_G',
+        'R1G1B1A_map_G',
+        'R1G1B1A_use_B',
+        'R1G1B1A_map_B',
+        'R1G1B1A_use_A',
+        'R1G1B1A_map_A',
+    }
+    props_map = {
+        "use_bake",
+        "map_type",
+        "affect_by_hl",
+
+        'out_use_denoise',
+        'out_use_scene_color_management',
+        'out_file_format',
+        'out_exr_codec',
+        'out_compression',
+        'out_res',
+        'out_res_height',
+        'out_res_width',
+        'out_margin',
+        'out_margin_type',
+        'out_use_32bit',
+        'out_use_alpha',
+        'out_use_transbg',
+        'out_udim_start_tile',
+        'out_udim_end_tile',
+        'out_super_sampling_aa',
+        'out_samples',
+        'out_use_adaptive_sampling',
+        'out_adaptive_threshold',
+        'out_min_samples',
+
+        "map_ALBEDO_prefix",
+
+        "map_METALNESS_prefix",
+
+        "map_ROUGHNESS_prefix",
+
+        "map_DIFFUSE_prefix",
+
+        "map_SPECULAR_prefix",
+
+        "map_GLOSSINESS_prefix",
+
+        "map_OPACITY_prefix",
+
+        "map_EMISSION_prefix",
+
+        "map_PASS_prefix",
+        # "map_PASS_use_preview",
+        "map_pass_type",
+
+        "map_DECAL_prefix",
+        # "map_DECAL_use_preview",
+        "map_decal_pass_type",
+        "map_decal_height_opacity_invert",
+        "map_decal_normal_preset",
+        "map_decal_normal_custom_preset",
+        "map_decal_normal_r",
+        "map_decal_normal_g",
+        "map_decal_normal_b",
+
+        "map_VERTEX_COLOR_LAYER_prefix",
+        # "map_VERTEX_COLOR_LAYER_use_preview",
+        # "map_vertexcolor_layer",
+
+        "map_C_COMBINED_prefix",
+
+        "map_C_AO_prefix",
+
+        "map_C_SHADOW_prefix",
+
+        "map_C_POSITION_prefix",
+
+        "map_C_NORMAL_prefix",
+
+        "map_C_UV_prefix",
+
+        "map_C_ROUGHNESS_prefix",
+
+        "map_C_EMIT_prefix",
+
+        "map_C_ENVIRONMENT_prefix",
+
+        "map_C_DIFFUSE_prefix",
+
+        "map_C_GLOSSY_prefix",
+
+        "map_C_TRANSMISSION_prefix",
+
+        "map_cycles_use_pass_direct",
+        "map_cycles_use_pass_indirect",
+        "map_cycles_use_pass_color",
+        "map_cycles_use_pass_diffuse",
+        "map_cycles_use_pass_glossy",
+        "map_cycles_use_pass_transmission",
+        "map_cycles_use_pass_ambient_occlusion",
+        "map_cycles_use_pass_emit",
+
+        "map_NORMAL_prefix",
+        # "map_NORMAL_use_preview",
+        "map_normal_data",
+        "map_normal_space",
+        "map_normal_preset",
+        "map_normal_custom_preset",
+        "map_normal_r",
+        "map_normal_g",
+        "map_normal_b",
+
+        "map_DISPLACEMENT_prefix",
+        # "map_DISPLACEMENT_use_preview",
+        "map_displacement_data",
+        "map_displacement_result",
+        "map_displacement_subdiv_levels",
+        "map_displacement_lowresmesh",
+
+        "map_VECTOR_DISPLACEMENT_prefix",
+        # "map_VECTOR_DISPLACEMENT_use_preview",
+        "map_vector_displacement_use_negative",
+        "map_vector_displacement_result",
+        "map_vector_displacement_subdiv_levels",
+
+        "map_POSITION_prefix",
+        # "map_POSITION_use_preview",
+
+        "map_AO_prefix",
+        # "map_AO_use_preview",
+        "map_AO_use_default",
+        "map_ao_samples",
+        "map_ao_distance",
+        "map_ao_black_point",
+        "map_ao_white_point",
+        "map_ao_brightness",
+        "map_ao_contrast",
+        "map_ao_opacity",
+        "map_ao_use_local",
+        "map_ao_use_invert",
+
+        "map_CAVITY_prefix",
+        # "map_CAVITY_use_preview",
+        "map_CAVITY_use_default",
+        "map_cavity_black_point",
+        "map_cavity_white_point",
+        "map_cavity_power",
+        "map_cavity_use_invert",
+
+        "map_CURVATURE_prefix",
+        # "map_CURVATURE_use_preview",
+        "map_CURVATURE_use_default",
+        "map_curv_samples",
+        "map_curv_radius",
+        "map_curv_black_point",
+        "map_curv_mid_point",
+        "map_curv_white_point",
+        "map_curv_body_gamma",
+
+        "map_THICKNESS_prefix",
+        # "map_THICKNESS_use_preview",
+        "map_THICKNESS_use_default",
+        "map_thick_samples",
+        "map_thick_distance",
+        "map_thick_black_point",
+        "map_thick_white_point",
+        "map_thick_brightness",
+        "map_thick_contrast",
+        "map_thick_use_invert",
+
+        "map_ID_prefix",
+        # "map_ID_use_preview",
+        "map_matid_data",
+        "map_matid_vertex_groups_name_contains",
+        "map_matid_algorithm",
+        "map_matid_jilter",
+
+        "map_MASK_prefix",
+        # "map_MASK_use_preview",
+        "map_mask_data",
+        "map_mask_vertex_groups_name_contains",
+        "map_mask_materials_name_contains",
+        "map_mask_color1",
+        "map_mask_color2",
+        "map_mask_use_invert",
+
+        "map_XYZMASK_prefix",
+        # "map_XYZMASK_use_preview",
+        "map_XYZMASK_use_default",
+        "map_xyzmask_use_x",
+        "map_xyzmask_use_y",
+        "map_xyzmask_use_z",
+        "map_xyzmask_coverage",
+        "map_xyzmask_saturation",
+        "map_xyzmask_opacity",
+        "map_xyzmask_use_invert",
+
+        "map_GRADIENT_prefix",
+        # "map_GRADIENT_use_preview",
+        "map_GRADIENT_use_default",
+        "map_gmask_type",
+        "map_gmask_location_x",
+        "map_gmask_location_y",
+        "map_gmask_location_z",
+        "map_gmask_rotation_x",
+        "map_gmask_rotation_y",
+        "map_gmask_rotation_z",
+        "map_gmask_scale_x",
+        "map_gmask_scale_y",
+        "map_gmask_scale_z",
+        "map_gmask_coverage",
+        "map_gmask_contrast",
+        "map_gmask_saturation",
+        "map_gmask_opacity",
+        "map_gmask_use_invert",
+
+        "map_EDGE_prefix",
+        # "map_EDGE_use_preview",
+        "map_EDGE_use_default",
+        "map_edgemask_samples",
+        "map_edgemask_radius",
+        "map_edgemask_edge_contrast",
+        "map_edgemask_body_contrast",
+        "map_edgemask_use_invert",
+
+        "map_WIREFRAME_prefix",
+        # "map_WIREFRAME_use_preview",
+        "map_wireframemask_line_thickness",
+        "map_wireframemask_use_invert",
+    }
+
+    def sync(from_object, to_object, property_name: str):
+        setattr(to_object, property_name, getattr(from_object, property_name))
+
+    active_index_old = context.scene.bm_props.active_index
+    for object_index, object in sync_objects:
+        context.scene.bm_props.active_index = object_index
+        bpy.ops.bakemaster.item_channelpack_table_trash()
+        bpy.ops.bakemaster.item_maps_table(control='TRASH')
+
+        for dictator_map in dictator_object.maps:
+            bpy.ops.bakemaster.item_maps_table(control='ADD')
+            map = object.maps[object.maps_active_index]
+            [sync(dictator_map, map, prop_name) for prop_name in props_map]
+
+        for dictator_chnlp in dictator_object.chnlp_channelpacking_table:
+            bpy.ops.bakemaster.item_channelpack_table_add()
+            chnlp = object.chnlp_channelpacking_table[object.chnlp_channelpacking_table_active_index]
+            [sync(dictator_chnlp, chnlp, prop_name) for prop_name in props_channelpack]
+
+        [sync(dictator_object, object, prop_name) for prop_name in props_object_format]
+        if not self.syncer_use_dictate_bake_output:
+            continue
+        [sync(dictator_object, object, prop_name) for prop_name in props_object_bake]
+    context.scene.bm_props.active_index = active_index_old
+
+def TexSet_Object_name_Items(self, context):
+    new_items = []
+
+    for index, object in enumerate(context.scene.bm_table_of_objects):
+        # do not use objects that are already somewhere in a texset but include chosen
+        if object.is_included_in_texset and self.source_object_index != index:
+            continue
+        # no name matching
+        if context.scene.bm_props.use_name_matching is False:
+            new_items.append((object.object_name, object.object_name, "Object"))
+            continue
+        # with name matching
+        if object.nm_is_detached:
+            new_items.append((object.object_name, object.object_name, "Detached Object"))
+        elif object.nm_is_universal_container:
+            new_items.append((object.nm_container_name, object.nm_container_name, "Universal Container"))
+
+    # if len(new_items) == 0:
+    #     new_items.append(('NONE', "None", "All objects are added to Texture Sets"))
+    return new_items
+
+def TexSet_Object_name_Update(self, context):
+    # order of props assign is important! self.object_name's items get called
+    if self.object_name != self.object_name_old:
+        context.scene.bm_table_of_objects[self.source_object_index].is_included_in_texset = False
+        self.object_name_old = self.object_name
+
+        for index, object in enumerate(context.scene.bm_table_of_objects):
+            if context.scene.bm_props.use_name_matching and object.nm_container_name == self.object_name:
+                self.source_object_index = index
+                break
+            elif object.object_name == self.object_name:
+                self.source_object_index = index
+                break
+        self.object_name_include = self.object_name
+        context.scene.bm_table_of_objects[self.source_object_index].is_included_in_texset = True
+
+        # recreate subitems
+        TexSet_Object_name_RecreateSubitems(context, self)
+        TexSet_Object_name_UpdateOnMoveOT(context)
+
+def BM_TEXSET_OBJECT_PROPS_source_object_index_GetNew(context, self):
+    for index, object in enumerate(context.scene.bm_table_of_objects):
+        if context.scene.bm_props.use_name_matching and object.nm_container_name == self.object_name_include:
+            return index
+            break
+        elif object.object_name == self.object_name_include:
+            return index
+            break
+    return -1
+
+def TexSet_Object_name_UpdateOnRemoveOT(context, removed_index):
+    # remove object from texset
+    texsets = context.scene.bm_props.texturesets_table
+    for texset in texsets:
+
+        items_to_remove = []
+        for texset_item_index, texset_item in enumerate(texset.textureset_table_of_objects):
+            if texset_item.source_object_index == removed_index:
+                items_to_remove.append(texset_item_index)
+                break
+
+            found_removed = False
+            for texset_subitem in texset_item.object_name_subitems:
+                if texset_subitem.source_object_index == removed_index:
+                    TexSet_Object_name_RecreateSubitems(context, texset_item)
+                    found_removed = True
+                    break
+
+            if found_removed:
+                break
+        for texset_item in texset.textureset_table_of_objects:
+            new_index = BM_TEXSET_OBJECT_PROPS_source_object_index_GetNew(context, texset_item)
+            texset_item.source_object_index = new_index
+            if len(items_to_remove) == 0:
+                continue
+            if texset_item.object_index > items_to_remove[0]:
+                texset_item.object_index -= 1
+        if len(items_to_remove) == 0:
+            continue
+        texset.textureset_table_of_objects.remove(items_to_remove[0])
+        len_of_texset_items = len(texset.textureset_table_of_objects)
+        if texset.textureset_table_of_objects_active_index >= len_of_texset_items:
+            texset.textureset_table_of_objects_active_index = len_of_texset_items - 1
+
+def TexSet_Object_name_UpdateOnMoveOT(context, moved_from_index=-2, moved_to_index=-2):
+    # update texsets' objects' source_object_index property
+    texsets = context.scene.bm_props.texturesets_table
+    for texset in texsets:
+        for texset_item in texset.textureset_table_of_objects:
+            try:
+                if texset_item.source_object_index == moved_from_index:
+                    texset_item.source_object_index = moved_to_index
+                elif texset_item.source_object_index == moved_to_index:
+                    texset_item.source_object_index = moved_from_index
+                texset_item.object_name_old = texset_item.object_name_include
+                texset_item.object_name = texset_item.object_name_include
+            except (ValueError, TypeError):
+                pass
+
+def TexSet_Object_name_RecreateSubitems(context, texset_item):
+    # recreate subitems
+    item = context.scene.bm_table_of_objects[texset_item.source_object_index]
+    if item.nm_is_universal_container and context.scene.bm_props.use_name_matching:
+        # trash
+        to_remove = []
+        for index, subitem in enumerate(texset_item.object_name_subitems):
+            to_remove.append(index)
+        for index in sorted(to_remove, reverse=True):
+            texset_item.object_name_subitems.remove(index)
+        # add
+        local_c_master_index = -1
+        for index, subitem in enumerate(context.scene.bm_table_of_objects):
+            if subitem.nm_item_uni_container_master_index == item.nm_master_index and subitem.nm_is_lowpoly_container:
+                local_c_master_index = subitem.nm_master_index
+
+            if subitem.nm_item_uni_container_master_index == item.nm_master_index and subitem.nm_item_local_container_master_index == local_c_master_index:
+                new_subitem = texset_item.object_name_subitems.add()
+                new_subitem.object_name = subitem.object_name
+                new_subitem.object_index = len(texset_item.object_name_subitems)
+                new_subitem.source_object_index = index
+
+###############################################################
+### Channel Packs Funcs ###
+###############################################################
+def ChannelPack_index_UpdateOnMoveOT(context, moved_from_index, moved_to_index):
+    # update objects' channel packs' channelpack_object_index property
+    for channelpack in context.scene.bm_table_of_objects[moved_from_index].chnlp_channelpacking_table:
+        channelpack.channelpack_object_index = moved_to_index
+    for channelpack in context.scene.bm_table_of_objects[moved_to_index].chnlp_channelpacking_table:
+        channelpack.channelpack_object_index = moved_from_index
+
+def ChannelPack_index_UpdateOnRemoveOT(context, index_remove):
+    for object in context.scene.bm_table_of_objects:
+        for channelpack in object.chnlp_channelpacking_table:
+            if channelpack.channelpack_object_index <= index_remove:
+                continue
+            channelpack.channelpack_object_index -= 1
+
+def BM_CHANNELPACK_PROPS_map_Items_GetAllChosen(self):
+    chosen_data = {
+        'R1G1B' : ['_map_R', '_map_G', '_map_B'],
+        'RGB1A' : ['_map_RGB', '_map_A'],
+        'R1G1B1A' : ['_map_R', '_map_G', '_map_B', '_map_A'],
+    }
+    chosen = []
+    for prop in chosen_data[self.channelpack_type]:
+        index_value = getattr(self, '{}{}_index'.format(self.channelpack_type, prop))
+        if index_value != -1:
+            chosen.append(index_value)
+
+    return chosen
+
+def BM_CHANNELPACK_PROPS_map_Items_Get(self, context, prop_channel_index):
+    new_items = [('NONE', "None", "Set None to identify usage of no map for the current channel or no maps available to set")]
+    chosen = BM_CHANNELPACK_PROPS_map_Items_GetAllChosen(self)
+    # need the actual object
+    object = context.scene.bm_table_of_objects[self.channelpack_object_index]
+    maps_names = {
+        'ALBEDO' : "AlbedoM",
+        'METALNESS' : "Metalness",
+        'ROUGHNESS' : "Roughness",
+        'DIFFUSE' : "AlbedoS",
+        'SPECULAR' : "Specular",
+        'GLOSSINESS' : "Glossiness",
+        'OPACITY' : "Opacity",
+        'EMISSION' : "Emission/Lightmap",
+
+        'NORMAL' : "Normal",
+        'DISPLACEMENT' : "Displacement",
+        'VECTOR_DISPLACEMENT' : "Vector Displacement",
+        'POSITION' : "Position",
+        'DECAL' : "Decal Pass",
+        'AO' : "AO",
+        'CAVITY' : "Cavity",
+        'CURVATURE' : "Curvature",
+        'THICKNESS' : "Thickness",
+        'ID' : "Material ID",
+        'MASK' : "Mask",
+        'XYZMASK' : "XYZ Mask",
+        'GRADIENT' : "Gradient Mask",
+        'EDGE' : "Edge Mask",
+        'WIREFRAME' : "Wireframe Mask",
+
+        'PASS' : "BSDF Pass",
+        'VERTEX_COLOR_LAYER' : "VertexColor Layer",
+        'C_COMBINED' : "Combined",
+        'C_AO' : "Ambient Occlusion",
+        'C_SHADOW' : "Shadow",
+        'C_POSITION' : "Position",
+        'C_NORMAL' : "Normal",
+        'C_UV' : "UV",
+        'C_ROUGHNESS' : "Roughness",
+        'C_EMIT' : "Emit",
+        'C_ENVIRONMENT' : "Environment",
+        'C_DIFFUSE' : "Diffuse",
+        'C_GLOSSY' : "Glossy",
+        'C_TRANSMISSION' : "Transmission",
+    }
+    for index, map in enumerate(object.maps):
+        if map.map_index in chosen and map.map_index != prop_channel_index:
+            continue
+        name = '{} {}'.format(map.map_index, maps_names[map.map_type])
+        new_items.append((str(map.map_index), name, "Choose map from the Object's Table of Maps for the current channel"))
+    return new_items
+
+def BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, prop_name):
+    try:
+        setattr(self, prop_name.format("_index"), int(getattr(self, prop_name.format(""))))
+    except ValueError:
+        setattr(self, prop_name.format("_index"), -1)
+
+def BM_CHANNELPACK_PROPS_map_UpdateNames(self):
+    chosen_data = {
+        'R1G1B' : ['_map_R', '_map_G', '_map_B'],
+        'RGB1A' : ['_map_RGB', '_map_A'],
+        'R1G1B1A' : ['_map_R', '_map_G', '_map_B', '_map_A'],
+    }
+    for prop in chosen_data[self.channelpack_type]:
+        index_value_prop = '{}{}_index'.format(self.channelpack_type, prop)
+        map_value_prop = '{}{}'.format(self.channelpack_type, prop)
+        index_value = str(getattr(self, index_value_prop))
+        if index_value != "-1" and getattr(self, map_value_prop) != index_value:
+            setattr(self, map_value_prop, index_value)
+        elif index_value == "-1" and getattr(self, map_value_prop) != 'NONE':
+            setattr(self, map_value_prop, 'NONE')
+
+# Items
+def BM_CHANNELPACK_PROPS_map_Items_R1G1B_R(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B_map_R_index)
+def BM_CHANNELPACK_PROPS_map_Items_R1G1B_G(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B_map_G_index)
+def BM_CHANNELPACK_PROPS_map_Items_R1G1B_B(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B_map_B_index)
+
+def BM_CHANNELPACK_PROPS_map_Items_RGB1A_RGB(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.RGB1A_map_RGB_index)
+def BM_CHANNELPACK_PROPS_map_Items_RGB1A_A(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.RGB1A_map_A_index)
+
+def BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_R(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B1A_map_R_index)
+def BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_G(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B1A_map_G_index)
+def BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_B(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B1A_map_B_index)
+def BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_A(self, context):
+    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B1A_map_A_index)
+
+# Updates
+def BM_CHANNELPACK_PROPS_map_Update_R1G1B_R(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B_map_R{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
+def BM_CHANNELPACK_PROPS_map_Update_R1G1B_G(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B_map_G{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
+def BM_CHANNELPACK_PROPS_map_Update_R1G1B_B(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B_map_B{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
+
+def BM_CHANNELPACK_PROPS_map_Update_RGB1A_RGB(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'RGB1A_map_RGB{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
+def BM_CHANNELPACK_PROPS_map_Update_RGB1A_A(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'RGB1A_map_A{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
+
+def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_R(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_R{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
+def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_G(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_G{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
+def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_B(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_B{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
+def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_A(self, context):
+    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_A{}')
+    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
+
+###############################################################
+### Batch Naming Funcs ###
+###############################################################
+def Object_bake_batchname_GetPreview(self, context, object=None, map=None, active_index=None, decal_texset_tag=""):
+    # funcs for data get
+    def get_objectname(container):
+        if not any([container.nm_is_universal_container, container.nm_is_local_container]):
+            return container.object_name
+        for obj in context.scene.bm_table_of_objects:
+            if obj.nm_item_uni_container_master_index == container.nm_master_index and obj.nm_is_local_container is False:
+                return obj.object_name
+    
+    def get_containername(container):
+        if context.scene.bm_props.use_name_matching is False:
+            return None
+        if container.nm_is_universal_container:
+            return container.nm_container_name
+        for obj in context.scene.bm_table_of_objects:
+            if container.nm_item_uni_container_master_index == obj.nm_master_index and obj.nm_is_universal_container:
+                return obj.nm_container_name
+    
+    def get_packname(container, map):
+        for chnlpack in container.chnlp_channelpacking_table:
+            chosen_data = {
+                'R1G1B' : ['_map_R', '_map_G', '_map_B'],
+                'RGB1A' : ['_map_RGB', '_map_A'],
+                'R1G1B1A' : ['_map_R', '_map_G', '_map_B', '_map_A'],
+            }
+            chosen_maps = []
+            for prop in chosen_data[chnlpack.channelpack_type]:
+                chosen_maps.append(getattr(chnlpack, '{}{}'.format(chnlpack.channelpack_type, prop)))
+            if str(map.map_index) in chosen_maps:
+                return chnlpack.channelpack_name
+        return None
+    
+    def get_texsetname(container):
+        if not any([container.nm_is_universal_container, container.nm_is_local_container]):
+            container_name = container.object_name
+        else:
+            container_name = container.nm_container_name
+        
+        for texset in context.scene.bm_props.texturesets_table:
+            for obj in texset.textureset_table_of_objects:
+                if obj.object_name == container_name:
+                    if texset.textureset_naming == 'TEXSET_INDEX':
+                        return "TextureSet%d" % texset.textureset_index
+                    elif texset.textureset_naming == 'TEXSET_NAME':
+                        return texset.textureset_name
+                    else:
+                        return_name = ""
+                        for obj1 in texset.textureset_table_of_objects:
+                            if context.scene.bm_table_of_objects[obj1.source_object_index].nm_is_universal_container:
+                                for subobj in obj1.object_name_subitems:
+                                    if subobj.object_include_in_texset:
+                                        return_name += "%s_" % subobj.object_name
+                            else:
+                                return_name += "%s_" % obj1.object_name
+                        return return_name[:-1]
+                for subobject in obj.object_name_subitems:
+                    if subobject.object_name == container_name:
+                        if texset.textureset_naming == 'TEXSET_INDEX':
+                            return "TextureSet%d" % texset.textureset_index
+                        elif texset.textureset_naming == 'TEXSET_NAME':
+                            return texset.textureset_name
+                        else:
+                            return_name = ""
+                            for obj1 in texset.textureset_table_of_objects:
+                                if context.scene.bm_table_of_objects[obj1.source_object_index].nm_is_universal_container:
+                                    for subobj in obj1.object_name_subitems:
+                                        if subobj.object_include_in_texset:
+                                            return_name += "%s_" % subobj.object_name
+                                else:
+                                    return_name += "%s_" % obj1.object_name
+                            return return_name[:-1]
+            return None
+
+    def get_mapres(map_pass):
+        if map_pass.out_res == 'CUSTOM':
+            return str(map_pass.out_res_height) + "x" + str(map_pass.out_res_width)
+        else:
+            return map_pass.out_res
+    
+    def get_mapnormal(map_pass):
+        if map.map_type != 'NORMAL':
+            return None
+        if map.map_normal_preset != 'CUSTOM':
+            return map.map_normal_preset
+        else:
+            return map.map_normal_custom_preset
+
+    def get_matgroup(container):
+        return "#"
+    
+    if object is None:
+        object = BM_Object_Get(self, context)[0]
+        if len(object.maps) == 0:
+            # self.bake_batchname_preview = "*Object has no Maps*"
+            return "*Object has no Maps*"
+        map = object.maps[object.maps_active_index]
+        active_index = context.scene.bm_props.active_index
+
+    out_container = object
+    if object.out_use_unique_per_map:
+        out_container = map
+    uv_container = object
+    if object.out_use_unique_per_map:
+        uv_container = map
+     
+    gen_keywords_values = {
+        "$objectindex" : active_index,
+        "$objectname" : get_objectname(object),
+        "$containername" : get_containername(self),
+        "$packname" : get_packname(self, map),
+        "$texsetname" : get_texsetname(self),
+        "$mapindex" : map.map_index,
+        "$mapname" : getattr(map, 'map_{}_prefix'.format(map.map_type)),
+        "$mapres" : get_mapres(out_container),
+        "$mapbit" : "32bit" if out_container.out_use_32bit else "8bit",
+        "$maptrans" : "transbg" if out_container.out_use_transbg else "",
+        "$mapssaa" : out_container.out_super_sampling_aa,
+        "$mapsamples" : out_container.out_samples,
+        "$mapdenoise" : "denoised" if out_container.out_use_denoise else "",
+        "$mapnormal" : get_mapnormal(map),
+        "$mapuv" : uv_container.uv_active_layer,
+        "$matgroup" : get_matgroup(object),
+        "$engine" : self.bake_device,
+        "$autouv" : "autouv" if self.uv_use_auto_unwrap else "",
+    }
+
+    preview = ""
+    temp_preview = ""
+    finding_keyword = False
+    matgroup_tags_poses = []
+    for index, char in enumerate(self.bake_batchname):
+        # adding chars until $ found - means that we need to insert keyword
+        if finding_keyword is False:
+            if char == '$':
+                finding_keyword = True
+                temp_preview = "$"
+            else:
+                preview += char
+        # trying to find keyword value, if can't continue adding chars to temp_preview
+        else:
+            # no keyword found but found $, aborting finding keyword and adding temp_preview to preview
+            if char == '$':
+                preview += temp_preview
+                temp_preview = '$'
+                continue
+
+            temp_preview += char
+            try:
+                gen_keywords_values[temp_preview.lower()]
+            except KeyError:
+                if index == len(self.bake_batchname) - 1:
+                    preview += temp_preview
+            else:
+                # saving matgroup tags positions to neglect translation
+                if temp_preview.lower() == "$matgroup":
+                    matgroup_tags_poses.append(len(preview))
+
+                # keyword found, add its value to preview
+                if gen_keywords_values[temp_preview.lower()] is None:
+                    finding_keyword = False
+                    continue
+                if self.bake_batchname_use_caps:
+                    preview += str(gen_keywords_values[temp_preview.lower()]).upper()
+                else:
+                    preview += str(gen_keywords_values[temp_preview.lower()])
+                finding_keyword = False
+
+    # self.bake_batchname_preview = preview
+
+    # limit to max 63 characters
+    # take decal prefix into account
+    len_crop = len(preview + decal_texset_tag) - 63
+    if len_crop > 0:
+        preview = preview[:-len_crop]
+
+    # add decal_texset_tag
+    preview += decal_texset_tag.upper() if object.bake_batchname_use_caps else decal_texset_tag
+
+    # translate
+    trans = str.maketrans({char: "_" for char in " |!@#$%^&*(){}:\";'[]<>,.\\/?"})
+    preview = preview.translate(trans)
+
+    # reinsert matgroup tags
+    matgroup_tag_value = get_matgroup(object)
+    preview_l = list(preview)
+    for pos in matgroup_tags_poses:
+        try:
+            preview_l[pos] = matgroup_tag_value
+        except IndexError:
+            preview_l.insert(pos, matgroup_tag_value)
+    preview = "".join(preview_l)
+
+    preview = preview.strip("_")
+    return preview
+
+def Object_bake_batchname_use_caps_Update(self, context):
+    BM_LastEditedProp_Write(context, "Object Bake Output: Batch name use caps", "bake_batchname_use_caps", getattr(self, "bake_batchname_use_caps"), False)
+    # upper-case batch name if true else lower-case
+    self.bake_batchname = self.bake_batchname.upper() if self.bake_batchname_use_caps else self.bake_batchname.lower()
+
+###############################################################
+### UIList Funcs ###
+###############################################################
+def BM_template_list_get_rows(collectionprop, rows_min=1, rows_middle=3, rows_max=5, use_middle=False):
+    len_of_items = len(collectionprop)
+    rows = rows_min
+    if len_of_items > rows_max:
+        rows = rows_max
+    elif len_of_items > rows_middle and use_middle:
+        rows = len_of_items
+    return rows
+
+###############################################################
+### BM Table of Objects Funcs ###
+###############################################################
+def BM_ActiveIndexUpdate(self, context):
+    # if context.scene.bm_props.bake_available is False:
+        # return
+    if len(context.scene.bm_table_of_objects):
+        object = BM_Object_Get(None, context)
+        if not object[1]:
+            return
+        source_object = context.scene.objects[object[0].object_name]
+        if not source_object.visible_get():
+            return
+        for ob in context.scene.objects:
+            ob.select_set(False)
+        source_object.select_set(True)
+        context.view_layer.objects.active = source_object
+
+def BM_LastEditedProp_Write(context, name: str, prop: str, value: any, is_map: bool):
+    context.scene.bm_props.last_edited_prop = prop
+    context.scene.bm_props.last_edited_prop_name = name
+    context.scene.bm_props.last_edited_prop_is_map = is_map
+    context.scene.bm_props.last_edited_prop_value = str(value)
+    if type(value) == int:
+        context.scene.bm_props.last_edited_prop_type = "int"
+    elif type(value) == float:
+        context.scene.bm_props.last_edited_prop_type = "float"
+    elif type(value) == str:
+        context.scene.bm_props.last_edited_prop_type = "str"
+    elif type(value) == bool:
+        if value:
+            context.scene.bm_props.last_edited_prop_value = '1'
+        else:
+            context.scene.bm_props.last_edited_prop_value = '0'
+
+        context.scene.bm_props.last_edited_prop_type = "bool"
+    elif type(value) == tuple:
+        real_value = ""
+        for x in value:
+            real_value += str(x)
+        context.scene.bm_props.last_edited_prop_value = real_value
+
+
+def BM_Table_of_Objects_GetFTL(context, items, bitflag_filter_item):
+        # default return values
+        ftl_flags = []
+        ftl_neworder = []
+
+        # initialize with all items visible
+        if context.scene.bm_props.use_name_matching is False:
+            ftl_flags = [bitflag_filter_item] * len(items)
+            ftl_neworder = [index for index, _ in enumerate(items)]
+            
+        # initialize with items unvisible if items' parent container nm_is_expanded is False
+        else:
+            ftl_flags = [bitflag_filter_item] * len(items)
+            for index, object in enumerate(items):
+                # visible universal container, all its items unvisible
+                if object.nm_is_universal_container and object.nm_is_expanded is False:
+                    ftl_neworder.append(index)
+                    for local_index, local_object in enumerate(items):
+                        if local_object.nm_item_uni_container_master_index == object.nm_master_index:
+                            ftl_flags[local_index] &= ~bitflag_filter_item
+                # visible local container, all its items unvisible
+                elif object.nm_is_local_container and object.nm_is_expanded is False:
+                    ftl_neworder.append(index)
+                    for local_index, local_object in enumerate(items):
+                        if local_object.nm_item_uni_container_master_index == object.nm_item_uni_container_master_index and local_object.nm_item_local_container_master_index == object.nm_master_index:
+                            ftl_flags[local_index] &= ~bitflag_filter_item
+            ftl_neworder = sorted([index for index, item in enumerate(items) if ftl_flags[index] == ~bitflag_filter_item])
+
+        return ftl_flags, ftl_neworder
+
+def BM_GetObject_from_prop_update(self, context):
+    try:
+        context.scene.bm_table_of_objects[context.scene.bm_props.active_index]
+    except IndexError:
+        if hasattr(self, "map_object_index"):
+            return context.scene.bm_table_of_objects[self.map_object_index]
+        else:
+            return self
+    else:
+        return BM_Object_Get(None, context)[0]
+
+def BM_Table_of_Objects_Move(scene, context, moved_from_index, moved_to_index):
+    # CollectionProperty.move() replacer
+    # with dependant classes update funcs calls
+    step = 1
+    if moved_to_index < moved_from_index:
+        step = -1
+    for i in range(moved_from_index, moved_to_index, step):
+        index_from = i
+        index_to = i + step
+
+        scene.bm_table_of_objects.move(index_from, index_to)
+        TexSet_Object_name_UpdateOnMoveOT(context, index_from, index_to)
+        Map_map_object_index_UpdateOnMoveOT(context, index_from, index_to)
+        ChannelPack_index_UpdateOnMoveOT(context, index_from, index_to)
+        Object_hl_cage_UpdateOnMoveOT(context, index_from, index_to)
+        Object_hl_highpoly_UpdateOnMoveOT(context, index_from, index_to)
+
+def BM_Table_of_Objects_Remove(scene, context, index_remove, type='OBJECT'):
+    # CollectionProperty.remove() replacer
+    # with dependant classes update funcs calls
+    Map_map_object_index_UpdateOnRemoveOT(context, index_remove)
+    ChannelPack_index_UpdateOnRemoveOT(context, index_remove)
+    # also called on maps.remove():
+    Object_hl_cage_UpdateOnRemoveOT(context, index_remove, type)
+    Object_hl_highpoly_UpdateOnRemoveOT(context, index_remove, type)
+    # also called on maps.remove():
+    scene.bm_table_of_objects.remove(index_remove)
+    TexSet_Object_name_UpdateOnRemoveOT(context, index_remove)
+    Object_hl_highpoly_UpdateAfterRemoveOT(context)
+
+def BM_Table_of_Objects_Add(scene, context):
+    # CollectionProperty.add() replacer
+    # with dependant classes update funcs calls
+    # no for texset
+    # no for map
+    # no for channelpack
+    Object_hl_cage_UpdateOnAddOT(context)
+    Object_hl_highpoly_UpdateOnAddOT(context)
+    return scene.bm_table_of_objects.add()
+
+###############################################################
+### decal Props Funcs ###
+###############################################################
+def Object_decal_is_decal_Update(self, context):
+    BM_LastEditedProp_Write(context, "Object Decal: Is Decal", "decal_is_decal", getattr(self, "decal_is_decal"), False)
+    if self.decal_is_decal:
+        self.hl_use_cage = False
+        self.hl_use_unique_per_map = False
+        Object_hl_use_unique_per_map_Update_TrashHighpolies(self, self, context)
+
+###############################################################
+### hl Props Funcs ###
+###############################################################
+def Object_hl_use_unique_per_map_Update(self, context):
+    BM_LastEditedProp_Write(context, "Object High to Lowpoly: Unique per map", "hl_use_unique_per_map", getattr(self, "hl_use_unique_per_map"), False)
+    object = self
+    if object.hl_use_unique_per_map:
+        data = {
+            'hl_cage_type' : object.hl_cage_type,
+            'hl_cage_extrusion' : object.hl_cage_extrusion,
+            'hl_max_ray_distance' : object.hl_max_ray_distance,
+            'hl_use_cage' : object.hl_use_cage,
+            'hl_cage' : object.hl_cage,
+        }
+        object.hl_use_cage = False
+        set_highpoly = False
+        highpoly_data = []
+        
+        for highpoly in object.hl_highpoly_table:
+            highpoly_data.append(highpoly.object_name)
+
+        if len(object.hl_highpoly_table):
+            set_highpoly = True
+            Object_hl_use_unique_per_map_Update_TrashHighpolies(object, object, context)
+
+        for map_index, map in enumerate(object.maps):
+            object.maps_active_index = map_index
+            for key in data:
+                if key == 'hl_cage' and map.hl_use_cage is False:
+                    continue
+                setattr(map, key, data[key])
+
+            if set_highpoly:
+                for index, key in enumerate(highpoly_data):
+                    new_highpoly = map.hl_highpoly_table.add()
+                    new_highpoly.item_index = index + 1
+                    new_highpoly.holder_index = context.scene.bm_props.active_index
+                    Object_hl_add_highpoly_Update(new_highpoly, context)
+                    new_highpoly.object_name = key
+                    map.hl_highpoly_table_active_index = len(map.hl_highpoly_table) - 1
+                    object.hl_is_lowpoly = True
+    
+    else:
+        for map in object.maps:
+            Object_hl_use_unique_per_map_Update_TrashHighpolies(map, object, context)
+
+def Object_hl_use_unique_per_map_Update_TrashHighpolies(container, object, context):
+    to_remove = []
+    for index, _ in enumerate(container.hl_highpoly_table):
+        to_remove.append(index)
+    for index in sorted(to_remove, reverse=True):
+        context.scene.bm_table_of_objects[container.hl_highpoly_table[index].highpoly_object_index].hl_is_highpoly = False
+        container.hl_highpoly_table.remove(index)
+    container.hl_highpoly_table_active_index = 0
+    object.hl_is_lowpoly = False
+
+def Object_hl_cage_Items(self, context):
+    items = []
+    # if was chosen None, append it to items
+    if self.hl_cage_object_include == 'NONE' and self.hl_cage_object_index == -1:
+        items.append(('NONE', "None", "No cage available within the Table of Objects"))
+
+    # active_object = BM_GetObject_from_prop_update(self, context)
+    active_object = BM_Object_Get(self, context)[0]
+    active_index = context.scene.bm_props.active_index
+    use_nm = context.scene.bm_props.use_name_matching
+    cage_container_master_index = -1
+    include = []
+    if active_object.hl_use_unique_per_map and len(active_object.maps):
+        active_map = BM_Map_Get(self, active_object)
+        for map in active_object.maps:
+            if map.map_index == active_map.map_index:
+                continue
+            if map.hl_use_cage and map.hl_cage_object_index != -1 and map.hl_cage_name_old not in include:
+                include.append(map.hl_cage_name_old)
+    added = []
+
+    for index, object in enumerate(context.scene.bm_table_of_objects):
+        # add current chosen cage
+        if (index == self.hl_cage_object_index and object.object_name not in added) or (object.object_name in include and object.global_object_name not in added):
+            items.append((str(object.object_name), object.object_name, "Object to use as Cage"))
+            added.append(object.object_name)
+            continue
+        # skip the item itself and all cages, lows, high already
+        if any([object.hl_is_cage, object.hl_is_lowpoly, object.hl_is_highpoly]) or index in [self.hl_cage_object_index, active_index]:#object.object_name == active_object.object_name:
+            continue
+        if use_nm:
+            if active_object.nm_is_detached:
+                if object.nm_is_detached:
+                    items.append((str(object.object_name), object.object_name, "Object to use as Cage"))
+                    added.append(object.object_name)
+            else:
+                if all([object.nm_is_local_container, object.nm_is_cage_container, object.nm_item_uni_container_master_index == active_object.nm_item_uni_container_master_index, cage_container_master_index == -1]):
+                    cage_container_master_index = object.nm_master_index
+                if cage_container_master_index != -1 and object.nm_item_local_container_master_index == cage_container_master_index and object.nm_item_uni_container_master_index == active_object.nm_item_uni_container_master_index:
+                    items.append((str(object.object_name), object.object_name, "Object to use as Cage"))
+                    added.append(object.object_name)
+        else:
+            items.append((str(object.object_name), object.object_name, "Object to use as Cage"))
+            added.append(object.object_name)
+
+    if len(items) == 0:
+        items.append(('NONE', "None", "No cage available within the Table of Objects"))
+    return items
+
+def Object_hl_cage_Update(self, context):
+    if self.hl_cage != self.hl_cage_name_old:
+        update_name = False
+        if self.hl_cage_name_old == 'NONE':
+            update_name = True
+        self.hl_cage_name_old = self.hl_cage
+        try:
+            context.scene.bm_table_of_objects[self.hl_cage_object_index].hl_is_cage = False
+        except IndexError:
+            pass
+        for index, object in enumerate(context.scene.bm_table_of_objects):
+            if object.object_name == self.hl_cage_name_old and not any([object.nm_is_local_container, object.nm_is_universal_container]):
+                self.hl_cage_object_index = index
+                break
+        if self.hl_cage_object_index != -1:
+            context.scene.bm_table_of_objects[self.hl_cage_object_index].hl_is_cage = True
+        if update_name:
+            self.hl_cage = self.hl_cage_name_old
+        self.hl_cage_object_include = self.hl_cage
+        try:
+            self.map_type
+        except AttributeError:
+            return
+        else:
+            object = BM_Object_Get(self, context)[0]
+            if object.hl_use_unique_per_map:
+                for map in object.maps:
+                    if map.hl_use_cage and map.hl_cage_object_index != -1:
+                        context.scene.bm_table_of_objects[map.hl_cage_object_index].hl_is_cage = True
+
+def Object_hl_use_cage_Update(self, context):
+    if self.hl_use_cage:
+        # explicit abort for setting cage for uni_c 
+        # in its is_global update, use_cage set to True
+        # random object is getting set as cage, which is bad
+        # added check to abort all this for containers
+        # including the occasion if self == map
+        if hasattr(self, "nm_is_universal_container"):
+            if any([self.nm_is_universal_container, self.nm_is_local_container]):
+                self.hl_cage_name_old = ""
+                self.hl_cage_object_index = -1
+                self.hl_cage_object_include = ""
+                return
+
+        update_name = False
+        if self.hl_cage_name_old == 'NONE':
+            update_name = True
+        self.hl_cage_name_old = self.hl_cage
+        try:
+            context.scene.bm_table_of_objects[self.hl_cage_object_index].hl_is_cage = False
+        except IndexError:
+            pass
+        for index, object in enumerate(context.scene.bm_table_of_objects):
+            if object.object_name == self.hl_cage_name_old and not any([object.nm_is_local_container, object.nm_is_universal_container]):
+                self.hl_cage_object_index = index
+                break
+        if self.hl_cage_object_index != -1:
+            context.scene.bm_table_of_objects[self.hl_cage_object_index].hl_is_cage = True
+        if update_name:
+            self.hl_cage = self.hl_cage_name_old
+        self.hl_cage_object_include = self.hl_cage
+    else:
+        self.hl_cage_name_old = ""
+        try:
+            context.scene.bm_table_of_objects[self.hl_cage_object_index].hl_is_cage = False
+        except IndexError:
+            pass
+        self.hl_cage_object_index = -1
+        self.hl_cage_object_include = ""
+
+def Object_hl_cage_unset_none(context):
+    for object in context.scene.bm_table_of_objects:
+        if any([object.nm_is_universal_container, object.nm_is_local_container]):
+            continue
+        if object.hl_use_unique_per_map:
+            for map in object.maps:
+                if map.hl_use_cage and map.hl_cage_object_index == -1:
+                    map.hl_use_cage = False
+        elif object.hl_use_cage and object.hl_cage_object_index == -1:
+            object.hl_use_cage = False
+
+def Object_hl_cage_UpdateOnAddOT(context):
+    Object_hl_cage_unset_none(context)
+
+def Object_hl_cage_UpdateOnMoveOT(context, moved_from_index, moved_to_index):
+    # update all objects' hl_cage indexes props
+    for object in context.scene.bm_table_of_objects:
+        if object.hl_use_unique_per_map is False:
+            if object.hl_use_cage is False or object.hl_cage_object_index == -1:
+                continue
+            elif object.hl_cage_object_index == -1:
+                object.hl_use_cage = False
+            try:
+                if object.hl_cage_object_index == moved_from_index:
+                    object.hl_cage_object_index = moved_to_index
+                elif object.hl_cage_object_index == moved_to_index:
+                    object.hl_cage_object_index = moved_from_index
+                object.hl_cage_name_old = object.hl_cage_object_include
+                object.hl_cage = object.hl_cage_object_include
+            except (ValueError, TypeError):
+                pass
+            continue
+
+        for map in object.maps:
+            if map.hl_use_cage is False or map.hl_cage_object_index == -1:
+                continue
+            elif map.hl_cage_object_index == -1:
+                map.hl_use_cage = False
+            try:
+                if map.hl_cage_object_index == moved_from_index:
+                    map.hl_cage_object_index = moved_to_index
+                elif map.hl_cage_object_index == moved_to_index:
+                    map.hl_cage_object_index = moved_from_index
+                map.hl_cage_name_old = map.hl_cage_object_include
+                map.hl_cage = map.hl_cage_object_include
+            except (ValueError, TypeError):
+                pass
+
+def Object_hl_cage_UpdateOnRemoveOT(context, removed_index, type: str):
+    def find_cage_link_and_unset(context, cage, removed_index):
+        for lowpoly in context.scene.bm_table_of_objects:
+            if lowpoly.hl_use_unique_per_map is False:
+                if lowpoly.hl_use_cage and lowpoly.hl_cage_object_index == removed_index:
+                    lowpoly.hl_use_cage = False
+                continue
+            for map in lowpoly.maps:
+                if map.hl_use_cage and map.hl_cage_object_index == removed_index:
+                    map.hl_use_cage = False
+
+    if type == 'OBJECT':
+        object = context.scene.bm_table_of_objects[removed_index]
+        object.hl_use_unique_per_map = False
+        object.hl_use_cage = False
+        if object.hl_is_cage:
+            find_cage_link_and_unset(context, object, removed_index)
+    elif type == 'MAP':
+        object = BM_Object_Get(None, context)[0]
+        if object.hl_use_unique_per_map is False:
+            return
+        map = object.maps[removed_index]
+        map.hl_use_cage = False
+
+def Object_hl_highpoly_Items(self, context):
+    try:
+        context.scene.bm_table_of_objects[context.scene.bm_props.active_index]
+    except IndexError:
+        return []
+    items = []
+    # if was chosen None, append it to items
+    if self.highpoly_object_include == 'NONE' and self.highpoly_object_index == -1:
+        items.append(('NONE', "None", "No cage available within the Table of Objects"))
+
+    # active_object = BM_GetObject_from_prop_update(self, context)
+    active_object = context.scene.bm_table_of_objects[self.holder_index]
+    active_index = context.scene.bm_props.active_index
+    use_nm = context.scene.bm_props.use_name_matching
+    high_container_master_index = -1
+    include = []
+    skip_include = []
+    if active_object.hl_use_unique_per_map and len(active_object.maps):
+        active_map = BM_Map_Get(self, active_object)
+        for index, highpoly in enumerate(active_map.hl_highpoly_table):
+            if highpoly.highpoly_object_index != -1:
+                skip_include.append(highpoly.highpoly_name_old)
+        for map in active_object.maps:
+            if map.map_index == active_map.map_index:
+                continue
+            for highpoly in map.hl_highpoly_table:
+                if highpoly.highpoly_object_index != -1 and all([highpoly.highpoly_name_old not in include, highpoly.global_highpoly_name_old not in skip_include]):
+                    include.append(highpoly.highpoly_name_old)
+    added = []
+
+    for index, object in enumerate(context.scene.bm_table_of_objects):
+        # add current chosen high
+        if (index == self.highpoly_object_index and object.object_name not in added) or (object.global_object_name in include and object.global_object_name not in added):
+            items.append((str(object.object_name), object.object_name, "Object to use as Highpoly"))
+            added.append(object.object_name)
+            continue
+        # skip the item itself and all cages, lows, high already
+        if any([object.hl_is_cage, object.hl_is_lowpoly, object.hl_is_highpoly]) or index in [self.highpoly_object_index, active_index]:
+            continue
+        if use_nm:
+            if active_object.nm_is_detached:
+                if object.nm_is_detached:
+                    items.append((str(object.object_name), object.object_name, "Object to use as Highpoly"))
+                    added.append(object.object_name)
+            else:
+                if all([object.nm_is_local_container, object.nm_is_highpoly_container, object.nm_item_uni_container_master_index == active_object.nm_item_uni_container_master_index, high_container_master_index == -1]):
+                    high_container_master_index = object.nm_master_index
+                if high_container_master_index != -1 and object.nm_item_local_container_master_index == high_container_master_index and object.nm_item_uni_container_master_index == active_object.nm_item_uni_container_master_index:
+                    items.append((str(object.object_name), object.object_name, "Object to use as Highpoly"))
+                    added.append(object.object_name)
+        else:
+            items.append((str(object.object_name), object.object_name, "Object to use as Highpoly"))
+            added.append(object.object_name)
+
+    if len(items) == 0:
+        items.append(('NONE', "None", "No highpoly available within the Table of Objects"))
+    return items
+
+def Object_hl_highpoly_Update(self, context):
+    if self.object_name != self.highpoly_name_old:
+        update_name = False
+        if self.highpoly_name_old == 'NONE':
+            update_name = True
+        self.highpoly_name_old = self.object_name
+        try:
+            context.scene.bm_table_of_objects[self.highpoly_object_index].hl_is_highpoly = False
+        except IndexError:
+            pass
+        for index, object in enumerate(context.scene.bm_table_of_objects):
+            if object.object_name == self.highpoly_name_old and not any([object.nm_is_local_container, object.nm_is_universal_container]):
+                self.highpoly_object_index = index
+                break
+        if self.highpoly_object_index != -1:
+            context.scene.bm_table_of_objects[self.highpoly_object_index].hl_is_highpoly = True
+        self.highpoly_object_include = self.object_name
+        if update_name:
+            self.object_name = self.highpoly_name_old
+        Object_hl_highpoly_EnsureHighpolyMarked(context)
+
+def Object_hl_add_highpoly_Update(self, context):
+    self.highpoly_name_old = self.object_name
+    try:
+        context.scene.bm_table_of_objects[self.highpoly_object_index].hl_is_highpoly = False
+    except IndexError:
+        pass
+    for index, object in enumerate(context.scene.bm_table_of_objects):
+        if object.object_name == self.highpoly_name_old and not any([object.nm_is_local_container, object.nm_is_universal_container]):
+            self.highpoly_object_index = index
+            break
+    if self.highpoly_object_index != -1:
+        context.scene.bm_table_of_objects[self.highpoly_object_index].hl_is_highpoly = True
+    self.highpoly_object_include = self.object_name
+    Object_hl_highpoly_EnsureHighpolyMarked(context)
+
+def Object_hl_remove_highpoly_Update(self, context):
+    try: 
+        context.scene.bm_table_of_objects[self.highpoly_object_index].hl_is_highpoly = False
+    except IndexError:
+        pass
+
+def Object_hl_highpoly_EnsureHighpolyMarked(context):
+    def mark_highpolies(context, data_source):
+        for highpoly in data_source.hl_highpoly_table:
+            if highpoly.highpoly_object_index == -1:
+                continue
+            context.scene.bm_table_of_objects[highpoly.highpoly_object_index].hl_is_highpoly = True
+
+    for object in context.scene.bm_table_of_objects:
+        if object.hl_use_unique_per_map is False:
+            mark_highpolies(context, object)
+            continue
+        for map in object.maps:
+            mark_highpolies(context, map)
+
+def Object_hl_highpoly_unset_none(context, container):
+    to_remove = []
+    highpoly_index = 0
+    for highpoly_index, highpoly in enumerate(container.hl_highpoly_table):
+        if highpoly.highpoly_object_index == -1:
+            to_remove.append(highpoly_index)
+            continue
+        highpoly.item_index = highpoly_index + 1
+        highpoly_index += 1
+
+    for index in sorted(to_remove, reverse=True):
+        container.hl_highpoly_table.remove(index)
+    container.hl_highpoly_table_active_index = highpoly_index - 1
+
+def Object_hl_highpoly_UpdateOnAddOT(context):
+    for object in context.scene.bm_table_of_objects:
+        if object.hl_use_unique_per_map is False:
+            Object_hl_highpoly_unset_none(context, object)
+            object.hl_is_lowpoly = len(object.hl_highpoly_table) != 0
+            continue
+
+        len_of_highpolies = 0
+        for map in object.maps:
+            Object_hl_highpoly_unset_none(context, map)
+            len_of_highpolies += len(map.hl_highpoly_table)
+        object.hl_is_lowpoly = len_of_highpolies != 0
+
+def Object_hl_highpoly_UpdateOnMoveOT(context, moved_from_index=-2, moved_to_index=-2):
+    def reset_highpoly_props(data_source):
+        for highpoly in data_source.hl_highpoly_table:
+            if highpoly.highpoly_object_index == moved_from_index:
+                highpoly.highpoly_object_index = moved_to_index
+            elif highpoly.highpoly_object_index == moved_to_index:
+                highpoly.highpoly_object_index = moved_from_index
+            if highpoly.holder_index == moved_from_index:
+                highpoly.holder_index = moved_to_index
+            elif highpoly.holder_index == moved_to_index:
+                highpoly.holder_index = moved_from_index
+            if highpoly.highpoly_object_index != -1:
+                context.scene.bm_table_of_objects[highpoly.highpoly_object_index].hl_is_highpoly = True
+            try:
+                highpoly.highpoly_name_old = highpoly.highpoly_object_include
+                highpoly.object_name = highpoly.highpoly_object_include
+            except (ValueError, TypeError):
+                pass
+
+    for object in context.scene.bm_table_of_objects:
+        if object.hl_use_unique_per_map is False:
+            reset_highpoly_props(object)
+            continue
+        for map in object.maps:
+            reset_highpoly_props(map)
+
+def Object_hl_highpoly_highpoly_object_index_GetNew(context, self):
+    for index, object in enumerate(context.scene.bm_table_of_objects):
+        if object.object_name == self.highpoly_object_include and not any([object.nm_is_local_container, object.nm_is_universal_container]):
+            self.holder_index = index
+            return index
+            break
+    return -1
+
+def Object_hl_highpoly_UpdateAfterRemoveOT(context):
+    def updateHighpolyProps_and_removeNone(context, data_source):
+        to_remove = []
+        for highpoly_index, highpoly in enumerate(data_source.hl_highpoly_table):
+            new_index = Object_hl_highpoly_highpoly_object_index_GetNew(context, highpoly)
+            highpoly.highpoly_object_index = new_index
+            try:
+                highpoly.highpoly_name_old = highpoly.highpoly_object_include
+                highpoly.object_name = highpoly.highpoly_object_include
+            except (ValueError, TypeError):
+                pass
+            if highpoly.highpoly_object_index == -1:
+                to_remove.append(highpoly_index)
+            else:
+                context.scene.bm_table_of_objects[highpoly.highpoly_object_index].hl_is_highpoly = True
+        for highpoly_index in sorted(to_remove, reverse=True):
+            data_source.hl_highpoly_table.remove(highpoly_index)
+        len_of_highpolies = len(data_source.hl_highpoly_table)
+        if data_source.hl_highpoly_table_active_index >= len_of_highpolies:
+            data_source.hl_highpoly_table_active_index = len_of_highpolies - 1
+        if len_of_highpolies == 0:
+            return False
+        else:
+            return True
+
+    for object in context.scene.bm_table_of_objects:
+        if object.hl_use_unique_per_map is False:
+            leave_lowpoly = updateHighpolyProps_and_removeNone(context, object)
+            continue
+        for map in object.maps:
+            leave_lowpoly = updateHighpolyProps_and_removeNone(context, map)
+        object.hl_is_lowpoly = leave_lowpoly
+
+def Object_hl_highpoly_UpdateOnRemoveOT(context, removed_index, type: str):
+    def remove_highpolies(context, data_source):
+        to_remove = []
+        for highpoly_index, highpoly in enumerate(data_source.hl_highpoly_table):
+            Object_hl_remove_highpoly_Update(highpoly, context)
+            to_remove.append(highpoly_index)
+        for index in sorted(to_remove, reverse=True):
+            data_source.hl_highpoly_table.remove(index)
+    def set_removed_highpoly_to_none(data_source, removed_index):
+        for highpoly_index, highpoly in enumerate(data_source.hl_highpoly_table):
+            if highpoly.highpoly_object_index != removed_index:
+                continue
+            highpoly.highpoly_object_index = -1
+            highpoly.highpoly_name_old = 'NONE'
+            highpoly.highpoly_object_include = 'NONE'
+
+    if type == 'OBJECT':
+        object = context.scene.bm_table_of_objects[removed_index]
+        if object.hl_is_highpoly is False:
+            if object.hl_use_unique_per_map is False:
+                remove_highpolies(context, object)
+                return
+            for map in object.maps:
+                remove_highpolies(context, map)
+        for object in context.scene.bm_table_of_objects:
+            if object.hl_use_unique_per_map is False:
+                set_removed_highpoly_to_none(object, removed_index)
+                continue
+            for map in object.maps:
+                set_removed_highpoly_to_none(map, removed_index)
+    elif type == 'MAP':
+        object = BM_Object_Get(None, context)[0]
+        if object.hl_use_unique_per_map is False:
+            return
+        map = object.maps[removed_index]
+        remove_highpolies(context, map)
+
+###############################################################
+### uv Props Funcs ###
+###############################################################
+def Object_uv_use_unique_per_map_Update(self, context):
+    BM_LastEditedProp_Write(context, "Object UVs & Layers: Unique per map", "uv_use_unique_per_map", getattr(self, "uv_use_unique_per_map"), False)
+    object = self
+    if object.uv_use_unique_per_map:
+        data = {
+            'uv_bake_data' : object.uv_bake_data,
+            'uv_bake_target' : object.uv_bake_target,
+            'uv_active_layer' : object.uv_active_layer,
+            'uv_type' : object.uv_type,
+            'uv_snap_islands_to_pixels' : object.uv_snap_islands_to_pixels,
+            'uv_use_auto_unwrap' : object.uv_use_auto_unwrap,
+            'uv_auto_unwrap_angle_limit' : object.uv_auto_unwrap_angle_limit,
+            'uv_auto_unwrap_island_margin' : object.uv_auto_unwrap_island_margin,
+            'uv_auto_unwrap_use_scale_to_bounds' : object.uv_auto_unwrap_use_scale_to_bounds,
+        }
+    
+        for map in object.maps:
+            for key in data:
+                setattr(map, key, data[key])
+
+def Object_uv_active_layer_Items(self, context):
+    object = BM_Object_Get(self, context)
+    if object[0].nm_is_universal_container and object[0].nm_uni_container_is_global:
+        return [('CONTAINER_AUTO', "Automatic", "UV Map is set automatically because Contaniner configures all its object settings")]
+    if object[1] is False:
+        return [('NONE', "None", "Current Object doesn't support UV Layers")]
+    source_object = context.scene.objects[object[0].object_name].data
+    uv_layers_bake = []
+    uv_layers_other = []
+
+    if len(source_object.uv_layers):
+        for uv_layer in source_object.uv_layers:
+            if context.scene.bm_props.bake_uv_layer_tag in uv_layer.name:
+                uv_layers_bake.append((str(uv_layer.name), uv_layer.name, "UV Layer to use for baking current Object's maps"))
+            else:
+                uv_layers_other.append((str(uv_layer.name), uv_layer.name, "UV Layer to use for baking current Object's maps"))
+    else:
+        uv_layers_other.append(('NONE_AUTO_CREATE', "Auto Unwrap", "Object has got no UV Layers, Auto UV Unwrap will be proceeded"))
+    return uv_layers_bake + uv_layers_other
+
+def Object_uv_type_Items(self, context):
+    items = [('SINGLE', "Single (single tile)", "Regular single-tiled UV layer")]
+    if bpy.app.version >= (3, 2, 0):
+        items.append(('TILED', "Tiled (UDIMs)", "Tiled UV Layer, UDIM tiles"))
+        items.append(('AUTO', "Automatic", "Automatically detect UVMap type. If UDIMs detected, UDIM tiles range will be set automatically for each map"))
+    
+    return items
+
+def Object_uv_bake_target_Items(self, context):
+    if bpy.app.version >= (2, 92, 0):
+        items = [('IMAGE_TEXTURES', "Image Textures", "Bake to image texture files (image files)"),
+                 ('VERTEX_COLORS', "Vertex Colors", "Bake to vertex color layers (color attributes, no need for UVs")]
+    else:
+        items = [('IMAGE_TEXTURES', "Image Textures", "Bake to image texture files (image files)")]
+    
+    return items
+
+###############################################################
+### matgroups Props Funcs ###
+###############################################################
+def Object_matgroups_Refresh(object, source_object):
+    config_old = {}
+    for matgroup_item_index in range(len(object.matgroups_table_of_mats) - 1, -1, -1):
+        matgroup_item = object.matgroups_table_of_mats[matgroup_item_index]
+        config_old[matgroup_item.material_name] = matgroup_item.group_index
+        object.matgroups_table_of_mats.remove(matgroup_item_index)
+    for material_index, material in enumerate(source_object.data.materials):
+        if material is None:
+            continue
+        new_matgroup_item = object.matgroups_table_of_mats.add()
+        try:
+            new_matgroup_item.group_index = config_old[material.name]
+        except KeyError:
+            new_matgroup_item.group_index = 1
+        new_matgroup_item.material_name = material.name
+    len_of_mats_exact = len(object.matgroups_table_of_mats) - 1
+    if object.matgroups_table_of_mats_active_index > len_of_mats_exact:
+        object.matgroups_table_of_mats_active_index = len_of_mats_exact 
+
+###############################################################
+### out Props Funcs ###
+###############################################################
+def Object_out_use_unique_per_map_Update(self, context):
+    BM_LastEditedProp_Write(context, "Object Format: Unique per map", "out_use_unique_per_map", getattr(self, "out_use_unique_per_map"), False)
+    object = self
+    if object.out_use_unique_per_map:
+        data = {
+            'out_file_format' : object.out_file_format,
+            'out_compression' : object.out_compression,
+            'out_exr_codec' : object.out_exr_codec,
+            'out_res' : object.out_res,
+            'out_res_height' : object.out_res_height,
+            'out_res_width' : object.out_res_width,
+            'out_margin' : object.out_margin,
+            'out_use_32bit' : object.out_use_32bit,
+            'out_use_alpha' : object.out_use_alpha,
+            'out_use_transbg' : object.out_use_transbg,
+            'out_udim_start_tile' : object.out_udim_start_tile,
+            'out_udim_end_tile' : object.out_udim_end_tile,
+            'out_super_sampling_aa' : object.out_super_sampling_aa,
+            'out_use_adaptive_sampling' : object.out_use_adaptive_sampling,
+            'out_adaptive_treshold' : object.out_adaptive_threshold,
+            'out_samples' : object.out_samples,
+            'out_min_samples' : object.out_min_samples,
+            'out_use_denoise' : object.out_use_denoise,
+            'out_use_scene_color_management' : object.out_use_scene_color_management,
+        }
+
+        for map in object.maps:
+            for key in data:
+                setattr(map, key, data[key])
+
+###############################################################
+### Map Props Funcs ###
+###############################################################
+def BM_Table_of_Maps_Remove(maps, context, index_remove, type='MAP'):
+    # CollectionProperty.remove() replacer
+    # with dependant classes update funcs calls
+    Object_hl_cage_UpdateOnRemoveOT(context, index_remove, type)
+    Object_hl_highpoly_UpdateOnRemoveOT(context, index_remove, type)
+    maps.remove(index_remove)
+    Object_hl_highpoly_UpdateAfterRemoveOT(context)
+
+def Map_map_object_index_UpdateOnMoveOT(context, moved_from_index: int, moved_to_index: int):
+    # update objects' maps' map_object_index property
+    for map in context.scene.bm_table_of_objects[moved_from_index].maps:
+        map.map_object_index = moved_to_index
+    for map in context.scene.bm_table_of_objects[moved_to_index].maps:
+        map.map_object_index = moved_from_index
+
+def Map_map_object_index_UpdateOnRemoveOT(context, index_remove):
+    for object in context.scene.bm_table_of_objects:
+        for map in object.maps:
+            if map.map_object_index <= index_remove:
+                continue
+            map.map_object_index -= 1
+
+def Map_map_type_Items(self, context):
+    # if self.uv_bake_data == 'VERTEX_COLORS':
+    #     return [('VERTEX_COLOR_LAYER', "VertexColor Layer", "Bake VertexColor Layer")]
+
+    items = [
+        ('', "PBR-Metallic", "PBR maps to bake from existing object materials data"),
+        ('ALBEDO', "AlbedoM", "PBR-Metallic. Color image texture containing color without shadows and highlights"),
+        ('METALNESS', "Metalness", "PBR-Metallic. Image texture for determining metal and non-metal parts of the object"),
+        ('ROUGHNESS', "Roughness", "PBR-Metallic. Image texture for determining roughness across the surface of the object"),
+        ('', "PBR-Specular", ""),
+        ('DIFFUSE', "AlbedoS", "PBR-Specular. Color image texture containing color without shadows and highlights"),
+        ('SPECULAR', "Specular", "PBR-Specular. Image texture for determining specularity across the surface of the object"),
+        ('GLOSSINESS', "Glossiness", "PBR-Specular. Image texture for determining glossiness across the surface of the object"),
+        ('', "PBR-based", ""),
+        ('OPACITY', "Opacity", "Image texture for determining transparent and opaque parts of the object"),
+        ('EMISSION', "Emission/Lightmap", "Image texture for determining emissive parts of the object"),
+
+        ('', "Object-based", "PBR and Mask maps to bake from object mesh data"),
+        ('NORMAL', "Normal", "Image texture for simulating high details without changing the number of polygons"),
+        ('DISPLACEMENT', "Displacement", "Height map used for displacing mesh polygons"),
+        ('VECTOR_DISPLACEMENT', "Vector Displacement", "Displacement map where each pixel stores RGB as XYZ displacement data"),
+        ('POSITION', "Position", "Indicates object parts location in the UV space"),
+        ('DECAL', "Decal Pass", "Bake common passes for Decal Object. For external bake only"),
+        ('', "Masks and Details", ""),
+        ('AO', "AO", "Ambient Occlusion map contains lightning data"),
+        ('CAVITY', "Cavity", "Image texture map for crevice details"),
+        ('CURVATURE', "Curvature", "Image texture map for convexity/concavity"),
+        ('THICKNESS', "Thickness", "Thick parts of the mesh. Ambient Occlusion map that casts rays from the surface to the inside. Often used for SSS or masking"),
+        ('ID', "ID", "Mask out different parts of the mesh with different colors"),
+        ('MASK', "Mask", "Black and white mask for masking mesh parts"),
+        ('XYZMASK', "XYZ Mask", "Contains data of rays casted from particular axis"),
+        ('GRADIENT', "Gradient Mask", "Black and white gradient mask for masking"),
+        ('EDGE', "Edge Mask", "Image texture for masking out mesh edges"),
+        ('WIREFRAME', "Wireframe Mask", "Black and white mesh wireframe mask"),
+
+        ('', "Passes and Cycles Default", "Bake Cycles default maps and object data and materials passes"),
+        ('PASS', "BSDF Pass", "Choose and bake BSDF pass to image texture"),
+        ('VERTEX_COLOR_LAYER', "VertexColor Layer", "Bake VertexColor Layer"),
+        ('C_COMBINED', "Combined", "Bakes all materials, textures, and lighting contribution except specularity"),
+        ('C_AO', "Ambient Occlusion", "Ambient Occlusion map contains lightning data"),
+        ('C_SHADOW', "Shadow", "Bakes shadows and lighting"),
+        ('C_NORMAL', "Normal", "Bakes normals to an RGB image"),
+        ('C_UV', "UV", "Mapped UV coordinates, used to represent where on a mesh a texture gets mapped too"),
+        ('C_ROUGHNESS', "Roughness", "Bakes the roughness pass of a material"),
+        ('C_EMIT', "Emit", "Bakes Emission, or the Glow color of a material"),
+        ('C_ENVIRONMENT', "Environment", "Bakes the environment (i.e. the world surface shader defined for the scene) onto the selected object(s) as seen by rays cast from the world origin."),
+        ('C_DIFFUSE', "Diffuse", "Bakes the diffuse pass of a material"),
+        ('C_GLOSSY', "Glossy", "Bakes the glossiness pass of a material"),
+        ('C_TRANSMISSION', "Transmission", "Bakes the transmission pass of a material")
+    ]
+    if bpy.app.version >= (3, 0, 0):
+        items.append(('C_POSITION', "Position", "Indicates object parts location in the UV space"))
+    return items
+
+def Map_map_vertexcolor_layer_Items(self, context):
+    object = BM_Object_Get(self, context)
+    if object[1] is False:
+        return [('NONE', "None", "Current Object doesn't support VertexColor Layers")]
+    source_object = context.scene.objects[object[0].object_name]
+    items = []
+    if bpy.app.version < (3, 2, 0):
+        for layer in source_object.data.vertex_colors:
+            items.append((str(layer.name), layer.name, "VertexColor Layer to bake"))
+    else:
+        for layer in source_object.data.color_attributes:
+            items.append((str(layer.name), layer.name, "VertexColor Layer to bake"))
+    if len(items) == 0:
+        return [('NONE', "None", "No VertexColor Layers to bake")]
+    return items
+
+def Map_map_normal_data_Items(self, context):
+    object = BM_Object_Get(self, context)[0]
+    if object.hl_use_unique_per_map:
+        has_highpolies = any(True for highpoly in BM_Map_Get(self, object).hl_highpoly_table if highpoly.highpoly_object_index != -1)
+    else:
+        has_highpolies = any(True for highpoly in object.hl_highpoly_table if highpoly.highpoly_object_index != -1)
+    if object.nm_is_universal_container and object.nm_uni_container_is_global:
+        has_highpolies = True
+    if has_highpolies:
+        items = [('HIGHPOLY', "Highpoly", "Bake normals from highpoly object data to lowpoly"),
+                 ('MULTIRES', "Multires Modifier", "Bake normals from existing Multires modifier"),
+                 ('MATERIAL', "Object/Materials", "Bake normals from object data")]
+    else:
+        items = [('MULTIRES', "Multires Modifier", "Bake normals from existing Multires modifier"),
+                 ('MATERIAL', "Object/Materials", "Bake normals from object data")]
+    if object.decal_is_decal:
+        items = [('MATERIAL', "Object/Materials", "Bake normals from object data")]
+    # above unused
+    items = [('HIGHPOLY', "Highpoly", "Bake normals from highpoly object data to lowpoly"),
+             ('MULTIRES', "Multires Modifier", "Bake normals from existing Multires modifier"),
+             ('MATERIAL', "Object/Materials", "Bake normals from object data")]
+    return items 
+
+def BM_MAO_PROPS_map_get_subdivided_face_count(context, object, map):
+    face_count = 0
+    try:
+        object_pointer = context.scene.objects[object.object_name]
+        face_count = len(object_pointer.data.polygons) * 4 ** map.map_displacement_subdiv_levels
+    except KeyError:
+        pass
+    return face_count
+
+def Map_map_displacement_data_Items(self, context):
+    object = BM_Object_Get(self, context)[0]
+    if object.hl_use_unique_per_map:
+        has_highpolies = any(True for highpoly in BM_Map_Get(self, object).hl_highpoly_table if highpoly.highpoly_object_index != -1)
+    else:
+        has_highpolies = any(True for highpoly in object.hl_highpoly_table if highpoly.highpoly_object_index != -1)
+    if object.nm_is_universal_container and object.nm_uni_container_is_global:
+        has_highpolies = True
+    if has_highpolies:
+        items = [('HIGHPOLY', "Highpoly", "Bake displacement from highpoly object data to lowpoly"),
+                 ('MULTIRES', "Multires Modifier", "Bake displacement from existing Multires modifier"),
+                 ('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
+    else:
+        items = [('MULTIRES', "Multires Modifier", "Bake displacement from existing Multires modifier"),
+                 ('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
+    if object.decal_is_decal:
+        items = [('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
+    # above unused
+    items = [('HIGHPOLY', "Highpoly", "Bake displacement from highpoly object data to lowpoly"),
+             ('MULTIRES', "Multires Modifier", "Bake displacement from existing Multires modifier"),
+             ('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
+    return items
+
+# Map Preview Funcs
+# the same, no attention to bm mats removal, because they are not added anyway
+Map_MapPreview_RelinkMaterials_Remove = Map_MapPreview_CustomNodes_Remove
+
+def Map_MapPreview_Unset(self, context):
+    # unset all previews
+    for obj_index, object in enumerate(context.scene.bm_table_of_objects):
+        # context.scene.bm_props.active_index = obj_index
+        for map_index, map in enumerate(object.maps):
+            # object.maps_active_index = map_index
+
+            maps_tags = {
+                'AO',
+                'CAVITY',
+                'CURVATURE',
+                'THICKNESS',
+                'XYZMASK',
+                'GRADIENT',
+                'EDGE',
+                'WIREFRAME',
+                'POSITION',
+                'VERTEX_COLOR_LAYER',
+                'VECTOR_DISPLACEMENT',
+                'ALBEDO',
+                'METALNESS',
+                'ROUGHNESS',
+                'DIFFUSE',
+                'SPECULAR',
+                'GLOSSINESS',
+                'OPACITY',
+                'EMISSION',
+                'PASS',
+                'DECAL',
+                'NORMAL',
+                'DISPLACEMENT',
+                'ID',
+                'MASK',
+            }
+            for key in maps_tags:
+                # skip current map
+                if self is not None and map_index + 1 == self.map_index and obj_index == self.map_object_index:
+                    continue
+                # if all([skip_current_map, obj_index == obj_index_init, map_index == map_index_init, key == map_tag]):
+                    # continue
+
+                if getattr(map, "map_%s_use_preview" % key):
+                    setattr(map, "map_%s_use_preview" % key, False)
+
+    # return indexes back
+    # if any([obj_index_init is None, map_index_init is None]):
+        # return
+    # context.scene.bm_props.active_index = obj_index_init
+    # BM_Object_Get(None, context)[0].maps_active_index = map_index_init
+
+# Map previews with custom nodes
+def Map_map_AO_use_preview_Update(self, context):
+    Map_MapPreview_CustomNodes_Remove(self, context)
+    if self.map_AO_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_CustomNodes_Add(self, context, 'AO')
+def Map_map_CAVITY_use_preview_Update(self, context):
+    Map_MapPreview_CustomNodes_Remove(self, context)
+    if self.map_CAVITY_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_CustomNodes_Add(self, context, 'CAVITY')
+def Map_map_CURVATURE_use_preview_Update(self, context):
+    Map_MapPreview_CustomNodes_Remove(self, context)
+    if self.map_CURVATURE_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_CustomNodes_Add(self, context, 'CURVATURE')
+def Map_map_THICKNESS_use_preview_Update(self, context):
+    Map_MapPreview_CustomNodes_Remove(self, context)
+    if self.map_THICKNESS_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_CustomNodes_Add(self, context, 'THICKNESS')
+def Map_map_XYZMASK_use_preview_Update(self, context):
+    Map_MapPreview_CustomNodes_Remove(self, context)
+    if self.map_XYZMASK_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_CustomNodes_Add(self, context, 'XYZMASK')
+def Map_map_GRADIENT_use_preview_Update(self, context):
+    Map_MapPreview_CustomNodes_Remove(self, context)
+    if self.map_GRADIENT_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_CustomNodes_Add(self, context, 'GRADIENT')
+def Map_map_EDGE_use_preview_Update(self, context):
+    Map_MapPreview_CustomNodes_Remove(self, context)
+    if self.map_EDGE_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_CustomNodes_Add(self, context, 'EDGE')
+def Map_map_WIREFRAME_use_preview_Update(self, context):
+    Map_MapPreview_CustomNodes_Remove(self, context)
+    if self.map_WIREFRAME_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_CustomNodes_Add(self, context, 'WIREFRAME')
+def Map_map_POSITION_use_preview_Update(self, context):
+    Map_MapPreview_CustomNodes_Remove(self, context)
+    if self.map_POSITION_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_CustomNodes_Add(self, context, 'POSITION')
+def Map_map_VERTEX_COLOR_LAYER_use_preview_Update(self, context):
+    Map_MapPreview_CustomNodes_Remove(self, context)
+    if self.map_VERTEX_COLOR_LAYER_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_CustomNodes_Add(self, context, 'VERTEX_COLOR_LAYER')
+def Map_map_VECTOR_DISPLACEMENT_use_preview_Update(self, context):
+    Map_MapPreview_CustomNodes_Remove(self, context)
+    if self.map_VECTOR_DISPLACEMENT_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_CustomNodes_Add(self, context, 'VECTOR_DISPLACEMENT')
+def Map_map_DECAL_use_preview_Update(self, context):
+    Map_MapPreview_CustomNodes_Remove(self, context)
+    if self.map_DECAL_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_CustomNodes_Add(self, context, 'DECAL')
+
+# Map Previews with Material Relinking
+def Map_map_ALBEDO_use_preview_Update(self, context):
+    Map_MapPreview_RelinkMaterials_Remove(self, context)
+    if self.map_ALBEDO_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_RelinkMaterials_Add(self, context, 'ALBEDO')
+def Map_map_METALNESS_use_preview_Update(self, context):
+    Map_MapPreview_RelinkMaterials_Remove(self, context)
+    if self.map_METALNESS_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_RelinkMaterials_Add(self, context, 'METALNESS')
+def Map_map_ROUGHNESS_use_preview_Update(self, context):
+    Map_MapPreview_RelinkMaterials_Remove(self, context)
+    if self.map_ROUGHNESS_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_RelinkMaterials_Add(self, context, 'ROUGHNESS')
+def Map_map_DIFFUSE_use_preview_Update(self, context):
+    Map_MapPreview_RelinkMaterials_Remove(self, context)
+    if self.map_DIFFUSE_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_RelinkMaterials_Add(self, context, 'DIFFUSE')
+def Map_map_SPECULAR_use_preview_Update(self, context):
+    Map_MapPreview_RelinkMaterials_Remove(self, context)
+    if self.map_SPECULAR_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_RelinkMaterials_Add(self, context, 'SPECULAR')
+def Map_map_GLOSSINESS_use_preview_Update(self, context):
+    Map_MapPreview_RelinkMaterials_Remove(self, context)
+    if self.map_GLOSSINESS_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_RelinkMaterials_Add(self, context, 'GLOSSINESS')
+def Map_map_OPACITY_use_preview_Update(self, context):
+    Map_MapPreview_RelinkMaterials_Remove(self, context)
+    if self.map_OPACITY_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_RelinkMaterials_Add(self, context, 'OPACITY')
+def Map_map_EMISSION_use_preview_Update(self, context):
+    Map_MapPreview_RelinkMaterials_Remove(self, context)
+    if self.map_EMISSION_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_RelinkMaterials_Add(self, context, 'EMISSION')
+def Map_map_PASS_use_preview_Update(self, context):
+    Map_MapPreview_RelinkMaterials_Remove(self, context)
+    if self.map_PASS_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_RelinkMaterials_Add(self, context, 'PASS')
+def Map_map_NORMAL_use_preview_Update(self, context):
+    Map_MapPreview_RelinkMaterials_Remove(self, context)
+    if self.map_NORMAL_use_preview and self.map_normal_data == 'MATERIAL':
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_RelinkMaterials_Add(self, context, 'NORMAL')
+def Map_map_DISPLACEMENT_use_preview_Update(self, context):
+    Map_MapPreview_RelinkMaterials_Remove(self, context)
+    if self.map_DISPLACEMENT_use_preview and self.map_displacement_data == 'MATERIAL':
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_RelinkMaterials_Add(self, context, 'DISPLACEMENT')
+
+# Map Previews with Material Reassign
+def Map_map_ID_use_preview_Update(self, context):
+    Map_MapPreview_ReassignMaterials_Restore(self, context)
+    Map_MapPreview_CustomNodes_Remove(self, context)
+    if self.map_ID_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_ReassignMaterials_Prepare(self, context, 'ID')
+        Map_MapPreview_CustomNodes_Add(self, context, 'ID')
+def Map_map_MASK_use_preview_Update(self, context):
+    Map_MapPreview_ReassignMaterials_Restore(self, context)
+    Map_MapPreview_CustomNodes_Remove(self, context)
+    if self.map_MASK_use_preview:
+        Map_MapPreview_Unset(self, context)
+        Map_MapPreview_ReassignMaterials_Prepare(self, context, 'MASK')
+        Map_MapPreview_CustomNodes_Add(self, context, 'MASK')
+
+###############################################################
+### Update Funcs for last_edited_prop ###
+###############################################################
+def Map_use_bake_Update(self, context):
+    name = "Map: Use in bake"
+    BM_LastEditedProp_Write(context, name, "use_bake", getattr(self, "use_bake"), True)
+def Map_map_type_Update(self, context):
+    name = "Map: Map type"
+    BM_LastEditedProp_Write(context, name, "map_type", getattr(self, "map_type"), True)
+def Map_affect_by_hl_Update(self, context):
+    name = "Map: Affect by Highpoly"
+    BM_LastEditedProp_Write(context, name, "affect_by_hl", getattr(self, "affect_by_hl"), True)
+def Map_hl_cage_type_Update(self, context):
+    name = "Map High to Lowpoly: Cage type"
+    BM_LastEditedProp_Write(context, name, "hl_cage_type", getattr(self, "hl_cage_type"), True)
+def Map_hl_cage_extrusion_Update(self, context):
+    name = "Map High to Lowpoly: Cage extrusion"
+    BM_LastEditedProp_Write(context, name, "hl_cage_extrusion", getattr(self, "hl_cage_extrusion"), True)
+def Map_hl_max_ray_distance_Update(self, context):
+    name = "Map High to Lowpoly: Max ray distance"
+    BM_LastEditedProp_Write(context, name, "hl_max_ray_distance", getattr(self, "hl_max_ray_distance"), True)
+def Map_uv_bake_data_Update(self, context):
+    name = "Map UVs & Layers: Bake Data"
+    BM_LastEditedProp_Write(context, name, "uv_bake_data", getattr(self, "uv_bake_data"), True)
+def Map_uv_bake_target_Update(self, context):
+    name = "Map UVs & Layers: Bake Target"
+    BM_LastEditedProp_Write(context, name, "uv_bake_target", getattr(self, "uv_bake_target"), True)
+def Map_uv_type_Update(self, context):
+    name = "Map UVs & Layers: UV type"
+    BM_LastEditedProp_Write(context, name, "uv_type", getattr(self, "uv_type"), True)
+def Map_uv_snap_islands_to_pixels_Update(self, context):
+    name = "Map UVs & Layers: Snap UV islands to pixels"
+    BM_LastEditedProp_Write(context, name, "uv_snap_islands_to_pixels", getattr(self, "uv_snap_islands_to_pixels"), True)
+def Map_out_use_denoise_Update(self, context):
+    name = "Map Format: Denoise"
+    BM_LastEditedProp_Write(context, name, "out_use_denoise", getattr(self, "out_use_denoise"), True)
+def Map_out_use_scene_color_management_Update(self, context):
+    name = "Map Format: Scene Color Management"
+    BM_LastEditedProp_Write(context, name, "out_use_scene_color_management", getattr(self, "out_use_scene_color_management"), True)
+def Map_out_file_format_Update(self, context):
+    name = "Map Format: File Format"
+    BM_LastEditedProp_Write(context, name, "out_file_format", getattr(self, "out_file_format"), True)
+def Map_out_exr_codec_Update(self, context):
+    name = "Map Format: Exr codec"
+    BM_LastEditedProp_Write(context, name, "out_exr_codec", getattr(self, "out_exr_codec"), True)
+def Map_out_compression_Update(self, context):
+    name = "Map Format: Compression"
+    BM_LastEditedProp_Write(context, name, "out_compression", getattr(self, "out_compression"), True)
+def Map_out_res_Update(self, context):
+    name = "Map Format: Resolution"
+    BM_LastEditedProp_Write(context, name, "out_res", getattr(self, "out_res"), True)
+def Map_out_res_height_Update(self, context):
+    name = "Map Format: Custom Height"
+    BM_LastEditedProp_Write(context, name, "out_res_height", getattr(self, "out_res_height"), True)
+def Map_out_res_width_Update(self, context):
+    name = "Map Format: Custom Width"
+    BM_LastEditedProp_Write(context, name, "out_res_width", getattr(self, "out_res_width"), True)
+def Map_out_margin_Update(self, context):
+    name = "Map Format: Margin"
+    BM_LastEditedProp_Write(context, name, "out_margin", getattr(self, "out_margin"), True)
+def Map_out_margin_type_Update(self, context):
+    name = "Map Format: Margin type"
+    BM_LastEditedProp_Write(context, name, "out_margin_type", getattr(self, "out_margin_type"), True)
+def Map_out_use_32bit_Update(self, context):
+    name = "Map Format: 32bit Float"
+    BM_LastEditedProp_Write(context, name, "out_use_32bit", getattr(self, "out_use_32bit"), True)
+def Map_out_use_alpha_Update(self, context):
+    name = "Map Format: Alpha"
+    BM_LastEditedProp_Write(context, name, "out_use_alpha", getattr(self, "out_use_alpha"), True)
+def Map_out_use_transbg_Update(self, context):
+    name = "Map Format: Transparent bg"
+    BM_LastEditedProp_Write(context, name, "out_use_transbg", getattr(self, "out_use_transbg"), True)
+def Map_out_udim_start_tile_Update(self, context):
+    name = "Map Format: UDIM start tile"
+    BM_LastEditedProp_Write(context, name, "out_udim_start_tile", getattr(self, "out_udim_start_tile"), True)
+def Map_out_udim_end_tile_Update(self, context):
+    name = "Map Format: UDIM end tile"
+    BM_LastEditedProp_Write(context, name, "out_udim_end_tile", getattr(self, "out_udim_end_tile"), True)
+def Map_out_super_sampling_aa_Update(self, context):
+    name = "Map Format: SuperSampling AA"
+    BM_LastEditedProp_Write(context, name, "out_super_sampling_aa", getattr(self, "out_super_sampling_aa"), True)
+def Map_out_samples_Update(self, context):
+    name = "Map Format: Bake Samples"
+    BM_LastEditedProp_Write(context, name, "out_samples", getattr(self, "out_samples"), True)
+def Map_out_use_adaptive_sampling_Update(self, context):
+    name = "Map Format: Adaptive Sampling"
+    BM_LastEditedProp_Write(context, name, "out_use_adaptive_sampling", getattr(self, "out_use_adaptive_sampling"), True)
+def Map_out_adaptive_threshold_Update(self, context):
+    name = "Map Format: Adaptive Threshold"
+    BM_LastEditedProp_Write(context, name, "out_adaptive_threshold", getattr(self, "out_adaptive_threshold"), True)
+def Map_out_min_samples_Update(self, context):
+    name = "Map Format: Min Bake Samples"
+    BM_LastEditedProp_Write(context, name, "out_min_samples", getattr(self, "out_min_samples"), True)
+def Map_map_ALBEDO_prefix_Update(self, context):
+    name = "Map: AlbedoM prefix"
+    BM_LastEditedProp_Write(context, name, "map_ALBEDO_prefix", getattr(self, "map_ALBEDO_prefix"), True)
+def Map_map_METALNESS_prefix_Update(self, context):
+    name = "Map: Metalness prefix"
+    BM_LastEditedProp_Write(context, name, "map_METALNESS_prefix", getattr(self, "map_METALNESS_prefix"), True)
+def Map_map_ROUGHNESS_prefix_Update(self, context):
+    name = "Map: Roughness prefix"
+    BM_LastEditedProp_Write(context, name, "map_ROUGHNESS_prefix", getattr(self, "map_ROUGHNESS_prefix"), True)
+def Map_map_DIFFUSE_prefix_Update(self, context):
+    name = "Map: AlbedoS prefix"
+    BM_LastEditedProp_Write(context, name, "map_DIFFUSE_prefix", getattr(self, "map_DIFFUSE_prefix"), True)
+def Map_map_SPECULAR_prefix_Update(self, context):
+    name = "Map: Specular prefix"
+    BM_LastEditedProp_Write(context, name, "map_SPECULAR_prefix", getattr(self, "map_SPECULAR_prefix"), True)
+def Map_map_GLOSSINESS_prefix_Update(self, context):
+    name = "Map: Glossiness prefix"
+    BM_LastEditedProp_Write(context, name, "map_GLOSSINESS_prefix", getattr(self, "map_GLOSSINESS_prefix"), True)
+def Map_map_OPACITY_prefix_Update(self, context):
+    name = "Map: Opacity prefix"
+    BM_LastEditedProp_Write(context, name, "map_OPACITY_prefix", getattr(self, "map_OPACITY_prefix"), True)
+def Map_map_EMISSION_prefix_Update(self, context):
+    name = "Map: Emission prefix"
+    BM_LastEditedProp_Write(context, name, "map_EMISSION_prefix", getattr(self, "map_EMISSION_prefix"), True)
+def Map_map_PASS_prefix_Update(self, context):
+    name = "Map: BSDF Pass prefix"
+    BM_LastEditedProp_Write(context, name, "map_PASS_prefix", getattr(self, "map_PASS_prefix"), True)
+def Map_map_pass_type_Update(self, context):
+    name = "Map: BSDF Pass type"
+    BM_LastEditedProp_Write(context, name, "map_pass_type", getattr(self, "map_pass_type"), True)
+    if self.map_PASS_use_preview:
+        self.map_PASS_use_preview = False
+        self.map_PASS_use_preview = True
+def Map_map_DECAL_prefix_Update(self, context):
+    name = "Map: Decal Pass prefix"
+    BM_LastEditedProp_Write(context, name, "map_DECAL_prefix", getattr(self, "map_DECAL_prefix"), True)
+def Map_map_decal_pass_type_Update(self, context):
+    name = "Map: Decal Pass type"
+    BM_LastEditedProp_Write(context, name, "map_decal_pass_type", getattr(self, "map_decal_pass_type"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'DECAL')
+def Map_map_decal_height_opacity_invert_Update(self, context):
+    name = "Map: Decal Pass invert"
+    BM_LastEditedProp_Write(context, name, "map_decal_height_opacity_invert", getattr(self, "map_decal_height_opacity_invert"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'DECAL')
+def Map_map_decal_normal_preset_Update(self, context):
+    name = "Map: Decal Pass preset"
+    BM_LastEditedProp_Write(context, name, "map_decal_normal_preset", getattr(self, "map_decal_normal_preset"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'DECAL')
+def Map_map_decal_normal_custom_preset_Update(self, context):
+    name = "Map: Decal Pass custom preset"
+    BM_LastEditedProp_Write(context, name, "map_decal_normal_custom_preset", getattr(self, "map_decal_normal_custom_preset"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'DECAL')
+def Map_map_decal_normal_r_Update(self, context):
+    name = "Map: Decal Pass Swizzle R"
+    BM_LastEditedProp_Write(context, name, "map_decal_normal_r", getattr(self, "map_decal_normal_r"), True)
+def Map_map_decal_normal_g_Update(self, context):
+    name = "Map: Decal Pass G"
+    BM_LastEditedProp_Write(context, name, "map_decal_normal_g", getattr(self, "map_decal_normal_g"), True)
+def Map_map_decal_normal_b_Update(self, context):
+    name = "Map: Decal Pass B"
+    BM_LastEditedProp_Write(context, name, "map_decal_normal_b", getattr(self, "map_decal_normal_b"), True)
+def Map_map_VERTEX_COLOR_LAYER_prefix_Update(self, context):
+    name = "Map: VertexColor Layer prefix"
+    BM_LastEditedProp_Write(context, name, "map_VERTEX_COLOR_LAYER_prefix", getattr(self, "map_VERTEX_COLOR_LAYER_prefix"), True)
+def Map_map_vertexcolor_layer_Update(self, context):
+    Map_MapPreview_CustomNodes_Update(self, context, 'VERTEX_COLOR_LAYER')
+def Map_map_C_COMBINED_prefix_Update(self, context):
+    name = "Map: Cycles Combined prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_COMBINED_prefix", getattr(self, "map_C_COMBINED_prefix"), True)
+def Map_map_C_AO_prefix_Update(self, context):
+    name = "Map: Cycles AO prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_AO_prefix", getattr(self, "map_C_AO_prefix"), True)
+def Map_map_C_SHADOW_prefix_Update(self, context):
+    name = "Map: Cycles Shadown prefix "
+    BM_LastEditedProp_Write(context, name, "map_C_SHADOW_prefix", getattr(self, "map_C_SHADOW_prefix"), True)
+def Map_map_C_POSITION_prefix_Update(self, context):
+    name = "Map: Cycles Position prefix "
+    BM_LastEditedProp_Write(context, name, "map_C_POSITION_prefix", getattr(self, "map_C_POSITION_prefix"), True)
+def Map_map_C_NORMAL_prefix_Update(self, context):
+    name = "Map: Cycles Normal prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_NORMAL_prefix", getattr(self, "map_C_NORMAL_prefix"), True)
+def Map_map_C_UV_prefix_Update(self, context):
+    name = "Map: Cycles UV prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_UV_prefix", getattr(self, "map_C_UV_prefix"), True)
+def Map_map_C_ROUGHNESS_prefix_Update(self, context):
+    name = "Map: Cycles Roughness prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_ROUGHNESS_prefix", getattr(self, "map_C_ROUGHNESS_prefix"), True)
+def Map_map_C_EMIT_prefix_Update(self, context):
+    name = "Map: Cycles Emit prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_EMIT_prefix", getattr(self, "map_C_EMIT_prefix"), True)
+def Map_map_C_ENVIRONMENT_prefix_Update(self, context):
+    name = "Map: Cycles Environment prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_ENVIRONMENT_prefix", getattr(self, "map_C_ENVIRONMENT_prefix"), True)
+def Map_map_C_DIFFUSE_prefix_Update(self, context):
+    name = "Map: Cycles Diffuse prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_DIFFUSE_prefix", getattr(self, "map_C_DIFFUSE_prefix"), True)
+def Map_map_C_GLOSSY_prefix_Update(self, context):
+    name = "Map: Cycles Glossy prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_GLOSSY_prefix", getattr(self, "map_C_GLOSSY_prefix"), True)
+def Map_map_C_TRANSMISSION_prefix_Update(self, context):
+    name = "Map: Cycles Transmission prefix"
+    BM_LastEditedProp_Write(context, name, "map_C_TRANSMISSION_prefix", getattr(self, "map_C_TRANSMISSION_prefix"), True)
+def Map_map_cycles_use_pass_direct_Update(self, context):
+    name = "Map: Cycles use direct"
+    BM_LastEditedProp_Write(context, name, "map_cycles_use_pass_direct", getattr(self, "map_cycles_use_pass_direct"), True)
+def Map_map_cycles_use_pass_indirect_Update(self, context):
+    name = "Map: Cycles use indirect"
+    BM_LastEditedProp_Write(context, name, "map_cycles_use_pass_indirect", getattr(self, "map_cycles_use_pass_indirect"), True)
+def Map_map_cycles_use_pass_color_Update(self, context):
+    name = "Map: Cycles use color pass"
+    BM_LastEditedProp_Write(context, name, "map_cycles_use_pass_color", getattr(self, "map_cycles_use_pass_color"), True)
+def Map_map_cycles_use_pass_diffuse_Update(self, context):
+    name = "Map: Cycles use diffuse pass"
+    BM_LastEditedProp_Write(context, name, "map_cycles_use_pass_diffuse", getattr(self, "map_cycles_use_pass_diffuse"), True)
+def Map_map_cycles_use_pass_glossy_Update(self, context):
+    name = "Map: Cycles use glossy pass"
+    BM_LastEditedProp_Write(context, name, "map_cycles_use_pass_glossy", getattr(self, "map_cycles_use_pass_glossy"), True)
+def Map_map_cycles_use_pass_transmission_Update(self, context):
+    name = "Map: Cycles use transmission pass"
+    BM_LastEditedProp_Write(context, name, "map_cycles_use_pass_transmission", getattr(self, "map_cycles_use_pass_transmission"), True)
+def Map_map_cycles_use_pass_ambient_occlusion_Update(self, context):
+    name = "Map: Cycles use ao pass"
+    BM_LastEditedProp_Write(context, name, "map_cycles_use_pass_ambient_occlusion", getattr(self, "map_cycles_use_pass_ambient_occlusion"), True)
+def Map_map_cycles_use_pass_emit_Update(self, context):
+    name = "Map: Cycles use emit pass"
+    BM_LastEditedProp_Write(context, name, "map_cycles_use_pass_emit", getattr(self, "map_cycles_use_pass_emit"), True)
+def Map_map_NORMAL_prefix_Update(self, context):
+    name = "Map: Normal prefix"
+    BM_LastEditedProp_Write(context, name, "map_NORMAL_prefix", getattr(self, "map_NORMAL_prefix"), True)
+def Map_map_normal_data_Update(self, context):
+    name = "Map: Normal data"
+    BM_LastEditedProp_Write(context, name, "map_normal_data", getattr(self, "map_normal_data"), True)
+    setattr(self, "map_NORMAL_use_preview", False)
+def Map_map_normal_space_Update(self, context):
+    name = "Map: Normal space"
+    BM_LastEditedProp_Write(context, name, "map_normal_space", getattr(self, "map_normal_space"), True)
+def Map_map_normal_preset_Update(self, context):
+    name = "Map: Normal preset"
+    BM_LastEditedProp_Write(context, name, "map_normal_preset", getattr(self, "map_normal_preset"), True)
+def Map_map_normal_custom_preset_Update(self, context):
+    name = "Map: Normal custom preset"
+    BM_LastEditedProp_Write(context, name, "map_normal_custom_preset", getattr(self, "map_normal_custom_preset"), True)
+def Map_map_normal_r_Update(self, context):
+    name = "Map: Normal Swizzle R"
+    BM_LastEditedProp_Write(context, name, "map_normal_r", getattr(self, "map_normal_r"), True)
+def Map_map_normal_g_Update(self, context):
+    name = "Map: Normal G"
+    BM_LastEditedProp_Write(context, name, "map_normal_g", getattr(self, "map_normal_g"), True)
+def Map_map_normal_b_Update(self, context):
+    name = "Map: Normal B"
+    BM_LastEditedProp_Write(context, name, "map_normal_b", getattr(self, "map_normal_b"), True)
+def Map_map_DISPLACEMENT_prefix_Update(self, context):
+    name = "Map: Displacement prefix"
+    BM_LastEditedProp_Write(context, name, "map_DISPLACEMENT_prefix", getattr(self, "map_DISPLACEMENT_prefix"), True)
+def Map_map_displacement_data_Update(self, context):
+    name = "Map: Displacement data"
+    BM_LastEditedProp_Write(context, name, "map_displacement_data", getattr(self, "map_displacement_data"), True)
+    setattr(self, "map_DISPLACEMENT_use_preview", False)
+def Map_map_displacement_result_Update(self, context):
+    name = "Map: Displacement result"
+    BM_LastEditedProp_Write(context, name, "map_displacement_result", getattr(self, "map_displacement_result"), True)
+def Map_map_displacement_subdiv_levels_Update(self, context):
+    name = "Map: Displacement subdiv levels"
+    BM_LastEditedProp_Write(context, name, "map_displacement_subdiv_levels", getattr(self, "map_displacement_subdiv_levels"), True)
+def Map_map_displacement_lowresmesh_Update(self, context):
+    name = "Map: Heights against lowpoly"
+    BM_LastEditedProp_Write(context, name, "map_displacement_lowresmesh", getattr(self, "map_displacement_lowresmesh"), True)
+def Map_map_VECTOR_DISPLACEMENT_prefix_Update(self, context):
+    name = "Map: Vector Displacement prefix"
+    BM_LastEditedProp_Write(context, name, "map_VECTOR_DISPLACEMENT_prefix", getattr(self, "map_VECTOR_DISPLACEMENT_prefix"), True)
+def Map_map_vector_displacement_use_negative_Update(self, context):
+    name = "Map: Vector Displacement include negative"
+    BM_LastEditedProp_Write(context, name, "map_vector_displacement_use_negative", getattr(self, "map_vector_displacement_use_negative"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'VECTOR_DISPLACEMENT')
+def Map_map_vector_displacement_result_Update(self, context):
+    name = "Map: Vector Displacement result"
+    BM_LastEditedProp_Write(context, name, "map_vector_displacement_result", getattr(self, "map_vector_displacement_result"), True)
+def Map_map_vector_displacement_subdiv_levels_Update(self, context):
+    name = "Map: Vector Displacement subdiv levels"
+    BM_LastEditedProp_Write(context, name, "map_vector_displacement_subdiv_levels", getattr(self, "map_vector_displacement_subdiv_levels"), True)
+def Map_map_POSITION_prefix_Update(self, context):
+    name = "Map: Position prefix"
+    BM_LastEditedProp_Write(context, name, "map_POSITION_prefix", getattr(self, "map_POSITION_prefix"), True)
+def Map_map_AO_prefix_Update(self, context):
+    name = "Map: AO prefix"
+    BM_LastEditedProp_Write(context, name, "map_AO_prefix", getattr(self, "map_AO_prefix"), True)
+def Map_map_AO_use_default_Update(self, context):
+    name = "Map: AO default"
+    BM_LastEditedProp_Write(context, name, "map_AO_use_default", getattr(self, "map_AO_use_default"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'AO')
+def Map_map_ao_samples_Update(self, context):
+    name = "Map: AO samples"
+    BM_LastEditedProp_Write(context, name, "map_ao_samples", getattr(self, "map_ao_samples"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'AO')
+def Map_map_ao_distance_Update(self, context):
+    name = "Map: AO distance"
+    BM_LastEditedProp_Write(context, name, "map_ao_distance", getattr(self, "map_ao_distance"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'AO')
+def Map_map_ao_black_point_Update(self, context):
+    name = "Map: AO black point"
+    BM_LastEditedProp_Write(context, name, "map_ao_black_point", getattr(self, "map_ao_black_point"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'AO')
+def Map_map_ao_white_point_Update(self, context):
+    name = "Map: AO white point"
+    BM_LastEditedProp_Write(context, name, "map_ao_white_point", getattr(self, "map_ao_white_point"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'AO')
+def Map_map_ao_brightness_Update(self, context):
+    name = "Map: AO brightness"
+    BM_LastEditedProp_Write(context, name, "map_ao_brightness", getattr(self, "map_ao_brightness"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'AO')
+def Map_map_ao_contrast_Update(self, context):
+    name = "Map: AO contrast"
+    BM_LastEditedProp_Write(context, name, "map_ao_contrast", getattr(self, "map_ao_contrast"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'AO')
+def Map_map_ao_opacity_Update(self, context):
+    name = "Map: AO opacity"
+    BM_LastEditedProp_Write(context, name, "map_ao_opacity", getattr(self, "map_ao_opacity"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'AO')
+def Map_map_ao_use_local_Update(self, context):
+    name = "Map: AO only local"
+    BM_LastEditedProp_Write(context, name, "map_ao_use_local", getattr(self, "map_ao_use_local"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'AO')
+def Map_map_ao_use_invert_Update(self, context):
+    name = "Map: AO invert"
+    BM_LastEditedProp_Write(context, name, "map_ao_use_invert", getattr(self, "map_ao_use_invert"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'AO')
+def Map_map_CAVITY_prefix_Update(self, context):
+    name = "Map: Cavity prefix"
+    BM_LastEditedProp_Write(context, name, "map_CAVITY_prefix", getattr(self, "map_CAVITY_prefix"), True)
+def Map_map_CAVITY_use_default_Update(self, context):
+    name = "Map: Cavity default"
+    BM_LastEditedProp_Write(context, name, "map_CAVITY_use_default", getattr(self, "map_CAVITY_use_default"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'CAVITY')
+def Map_map_cavity_black_point_Update(self, context):
+    name = "Map: Cavity black point"
+    BM_LastEditedProp_Write(context, name, "map_cavity_black_point", getattr(self, "map_cavity_black_point"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'CAVITY')
+def Map_map_cavity_white_point_Update(self, context):
+    name = "Map: Cavity white point"
+    BM_LastEditedProp_Write(context, name, "map_cavity_white_point", getattr(self, "map_cavity_white_point"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'CAVITY')
+def Map_map_cavity_power_Update(self, context):
+    name = "Map: Cavity power"
+    BM_LastEditedProp_Write(context, name, "map_cavity_power", getattr(self, "map_cavity_power"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'CAVITY')
+def Map_map_cavity_use_invert_Update(self, context):
+    name = "Map: Cavity invert"
+    BM_LastEditedProp_Write(context, name, "map_cavity_use_invert", getattr(self, "map_cavity_use_invert"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'CAVITY')
+def Map_map_CURVATURE_prefix_Update(self, context):
+    name = "Map: Curvature prefix"
+    BM_LastEditedProp_Write(context, name, "map_CURVATURE_prefix", getattr(self, "map_CURVATURE_prefix"), True)
+def Map_map_CURVATURE_use_default_Update(self, context):
+    name = "Map: Curvature default"
+    BM_LastEditedProp_Write(context, name, "map_CURVATURE_use_default", getattr(self, "map_CURVATURE_use_default"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'CURVATURE')
+def Map_map_curv_samples_Update(self, context):
+    name = "Map: Curvature samples"
+    BM_LastEditedProp_Write(context, name, "map_curv_samples", getattr(self, "map_curv_samples"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'CURVATURE')
+def Map_map_curv_radius_Update(self, context):
+    name = "Map: Curvature radius"
+    BM_LastEditedProp_Write(context, name, "map_curv_radius", getattr(self, "map_curv_radius"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'CURVATURE')
+def Map_map_curv_black_point_Update(self, context):
+    name = "Map: Curvature black point"
+    BM_LastEditedProp_Write(context, name, "map_curv_black_point", getattr(self, "map_curv_black_point"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'CURVATURE')
+def Map_map_curv_mid_point_Update(self, context):
+    name = "Map: Curvature mid point"
+    BM_LastEditedProp_Write(context, name, "map_curv_mid_point", getattr(self, "map_curv_mid_point"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'CURVATURE')
+def Map_map_curv_white_point_Update(self, context):
+    name = "Map: Curvature white point"
+    BM_LastEditedProp_Write(context, name, "map_curv_white_point", getattr(self, "map_curv_white_point"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'CURVATURE')
+def Map_map_curv_body_gamma_Update(self, context):
+    name = "Map: Curvature body gamma"
+    BM_LastEditedProp_Write(context, name, "map_curv_body_gamma", getattr(self, "map_curv_body_gamma"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'CURVATURE')
+def Map_map_THICKNESS_prefix_Update(self, context):
+    name = "Map: Thickness prefix"
+    BM_LastEditedProp_Write(context, name, "map_THICKNESS_prefix", getattr(self, "map_THICKNESS_prefix"), True)
+def Map_map_THICKNESS_use_default_Update(self, context):
+    name = "Map: Thickness default"
+    BM_LastEditedProp_Write(context, name, "map_THICKNESS_use_default", getattr(self, "map_THICKNESS_use_default"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'THICKNESS')
+def Map_map_thick_samples_Update(self, context):
+    name = "Map: Thickness samples"
+    BM_LastEditedProp_Write(context, name, "map_thick_samples", getattr(self, "map_thick_samples"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'THICKNESS')
+def Map_map_thick_distance_Update(self, context):
+    name = "Map: Thickness distance"
+    BM_LastEditedProp_Write(context, name, "map_thick_distance", getattr(self, "map_thick_distance"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'THICKNESS')
+def Map_map_thick_black_point_Update(self, context):
+    name = "Map: Thickness black point"
+    BM_LastEditedProp_Write(context, name, "map_thick_black_point", getattr(self, "map_thick_black_point"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'THICKNESS')
+def Map_map_thick_white_point_Update(self, context):
+    name = "Map: Thickness white point"
+    BM_LastEditedProp_Write(context, name, "map_thick_white_point", getattr(self, "map_thick_white_point"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'THICKNESS')
+def Map_map_thick_brightness_Update(self, context):
+    name = "Map: Thickness brightness"
+    BM_LastEditedProp_Write(context, name, "map_thick_brightness", getattr(self, "map_thick_brightness"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'THICKNESS')
+def Map_map_thick_contrast_Update(self, context):
+    name = "Map: Thickness contrast"
+    BM_LastEditedProp_Write(context, name, "map_thick_contrast", getattr(self, "map_thick_contrast"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'THICKNESS')
+def Map_map_thick_use_invert_Update(self, context):
+    name = "Map: Thickness invert"
+    BM_LastEditedProp_Write(context, name, "map_thick_use_invert", getattr(self, "map_thick_use_invert"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'THICKNESS')
+def Map_map_ID_prefix_Update(self, context):
+    name = "Map: ID prefix"
+    BM_LastEditedProp_Write(context, name, "map_ID_prefix", getattr(self, "map_ID_prefix"), True)
+def Map_map_matid_data_Update(self, context):
+    name = "Map: ID data"
+    BM_LastEditedProp_Write(context, name, "map_matid_data", getattr(self, "map_matid_data"), True)
+    if self.map_ID_use_preview:
+        self.map_ID_use_preview = False
+        self.map_ID_use_preview = True
+def Map_map_matid_vertex_groups_name_contains_Update(self, context):
+    name = "Map: ID vertex groups name contains"
+    BM_LastEditedProp_Write(context, name, "map_matid_vertex_groups_name_contains", getattr(self, "map_matid_vertex_groups_name_contains"), True)
+    if self.map_ID_use_preview:
+        self.map_ID_use_preview = False
+        self.map_ID_use_preview = True
+def Map_map_matid_algorithm_Update(self, context):
+    name = "Map: ID algorithm"
+    BM_LastEditedProp_Write(context, name, "map_matid_algorithm", getattr(self, "map_matid_algorithm"), True)
+    if self.map_ID_use_preview:
+        self.map_ID_use_preview = False
+        self.map_ID_use_preview = True
+def Map_map_matid_jilter_Update(self, context):
+    name = "Map: ID algorithm"
+    BM_LastEditedProp_Write(context, name, "map_matid_algorithm", getattr(self, "map_matid_algorithm"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'ID')
+def Map_map_MASK_prefix_Update(self, context):
+    name = "Map: Mask prefix"
+    BM_LastEditedProp_Write(context, name, "map_MASK_prefix", getattr(self, "map_MASK_prefix"), True)
+def Map_map_mask_data_Update(self, context):
+    name = "Map: Mask data"
+    BM_LastEditedProp_Write(context, name, "map_mask_data", getattr(self, "map_mask_data"), True)
+    if self.map_MASK_use_preview:
+        self.map_MASK_use_preview = False
+        self.map_MASK_use_preview = True
+def Map_map_mask_vertex_groups_name_contains_Update(self, context):
+    name = "Map: Mask vertex groups name contains"
+    BM_LastEditedProp_Write(context, name, "map_mask_vertex_groups_name_contains", getattr(self, "map_mask_vertex_groups_name_contains"), True)
+    if self.map_MASK_use_preview:
+        self.map_MASK_use_preview = False
+        self.map_MASK_use_preview = True
+def Map_map_mask_materials_name_contains_Update(self, context):
+    name = "Map: Mask materials name contains"
+    BM_LastEditedProp_Write(context, name, "map_mask_materials_name_contains", getattr(self, "map_mask_materials_name_contains"), True)
+    if self.map_MASK_use_preview:
+        self.map_MASK_use_preview = False
+        self.map_MASK_use_preview = True
+def Map_map_mask_color1_Update(self, context):
+    name = "Map: Mask color1"
+    BM_LastEditedProp_Write(context, name, "map_mask_color1", getattr(self, "map_mask_color1"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'MASK')
+def Map_map_mask_color2_Update(self, context):
+    name = "Map: Mask color2"
+    BM_LastEditedProp_Write(context, name, "map_mask_color2", getattr(self, "map_mask_color2"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'MASK')
+def Map_map_mask_use_invert_Update(self, context):
+    name = "Map: Mask invert"
+    BM_LastEditedProp_Write(context, name, "map_mask_use_invert", getattr(self, "map_mask_use_invert"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'MASK')
+def Map_map_XYZMASK_prefix_Update(self, context):
+    name = "Map: XYZ Mask prefix"
+    BM_LastEditedProp_Write(context, name, "map_XYZMASK_prefix", getattr(self, "map_XYZMASK_prefix"), True)
+def Map_map_XYZMASK_use_default_Update(self, context):
+    name = "Map: XYZ Mask default"
+    BM_LastEditedProp_Write(context, name, "map_XYZMASK_use_default", getattr(self, "map_XYZMASK_use_default"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'XYZMASK')
+def Map_map_xyzmask_use_x_Update(self, context):
+    name = "Map: XYZ Mask X"
+    BM_LastEditedProp_Write(context, name, "map_xyzmask_use_x", getattr(self, "map_xyzmask_use_x"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'XYZMASK')
+def Map_map_xyzmask_use_y_Update(self, context):
+    name = "Map: XYZ Mask Y"
+    BM_LastEditedProp_Write(context, name, "map_xyzmask_use_y", getattr(self, "map_xyzmask_use_y"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'XYZMASK')
+def Map_map_xyzmask_use_z_Update(self, context):
+    name = "Map: XYZ Mask Z"
+    BM_LastEditedProp_Write(context, name, "map_xyzmask_use_z", getattr(self, "map_xyzmask_use_z"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'XYZMASK')
+def Map_map_xyzmask_coverage_Update(self, context):
+    name = "Map: XYZ Mask coverage"
+    BM_LastEditedProp_Write(context, name, "map_xyzmask_coverage", getattr(self, "map_xyzmask_coverage"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'XYZMASK')
+def Map_map_xyzmask_saturation_Update(self, context):
+    name = "Map: XYZ Mask saturation"
+    BM_LastEditedProp_Write(context, name, "map_xyzmask_saturation", getattr(self, "map_xyzmask_saturation"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'XYZMASK')
+def Map_map_xyzmask_opacity_Update(self, context):
+    name = "Map: XYZ Mask opacity"
+    BM_LastEditedProp_Write(context, name, "map_xyzmask_opacity", getattr(self, "map_xyzmask_opacity"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'XYZMASK')
+def Map_map_xyzmask_use_invert_Update(self, context):
+    name = "Map: XYZ Mask invert"
+    BM_LastEditedProp_Write(context, name, "map_xyzmask_use_invert", getattr(self, "map_xyzmask_use_invert"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'XYZMASK')
+def Map_map_GRADIENT_prefix_Update(self, context):
+    name = "Map: Gradient Mask prefix"
+    BM_LastEditedProp_Write(context, name, "map_GRADIENT_prefix", getattr(self, "map_GRADIENT_prefix"), True)
+def Map_map_GRADIENT_use_default_Update(self, context):
+    name = "Map: Gradient Mask default"
+    BM_LastEditedProp_Write(context, name, "map_GRADIENT_use_default", getattr(self, "map_GRADIENT_use_default"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
+def Map_map_gmask_type_Update(self, context):
+    name = "Map: Gradient Mask type"
+    BM_LastEditedProp_Write(context, name, "map_gmask_type", getattr(self, "map_gmask_type"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
+def Map_map_gmask_location_x_Update(self, context):
+    name = "Map: Gradient Mask location x"
+    BM_LastEditedProp_Write(context, name, "map_gmask_location_x", getattr(self, "map_gmask_location_x"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
+def Map_map_gmask_location_y_Update(self, context):
+    name = "Map: Gradient Mask location y"
+    BM_LastEditedProp_Write(context, name, "map_gmask_location_y", getattr(self, "map_gmask_location_y"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
+def Map_map_gmask_location_z_Update(self, context):
+    name = "Map: Gradient Mask location z"
+    BM_LastEditedProp_Write(context, name, "map_gmask_location_z", getattr(self, "map_gmask_location_z"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
+def Map_map_gmask_rotation_x_Update(self, context):
+    name = "Map: Gradient Mask rotation x"
+    BM_LastEditedProp_Write(context, name, "map_gmask_rotation_x", getattr(self, "map_gmask_rotation_x"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
+def Map_map_gmask_rotation_y_Update(self, context):
+    name = "Map: Gradient Mask rotation y"
+    BM_LastEditedProp_Write(context, name, "map_gmask_rotation_y", getattr(self, "map_gmask_rotation_y"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
+def Map_map_gmask_rotation_z_Update(self, context):
+    name = "Map: Gradient Mask rotation z"
+    BM_LastEditedProp_Write(context, name, "map_gmask_rotation_z", getattr(self, "map_gmask_rotation_z"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
+def Map_map_gmask_scale_x_Update(self, context):
+    name = "Map: Gradient Mask scale x"
+    BM_LastEditedProp_Write(context, name, "map_gmask_scale_x", getattr(self, "map_gmask_scale_x"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
+def Map_map_gmask_scale_y_Update(self, context):
+    name = "Map: Gradient Mask scale y"
+    BM_LastEditedProp_Write(context, name, "map_gmask_scale_y", getattr(self, "map_gmask_scale_y"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
+def Map_map_gmask_scale_z_Update(self, context):
+    name = "Map: Gradient Mask scale z"
+    BM_LastEditedProp_Write(context, name, "map_gmask_scale_z", getattr(self, "map_gmask_scale_z"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
+def Map_map_gmask_coverage_Update(self, context):
+    name = "Map: Gradient Mask coverage"
+    BM_LastEditedProp_Write(context, name, "map_gmask_coverage", getattr(self, "map_gmask_coverage"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
+def Map_map_gmask_contrast_Update(self, context):
+    name = "Map: Gradient Mask contrast"
+    BM_LastEditedProp_Write(context, name, "map_gmask_contrast", getattr(self, "map_gmask_contrast"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
+def Map_map_gmask_saturation_Update(self, context):
+    name = "Map: Gradient Mask saturation"
+    BM_LastEditedProp_Write(context, name, "map_gmask_saturation", getattr(self, "map_gmask_saturation"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
+def Map_map_gmask_opacity_Update(self, context):
+    name = "Map: Gradient Mask opacity"
+    BM_LastEditedProp_Write(context, name, "map_gmask_opacity", getattr(self, "map_gmask_opacity"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
+def Map_map_gmask_use_invert_Update(self, context):
+    name = "Map: Gradient Mask invert"
+    BM_LastEditedProp_Write(context, name, "map_gmask_use_invert", getattr(self, "map_gmask_use_invert"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'GRADIENT')
+def Map_map_EDGE_prefix_Update(self, context):
+    name = "Map: Edge Mask prefix"
+    BM_LastEditedProp_Write(context, name, "map_EDGE_prefix", getattr(self, "map_EDGE_prefix"), True)
+def Map_map_EDGE_use_default_Update(self, context):
+    name = "Map: Edge Mask default"
+    BM_LastEditedProp_Write(context, name, "map_EDGE_use_default", getattr(self, "map_EDGE_use_default"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'EDGE')
+def Map_map_edgemask_samples_Update(self, context):
+    name = "Map: Edge Mask samples"
+    BM_LastEditedProp_Write(context, name, "map_edgemask_samples", getattr(self, "map_edgemask_samples"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'EDGE')
+def Map_map_edgemask_radius_Update(self, context):
+    name = "Map: Edge Mask radius"
+    BM_LastEditedProp_Write(context, name, "map_edgemask_radius", getattr(self, "map_edgemask_radius"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'EDGE')
+def Map_map_edgemask_edge_contrast_Update(self, context):
+    name = "Map: Edge Mask edge contrast"
+    BM_LastEditedProp_Write(context, name, "map_edgemask_edge_contrast", getattr(self, "map_edgemask_edge_contrast"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'EDGE')
+def Map_map_edgemask_body_contrast_Update(self, context):
+    name = "Map: Edge Mask body contrast"
+    BM_LastEditedProp_Write(context, name, "map_edgemask_body_contrast", getattr(self, "map_edgemask_body_contrast"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'EDGE')
+def Map_map_edgemask_use_invert_Update(self, context):
+    name = "Map: Edge Mask invert"
+    BM_LastEditedProp_Write(context, name, "map_edgemask_use_invert", getattr(self, "map_edgemask_use_invert"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'EDGE')
+def Map_map_WIREFRAME_prefix_Update(self, context):
+    name = "Map: Wireframe prefix"
+    BM_LastEditedProp_Write(context, name, "map_WIREFRAME_prefix", getattr(self, "map_WIREFRAME_prefix"), True)
+def Map_map_wireframemask_line_thickness_Update(self, context):
+    name = "Map: Wireframe Mask line thickness"
+    BM_LastEditedProp_Write(context, name, "map_wireframemask_line_thickness", getattr(self, "map_wireframemask_line_thickness"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'WIREFRAME')
+def Map_map_wireframemask_use_invert_Update(self, context):
+    name = "Map: Wireframe Mask invert"
+    BM_LastEditedProp_Write(context, name, "map_wireframemask_use_invert", getattr(self, "map_wireframemask_use_invert"), True)
+    Map_MapPreview_CustomNodes_Update(self, context, 'WIREFRAME')
+
+def Object_use_bake_Update(self, context):
+    name = "Object: Use in bake"
+    BM_LastEditedProp_Write(context, name, "use_bake", getattr(self, "use_bake"), False)
+def Object_decal_use_custom_camera_Update(self, context):
+    name = "Object Decal: Use custom camera"
+    BM_LastEditedProp_Write(context, name, "decal_use_custom_camera", getattr(self, "decal_use_custom_camera"), False)
+def Object_decal_custom_camera_Update(self, context):
+    name = "Object Decal: Custom camera"
+    BM_LastEditedProp_Write(context, name, "decal_custom_camera", getattr(self, "decal_custom_camera"), False)
+def Object_decal_upper_coordinate_Update(self, context):
+    name = "Object Decal: Upper coordinate"
+    BM_LastEditedProp_Write(context, name, "decal_upper_coordinate", getattr(self, "decal_upper_coordinate"), False)
+def Object_decal_boundary_offset_Update(self, context):
+    name = "Object Decal: Boundary offset"
+    BM_LastEditedProp_Write(context, name, "decal_boundary_offset", getattr(self, "decal_boundary_offset"), False)
+def Object_hl_decals_use_separate_texset_Update(self, context):
+    name = "Object High to Lowpoly: Use separate texset for decals"
+    BM_LastEditedProp_Write(context, name, "hl_decals_use_separate_texset", getattr(self, "hl_decals_use_separate_texset"), False)
+def Object_hl_decals_separate_texset_prefix_Update(self, context):
+    name = "Object High to Lowpoly: Decals TexSet prefix"
+    BM_LastEditedProp_Write(context, name, "hl_decals_separate_texset_prefix", getattr(self, "hl_decals_separate_texset_prefix"), False)
+def Object_hl_cage_type_Update(self, context):
+    name = "Object High to Lowpoly: Cage type"
+    BM_LastEditedProp_Write(context, name, "hl_cage_type", getattr(self, "hl_cage_type"), False)
+def Object_hl_cage_extrusion_Update(self, context):
+    name = "Object High to Lowpoly: Cage extrusion"
+    BM_LastEditedProp_Write(context, name, "hl_cage_extrusion", getattr(self, "hl_cage_extrusion"), False)
+def Object_hl_max_ray_distance(self, context):
+    name = "Object High to Lowpoly: Max ray distance"
+    BM_LastEditedProp_Write(context, name, "hl_max_ray_distance", getattr(self, "hl_max_ray_distance"), False)
+def Object_uv_bake_data_Update(self, context):
+    name = "Object UVs & Layers: Bake data"
+    BM_LastEditedProp_Write(context, name, "uv_bake_data", getattr(self, "uv_bake_data"), False)
+def Object_uv_bake_target_Update(self, context):
+    name = "Object UVs & Layers: Bake target"
+    BM_LastEditedProp_Write(context, name, "uv_bake_target", getattr(self, "uv_bake_target"), False)
+def Object_uv_type_Update(self, context):
+    name = "Object UVs & Layers: UV type"
+    BM_LastEditedProp_Write(context, name, "uv_type", getattr(self, "uv_type"), False)
+def Object_uv_snap_islands_to_pixels_Update(self, context):
+    name = "Object UVs & Layers: Snap UV islands to pixels"
+    BM_LastEditedProp_Write(context, name, "uv_snap_islands_to_pixels", getattr(self, "uv_snap_islands_to_pixels"), False)
+def Object_uv_use_auto_unwrap_Update(self, context):
+    name = "Object UVs & Layers: Auto unwrap"
+    BM_LastEditedProp_Write(context, name, "uv_use_auto_unwrap", getattr(self, "uv_use_auto_unwrap"), False)
+def Object_uv_auto_unwrap_angle_limit_Update(self, context):
+    name = "Object UVs & Layers: Auto unwrap angle limit"
+    BM_LastEditedProp_Write(context, name, "uv_auto_unwrap_angle_limit", getattr(self, "uv_auto_unwrap_angle_limit"), False)
+def Object_uv_auto_unwrap_island_margin_Update(self, context):
+    name = "Object UVs & Layers: Auto unwrap islands margin"
+    BM_LastEditedProp_Write(context, name, "uv_auto_unwrap_island_margin", getattr(self, "uv_auto_unwrap_island_margin"), False)
+def Object_uv_auto_unwrap_use_scale_to_bounds_Update(self, context):
+    name = "Object UVs & Layers: Auto unwrap scale to bounds"
+    BM_LastEditedProp_Write(context, name, "uv_auto_unwrap_use_scale_to_bounds", getattr(self, "uv_auto_unwrap_use_scale_to_bounds"), False)
+def Object_matgroups_batch_naming_type_Update(self, context):
+    name = "Object MatGroups: Mat Groups naming"
+    BM_LastEditedProp_Write(context, name, "matgroups_batch_naming_type", getattr(self, "matgroups_batch_naming_type"), False)
+def Object_out_use_denoise_Update(self, context):
+    name = "Object Format: Denoise"
+    BM_LastEditedProp_Write(context, name, "out_use_denoise", getattr(self, "out_use_denoise"), False)
+def Object_out_use_scene_color_management_Update(self, context):
+    name = "Object Format: Scene Color Management"
+    BM_LastEditedProp_Write(context, name, "out_use_scene_color_management", getattr(self, "out_use_scene_color_management"), False)
+def Object_out_file_format_Update(self, context):
+    name = "Object Format: File Format"
+    BM_LastEditedProp_Write(context, name, "out_file_format", getattr(self, "out_file_format"), False)
+def Object_out_exr_codec_Update(self, context):
+    name = "Object Format: Exr codec"
+    BM_LastEditedProp_Write(context, name, "out_exr_codec", getattr(self, "out_exr_codec"), False)
+def Object_out_compression_Update(self, context):
+    name = "Object Format: Compression"
+    BM_LastEditedProp_Write(context, name, "out_compression", getattr(self, "out_compression"), False)
+def Object_out_res_Update(self, context):
+    name = "Object Format: Resolution"
+    BM_LastEditedProp_Write(context, name, "out_res", getattr(self, "out_res"), False)
+def Object_out_res_height_Update(self, context):
+    name = "Object Format: Custom height"
+    BM_LastEditedProp_Write(context, name, "out_res_height", getattr(self, "out_res_height"), False)
+def Object_out_res_width_Update(self, context):
+    name = "Object Format: Custom width"
+    BM_LastEditedProp_Write(context, name, "out_res_width", getattr(self, "out_res_width"), False)
+def Object_out_margin_Update(self, context):
+    name = "Object Format: Margin"
+    BM_LastEditedProp_Write(context, name, "out_margin", getattr(self, "out_margin"), False)
+def Object_out_margin_type_Update(self, context):
+    name = "Object Format: Margin type"
+    BM_LastEditedProp_Write(context, name, "out_margin_type", getattr(self, "out_margin_type"), False)
+def Object_out_use_32bit_Update(self, context):
+    name = "Object Format: 32bit float"
+    BM_LastEditedProp_Write(context, name, "out_use_32bit", getattr(self, "out_use_32bit"), False)
+def Object_out_use_alpha_Update(self, context):
+    name = "Object Format: Alpha"
+    BM_LastEditedProp_Write(context, name, "out_use_alpha", getattr(self, "out_use_alpha"), False)
+def Object_out_use_transbg_Update(self, context):
+    name = "Object Format: Transparent bg"
+    BM_LastEditedProp_Write(context, name, "out_use_transbg", getattr(self, "out_use_transbg"), False)
+def Object_out_udim_start_tile_Update(self, context):
+    name = "Object Format: UDIM start tile"
+    BM_LastEditedProp_Write(context, name, "out_udim_start_tile", getattr(self, "out_udim_start_tile"), False)
+def Object_out_udim_end_tile_Update(self, context):
+    name = "Object Format: UDIM end tile"
+    BM_LastEditedProp_Write(context, name, "out_udim_end_tile", getattr(self, "out_udim_end_tile"), False)
+def Object_out_super_sampling_aa_Update(self, context):
+    name = "Object Format: SuperSampling AA"
+    BM_LastEditedProp_Write(context, name, "out_super_sampling_aa", getattr(self, "out_super_sampling_aa"), False)
+def Object_out_samples(self, context):
+    name = "Object Format: Bake samples"
+    BM_LastEditedProp_Write(context, name, "out_samples", getattr(self, "out_samples"), False)
+def Object_out_use_adaptive_sampling_Update(self, context):
+    name = "Object Format: Adaptive sampling"
+    BM_LastEditedProp_Write(context, name, "out_use_adaptive_sampling", getattr(self, "out_use_adaptive_sampling"), False)
+def Object_out_adaptive_threshold_Update(self, context):
+    name = "Object Format: Adaptive threshold"
+    BM_LastEditedProp_Write(context, name, "out_adaptive_threshold", getattr(self, "out_adaptive_threshold"), False)
+def Object_out_min_samples_Update(self, context):
+    name = "Object Format: Bake min samples"
+    BM_LastEditedProp_Write(context, name, "out_min_samples", getattr(self, "out_min_samples"), False)
+def Object_csh_use_triangulate_lowpoly_Update(self, context):
+    name = "Object Shading: Triangulate lowpoly"
+    BM_LastEditedProp_Write(context, name, "csh_use_triangulate_lowpoly", getattr(self, "csh_use_triangulate_lowpoly"), False)
+def Object_csh_use_lowpoly_recalc_normals_Update(self, context):
+    name = "Object Shading: Recalculate Lowpoly Normals Outside"
+    BM_LastEditedProp_Write(context, name, "csh_use_lowpoly_recalc_normals", getattr(self, "csh_use_lowpoly_recalc_normals"), False)
+def Object_csh_lowpoly_use_smooth_Update(self, context):
+    name = "Object Shading: Smooth lowpoly"
+    BM_LastEditedProp_Write(context, name, "csh_lowpoly_use_smooth", getattr(self, "csh_lowpoly_use_smooth"), False)
+def Object_csh_lowpoly_smoothing_groups_enum_Update(self, context):
+    name = "Object Shading: Lowpoly smoothing type"
+    BM_LastEditedProp_Write(context, name, "csh_lowpoly_smoothing_groups_enum", getattr(self, "csh_lowpoly_smoothing_groups_enum"), False)
+def Object_csh_lowpoly_smoothing_groups_angle_Update(self, context):
+    name = "Object Shading: Lowpoly auto smooth angle"
+    BM_LastEditedProp_Write(context, name, "csh_lowpoly_smoothing_groups_angle", getattr(self, "csh_lowpoly_smoothing_groups_angle"), False)
+def Object_csh_lowpoly_smoothing_groups_name_contains_Update(self, context):
+    name = "Object Shading: Lowpoly vertex groups name contains"
+    BM_LastEditedProp_Write(context, name, "csh_lowpoly_smoothing_groups_name_contains", getattr(self, "csh_lowpoly_smoothing_groups_name_contains"), False)
+def Object_csh_use_highpoly_recalc_normals_Update(self, context):
+    name = "Object Shading: Recalculate Highpoly Normals Outside"
+    BM_LastEditedProp_Write(context, name, "csh_use_highpoly_recalc_normals", getattr(self, "csh_use_highpoly_recalc_normals"), False)
+def Object_csh_highpoly_use_smooth_Update(self, context):
+    name = "Object Shading: Smooth highpoly"
+    BM_LastEditedProp_Write(context, name, "csh_highpoly_use_smooth", getattr(self, "csh_highpoly_use_smooth"), False)
+def Object_csh_highpoly_smoothing_groups_enum_Update(self, context):
+    name = "Object Shading: Highpoly smoothing type"
+    BM_LastEditedProp_Write(context, name, "csh_highpoly_smoothing_groups_enum", getattr(self, "csh_highpoly_smoothing_groups_enum"), False)
+def Object_csh_highpoly_smoothing_groups_angle_Update(self, context):
+    name = "Object Shading: Highpoly auto smooth angle"
+    BM_LastEditedProp_Write(context, name, "csh_highpoly_smoothing_groups_angle", getattr(self, "csh_highpoly_smoothing_groups_angle"), False)
+def Object_csh_highpoly_smoothing_groups_name_contains_Update(self, context):
+    name = "Object Shading: Highpoly vertex groups name contains"
+    BM_LastEditedProp_Write(context, name, "csh_highpoly_smoothing_groups_name_contains", getattr(self, "csh_highpoly_smoothing_groups_name_contains"), False)
+def Object_bake_save_internal_Update(self, context):
+    name = "Object Bake Output: Save internally"
+    BM_LastEditedProp_Write(context, name, "bake_save_internal", getattr(self, "bake_save_internal"), False)
+def Object_bake_output_filepath_Update(self, context):
+    name = "Object Bake Output: Filepath"
+    BM_LastEditedProp_Write(context, name, "bake_output_filepath", getattr(self, "bake_output_filepath"), False)
+def Object_bake_create_subfolder_Update(self, context):
+    name = "Object Bake Output: Create subfolder"
+    BM_LastEditedProp_Write(context, name, "bake_create_subfolder", getattr(self, "bake_create_subfolder"), False)
+def Object_bake_subfolder_name_Update(self, context):
+    name = "Object Bake Output: Subfolder name"
+    BM_LastEditedProp_Write(context, name, "bake_subfolder_name", getattr(self, "bake_subfolder_name"), False)
+def Object_bake_batchname_Update(self, context):
+    name = "Object Bake Output: Batch name"
+    BM_LastEditedProp_Write(context, name, "bake_batchname", getattr(self, "bake_batchname"), False)
+def Object_bake_create_material_Update(self, context):
+    name = "Object Bake Output: Create material"
+    BM_LastEditedProp_Write(context, name, "bake_create_material", getattr(self, "bake_create_material"), False)
+def Object_bake_assign_modifiers_Update(self, context):
+    name = "Object Bake Output: Assign Modifiers"
+    BM_LastEditedProp_Write(context, name, "bake_assign_modifiers", getattr(self, "bake_assign_modifiers"), False)
+def Object_bake_device_Update(self, context):
+    name = "Object Bake Output: Device"
+    BM_LastEditedProp_Write(context, name, "bake_device", getattr(self, "bake_device"), False)
+def Object_bake_view_from_Update(self, context):
+    name = "Object Bake Output: View from"
+    BM_LastEditedProp_Write(context, name, "bake_view_from", getattr(self, "bake_view_from"), False)
+def Object_bake_hide_when_inactive_Update(self, context):
+    name = "Object Bake Output: Hide when Inactive"
+    BM_LastEditedProp_Write(context, name, "bake_hide_when_inactive", getattr(self, "bake_hide_when_inactive"), False)
+def Object_bake_vg_index_Update(self, context):
+    name = "Object Bake Output: VG Index"
+    BM_LastEditedProp_Write(context, name, "bake_vg_index", getattr(self, "bake_vg_index"), False)
+
+###############################################################
+### Update Funcs for cauc_objects object ###
+###############################################################
+def BakeGroup_UnsetBoolsUpdate(self, props):
+    for prop in props:
+        setattr(self, prop, False)
+
+def BakeGroup_use_include_Update(self, context):
+    if self.use_include:
+        BakeGroup_UnsetBoolsUpdate(self, ["is_highpoly", "is_cage"])
+def BakeGroup_is_highpoly_Update(self, context):
+    if self.is_highpoly:
+        BakeGroup_UnsetBoolsUpdate(self, ["use_include", "is_cage"])
+def BakeGroup_is_cage_Update(self, context):
+    if self.is_cage:
+        BakeGroup_UnsetBoolsUpdate(self, ["use_include", "is_highpoly"])
+
+
+
+########################################################################
+########################################################################
+########################################################################
+########################################################################
+########################################################################
+
 
 def BM_PROPUTIL_Highpoly_get_items(self, self_object, objects, include: list):
     items = []
