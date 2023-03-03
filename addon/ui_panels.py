@@ -31,6 +31,7 @@ from .ui_base import (
 )
 from bpy.types import (
     UIList,
+    AddonPreferences,
 )
 
 bm_space_type = 'VIEW_3D'
@@ -62,7 +63,7 @@ class BM_PT_Objects(BM_PT_ObjectsBase):
     bl_category = bm_category
 
 
-class BM_PT_Objec(BM_PT_ObjectBase):
+class BM_PT_Object(BM_PT_ObjectBase):
     bl_space_type = bm_space_type
     bl_region_type = bm_region_type
     bl_category = bm_category
@@ -93,22 +94,22 @@ class BM_PT_Bake(BM_PT_BakeBase):
     bl_category = bm_category
 
 
-class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
+class BM_PREFS_AddonPreferences(AddonPreferences):
     bl_idname = __package__
 
     def draw(self, context):
-        bm_props = bakemaster
+        bakemaster = context.scene.bakemaster
         layout = self.layout.column(align=True)
-        layout.prop(bm_props, 'lowpoly_tag')
-        layout.prop(bm_props, 'highpoly_tag')
-        layout.prop(bm_props, 'cage_tag')
-        layout.prop(bm_props, 'decal_tag')
+        layout.prop(bakemaster, 'lowpoly_tag')
+        layout.prop(bakemaster, 'highpoly_tag')
+        layout.prop(bakemaster, 'cage_tag')
+        layout.prop(bakemaster, 'decal_tag')
         layout = self.layout.column(align=True)
-        layout.prop(bm_props, 'bake_uv_layer_tag')
+        layout.prop(bakemaster, 'bake_uv_layer_tag')
         layout = self.layout.column(align=True)
-        layout.prop(bm_props, 'use_hide_notbaked')
+        layout.prop(bakemaster, 'use_hide_notbaked')
         layout = self.layout.column(align=True)
-        layout.prop(bm_props, 'bake_match_maps_type')
+        layout.prop(bakemaster, 'bake_match_maps_type')
 
 
 class BM_UL_BakeJobs_Item(UIList):
@@ -127,25 +128,28 @@ class BM_UL_BakeJobs_Item(UIList):
         pass
 
 
-class BM_ALEP_UL_Objects_Item(bpy.types.UIList):
+class BM_UL_Redolastaction_Objects_Item(UIList):
     def draw_item(self, context, layout, data, item, active_data,
                   active_propname, index):
-        source_object = BM_GETUTILS_source_object(context, item.object_name)
-        if source_object:
-            object = source_object[0]
-            try:
-                context.scene.objects[object.object_name]
-            except (KeyError, AttributeError, UnboundLocalError):
-                icon = 'GHOST_DISABLED'
-            else:
-                icon = 'OUTLINER_OB_MESH'
+        bakemaster = context.scene.bakemaster
+        object = bakemaster.bakejobs[item.bakejob_index].objects[
+                item.object_index]
+        if object is None:
+            return
 
+        try:
+            context.scene.objects[object.name]
+        except KeyError:
+            if any([object.nm_is_uc, object.nm_is_lc]):
+                icon = 'TRIA_RIGHT'
+            else:
+                icon = 'GHOST_DISABLED'
+        else:
+            icon = 'OUTLINER_OB_MESH'
             if object.hl_is_lowpoly:
                 icon = 'MESH_PLANE'
             if object.decal_is_decal:
                 icon = 'XRAY'
-        else:
-            icon = 'TRIA_RIGHT'
 
         row = layout.row()
         split = row.split(factor=0.1)
@@ -153,7 +157,7 @@ class BM_ALEP_UL_Objects_Item(bpy.types.UIList):
         column.prop(item, 'use_affect', text="")
         row.emboss = 'NONE'
         column = split.row()
-        column.label(text=item.object_name, icon=icon)
+        column.label(text=item.name, icon=icon)
         row.active = item.use_affect
 
     def invoke(self, context, event):
@@ -163,7 +167,7 @@ class BM_ALEP_UL_Objects_Item(bpy.types.UIList):
         pass
 
 
-class BM_ALEP_UL_Maps_Item(bpy.types.UIList):
+class BM_UL_Redolastaction_Maps_Item(UIList):
     def draw_item(self, context, layout, data, item, active_data,
                   active_propname, index):
         row = layout.row()
@@ -182,20 +186,19 @@ class BM_ALEP_UL_Maps_Item(bpy.types.UIList):
         pass
 
 
-class BM_CAUC_UL_Objects_Item(bpy.types.UIList):
+class BM_UL_BakeGroups_Item(UIList):
     def draw_item(self, context, layout, data, item, active_data,
                   active_propname, index):
-        source_object = [object for object in context.scene.bm_table_of_objects
-                         if object.object_name == item.object_name]
-        if len(source_object) == 0:
-            layout.label(text="ERROR. Object not found", icon='ERROR')
+        bakemaster = context.scene.bakemaster
+        object = bakemaster.bakejobs[item.bakejob_index].objects[
+                item.object_index]
+        if object is None:
             return
 
         active = True
-        object = source_object[0]
         try:
-            context.scene.objects[object.object_name]
-        except (KeyError, AttributeError, UnboundLocalError):
+            context.scene.objects[object.name]
+        except KeyError:
             active = False
 
         row = layout.row()
@@ -208,9 +211,9 @@ class BM_CAUC_UL_Objects_Item(bpy.types.UIList):
         cage = column.row()
         cage.prop(item, 'is_cage', text="", icon='SELECT_SET')
         column = split.row()
-        column.label(text=item.object_name)
+        column.label(text=item.name)
 
-        if item.use_include:
+        if item.is_lowpoly:
             high.active = False
             cage.active = False
         elif item.is_highpoly:
@@ -220,10 +223,10 @@ class BM_CAUC_UL_Objects_Item(bpy.types.UIList):
             low.active = False
             high.active = False
 
+        layout.active = False
         if active:
-            layout.active = any([item.use_include, item.is_highpoly, item.is_cage])
-        else:
-            layout.active = False
+            layout.active = any([item.is_lowpoly, item.is_highpoly,
+                                 item.is_cage])
 
     def invoke(self, context, event):
         pass
@@ -231,8 +234,10 @@ class BM_CAUC_UL_Objects_Item(bpy.types.UIList):
     def draw_filter(self, context, layout):
         pass
 
-class BM_FMR_UL_Item(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, active_data, active_propname, index):
+
+class BM_UL_Matchres_Item(UIList):
+    def draw_item(self, context, layout, data, item, active_data,
+                  active_propname, index):
         row = layout.row()
         row.label(text="%s " % item.image_res)
         row.label(text="%s " % item.image_name)
@@ -244,322 +249,314 @@ class BM_FMR_UL_Item(bpy.types.UIList):
     def draw_filter(self, context, layout):
         pass
 
-class BM_UL_Table_of_Objects_Item(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        row = layout.row()   
-        # name matching - handling indent and rowman OTs
-        if bakemaster.use_name_matching:
-            item_draw_ghost = False
-            indents = [0, 2, 4, 6]
-            for i in range(indents[item.nm_this_indent]):
-                row.split(factor=0.1)
 
-            # drawing object
-            if not any ([item.nm_is_uc, item.nm_is_lc]):
-                # ghost object
-                try:
-                    context.scene.objects[item.object_name]
-                except (KeyError, AttributeError, UnboundLocalError):
-                    row.label(text=item.object_name, icon='GHOST_DISABLED')
-                    if not any([item.nm_is_uc, item.nm_is_lc, item.nm_is_detached]):
-                        row.prop(item, 'use_bake', text="", icon='RESTRICT_RENDER_ON', emboss=False)
-                    else:
-                        item_draw_ghost = True
-                    row.enabled = False
-                # normal object
-                else:
-                    icons = ['MESH_PLANE', 'VIEW_ORTHO', 'SELECT_SET']
-                    props = [item.hl_is_lowpoly, item.hl_is_highpoly, item.hl_is_cage]
-                    icon_ = [icon for index, icon in enumerate(icons) if props[index] is True]
-                    if (len(icon_)):
-                        icon = icon_[0]
-                    else:
-                        icon = 'OUTLINER_OB_MESH'
-                    if (item.hl_is_highpoly and item.hl_is_decal) or item.decal_is_decal:
-                        icon = 'XRAY'
-                    row.label(text=item.object_name, icon=icon)
-            
-            # drawing containers
-            else:
-                row.emboss = 'NONE'
+class BM_UL_BakeJob_Objects_Item(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data,
+                  active_propname, index):
+        bakemaster = context.scene.bakemaster
+        bakejob = bakemaster.bakejobs[item.bakejob_index]
+        row = layout.row()
+        row.emboss = 'NONE'
+
+        exists = True
+        prop = 'name'
+        try:
+            context.scene.objects[item.name]
+        except KeyError:
+            if any([item.nm_is_uc, item.nm_is_lc]):
                 icon = 'TRIA_DOWN' if item.nm_is_expanded else 'TRIA_RIGHT'
-                row.prop(item, "nm_is_expanded", text="", icon=icon)
-                #row.emboss = 'NORMAL'
-                row.prop(item, "nm_container_name", text="")
-            
-            # drawing use_bake for universal and detached
-            if item.nm_is_uc or item.nm_is_detached:
-                if item.use_bake:
-                    icon = 'RESTRICT_RENDER_OFF'
-                else:
-                    row.active = False
-                    icon = 'RESTRICT_RENDER_ON'
-                if item_draw_ghost:
-                    icon = 'RESTRICT_RENDER_ON'
-                    row.active = False
-                # row.use_property_decorate = False
-                row.prop(item, 'use_bake', text="", icon=icon, emboss=False)
-            # set row.active to False for items the use_bake of uni_container of which is False
+                prop = 'nm_container_name'
             else:
-                for object in context.scene.bm_table_of_objects:
-                    if object.nm_is_uc and object.nm_mindex == item.nm_uc_mindex and object.use_bake is False:
-                        row.active = False
-                        break
-        
-        # no name matching - default table
+                icon = 'GHOST_DISABLED'
+                exists = False
         else:
-            # ghost object
-            try:
-                context.scene.objects[item.object_name]
-            except (KeyError, AttributeError, UnboundLocalError):
-                row.label(text=item.object_name, icon='GHOST_DISABLED')
-                row.prop(item, 'use_bake', text="", icon='RESTRICT_RENDER_ON', emboss=False)
-                row.enabled = False
-            # normal object
-            else:
-                icons = ['MESH_PLANE', 'VIEW_ORTHO', 'SELECT_SET']
-                props = [item.hl_is_lowpoly, item.hl_is_highpoly, item.hl_is_cage]
-                icon_ = [icon for index, icon in enumerate(icons) if props[index] is True]
-                if (len(icon_)):
-                    icon = icon_[0]
-                else:
-                    icon = 'OUTLINER_OB_MESH'
-                if (item.hl_is_highpoly and item.hl_is_decal) or item.decal_is_decal:
-                    icon = 'XRAY'
-                row.label(text=item.object_name, icon=icon)
+            icon = 'OUTLINER_OB_MESH'
+            if item.hl_is_lowpoly:
+                icon = 'MESH_PLANE'
+            elif item.hl_is_highpoly:
+                icon = 'VIEW_ORTHO'
+            elif item.hl_is_cage:
+                icon = 'SELECT_SET'
+            if item.hl_is_decal or item.decal_is_decal:
+                icon = 'XRAY'
 
-                if item.use_bake:
-                    icon = 'RESTRICT_RENDER_OFF'
-                else:
-                    row.active = False
-                    icon = 'RESTRICT_RENDER_ON'
-                # row.use_property_decorate = False
-                row.prop(item, 'use_bake', text="", icon=icon, emboss=False)
+        row.active = exists
+        row.active = all([item.use_bake, bakejob.objects[
+            item.nm_lc_index].use_bake, bakejob.objects[
+                item.nm_uc_index].use_bake])
+
+        if prop == 'name':
+            row.label(text=getattr(item, prop), icon=icon)
+        else:
+            row.prop(item, 'nm_is_expanded', text="", icon=icon)
+            row.prop(item, prop, text="")
+        use_bake_icon = 'RESTRICT_RENDER_ON'
+        if item.use_bake:
+            use_bake_icon = 'RESTRICT_RENDER_OFF'
+        row.prop(item, 'use_bake', text="", icon=use_bake_icon, emboss=False)
 
     def draw_filter(self, context, layout):
         pass
-    
+
+    def get_filter(self, items):
+        # ftl_flags = []
+        ftl_neworder = []
+
+        # all items visible
+        ftl_flags = [self.bitflag_filter_item] * len(items)
+        # ftl_neworder = [index for index in range(len(items))]
+
+        # item is unvisible if not nm_is_expanded of item's parent container
+        visible = False
+        parent = None
+        parent_mprop = ''
+        for item in items:
+            if any([item.nm_is_uc, item.nm_is_lc]):
+                parent = None
+            if parent is not None:
+                if getattr(item, parent_mprop) == parent.nm_mindex:
+                    # hide item
+                    ftl_flags[item.index] &= ~self.bitflag_filter_item
+                continue
+
+            visible = item.nm_is_expanded and items[
+                    item.nm_uc_index].nm_is_expanded
+            if not visible and any([item.nm_is_uc, item.nm_is_lc]):
+                parent = item
+                ftl_neworder.append(item.index)
+            else:
+                ftl_neworder.append(item.index)
+                continue
+            if item.nm_is_uc:
+                parent_mprop = 'nm_uc_mindex'
+            elif item.nm_is_lc:
+                parent_mprop = 'nm_lc_mindex'
+                # hide lc if uc is collapsed
+                if not visible:
+                    ftl_flags[item.index] &= ~self.bitflag_filter_item
+
+        return ftl_flags, ftl_neworder
+
     def filter_items(self, context, data, propname):
         """
         Filter and order items
         When nm is on, filtered = [items under not collapsed nm_container]
         else, filtered = [all items]
         """
-        # data collection class
-        items = getattr(data, propname)
-        
-        # get filtered items
-        return BM_Table_of_Objects_GetFTL(context, items, self.bitflag_filter_item)
+        return self.get_filter(getattr(data, propname))
 
     def invoke(self, context, event):
         pass
 
-class BM_UL_Table_of_Objects_Item_Highpoly(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        index_value = item.item_index
+
+class BM_UL_Highpolies_Item(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data,
+                  active_propname, index):
+        index = item.index
         layout.emboss = 'PULLDOWN_MENU'
         row = layout.row()
-        split = row.split(factor=0.1*len(str(index_value)))
+        split = row.split(factor=0.1*len(str(index)))
         index_column = split.column()
-        index_column.label(text=str(index_value))
+        index_column.label(text=str(index))
         layout.emboss = 'NORMAL'
-        split.column().prop(item, 'object_name', text="")
+        split.column().prop(item, 'name', text="")
 
     def draw_filter(self, context, layout):
         pass
-    
+
     def invoke(self, context, event):
         pass
 
-class BM_UL_Table_of_MatGroups_Item(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        factor=1.0 - 0.13*len(str(item.group_index))
+
+class BM_UL_MatGroups_Item(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data,
+                  active_propname, index):
+        space_for_gindex = 0.13  # increase to give more space to gindex
+        factor = 1.0 - space_for_gindex*len(str(item.group_index))
         split = layout.row().split(factor=factor)
-        split.column().label(text=item.material_name + " ", icon='MATERIAL')
+        split.column().label(text="%s " % item.material_name, icon='MATERIAL')
         index_column = split.column()
         index_column.prop(item, 'group_index', text="")
 
     def draw_filter(self, context, layout):
         pass
-    
+
     def invoke(self, context, event):
         pass
 
-class BM_UL_Table_of_Maps_Item(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        index_value = item.map_index
+
+class BM_UL_Maps_Item(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data,
+                  active_propname, index):
+        bakemaster = context.scene.bakemaster
+
+        index = item.index
         layout.emboss = 'PULLDOWN_MENU'
         row = layout.row()
-        split = row.split(factor=0.1*len(str(index_value)))
+        split = row.split(factor=0.1*len(str(index)))
         index_column = split.column()
-        index_column.label(text=str(index_value))
+        index_column.label(text=str(index))
         layout.emboss = 'NORMAL'
-        props_column = split.column().row()
-        props_column.prop(item, 'map_type', text="")
-        props_column_use_bake = props_column.row()
+        row = split.column().row()
+        row.prop(item, 'map_type', text="")
+        col = row.row()
+
+        icon = 'RESTRICT_RENDER_ON'
         if item.use_bake:
             icon = 'RESTRICT_RENDER_OFF'
-        else:
-            icon = 'RESTRICT_RENDER_ON'
-            layout.active = False
+        layout.active = item.use_bake
 
-        object = BM_Object_Get(item, context)[0]
+        object = bakemaster.bakejobs[item.bakejob_index].objects[
+                item.object_index]
+
+        uv_container = object
         if object.uv_use_unique_per_map:
             uv_container = item
-        else:
-            uv_container = object
 
         if item.map_type == 'DECAL' and object.bake_save_internal:
             layout.active = False
             icon = 'RESTRICT_RENDER_ON'
-            props_column_use_bake.enabled = False
+            col.enabled = False
 
-        if uv_container.uv_bake_data == 'VERTEX_COLORS':
-            if item.map_type != 'VERTEX_COLOR_LAYER':
-                layout.active = False
-                icon = 'RESTRICT_RENDER_ON'
-                props_column_use_bake.enabled = False
+        if all([uv_container.uv_bake_data == 'VERTEX_COLORS',
+                item.map_type != 'VERTEX_COLOR_LAYER']):
+            layout.active = False
+            icon = 'RESTRICT_RENDER_ON'
+            col.enabled = False
         if uv_container.uv_bake_target == 'VERTEX_COLORS':
-            if item.map_type == 'NORMAL' and item.map_normal_data == 'MULTIRES':
+            if all([item.map_type == 'NORMAL',
+                    item.map_normal_data == 'MULTIRES']):
                 layout.active = False
                 icon = 'RESTRICT_RENDER_ON'
-                props_column_use_bake.enabled = False
-            elif item.map_type == 'DISPLACEMENT' and item.map_displacement_data in ['HIGHPOLY', 'MULTIRES']:
+                col.enabled = False
+            elif all([item.map_type == 'DISPLACEMENT',
+                      item.map_displacement_data in ['HIGHPOLY', 'MULTIRES']]):
                 layout.active = False
                 icon = 'RESTRICT_RENDER_ON'
-                props_column_use_bake.enabled = False
+                col.enabled = False
 
-        props_column_use_bake.prop(item, 'use_bake', text="", icon=icon)
+        col.prop(item, 'use_bake', text="", icon=icon)
 
     def draw_filter(self, context, layout):
         pass
-    
+
     def invoke(self, context, event):
         pass
 
-class BM_UL_Table_of_Maps_Item_Highpoly(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        index_value = item.item_index
-        layout.emboss = 'PULLDOWN_MENU'
-        row = layout.row()
-        split = row.split(factor=0.1*len(str(index_value)))
-        index_column = split.column()
-        index_column.label(text=str(index_value))
-        layout.emboss = 'NORMAL'
-        split.column().prop(item, 'object_name', text="")
 
-    def draw_filter(self, context, layout):
-        pass
-    
-    def invoke(self, context, event):
-        pass
+class BM_UL_ChannelPacks_Item(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data,
+                  active_propname, index):
+        bakemaster = context.scene.bakemater
+        object = bakemaster.bakejobs[item.bakejob_index].objects[
+                item.object_index]
 
-class BM_UL_Table_of_Objects_Item_ChannelPack(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        index_value = item.channelpack_index
-
-        # channel pack inactive if internal bake
-        object = context.scene.bm_table_of_objects[item.channelpack_object_index]
+        text = ""
         if object.bake_save_internal:
             layout.active = False
             text = " (External Bake only)"
-        else:
-            text = ""
 
         layout.emboss = 'NONE'
         row = layout.row()
-        split = row.split(factor=0.1*len(str(index_value)))
+        split = row.split(factor=0.1*len(str(item.index)))
         index_column = split.column()
-        index_column.label(text=str(index_value))
+        index_column.label(text=str(item.index))
         layout.emboss = 'NORMAL'
         split.column().prop(item, 'channelpack_name', text=text)
 
     def draw_filter(self, context, layout):
         pass
-    
+
     def invoke(self, context, event):
         pass
 
-class BM_UL_Table_of_TextureSets(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        index_value = item.textureset_index
-        split_factor = 1-0.05*3 if len(str(index_value)) < 4 else len(str(index_value))
+
+class BM_UL_TextureSets_Item(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data,
+                  active_propname, index):
+        len_index = len(str(item.index))
+        split_factor = 1-0.05*3 if len_index < 4 else len_index
         layout.emboss = 'NONE'
         row = layout.row()
         split = row.split(factor=split_factor)
-        if bpy.app.version > (2, 91, 0):
-            icon = 'OUTLINER_COLLECTION'
-        else:
-            icon = 'GROUP'
-        split.column().prop(item, 'textureset_name', text="", icon=icon)
+        try:
+            split.column().prop(item, 'textureset_name', text="",
+                                icon='OUTLINER_COLLECTION')
+        except KeyError:
+            split.column().prop(item, 'textureset_name', text="", icon='GROUP')
         index_column = split.column()
-        index_column.label(text=str(index_value))
+        index_column.label(text=str(item.index))
 
     def draw_filter(self, context, layout):
         pass
-    
+
     def invoke(self, context, event):
         pass
 
-class BM_UL_TextureSets_Objects_Table_Item(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        index_value = item.object_index
-        split_factor = 1-0.05*3 if len(str(index_value)) < 4 else len(str(index_value))
-        
-        icon = 'BLANK1'
-        if item.object_name != 'NONE':
-            object = context.scene.bm_table_of_objects[item.source_object_index]
-            try:
-                context.scene.objects[object.object_name]
-            except (KeyError, AttributeError, UnboundLocalError):
-                icon = 'GHOST_DISABLED'
-                layout.active = False
 
-            if bakemaster.use_name_matching and object.nm_is_uc:
-                icon = 'TRIA_RIGHT'
-                layout.active = True
-            elif layout.active:
+class BM_UL_TextureSets_Objects_Item(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data,
+                  active_propname, index):
+        len_index = len(str(item.index))
+        split_factor = 1-0.05*3 if len_index < 4 else len_index
+
+        icon = 'BLANK1'
+        if item.name != 'NONE':
+            bakemaster = context.scene.bakemater
+            object = bakemaster.bakejobs[item.bakejob_index].objects[
+                    item.object_index]
+            try:
+                context.scene.objects[object.name]
+            except KeyError:
+                if object.nm_is_uc:
+                    icon = 'TRIA_RIGHT'
+                else:
+                    icon = 'GHOST_DISABLED'
+                    layout.active = False
+            else:
                 icon = 'OUTLINER_OB_MESH'
 
-            if object.use_bake is False or object.decal_is_decal:
+            if not object.use_bake or object.decal_is_decal:
                 layout.active = False
 
         layout.emboss = 'PULLDOWN_MENU'
         row = layout.row()
         split = row.split(factor=split_factor)
-        split.column().prop(item, 'object_name', text="", icon=icon)
+        split.column().prop(item, 'name', text="", icon=icon)
         index_column = split.column()
-        index_column.label(text=str(index_value))
+        index_column.label(text=str(item.index))
 
     def draw_filter(self, context, layout):
         pass
-    
+
     def invoke(self, context, event):
         pass
 
-class BM_UL_TextureSets_Objects_Table_Item_SubItem(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        index_value = item.object_index
-        split_factor = 1-0.05*3 if len(str(index_value)) < 4 else len(str(index_value))
-        
-        source_object = [object for object in context.scene.bm_table_of_objects if object.object_name == item.global_object_name][0]
 
-        icon = ''
-        if source_object.hl_is_lowpoly:
+class BM_UL_TextureSets_Objects_Subitems_Item(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data,
+                  active_propname, index):
+        len_index = len(str(item.index))
+        split_factor = 1-0.05*3 if len_index < 4 else len_index
+
+        bakemaster = context.scene.bakemater
+        object = bakemaster.bakejobs[item.bakejob_index].objects[
+                item.object_index]
+
+        icon = 'OUTLINER_OB_MESH'
+        if object.hl_is_lowpoly:
             icon = 'MESH_PLANE'
-        if source_object.decal_is_decal:
+        elif object.decal_is_decal:
             icon = 'XRAY'
-
-        if source_object.use_bake is False or source_object.decal_is_decal:
             layout.active = False
+        if not object.use_bake:
+            layout.active = False
+
         try:
-            context.scene.objects[source_object.object_name]
-        except (KeyError, AttributeError, UnboundLocalError):
+            context.scene.objects[object.name]
+        except KeyError:
             icon = 'GHOST_DISABLED'
             layout.active = False
-
-        if icon == '':
-            icon = 'OUTLINER_OB_MESH'
 
         row = layout.row()
         split = row.split(factor=split_factor)
@@ -567,24 +564,13 @@ class BM_UL_TextureSets_Objects_Table_Item_SubItem(bpy.types.UIList):
         name_column.prop(item, 'object_include_in_texset', text="")
         row.emboss = 'NONE'
         name_column_row = name_column.row()
-        name_column_row.label(text=item.object_name, icon=icon)
+        name_column_row.label(text=item.name, icon=icon)
         index_column = split.column()
-        index_column.label(text=str(index_value))
+        index_column.label(text=str(item.index))
         row.active = item.object_include_in_texset
 
     def draw_filter(self, context, layout):
         pass
-    
-    def invoke(self, context, event):
-        pass
 
-class BM_UL_Table_of_Objects_Item_BatchNamingTable_Item(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        layout.emboss = 'NONE'
-        layout.prop(item, 'keyword', text="")
-
-    def draw_filter(self, context, layout):
-        pass
-    
     def invoke(self, context, event):
         pass
