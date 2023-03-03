@@ -36,6 +36,19 @@ from .utils.ui import (
     ui_draw_mapsettings as bm_utils_ui_draw_mapsettings,
     ui_draw_csh as bm_utils_ui_draw_csh,
 )
+from .presets import (
+    BM_PT_FULL_OBJECT_Presets,
+    BM_PT_OBJECT_Presets,
+    BM_PT_DECAL_Presets,
+    BM_PT_HL_Presets,
+    BM_PT_UV_Presets,
+    BM_PT_CSH_Presets,
+    BM_PT_OUT_Presets,
+    BM_PT_FULL_MAP_Presets,
+    BM_PT_MAP_Presets,
+    BM_PT_CHNLP_Presets,
+    BM_PT_BAKE_Presets,
+)
 
 
 class BM_PT_BakeJobsBase(Panel):
