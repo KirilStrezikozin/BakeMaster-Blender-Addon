@@ -49,6 +49,7 @@ from .presets import (
     BM_PT_CHNLP_Presets,
     BM_PT_BAKE_Presets,
 )
+from .operators.ui import *
 
 
 class BM_PT_BakeJobsBase(Panel):
@@ -351,8 +352,7 @@ class BM_PT_MapsBase(Panel):
         row_mapprev = None
         if hasattr(map, 'map_%s_use_preview' % map.map_type):
             row_mapprev = col.row()
-            row_mapprev.prop(map, 'map_%s_use_preview' % map.map_type,
-                             text=BM_Labels.PROP_ITEM_MAP_USEPREVIEW_NAME)
+            row_mapprev.prop(map, 'map_%s_use_preview' % map.map_type)
 
         if object.nm_is_uc and row_mapprev is not None:
             row_mapprev.active = False
@@ -614,7 +614,7 @@ class BM_PT_TextureSetsBase(Panel):
                      text="", icon='ADD')
 
         # check if can add objects to the texset
-        new_texset_objects = BM_TEXSET_OBJECT_PROPS_object_name_Items(texset,
+        new_texset_objects = TexSet_Object_name_Items(texset,
                                                                       context)
         if len(new_texset_objects) == 1:
             row.enabled = False
@@ -715,15 +715,15 @@ class BM_PT_BakeBase(Panel):
 
         col = layout.column(align=True)
         row = col.row()
-        row.operator(BM_OT_ITEM_Bake.bl_idname,
+        row.operator(BM_OT_Bake.bl_idname,
                      text="Bake This").control = 'BAKE_THIS'
 
         row = col.row()
-        row.operator(BM_OT_ITEM_Bake.bl_idname,
+        row.operator(BM_OT_Bake.bl_idname,
                      text="Bake All").control = 'BAKE_ALL'
         row.scale_y = 1.5
 
-        col.active = not BM_OT_ITEM_Bake.is_running()
+        col.active = not BM_OT_Bake.is_running()
 
         col = layout.column(align=True)
         col.operator(BM_OT_ApplyLastEditedProp.bl_idname, text="Apply Lastly Edited Setting")

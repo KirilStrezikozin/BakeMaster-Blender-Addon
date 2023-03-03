@@ -60,6 +60,9 @@ class BM_LABELS_Props():
 
 class BM_LABELS_Operators():
     labels = {
+        'BM_OT_ITEM_Bake': {
+            "bl_description": "",
+        }
     }
 
     def __init__(self, operator_name: str, property_name: str):
