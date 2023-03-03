@@ -55,7 +55,7 @@ class BM_PROPS_Local_map_highpoly(PropertyGroup):
     self_object_index: IntProperty(default=-1)
 
 
-class BM_Map(PropertyGroup):
+class BM_PROPS_Local_map(PropertyGroup):
     use_bake: BoolProperty(
         name="Include/exclude map from being baked",
         default=True,
@@ -69,6 +69,7 @@ class BM_Map(PropertyGroup):
 
     index: IntProperty(default=-1)
     object_index: IntProperty(default=-1)
+    bakejob_index: IntProperty(default=-1)
 
     # Map hl Props
     hl_highpolies: CollectionProperty(type=BM_PROPS_Local_map_highpoly)
@@ -1628,16 +1629,16 @@ class BM_Object_Highpoly(PropertyGroup):
 
 
 class BM_Object_ChannelPack(PropertyGroup):
-    channelpack_name: StringProperty(
+    name: StringProperty(
         name="Pack Name",
         description="Enter a Channel Pack name",
         default="ChannelPack")
 
-    channelpack_object_index: IntProperty(default=-1)
+    index: IntProperty(default=-1)
+    object_index: IntProperty(default=-1)
+    bakejob_index: IntProperty(default=-1)
 
-    channelpack_index: IntProperty()
-
-    channelpack_type: EnumProperty(
+    type: EnumProperty(
         name="Pack Type",
         description="Type of packing operation describing its packing format",
         default='R1G1B1A',
@@ -1753,7 +1754,10 @@ class BM_MATGROUPS_Item(PropertyGroup):
 
 
 class BM_PROPS_Local_object(PropertyGroup):
-    object_name: StringProperty()
+    name: StringProperty()
+
+    index: IntProperty(default=-1)
+    bakejob_index: IntProperty(default=-1)
 
     use_bake: BoolProperty(
         name="Include/Exclude the object for bake",
@@ -2270,7 +2274,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         name="Configure maps to bake",
         default=-1)
 
-    maps: CollectionProperty(type=BM_Map)
+    maps: CollectionProperty(type=BM_PROPS_Local_map)
 
     maps_len: IntProperty(default=0)
 
@@ -2373,7 +2377,8 @@ class BM_PROPS_Local_redolastaction_object(PropertyGroup):
         name="Object name",
         default="")
 
-    bm_object_index: IntProperty(default=-1)
+    object_index: IntProperty(default=-1)
+    bakejob_index: IntProperty(default=-1)
 
     use_affect: BoolProperty(
         name="Apply",
@@ -2400,6 +2405,9 @@ class BM_PROPS_Local_bakegroup(PropertyGroup):
     name: StringProperty(
         name="Object name",
         default="")
+
+    object_index: IntProperty(default=-1)
+    bakejob_index: IntProperty(default=-1)
 
     is_lowpoly: BoolProperty(
         name="Inlcude as Lowpoly",
@@ -2442,12 +2450,10 @@ class BM_PROPS_Local_texset_object_subitems(PropertyGroup):
         name="Container's Lowpoly Object")
 
     index: IntProperty(default=-1)
-
     texset_object_index: IntProperty(default=-1)
-
     texset_index: IntProperty(default=-1)
-
     object_index: IntProperty(default=-1)
+    bakejob_index: IntProperty(default=-1)
 
     use: BoolProperty(
         name="Include/Exclude from Texture Set",
@@ -2463,10 +2469,9 @@ class BM_PROPS_Local_texset_object(PropertyGroup):
         update=BM_TEXSET_OBJECT_PROPS_object_name_Update)
 
     index: IntProperty(default=-1)
-
     texset_index: IntProperty(default=-1)
-
     object_index: IntProperty(default=-1)
+    bakejob_index: IntProperty(default=-1)
 
     name_old: StringProperty(default='-1')
 
@@ -2686,6 +2691,8 @@ class BM_PROPS_Global(PropertyGroup):
         description="Apply property to all maps of chosen objects",
         default=False)
 
+    redolastaction_objects_len: IntProperty(default=0)
+
     # Bake Group Props
     bakegroup_objects: CollectionProperty(type=BM_PROPS_Local_bakegroup)
 
@@ -2693,12 +2700,16 @@ class BM_PROPS_Global(PropertyGroup):
         name="Detached Object",
         default=-1)
 
+    bakegroup_objects_len: IntProperty(default=0)
+
     # Math Res Props
     matchres_items: CollectionProperty(type=BM_PROPS_Local_matchres)
 
     matchres_items_active_index: IntProperty(
         name="Resolution, Image name, Plugged into",
         default=0)
+
+    mathres_items_len: IntProperty(default=0)
 
     # Panels UI Props
 
