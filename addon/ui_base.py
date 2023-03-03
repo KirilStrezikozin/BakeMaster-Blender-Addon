@@ -207,7 +207,7 @@ class BM_PT_ObjectsBase(Panel):
                 break
 
         row = box.row()
-        row.template_list('BM_UL_Table_of_Objects_Item', "", bakejob,
+        row.template_list('BM_UL_BakeJob_Objects_Item', "", bakejob,
                           'objects', bakejob, 'objects_active_index',
                           rows=rows)
         col = row.column(align=True)
@@ -321,7 +321,7 @@ class BM_PT_MapsBase(Panel):
 
         min_rows = 1 if object.maps_len < 2 else 3
         rows = bm_utils_ui_get_uilist_rows(object.maps_len, min_rows, 5)
-        row.template_list('BM_UL_Table_of_Maps_Item', "", object, 'maps',
+        row.template_list('BM_UL_Maps_Item', "", object, 'maps',
                           object, 'maps_active_index', rows=rows)
         col = row.column(align=True)
         col.operator(BM_OT_ITEM_Maps.bl_idname, text="",
@@ -419,7 +419,7 @@ class BM_PT_OutputBase(Panel):
 
             min_rows = 1 if object.chnlps_len < 2 else 3
             rows = bm_utils_ui_get_uilist_rows(object.chnlps_len, min_rows, 3)
-            row.template_list('BM_UL_Table_of_Objects_Item_ChannelPack', "",
+            row.template_list('BM_UL_ChannelPacks_Item', "",
                               object, "chnlps", object, "chnlps_active_index",
                               rows=rows)
             col = row.column(align=True)
@@ -578,7 +578,7 @@ class BM_PT_TextureSetsBase(Panel):
 
         min_rows = 1 if bakejob.texsets_len < 2 else 3
         rows = bm_utils_ui_get_uilist_rows(bakejob.texsets_len, min_rows, 3)
-        row.template_list('BM_UL_Table_of_TextureSets', "", bakejob, 'texsets',
+        row.template_list('BM_UL_TextureSets_Item', "", bakejob, 'texsets',
                           bakejob, 'texsets_active_index', rows=rows)
         col = row.column(align=True)
         col.operator(BM_OT_SCENE_TextureSets_Table_Add.bl_idname, text="",
@@ -605,7 +605,7 @@ class BM_PT_TextureSetsBase(Panel):
         row = box.row()
 
         rows = bm_utils_ui_get_uilist_rows(texset.texset_objects_len, 1, 3)
-        row.template_list('BM_UL_TextureSets_Objects_Table_Item', "", texset,
+        row.template_list('BM_UL_TextureSets_Objects_Item', "", texset,
                           'texset_objects', texset,
                           'texset_objects_active_index', rows=rows)
         col = row.column(align=True)
@@ -643,7 +643,7 @@ class BM_PT_TextureSetsBase(Panel):
             row = box.row()
             rows = bm_utils_ui_get_uilist_rows(texset_object.subitems_len, 1,
                                                3)
-            row.template_list('BM_UL_TextureSets_Objects_Table_Item_SubItem',
+            row.template_list('BM_UL_TextureSets_Objects_Subitems_Item',
                               "", texset_object, "subitems", texset_object,
                               "subitems_active_index", rows=rows)
             row.operator(BM_OT_SCENE_TextureSets_Objects_Table_InvertSubItems.bl_idname,
