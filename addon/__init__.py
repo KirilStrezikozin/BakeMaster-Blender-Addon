@@ -28,9 +28,7 @@ from bpy.props import PointerProperty
 from . import ui_panels
 from . import properties
 from . import presets
-from .operators import (
-    ui as operators_ui,
-)
+from . import operators
 
 if "bpy_utils_register_class" in locals():
     from importlib import reload as module_reload
@@ -38,7 +36,7 @@ if "bpy_utils_register_class" in locals():
     module_reload(ui_panels)
     module_reload(properties)
     module_reload(presets)
-    module_reload(operators_ui)
+    module_reload(operators)
 
 bl_info = {
     "name": "BakeMaster",
@@ -80,9 +78,6 @@ classes = (
     ui_panels.BM_UL_TextureSets_Objects_Item,
     ui_panels.BM_UL_TextureSets_Objects_Subitems_Item,
 
-    properties.BM_PROPS_Local_bakejob,
-    properties.BM_PROPS_Global,
-
     presets.BM_PT_FULL_OBJECT_Presets,
     presets.BM_PT_OBJECT_Presets,
     presets.BM_PT_DECAL_Presets,
@@ -106,10 +101,59 @@ classes = (
     presets.BM_MT_CHNLP_Presets,
     presets.BM_MT_BAKE_Presets,
 
-    operators_ui.BM_OT_BakeJobs_AddRemove,
-    operators_ui.BM_OT_BakeJobs_Move,
-    operators_ui.BM_OT_BakeJobs_Trash,
-    operators_ui.BM_OT_Help,
+    operators.ui.BM_OT_BakeJobs_AddRemove,
+    operators.ui.BM_OT_BakeJobs_Move,
+    operators.ui.BM_OT_BakeJobs_Trash,
+    operators.ui.BM_OT_Help,
+
+    operators.ui.BM_OT_Table_of_Objects,
+    operators.ui.BM_OT_Table_of_Objects_Add,
+    operators.ui.BM_OT_Table_of_Objects_Remove,
+    operators.ui.BM_OT_Table_of_Objects_Refresh,
+    operators.ui.BM_OT_Table_of_Objects_Trash,
+    operators.ui.BM_OT_ITEM_Highpoly_Table_Add,
+    operators.ui.BM_OT_ITEM_Highpoly_Table_Remove,
+    operators.ui.BM_OT_MAP_Highpoly_Table_Add,
+    operators.ui.BM_OT_MAP_Highpoly_Table_Remove,
+    operators.ui.BM_OT_ITEM_MatGroups_Table_Refresh,
+    operators.ui.BM_OT_ITEM_MatGroups_Table_EqualizeGroups,
+    operators.ui.BM_OT_ITEM_MatGroups_Table_UnequalizeGroups,
+    operators.ui.BM_OT_ITEM_ChannelPack_Table_Add,
+    operators.ui.BM_OT_ITEM_ChannelPack_Table_Remove,
+    operators.ui.BM_OT_ITEM_ChannelPack_Table_Trash,
+    operators.ui.BM_OT_SCENE_TextureSets_Table_Add,
+    operators.ui.BM_OT_SCENE_TextureSets_Table_Remove,
+    operators.ui.BM_OT_SCENE_TextureSets_Table_Trash,
+    operators.ui.BM_OT_SCENE_TextureSets_Objects_Table_Add,
+    operators.ui.BM_OT_SCENE_TextureSets_Objects_Table_Remove,
+    operators.ui.BM_OT_SCENE_TextureSets_Objects_Table_Trash,
+    operators.ui.BM_OT_SCENE_TextureSets_Objects_Table_InvertSubItems,
+    operators.ui.BM_OT_ITEM_BatchNaming_Preview,
+    operators.ui.BM_OT_ITEM_Maps,
+    operators.ui.BM_OT_Bake,
+    operators.ui.BM_OT_ApplyLastEditedProp_SelectAll,
+    operators.ui.BM_OT_ApplyLastEditedProp_InvertSelection,
+    operators.ui.BM_OT_ApplyLastEditedProp,
+    operators.ui.BM_OT_CreateArtificialUniContainer_DeselectAll,
+    operators.ui.BM_OT_CreateArtificialUniContainer,
+    operators.ui.BM_OT_ITEM_and_MAP_Format_MatchResolution,
+    operators.ui.BM_OT_ReportMessage,
+    operators.ui.BM_OT_Help,
+
+    presets.BM_OT_FULL_OBJECT_Preset_Add,
+    presets.BM_OT_OBJECT_Preset_Add,
+    presets.BM_OT_DECAL_Preset_Add,
+    presets.BM_OT_HL_Preset_Add,
+    presets.BM_OT_UV_Preset_Add,
+    presets.BM_OT_CSH_Preset_Add,
+    presets.BM_OT_OUT_Preset_Add,
+    presets.BM_OT_FULL_MAP_Preset_Add,
+    presets.BM_OT_MAP_Preset_Add,
+    presets.BM_OT_CHNLP_Preset_Add,
+    presets.BM_OT_BAKE_Preset_Add,
+
+    properties.BM_PROPS_Local_bakejob,
+    properties.BM_PROPS_Global,
 )
 
 
