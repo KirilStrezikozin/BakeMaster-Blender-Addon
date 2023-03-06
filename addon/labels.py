@@ -20,23 +20,23 @@
 
 class BM_LABELS_Props():
     labels = {
-        'BM_MATGROUPS_Item': {
+        'MatGroups_Item': {
             "group_index": {
                 "description": "Divide materials into separate groups by assigning an according group index.\nBy default, BakeMaster will merge all materials, meaning if you, let's say, had Diffuse Color data output in every material and chose to bake Diffuse map, a single Diffuse image texture will be baked. Baked map sets for materials with different group indexes will be separated",  # noqa: E501
             }
         },
-        'BM_PROPS_Local_map': {
+        'Map': {
             "map_use_preview": {
                 "name": "Preview",
                 "description": "Preview texture map in the viewport (Cycles only).\nIf current item's mesh has got no materials, a new one will be added.\nFor each item's mesh materials, custom nodes will be added to preview the map in the Rendered View.\nAfter disabling the preview, all those nodes will be removed without affecting original material(s)",  # noqa: E501
             }
         },
-        'BM_PROPS_Local_object': {
+        'Object': {
             "bake_batchname": {
                 "description": "Write keywords starting with $, any additional text can be added:\n\n$objectindex - Object index\n$objectname - Object name\n$containername - Container name if Object is in it\n$packname - Channel Pack name if map is in Channel Pack\n$texsetname - Texture Set chosen name type if Object is in it\n$mapindex - Map index\n$mapname - Map prefix\n$mapres - Map Resolution\n$mapbit - _32bit_ if map uses 32bit Float, else _8bit_\n$maptrans - _trans_ if map uses transparent bg\n$mapssaa - SSAA value used for the map\n$mapsamples - Number of map bake samples, max samples if Adaptive is used\n$mapdenoise - _denoised_ if map was denoised\n$mapnormal - For Normal map, write preset type\n$mapuv - Write UV Layer name used for baking map\n$matgroup - Write Material Group naming convention\n$engine - Write Bake Engine used for baking\n$autouv - _autouv_ if object was auto uv unwrapped\n\ntestbake1$objectname_$mapname_$mapdenoise_Final -> testbake1monsterhead_NM_denoised_Final",  # noqa: E501
             }
         },
-        'BM_PROPS_Global': {
+        'Global': {
             "bake_instruction": {
                 "description": "Press `BACKSPACE` to cancel baking all next maps.\nPress `ESC` key to cancel baking current map.\nPress `BACKSPACE`, then `ESC` to cancel baking.\nIf you want to undo the bake, press `Ctrl + Z` (`Cmd + Z` on Mac) just after it finished or canceled.\n\nOpen Blender Console to see more baking process information and, if you face an unexpected Blender freeze, be able to press `Ctrl + C` (`Cmd + C` on Mac) to abort the bake.\nNote that there are expectable Blender freezes when preparing maps for meshes with huge amount of geometry, baking map result to modifiers, Denoising baked result, or UV unwrapping and packing. Please be patient, BakeMaster will notify if any error occured",  # noqa: E501
             }
@@ -54,7 +54,7 @@ class BM_LABELS_Props():
             label = self.labels[self.property_group][self.property_name][
                     self.property_arg]
         except KeyError:
-            label = None
+            label = ""
         return label
 
 
@@ -73,7 +73,7 @@ class BM_LABELS_Operators():
         try:
             label = self.labels[self.operator_name][self.property_name]
         except KeyError:
-            label = None
+            label = ""
         return label
 
 
@@ -98,6 +98,10 @@ class BM_URLs:
             'TEXSETS': r'%s/',
             'BAKE': r'%s/',
         }
-        return urls[identifier] % (
+        try:
+            url = urls[identifier]
+        except KeyError:
+            url = "%s"
+        return url % (
                 "https://bakemaster-blender-addon.readthedocs.io/en/" +
                 self.addon_version)
