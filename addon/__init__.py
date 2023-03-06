@@ -138,7 +138,6 @@ classes = (
     operators.ui.BM_OT_CreateArtificialUniContainer,
     operators.ui.BM_OT_ITEM_and_MAP_Format_MatchResolution,
     operators.ui.BM_OT_ReportMessage,
-    operators.ui.BM_OT_Help,
 
     presets.BM_OT_FULL_OBJECT_Preset_Add,
     presets.BM_OT_OBJECT_Preset_Add,
@@ -175,7 +174,7 @@ def register():
     for cls in classes:
         bpy_utils_register_class(cls)
     bpy_types_Scene.bakemaster = PointerProperty(
-            type=properties.BM_PROPS_Global)
+            type=properties.Global)
 
 
 def unregister():
