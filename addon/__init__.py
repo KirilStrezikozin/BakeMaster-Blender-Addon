@@ -152,8 +152,22 @@ classes = (
     presets.BM_OT_CHNLP_Preset_Add,
     presets.BM_OT_BAKE_Preset_Add,
 
-    properties.BM_PROPS_Local_bakejob,
-    properties.BM_PROPS_Global,
+    
+    properties.Map_Highpoly,
+    properties.Map,
+    properties.Object_Highpoly,
+    properties.Object_ChannelPack,
+    properties.MatGroups_Item,
+    properties.Object,
+    properties.RedoLastAction_Object,
+    properties.RedoLastAction_Map,
+    properties.BakeGroup,
+    properties.MatchRes,
+    properties.TexSet_Object_Subitem,
+    properties.TexSet_Object,
+    properties.TexSet,
+    properties.BakeJob,
+    properties.Global,
 )
 
 
