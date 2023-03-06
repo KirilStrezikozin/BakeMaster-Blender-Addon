@@ -61,7 +61,7 @@ def BM_Table_of_Objects_NameMatching_GenerateNameChunks(name: str):
             chunks.append(name[chunk_start_index:len(name)])
     return [chunk for chunk in chunks if chunk.replace(" ", "") != ""]
 
-def BM_Table_of_Objects_NameMatching_GetNameChunks(chunks: list, combine_type: str, context=None):
+def BM_Table_of_Objects_NameMatching_GetNameChunks(chunks: list, combine_type: str, context):
     # get prefixes
     lowpoly_prefix_raw = context.scene.bm_props.lowpoly_tag
     highpoly_prefix_raw = context.scene.bm_props.highpoly_tag
@@ -979,7 +979,7 @@ def Object_nm_uni_container_is_Update(self, context):
 ###############################################################
 ### Texture Sets Funcs ###
 ###############################################################
-def BM_TEXSET_OBJECT_PROPS_syncer_Items(self, context):
+def TexSet_Object_syncer_Items(self, context):
     items = []
     for texset_item in self.textureset_table_of_objects:
         source_object = context.scene.bm_table_of_objects[texset_item.source_object_index]
@@ -991,7 +991,7 @@ def BM_TEXSET_OBJECT_PROPS_syncer_Items(self, context):
             items += [(str(subitem.source_object_index), subitem.object_name, "Subobject in the current texset") for subitem in texset_item.global_object_name_subitems]
     return items
 
-def BM_TEXSET_OBJECT_PROPS_syncer_Sync(self, context):
+def TexSet_Object_syncer_Sync(self, context):
     if self.syncer_use is False:
         return
     dictator_object_index = int(self.syncer_object_name)
@@ -1352,7 +1352,7 @@ def TexSet_Object_name_Update(self, context):
         TexSet_Object_name_RecreateSubitems(context, self)
         TexSet_Object_name_UpdateOnMoveOT(context)
 
-def BM_TEXSET_OBJECT_PROPS_source_object_index_GetNew(context, self):
+def TexSet_Object_source_object_index_GetNew(context, self):
     for index, object in enumerate(context.scene.bm_table_of_objects):
         if context.scene.bm_props.use_name_matching and object.nm_container_name == self.object_name_include:
             return index
@@ -1383,7 +1383,7 @@ def TexSet_Object_name_UpdateOnRemoveOT(context, removed_index):
             if found_removed:
                 break
         for texset_item in texset.textureset_table_of_objects:
-            new_index = BM_TEXSET_OBJECT_PROPS_source_object_index_GetNew(context, texset_item)
+            new_index = TexSet_Object_source_object_index_GetNew(context, texset_item)
             texset_item.source_object_index = new_index
             if len(items_to_remove) == 0:
                 continue
@@ -1450,7 +1450,7 @@ def ChannelPack_index_UpdateOnRemoveOT(context, index_remove):
                 continue
             channelpack.channelpack_object_index -= 1
 
-def BM_CHANNELPACK_PROPS_map_Items_GetAllChosen(self):
+def ChannelPack_map_Items_GetAllChosen(self):
     chosen_data = {
         'R1G1B' : ['_map_R', '_map_G', '_map_B'],
         'RGB1A' : ['_map_RGB', '_map_A'],
@@ -1464,9 +1464,9 @@ def BM_CHANNELPACK_PROPS_map_Items_GetAllChosen(self):
 
     return chosen
 
-def BM_CHANNELPACK_PROPS_map_Items_Get(self, context, prop_channel_index):
+def ChannelPack_map_Items_Get(self, context, prop_channel_index):
     new_items = [('NONE', "None", "Set None to identify usage of no map for the current channel or no maps available to set")]
-    chosen = BM_CHANNELPACK_PROPS_map_Items_GetAllChosen(self)
+    chosen = ChannelPack_map_Items_GetAllChosen(self)
     # need the actual object
     object = context.scene.bm_table_of_objects[self.channelpack_object_index]
     maps_names = {
@@ -1517,13 +1517,13 @@ def BM_CHANNELPACK_PROPS_map_Items_Get(self, context, prop_channel_index):
         new_items.append((str(map.map_index), name, "Choose map from the Object's Table of Maps for the current channel"))
     return new_items
 
-def BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, prop_name):
+def ChannelPack_map_Update_SetGivenIndexProp(self, prop_name):
     try:
         setattr(self, prop_name.format("_index"), int(getattr(self, prop_name.format(""))))
     except ValueError:
         setattr(self, prop_name.format("_index"), -1)
 
-def BM_CHANNELPACK_PROPS_map_UpdateNames(self):
+def ChannelPack_map_UpdateNames(self):
     chosen_data = {
         'R1G1B' : ['_map_R', '_map_G', '_map_B'],
         'RGB1A' : ['_map_RGB', '_map_A'],
@@ -1539,57 +1539,57 @@ def BM_CHANNELPACK_PROPS_map_UpdateNames(self):
             setattr(self, map_value_prop, 'NONE')
 
 # Items
-def BM_CHANNELPACK_PROPS_map_Items_R1G1B_R(self, context):
-    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B_map_R_index)
-def BM_CHANNELPACK_PROPS_map_Items_R1G1B_G(self, context):
-    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B_map_G_index)
-def BM_CHANNELPACK_PROPS_map_Items_R1G1B_B(self, context):
-    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B_map_B_index)
+def ChannelPack_map_Items_R1G1B_R(self, context):
+    return ChannelPack_map_Items_Get(self, context, self.R1G1B_map_R_index)
+def ChannelPack_map_Items_R1G1B_G(self, context):
+    return ChannelPack_map_Items_Get(self, context, self.R1G1B_map_G_index)
+def ChannelPack_map_Items_R1G1B_B(self, context):
+    return ChannelPack_map_Items_Get(self, context, self.R1G1B_map_B_index)
 
-def BM_CHANNELPACK_PROPS_map_Items_RGB1A_RGB(self, context):
-    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.RGB1A_map_RGB_index)
-def BM_CHANNELPACK_PROPS_map_Items_RGB1A_A(self, context):
-    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.RGB1A_map_A_index)
+def ChannelPack_map_Items_RGB1A_RGB(self, context):
+    return ChannelPack_map_Items_Get(self, context, self.RGB1A_map_RGB_index)
+def ChannelPack_map_Items_RGB1A_A(self, context):
+    return ChannelPack_map_Items_Get(self, context, self.RGB1A_map_A_index)
 
-def BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_R(self, context):
-    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B1A_map_R_index)
-def BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_G(self, context):
-    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B1A_map_G_index)
-def BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_B(self, context):
-    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B1A_map_B_index)
-def BM_CHANNELPACK_PROPS_map_Items_R1G1B1A_A(self, context):
-    return BM_CHANNELPACK_PROPS_map_Items_Get(self, context, self.R1G1B1A_map_A_index)
+def ChannelPack_map_Items_R1G1B1A_R(self, context):
+    return ChannelPack_map_Items_Get(self, context, self.R1G1B1A_map_R_index)
+def ChannelPack_map_Items_R1G1B1A_G(self, context):
+    return ChannelPack_map_Items_Get(self, context, self.R1G1B1A_map_G_index)
+def ChannelPack_map_Items_R1G1B1A_B(self, context):
+    return ChannelPack_map_Items_Get(self, context, self.R1G1B1A_map_B_index)
+def ChannelPack_map_Items_R1G1B1A_A(self, context):
+    return ChannelPack_map_Items_Get(self, context, self.R1G1B1A_map_A_index)
 
 # Updates
-def BM_CHANNELPACK_PROPS_map_Update_R1G1B_R(self, context):
-    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B_map_R{}')
-    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
-def BM_CHANNELPACK_PROPS_map_Update_R1G1B_G(self, context):
-    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B_map_G{}')
-    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
-def BM_CHANNELPACK_PROPS_map_Update_R1G1B_B(self, context):
-    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B_map_B{}')
-    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
+def ChannelPack_map_Update_R1G1B_R(self, context):
+    ChannelPack_map_Update_SetGivenIndexProp(self, r'R1G1B_map_R{}')
+    ChannelPack_map_UpdateNames(self)
+def ChannelPack_map_Update_R1G1B_G(self, context):
+    ChannelPack_map_Update_SetGivenIndexProp(self, r'R1G1B_map_G{}')
+    ChannelPack_map_UpdateNames(self)
+def ChannelPack_map_Update_R1G1B_B(self, context):
+    ChannelPack_map_Update_SetGivenIndexProp(self, r'R1G1B_map_B{}')
+    ChannelPack_map_UpdateNames(self)
 
-def BM_CHANNELPACK_PROPS_map_Update_RGB1A_RGB(self, context):
-    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'RGB1A_map_RGB{}')
-    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
-def BM_CHANNELPACK_PROPS_map_Update_RGB1A_A(self, context):
-    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'RGB1A_map_A{}')
-    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
+def ChannelPack_map_Update_RGB1A_RGB(self, context):
+    ChannelPack_map_Update_SetGivenIndexProp(self, r'RGB1A_map_RGB{}')
+    ChannelPack_map_UpdateNames(self)
+def ChannelPack_map_Update_RGB1A_A(self, context):
+    ChannelPack_map_Update_SetGivenIndexProp(self, r'RGB1A_map_A{}')
+    ChannelPack_map_UpdateNames(self)
 
-def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_R(self, context):
-    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_R{}')
-    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
-def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_G(self, context):
-    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_G{}')
-    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
-def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_B(self, context):
-    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_B{}')
-    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
-def BM_CHANNELPACK_PROPS_map_Update_R1G1B1A_A(self, context):
-    BM_CHANNELPACK_PROPS_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_A{}')
-    BM_CHANNELPACK_PROPS_map_UpdateNames(self)
+def ChannelPack_map_Update_R1G1B1A_R(self, context):
+    ChannelPack_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_R{}')
+    ChannelPack_map_UpdateNames(self)
+def ChannelPack_map_Update_R1G1B1A_G(self, context):
+    ChannelPack_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_G{}')
+    ChannelPack_map_UpdateNames(self)
+def ChannelPack_map_Update_R1G1B1A_B(self, context):
+    ChannelPack_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_B{}')
+    ChannelPack_map_UpdateNames(self)
+def ChannelPack_map_Update_R1G1B1A_A(self, context):
+    ChannelPack_map_Update_SetGivenIndexProp(self, r'R1G1B1A_map_A{}')
+    ChannelPack_map_UpdateNames(self)
 
 ###############################################################
 ### Batch Naming Funcs ###
@@ -1674,12 +1674,12 @@ def Object_bake_batchname_GetPreview(self, context, object=None, map=None, activ
             return map_pass.out_res
     
     def get_mapnormal(map_pass):
-        if map.map_type != 'NORMAL':
+        if map_pass.map_type != 'NORMAL':
             return None
-        if map.map_normal_preset != 'CUSTOM':
-            return map.map_normal_preset
+        if map_pass.map_normal_preset != 'CUSTOM':
+            return map_pass.map_normal_preset
         else:
-            return map.map_normal_custom_preset
+            return map_pass.map_normal_custom_preset
 
     def get_matgroup(container):
         return "#"
@@ -1692,13 +1692,16 @@ def Object_bake_batchname_GetPreview(self, context, object=None, map=None, activ
         map = object.maps[object.maps_active_index]
         active_index = context.scene.bm_props.active_index
 
+    if map is None:
+        return ""
+
     out_container = object
     if object.out_use_unique_per_map:
         out_container = map
     uv_container = object
     if object.out_use_unique_per_map:
         uv_container = map
-     
+ 
     gen_keywords_values = {
         "$objectindex" : active_index,
         "$objectname" : get_objectname(object),
@@ -1809,7 +1812,7 @@ def BM_template_list_get_rows(collectionprop, rows_min=1, rows_middle=3, rows_ma
 ###############################################################
 ### BM Table of Objects Funcs ###
 ###############################################################
-def BM_ActiveIndexUpdate(self, context):
+def BakeJob_objects_active_index_Update(self, context):
     # if context.scene.bm_props.bake_available is False:
         # return
     if len(context.scene.bm_table_of_objects):
@@ -2388,6 +2391,7 @@ def Object_hl_highpoly_UpdateAfterRemoveOT(context):
             return True
 
     for object in context.scene.bm_table_of_objects:
+        leave_lowpoly = False
         if object.hl_use_unique_per_map is False:
             leave_lowpoly = updateHighpolyProps_and_removeNone(context, object)
             continue
@@ -2665,7 +2669,7 @@ def Map_map_normal_data_Items(self, context):
              ('MATERIAL', "Object/Materials", "Bake normals from object data")]
     return items 
 
-def BM_MAO_PROPS_map_get_subdivided_face_count(context, object, map):
+def Map_get_subdivided_face_count(context, object, map):
     face_count = 0
     try:
         object_pointer = context.scene.objects[object.object_name]
@@ -3703,7 +3707,7 @@ def BakeGroup_is_cage_Update(self, context):
 ########################################################################
 
 
-def BM_PROPUTIL_Highpoly_get_items(self, self_object, objects, include: list):
+def Highpoly_get_items(self, self_object, objects, include: list):
     items = []
     added = []
 
@@ -3735,7 +3739,7 @@ def BM_PROPUTIL_Highpoly_get_items(self, self_object, objects, include: list):
     return items
 
 
-def BM_PROPUTIL_CageHighpoly_get_include(self_object):
+def CageHighpoly_get_include(self_object):
     include_cages = []
     include_highpolies = []
     skip_highpolies = []
@@ -3761,12 +3765,12 @@ def BM_PROPUTIL_CageHighpoly_get_include(self_object):
     return include_cages, include_highpolies
 
 
-def BM_PROPUTIL_Highpoly_Items(self, context):
+def Highpoly_Items(self, context):
     bakemaster = context.scene.bakemaster
     objects = bakemaster.bakejobs[self.bakejob_index].objects
     self_object = objects[self.object_index]
-    _, include = BM_PROPUTIL_CageHighpoly_get_include(self_object)
-    return BM_PROPUTIL_Highpoly_get_items(self, self_object, objects, include)
+    _, include = CageHighpoly_get_include(self_object)
+    return Highpoly_get_items(self, self_object, objects, include)
 
 
 def mark_highpolies(objects, data):
@@ -3776,7 +3780,7 @@ def mark_highpolies(objects, data):
         objects[highpoly.object_index].hl_is_highpoly = True
 
 
-def BM_PROPUTIL_Highpoly_EnsureHighpolyMarked(objects):
+def Highpoly_EnsureHighpolyMarked(objects):
     for object in objects:
         if object.hl_use_unique_per_map is False:
             mark_highpolies(objects, object)
@@ -3785,7 +3789,7 @@ def BM_PROPUTIL_Highpoly_EnsureHighpolyMarked(objects):
             mark_highpolies(objects, map)
 
 
-def BM_PROPUTIL_Highpoly_Update(self, context):
+def Highpoly_Update(self, context):
     if self.name == self.name_old:
         return
 
@@ -3804,17 +3808,17 @@ def BM_PROPUTIL_Highpoly_Update(self, context):
     if update_name:
         self.name = self.name_old
 
-    BM_PROPUTIL_Highpoly_EnsureHighpolyMarked(objects)
+    Highpoly_EnsureHighpolyMarked(objects)
 
 
-def BM_PROPUTIL_Highpoly_UpdateOnRemove(self, context):
+def Highpoly_UpdateOnRemove(self, context):
     bakemaster = context.scene.bakemaster
     objects = bakemaster.bakejobs[self.bakejob_index].objects
     if self.object_index != -1:
         objects[self.object_index].hl_is_highpoly = False
 
 
-def BM_PROPUTIL_Highpoly_unset_none(data):
+def Highpoly_unset_none(data):
     to_remove = []
     highpoly_index = 0
     for highpoly in data.hl_highpolies:
@@ -3829,19 +3833,19 @@ def BM_PROPUTIL_Highpoly_unset_none(data):
     data.hl_highpoles_active_index = highpoly_index - 1
 
 
-def BM_PROPUTIL_Highpoly_UpdateOnAddOT(context):
+def Highpoly_UpdateOnAddOT(context):
     bakemaster = context.scene.bakemaster
     objects = bakemaster.bakejobs[bakemaster.bakejobs_active_index].objects
 
     for object in objects:
         if object.hl_use_unique_per_map is False:
-            BM_PROPUTIL_Highpoly_unset_none(object)
+            Highpoly_unset_none(object)
             object.hl_is_lowpoly = len(object.hl_highpoles) != 0
             continue
 
         len_of_highpolies = 0
         for map in object.maps:
-            BM_PROPUTIL_Highpoly_unset_none(map)
+            Highpoly_unset_none(map)
             len_of_highpolies += len(map.hl_highpolies)
         object.hl_is_lowpoly = len_of_highpolies != 0
 
@@ -3865,7 +3869,7 @@ def reset_highpoly_props(data, objects, from_index, to_index):
             pass
 
 
-def BM_PROPUTIL_Highpoly_UpdateOnMoveOT(context, from_index=-2, to_index=-2):
+def Highpoly_UpdateOnMoveOT(context, from_index=-2, to_index=-2):
     bakemaster = context.scene.bakemaster
     objects = bakemaster.bakejobs[bakemaster.bakejobs_active_index].objects
 
@@ -3915,7 +3919,7 @@ def updateHighpolyProps_and_removeNone(data, objects):
     return not highpoly_index == 0
 
 
-def BM_PROPUTIL_Highpoly_UpdateAfterRemoveOT(context):
+def Highpoly_UpdateAfterRemoveOT(context):
     bakemaster = context.scene.bakemaster
     objects = bakemaster.bakejobs[bakemaster.bakejobs_active_index].objects
 
@@ -3932,7 +3936,7 @@ def BM_PROPUTIL_Highpoly_UpdateAfterRemoveOT(context):
 def remove_highpolies(context, data):
     to_remove = []
     for highpoly in data.hl_highpolies:
-        BM_PROPUTIL_Highpoly_UpdateOnRemove(highpoly, context)
+        Highpoly_UpdateOnRemove(highpoly, context)
         to_remove.append(highpoly.index)
     for index in reversed(to_remove):
         data.hl_highpolies.remove(index)
@@ -3947,7 +3951,7 @@ def set_removed_highpoly_to_none(data, removed_index):
         highpoly.object_include = "NONE"
 
 
-def BM_PROPUTIL_Highpoly_UpdateOnRemoveOT(context, removed_index, type: str):
+def Highpoly_UpdateOnRemoveOT(context, removed_index, type: str):
     bakemaster = context.scene.bakemaster
     bakejob = bakemaster.bakejobs[bakemaster.bakejobs_active_index]
     objects = bakejob.objects

@@ -1375,6 +1375,7 @@ class BM_OT_ApplyLastEditedProp(Operator):
 
         object = BM_Object_Get(None, context)[0]
 
+        was_error = False
         # apply to maps
         if prop_is_map:
             # apply to object's maps
@@ -1386,7 +1387,8 @@ class BM_OT_ApplyLastEditedProp(Operator):
                         setattr(map, prop, prop_value_real)
                     except TypeError:
                         self.report({'ERROR'}, "Cannot apply property, aborting")
-                        return {'FINISHED'}
+                        print("BakeMaster Error: Cannot apply property: %s, skipping" % prop)
+                        was_error = True
 
             # apply to all chosen object's maps
             else:
@@ -1405,11 +1407,11 @@ class BM_OT_ApplyLastEditedProp(Operator):
                             setattr(map, prop, prop_value_real)
                         except TypeError:
                             self.report({'ERROR'}, "Cannot apply property, aborting")
-                            return {'FINISHED'}
+                            print("BakeMaster Error: Cannot apply property: %s, skipping" % prop)
+                            was_error = True
 
         # apply to selected objects
         else:
-            was_error = False
             for object1 in context.scene.bm_table_of_objects:
                 if object1.nm_is_universal_container:
                     items = [item for item in bm_props.alep_objects if item.object_name == object1.nm_container_name + " Container"]
@@ -1433,6 +1435,7 @@ class BM_OT_ApplyLastEditedProp(Operator):
                         try:
                             setattr(object2, prop, prop_value_real)
                         except TypeError:
+                            self.report({'ERROR'}, "Cannot apply property, aborting")
                             print("BakeMaster Error: Cannot apply property: %s, skipping" % prop)
                             was_error = True
 

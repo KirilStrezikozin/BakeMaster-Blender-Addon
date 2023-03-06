@@ -33,22 +33,18 @@ from bpy.props import (
     PointerProperty,
 )
 from .labels import BM_LABELS_Props
-from .utils.ui import (
-    BM_UTILS_Highpoly_Items,
-    BM_UTILS_Highpoly_Update,
-)
 from .utils import properties as bm_props_utils
 
 
 # class F():
 
 
-class BM_PROPS_Local_map_highpoly(PropertyGroup):
+class Map_highpoly(PropertyGroup):
     name: EnumProperty(
         name="Highpoly Object",
         description="Choose a highpoly among available (highpoly should be added to Bake Job's Objects",  # noqa: E501
-        items=BM_UTILS_Highpoly_Items,
-        update=BM_UTILS_Highpoly_Update)
+        items=bm_props_utils.Highpoly_Items,
+        update=bm_props_utils.Highpoly_Update)
 
     name_old: StringProperty(default="")
     index: IntProperty(default=-1)
@@ -59,7 +55,7 @@ class BM_PROPS_Local_map_highpoly(PropertyGroup):
     self_object_index: IntProperty(default=-1)
 
 
-class BM_PROPS_Local_map(PropertyGroup):
+class Map(PropertyGroup):
     use_bake: BoolProperty(
         name="Include/exclude map from being baked",
         default=True,
@@ -76,7 +72,7 @@ class BM_PROPS_Local_map(PropertyGroup):
     bakejob_index: IntProperty(default=-1)
 
     # Map hl Props
-    hl_highpolies: CollectionProperty(type=BM_PROPS_Local_map_highpoly)
+    hl_highpolies: CollectionProperty(type=Map_highpoly)
 
     hl_highpolies_active_index: IntProperty(
         name="Highpoly Object",
@@ -1614,12 +1610,12 @@ class BM_PROPS_Local_map(PropertyGroup):
         update=bm_props_utils.Map_map_wireframemask_use_invert_Update)
 
 
-class BM_Object_Highpoly(PropertyGroup):
+class Object_Highpoly(PropertyGroup):
     object_name: EnumProperty(
         name="Highpoly",
         description="Choose Highpoly for the Object from the list\n(Highpoly should be added to BakeMaster Table of Objects)",  # noqa: E501
-        items=BM_UTILS_Highpoly_Items,
-        update=BM_UTILS_Highpoly_Update)
+        items=bm_props_utils.Highpoly_Items,
+        update=bm_props_utils.Highpoly_Update)
 
     holder_index: IntProperty(default=-1)
 
@@ -1632,7 +1628,7 @@ class BM_Object_Highpoly(PropertyGroup):
     highpoly_object_include: StringProperty(default="")
 
 
-class BM_Object_ChannelPack(PropertyGroup):
+class Object_ChannelPack(PropertyGroup):
     name: StringProperty(
         name="Pack Name",
         description="Enter a Channel Pack name",
@@ -1744,7 +1740,7 @@ class BM_Object_ChannelPack(PropertyGroup):
     R1G1B1A_map_A_index: IntProperty(default=-1)
 
 
-class BM_MATGROUPS_Item(PropertyGroup):
+class MatGroups_Item(PropertyGroup):
     material_name: StringProperty(
         name="Object's material" + BM_LABELS_Props('BM_MATGROUPS_Item', "group_index", "description").get(),  # noqa: E501
         default="")
@@ -1757,7 +1753,7 @@ class BM_MATGROUPS_Item(PropertyGroup):
         step=1)
 
 
-class BM_PROPS_Local_object(PropertyGroup):
+class Object(PropertyGroup):
     name: StringProperty()
 
     index: IntProperty(default=-1)
@@ -1847,7 +1843,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         description="Mark the current Highpoly as a Decal Object for the Lowpoly",  # noqa: E501
         default=False)
 
-    hl_highpoly_table: CollectionProperty(type=BM_Object_Highpoly)
+    hl_highpoly_table: CollectionProperty(type=Object_Highpoly)
 
     hl_highpoly_table_active_index: IntProperty(
         name="Highpoly Object",
@@ -1976,7 +1972,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         update=bm_props_utils.Object_uv_auto_unwrap_use_scale_to_bounds_Update)
 
 # Item Material Groups Props:
-    matgroups: CollectionProperty(type=BM_MATGROUPS_Item)
+    matgroups: CollectionProperty(type=MatGroups_Item)
 
     matgroups_active_index: IntProperty(
         name="Object's material",
@@ -2278,12 +2274,12 @@ class BM_PROPS_Local_object(PropertyGroup):
         name="Configure maps to bake",
         default=-1)
 
-    maps: CollectionProperty(type=BM_PROPS_Local_map)
+    maps: CollectionProperty(type=Map)
 
     maps_len: IntProperty(default=0)
 
 # Item Channel Packing Props
-    chnlps: CollectionProperty(type=BM_Object_ChannelPack)
+    chnlps: CollectionProperty(type=Object_ChannelPack)
 
     chnlps_active_index: IntProperty(
         name="Channel Pack",
@@ -2376,7 +2372,7 @@ class BM_PROPS_Local_object(PropertyGroup):
         update=bm_props_utils.Object_bake_vg_index_Update)
 
 
-class BM_PROPS_Local_redolastaction_object(PropertyGroup):
+class RedoLastAction_object(PropertyGroup):
     name: StringProperty(
         name="Object name",
         default="")
@@ -2390,7 +2386,7 @@ class BM_PROPS_Local_redolastaction_object(PropertyGroup):
         default=True)
 
 
-class BM_PROPS_Local_redolastaction_map(PropertyGroup):
+class RedoLastAction_map(PropertyGroup):
     name: StringProperty(
         name="Map name",
         default="")
@@ -2405,7 +2401,7 @@ class BM_PROPS_Local_redolastaction_map(PropertyGroup):
         default=True)
 
 
-class BM_PROPS_Local_bakegroup(PropertyGroup):
+class BakeGroup(PropertyGroup):
     name: StringProperty(
         name="Object name",
         default="")
@@ -2432,7 +2428,7 @@ class BM_PROPS_Local_bakegroup(PropertyGroup):
         update=bm_props_utils.BakeGroup_is_cage_Update)
 
 
-class BM_PROPS_Local_matchres(PropertyGroup):
+class MatchRes(PropertyGroup):
     image_name: StringProperty(
         name="Image Texture name",
         default="Image")
@@ -2449,7 +2445,7 @@ class BM_PROPS_Local_matchres(PropertyGroup):
     image_width: IntProperty(default=1)
 
 
-class BM_PROPS_Local_texset_object_subitems(PropertyGroup):
+class TexSet_Object_Subitems(PropertyGroup):
     name: StringProperty(
         name="Container's Lowpoly Object")
 
@@ -2465,7 +2461,7 @@ class BM_PROPS_Local_texset_object_subitems(PropertyGroup):
         default=True)
 
 
-class BM_PROPS_Local_texset_object(PropertyGroup):
+class TexSet_Object(PropertyGroup):
     name: EnumProperty(
         name="Choose Object",
         description="Object from the current Bake Job Objects to inlcude in the current Texture Set.\nIf Container's chosen, all its lowpoly objects will be added to the Texture Set",  # noqa: E501
@@ -2481,14 +2477,14 @@ class BM_PROPS_Local_texset_object(PropertyGroup):
 
     name_include: StringProperty(default="")
 
-    subitems: CollectionProperty(type=BM_PROPS_Local_texset_object_subitems)
+    subitems: CollectionProperty(type=TexSet_Object_Subitems)
 
     subitems_active_index: IntProperty(name="Container's Lowpoly Object")
 
     subitems_len: IntProperty(default=0)
 
 
-class BM_PROPS_Local_texset(PropertyGroup):
+class TexSet(PropertyGroup):
     name: StringProperty(
             name="Texture Set Name.\nTexture Set is a set of objects that share the same image texture file for each map",  # noqa: E501
         default="Texture Set")
@@ -2540,7 +2536,7 @@ class BM_PROPS_Local_texset(PropertyGroup):
                ('TEXSET_INDEX', "Texture Set Index", "Name output texture set image in the format: TextureSet_index"),  # noqa: E501
                ('TEXSET_NAME', "Texture Set Name", "Output texture name will be as Texture Set name")])  # noqa: E501
 
-    texset_objects: CollectionProperty(type=BM_PROPS_Local_texset_object)
+    texset_objects: CollectionProperty(type=TexSet_Object)
 
     texset_objects_active_index: IntProperty(
         name="Object in the Texture Set",
@@ -2549,7 +2545,7 @@ class BM_PROPS_Local_texset(PropertyGroup):
     texset_objects_len: IntProperty(default=0)
 
 
-class BM_PROPS_Local_bakejob(PropertyGroup):
+class BakeJob(PropertyGroup):
     # Bake Job Props
 
     name: StringProperty(
@@ -2564,7 +2560,7 @@ class BM_PROPS_Local_bakejob(PropertyGroup):
         name="Include/Exclude Bake Job from baking",
         default=True)
 
-    objects: CollectionProperty(type=BM_PROPS_Local_object)
+    objects: CollectionProperty(type=Object)
 
     objects_active_index: IntProperty(
         name="Mesh Object to bake maps for",
@@ -2589,7 +2585,7 @@ class BM_PROPS_Local_bakejob(PropertyGroup):
         description="If checked, previous bake result will be erased and overwritten by the new one",  # noqa: E501
         default=False)
 
-    texsets: CollectionProperty(type=BM_PROPS_Local_texset)
+    texsets: CollectionProperty(type=TexSet)
 
     texsets_active_index: IntProperty(
         name="Texture Set.\nTexture Set is a set of objects that share the same image texture file for each map",  # noqa: E501
@@ -2598,10 +2594,10 @@ class BM_PROPS_Local_bakejob(PropertyGroup):
     texsets_len: IntProperty(default=0)
 
 
-class BM_PROPS_Global(PropertyGroup):
+class Global(PropertyGroup):
     # Bake Jobs Props
 
-    bakejobs: CollectionProperty(type=BM_PROPS_Local_bakejob)
+    bakejobs: CollectionProperty(type=BakeJob)
 
     bakejobs_active_index: IntProperty(
         name="Bake Job",
@@ -2678,13 +2674,13 @@ class BM_PROPS_Global(PropertyGroup):
     redolastaction_prop_type: StringProperty(default="")
     redolastaction_prop_is_map: BoolProperty(default=False)
 
-    redolastaction_objects: CollectionProperty(type=BM_PROPS_Local_redolastaction_object)  # noqa: E501
+    redolastaction_objects: CollectionProperty(type=RedoLastAction_object)  # noqa: E501
 
     redolastaction_objects_active_index: IntProperty(
         name="Object",
         default=-1)
 
-    redolastaction_maps: CollectionProperty(type=BM_PROPS_Local_redolastaction_map)  # noqa: E501
+    redolastaction_maps: CollectionProperty(type=RedoLastAction_map)  # noqa: E501
 
     redolastaction_maps_active_index: IntProperty(
         name="Map",
@@ -2698,7 +2694,7 @@ class BM_PROPS_Global(PropertyGroup):
     redolastaction_objects_len: IntProperty(default=0)
 
     # Bake Group Props
-    bakegroup_objects: CollectionProperty(type=BM_PROPS_Local_bakegroup)
+    bakegroup_objects: CollectionProperty(type=BakeGroup)
 
     bakegroup_objects_active_index: IntProperty(
         name="Detached Object",
@@ -2707,7 +2703,7 @@ class BM_PROPS_Global(PropertyGroup):
     bakegroup_objects_len: IntProperty(default=0)
 
     # Math Res Props
-    matchres_items: CollectionProperty(type=BM_PROPS_Local_matchres)
+    matchres_items: CollectionProperty(type=MatchRes)
 
     matchres_items_active_index: IntProperty(
         name="Resolution, Image name, Plugged into",

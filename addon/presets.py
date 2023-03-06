@@ -26,7 +26,10 @@ from os.path import (join as os_path_join,
                      basename as os_path_basename,
                      splitext as os_path_splitext)
 import bpy
-from bpy.types import Menu
+from bpy.types import (
+    Menu,
+    Operator,
+)
 from bpy.utils import (user_resource as bpy_utils_user_resource,
                        preset_paths as bpy_utils_preset_paths)
 from bpy.props import (StringProperty as bpy_props_StringProperty,
@@ -576,7 +579,7 @@ class BM_AddPresetBase():
         return self.execute(context)
 
 ###########################################################
-class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
+class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, Operator):
     bl_idname = "bakemaster.full_object_preset_add"
     bl_label = "Full Object Preset"
     bl_description = "Add or Remove Full Object Preset"
@@ -670,7 +673,7 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.bake_vg_index",
     ]
 
-class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
+class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, Operator):
     bl_idname = "bakemaster.object_preset_add"
     bl_label = "Object Preset"
     bl_description = "Add or Remove Decal, High to Lowpoly, UVs & Layers, Shading Preset"
@@ -725,7 +728,7 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.csh_highpoly_smoothing_groups_name_contains",
     ]
 
-class BM_OT_DECAL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
+class BM_OT_DECAL_Preset_Add(BM_AddPresetBase, Operator):
     bl_idname = "bakemaster.decal_preset_add"
     bl_label = "Decal Preset"
     bl_description = "Add or Remove Decal Preset"
@@ -745,7 +748,7 @@ class BM_OT_DECAL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.decal_boundary_offset",
     ]
 
-class BM_OT_HL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
+class BM_OT_HL_Preset_Add(BM_AddPresetBase, Operator):
     bl_idname = "bakemaster.hl_preset_add"
     bl_label = "High to Lowpoly Preset"
     bl_description = "Add or Remove High to Lowpoly Preset"
@@ -771,7 +774,7 @@ class BM_OT_HL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         # "bm_map.hl_cage",
     ]
 
-class BM_OT_UV_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
+class BM_OT_UV_Preset_Add(BM_AddPresetBase, Operator):
     bl_idname = "bakemaster.uv_preset_add"
     bl_label = "UVs & Layers Preset"
     bl_description = "Add or Remove UVs & Layers Preset"
@@ -798,7 +801,7 @@ class BM_OT_UV_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.uv_use_unique_per_map",
     ]
 
-class BM_OT_CSH_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
+class BM_OT_CSH_Preset_Add(BM_AddPresetBase, Operator):
     bl_idname = "bakemaster.csh_preset_add"
     bl_label = "Shading Preset"
     bl_description = "Add or Remove Shading Preset"
@@ -824,7 +827,7 @@ class BM_OT_CSH_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.csh_highpoly_smoothing_groups_name_contains",
     ]
 
-class BM_OT_OUT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
+class BM_OT_OUT_Preset_Add(BM_AddPresetBase, Operator):
     bl_idname = "bakemaster.out_preset_add"
     bl_label = "Format Preset"
     bl_description = "Add or Remove Format Preset"
@@ -862,7 +865,7 @@ class BM_OT_OUT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.out_use_unique_per_map",
     ]
 
-class BM_OT_FULL_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
+class BM_OT_FULL_MAP_Preset_Add(BM_AddPresetBase, Operator):
     bl_idname = "bakemaster.full_map_preset_add"
     bl_label = "Full Maps Preset"
     bl_description = "Add or Remove Full Maps Preset"
@@ -880,7 +883,7 @@ class BM_OT_FULL_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     # depends on bm_item maps
     preset_values = []
 
-class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
+class BM_OT_MAP_Preset_Add(BM_AddPresetBase, Operator):
     bl_idname = "bakemaster.map_preset_add"
     bl_label = "Map Preset"
     bl_description = "Add or Remove Map Preset"
@@ -1094,7 +1097,7 @@ class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_map.map_wireframemask_use_invert",
     ]
 
-class BM_OT_CHNLP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
+class BM_OT_CHNLP_Preset_Add(BM_AddPresetBase, Operator):
     bl_idname = "bakemaster.chnlp_preset_add"
     bl_label = "Channel Pack Preset"
     bl_description = "Add or Remove Channel Pack Preset"
@@ -1132,7 +1135,7 @@ class BM_OT_CHNLP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_chnlp_item.R1G1B1A_map_A",
     ]
 
-class BM_OT_BAKE_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
+class BM_OT_BAKE_Preset_Add(BM_AddPresetBase, Operator):
     bl_idname = "bakemaster.bake_preset_add"
     bl_label = "Bake Output Preset"
     bl_description = "Add or Remove Bake Output Preset"
@@ -1381,7 +1384,7 @@ class BM_MT_BAKE_Presets(bpy.types.Menu):
 ###########################################################
 # original from https://developer.blender.org/diffusion/B/browse/master/release/scripts/startup/bl_operators/presets.py%24213
 # for bakemaster presets modified execution
-class BM_OT_ExecutePreset(bpy.types.Operator):
+class BM_OT_ExecutePreset(Operator):
     """Execute BakeMaster preset"""
     bl_idname = "bakemaster.execute_preset_bakemaster"
     bl_label = "Load BakeMaster Preset"
