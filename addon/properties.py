@@ -39,7 +39,7 @@ from .utils import properties as bm_props_utils
 # class F():
 
 
-class Map_highpoly(PropertyGroup):
+class Map_Highpoly(PropertyGroup):
     name: EnumProperty(
         name="Highpoly Object",
         description="Choose a highpoly among available (highpoly should be added to Bake Job's Objects",  # noqa: E501
@@ -72,7 +72,7 @@ class Map(PropertyGroup):
     bakejob_index: IntProperty(default=-1)
 
     # Map hl Props
-    hl_highpolies: CollectionProperty(type=Map_highpoly)
+    hl_highpolies: CollectionProperty(type=Map_Highpoly)
 
     hl_highpolies_active_index: IntProperty(
         name="Highpoly Object",
@@ -388,7 +388,7 @@ class Map(PropertyGroup):
 
     map_ALBEDO_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_ALBEDO_use_preview_Update)
 
@@ -401,7 +401,7 @@ class Map(PropertyGroup):
 
     map_METALNESS_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_METALNESS_use_preview_Update)
 
@@ -414,7 +414,7 @@ class Map(PropertyGroup):
 
     map_ROUGHNESS_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_ROUGHNESS_use_preview_Update)
 
@@ -427,7 +427,7 @@ class Map(PropertyGroup):
 
     map_DIFFUSE_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_DIFFUSE_use_preview_Update)
 
@@ -440,7 +440,7 @@ class Map(PropertyGroup):
 
     map_SPECULAR_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_SPECULAR_use_preview_Update)
 
@@ -453,7 +453,7 @@ class Map(PropertyGroup):
 
     map_GLOSSINESS_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_GLOSSINESS_use_preview_Update)
 
@@ -466,7 +466,7 @@ class Map(PropertyGroup):
 
     map_OPACITY_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_OPACITY_use_preview_Update)
 
@@ -479,7 +479,7 @@ class Map(PropertyGroup):
 
     map_EMISSION_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_EMISSION_use_preview_Update)
 
@@ -492,7 +492,7 @@ class Map(PropertyGroup):
 
     map_PASS_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_PASS_use_preview_Update)
 
@@ -524,7 +524,7 @@ class Map(PropertyGroup):
 
     map_DECAL_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_DECAL_use_preview_Update)
 
@@ -620,7 +620,7 @@ class Map(PropertyGroup):
 
     map_VERTEX_COLOR_LAYER_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_VERTEX_COLOR_LAYER_use_preview_Update)
 
@@ -760,7 +760,7 @@ class Map(PropertyGroup):
 
     map_NORMAL_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_NORMAL_use_preview_Update)
 
@@ -855,7 +855,7 @@ class Map(PropertyGroup):
 
     map_DISPLACEMENT_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_DISPLACEMENT_use_preview_Update)
 
@@ -897,7 +897,7 @@ class Map(PropertyGroup):
 
     map_VECTOR_DISPLACEMENT_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_VECTOR_DISPLACEMENT_use_preview_Update)
 
@@ -933,7 +933,7 @@ class Map(PropertyGroup):
 
     map_POSITION_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_POSITION_use_preview_Update)
 
@@ -946,7 +946,7 @@ class Map(PropertyGroup):
 
     map_AO_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_AO_use_preview_Update)
 
@@ -1034,7 +1034,7 @@ class Map(PropertyGroup):
 
     map_CAVITY_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_CAVITY_use_preview_Update)
 
@@ -1086,7 +1086,7 @@ class Map(PropertyGroup):
 
     map_CURVATURE_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_CURVATURE_use_preview_Update)
 
@@ -1155,7 +1155,7 @@ class Map(PropertyGroup):
 
     map_THICKNESS_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_THICKNESS_use_preview_Update)
 
@@ -1226,7 +1226,7 @@ class Map(PropertyGroup):
 
     map_ID_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_ID_use_preview_Update)
 
@@ -1270,7 +1270,7 @@ class Map(PropertyGroup):
 
     map_MASK_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_MASK_use_preview_Update)
 
@@ -1335,7 +1335,7 @@ class Map(PropertyGroup):
 
     map_XYZMASK_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_XYZMASK_use_preview_Update)
 
@@ -1401,7 +1401,7 @@ class Map(PropertyGroup):
 
     map_GRADIENT_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_GRADIENT_use_preview_Update)
 
@@ -1534,7 +1534,7 @@ class Map(PropertyGroup):
 
     map_EDGE_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_EDGE_use_preview_Update)
 
@@ -1589,7 +1589,7 @@ class Map(PropertyGroup):
 
     map_WIREFRAME_use_preview: BoolProperty(
         name="Preview",
-        description=BM_LABELS_Props('BM_PROPS_Local_map', "map_use_preview", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Map', "map_use_preview", "description").get(),  # noqa: E501
         default=False,
         update=bm_props_utils.Map_map_WIREFRAME_use_preview_Update)
 
@@ -1742,12 +1742,12 @@ class Object_ChannelPack(PropertyGroup):
 
 class MatGroups_Item(PropertyGroup):
     material_name: StringProperty(
-        name="Object's material" + BM_LABELS_Props('BM_MATGROUPS_Item', "group_index", "description").get(),  # noqa: E501
+        name="Object's material" + BM_LABELS_Props('MatGroups_Item', "group_index", "description").get(),  # noqa: E501
         default="")
 
     group_index: IntProperty(
         name="Material Group Index",
-        description=BM_LABELS_Props('BM_MATGROUPS_Item', "group_index", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('MatGroups_Item', "group_index", "description").get(),  # noqa: E501
         default=1,
         min=1,
         step=1)
@@ -2315,7 +2315,7 @@ class Object(PropertyGroup):
 
     bake_batchname: StringProperty(
         name="Batch Name",
-        description=BM_LABELS_Props('BM_PROPS_Local_object', "bake_batchname", "description").get(),  # noqa: E501
+        description=BM_LABELS_Props('Object', "bake_batchname", "description").get(),  # noqa: E501
         default="$objectindex_$objectname_$mapname",
         update=bm_props_utils.Object_bake_batchname_Update)
 
@@ -2372,7 +2372,7 @@ class Object(PropertyGroup):
         update=bm_props_utils.Object_bake_vg_index_Update)
 
 
-class RedoLastAction_object(PropertyGroup):
+class RedoLastAction_Object(PropertyGroup):
     name: StringProperty(
         name="Object name",
         default="")
@@ -2386,7 +2386,7 @@ class RedoLastAction_object(PropertyGroup):
         default=True)
 
 
-class RedoLastAction_map(PropertyGroup):
+class RedoLastAction_Map(PropertyGroup):
     name: StringProperty(
         name="Map name",
         default="")
@@ -2445,7 +2445,7 @@ class MatchRes(PropertyGroup):
     image_width: IntProperty(default=1)
 
 
-class TexSet_Object_Subitems(PropertyGroup):
+class TexSet_Object_Subitem(PropertyGroup):
     name: StringProperty(
         name="Container's Lowpoly Object")
 
@@ -2477,7 +2477,7 @@ class TexSet_Object(PropertyGroup):
 
     name_include: StringProperty(default="")
 
-    subitems: CollectionProperty(type=TexSet_Object_Subitems)
+    subitems: CollectionProperty(type=TexSet_Object_Subitem)
 
     subitems_active_index: IntProperty(name="Container's Lowpoly Object")
 
@@ -2674,13 +2674,13 @@ class Global(PropertyGroup):
     redolastaction_prop_type: StringProperty(default="")
     redolastaction_prop_is_map: BoolProperty(default=False)
 
-    redolastaction_objects: CollectionProperty(type=RedoLastAction_object)  # noqa: E501
+    redolastaction_objects: CollectionProperty(type=RedoLastAction_Object)  # noqa: E501
 
     redolastaction_objects_active_index: IntProperty(
         name="Object",
         default=-1)
 
-    redolastaction_maps: CollectionProperty(type=RedoLastAction_map)  # noqa: E501
+    redolastaction_maps: CollectionProperty(type=RedoLastAction_Map)  # noqa: E501
 
     redolastaction_maps_active_index: IntProperty(
         name="Map",
@@ -2763,7 +2763,7 @@ class Global(PropertyGroup):
     bake_instruction: StringProperty(
         name="Bake Operator Instruction",
         default="Short Bake Instruction",
-        description=BM_LABELS_Props('BM_PROPS_Global', "bake_instruction", "description").get())  # noqa: E501
+        description=BM_LABELS_Props('Global', "bake_instruction", "description").get())  # noqa: E501
 
     is_bake_available: BoolProperty(
         default=True)
