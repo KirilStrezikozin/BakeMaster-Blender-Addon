@@ -33,12 +33,40 @@ from bpy.types import (
 from bpy.props import (
     EnumProperty,
     StringProperty,
+    BoolProperty,
 )
-from ..utils.properties import *
 from ..labels import (
     BM_LABELS_Operators,
     BM_URLs,
 )
+
+
+class BM_OT_Help(Operator):
+    bl_idname = 'bakemaster.help'
+    bl_label = "Help"
+    bl_description = "Press to visit the according BakeMaster's online documentation page"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    action: EnumProperty(
+        default='INDEX',
+        items=[('INDEX', "Index", ""),
+               ('BAKEJOBS', "Bake Jobs", ""),
+               ('PIPELINE', "Pipeline", ""),
+               ('MANAGER', "Manager", ""),
+               ('OBJECTS', "Objects", ""),
+               ('MAPS', "Maps", ""),
+               ('OUTPUT', "Output", ""),
+               ('TEXSETS', "Texture Sets", ""),
+               ('BAKE', "Bake", "")])
+
+    def invoke(self, context, event):
+        self.url = BM_URLs("latest").get(self.action)
+        return self.execute(context)
+
+    def execute(self, context):
+        from webbrowser import open as webbrowser_open
+        webbrowser_open(self.url)
+        return {'FINISHED'}
 
 
 class BM_OT_BakeJobs_AddRemove(Operator):
@@ -134,32 +162,80 @@ class BM_OT_BakeJobs_Trash(Operator):
         return {'FINISHED'}
 
 
-class BM_OT_Help(Operator):
-    bl_idname = 'bakemaster.help'
-    bl_label = "Help"
-    bl_description = "Press to visit the according BakeMaster's online documentation page"  # noqa: E501
+class BM_OT_Pipeline_Config(Operator):
+    bl_idname = 'bakemaster.pipeline_config'
+    bl_label = "Config"
+    bl_description = "Load or save Bake Configuration data"
     bl_options = {'INTERNAL', 'UNDO'}
 
-    action: EnumProperty(
-        default='INDEX',
-        items=[('INDEX', "Index", ""),
-               ('BAKEJOBS', "Bake Jobs", ""),
-               ('PIPELINE', "Pipeline", ""),
-               ('MANAGER', "Manager", ""),
-               ('OBJECTS', "Objects", ""),
-               ('MAPS', "Maps", ""),
-               ('OUTPUT', "Output", ""),
-               ('TEXSETS', "Texture Sets", ""),
-               ('BAKE', "Bake", "")])
+    def use_save_Update(self, context):
+        self.use_load = not self.use_save
 
-    def invoke(self, context, event):
-        self.url = BM_URLs("latest").get(self.action)
-        return self.execute(context)
+    def use_load_Update(self, context):
+        self.use_save = not self.use_load
+
+    use_save: BoolProperty(
+        name="Save",
+        description="Save current config on the disk",
+        default=True,
+        update=use_save_Update,
+        options={'SKIP_SAVE'})
+
+    use_load: BoolProperty(
+        name="Load",
+        description="Load config from the disk",
+        default=False,
+        update=use_load_Update,
+        options={'SKIP_SAVE'})
+
+    include: EnumProperty(
+        name="Include",
+        description="Data to include when loading/saving the config",
+        default='ALL',
+        items=[('ALL', "Setup & Presets", "Save/load both setup and presets as a config"),  # noqa: E501
+               ('SETUP', "Setup only", "Save/load setup only as a config"),
+               ('PRESETS', "Presets only", "Save/load presets only as a config")],  # noqa: E501
+        options={'SKIP_SAVE'})
+
+    def invoke(self, context):
+        scene = context.scene
+        bakemaster = scene.bakemaster
+
+        self.use_save = bakemaster.pipeline_config_ot_use_save
+
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
 
     def execute(self, context):
-        from webbrowser import open as webbrowser_open
-        webbrowser_open(self.url)
+        scene = context.scene
+        bakemaster = scene.bakemaster
+
+        bakemaster.pipeline_config_is_attached = True
+        bakemaster.pipeline_config_ot_use_save = self.use_save
+        bakemaster.pipeline_config_include = self.include
+        print(self.use_save)
+        print(self.include)
+
+        self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = False
+        layout.use_property_decorate = False
+
+        row = layout.row(align=True)
+        row.prop(self, 'use_load', toggle=True)
+        row.prop(self, 'use_save', toggle=True)
+        row = layout.row()
+        row.prop(self, 'include')
+
+
+
+
+#####################################################
+
+# from ..utils.properties import *
 
 
 class BM_OT_Bake(Operator):

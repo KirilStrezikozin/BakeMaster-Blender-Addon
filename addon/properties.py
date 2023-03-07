@@ -2640,6 +2640,8 @@ class Global(PropertyGroup):
 
     # Pipeline Props
 
+    pipeline_config_ot_use_save: BoolProperty(default=True)
+
     pipeline_config_is_attached: BoolProperty(default=False)
 
     pipeline_config_include: EnumProperty(
