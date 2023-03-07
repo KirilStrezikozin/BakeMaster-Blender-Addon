@@ -2674,6 +2674,11 @@ class Global(PropertyGroup):
         description="Enable to configure whether item (map or/and object) should be skipped in baking, its baked part in the image from the atlas be overwritten, cleared, or created.\nSuitable for large bake pipelines when there's an atlas attached, and it shouldn't be fully rebaked, whereas some item's bake result needs to be overwritten in the image, cleared, created, or skipped baking",  # noqa: E501
         default=True)
 
+    pipeline_bake_use_write_log: BoolProperty(
+        name="Write Log",
+        description="Write what you usually see in the Blender Console while baking into a separate .txt file. Can be useful for saving process feedback and error detection. BakeMaster also keeps its own error and status log for developers to detect errors",  # noqa: E501
+        default=False)
+
     # Addon Preferences Props
 
     prefs_use_show_help: BoolProperty(
