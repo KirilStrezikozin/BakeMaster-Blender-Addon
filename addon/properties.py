@@ -2597,6 +2597,34 @@ class BakeJob(PropertyGroup):
 
     texsets_len: IntProperty(default=0)
 
+    # Manager Props
+
+    manager_container_type: EnumProperty(
+        name="Container Type",
+        description="A Container is a Bake Job item. Choose its type. Hover over type values to see descriptions",  # noqa: E501
+        default='OBJECT',
+        items=[('OBJECT', "Object", "Bake Job will contain Mesh Objects, where each of them will contain Maps to bake for the object"),  # noqa: E501
+               ('MAP', "Map", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for")],  # noqa: E501
+        update=bm_props_utils.BakeJob_manager_container_type_Update)
+
+    manager_container_share_settings: BoolProperty(
+        name="Share Settings",
+        description="All Containers will share the same settings. If Container type is Object, all containers will share similar UV, Maps, Output settings with the ability to set Highpoly for each individually. If Container type is Map, all containers will share similar Output and Objects settings with the ability to choose Objects for each",  # noqa: E501
+        default=False,
+        update=bm_props_utils.BakeJob_manager_container_share_settings)
+
+    manager_container_share_items: BoolProperty(
+        name="Share Items",
+        description="All Containers will share the same items. If Container type is Object, all containers will have similar maps. If Container type is Map, all containers will have similar objects to bake the maps for",  # noqa: E501
+        default=False,
+        update=bm_props_utils.BakeJob_manager_container_share_items)
+
+    manager_use_filter_baked: BoolProperty(
+        name="Filter baked",
+        description="All objects, map, groups, texsets, bake jobs that were fully baked will be removed from bakemaster after it. Identical to 'Reset BakeMaster' in older version",  # noqa: E501
+        default=False,
+        update=bm_props_utils.BakeJob_manager_use_filter_baked)
+
 
 class Global(PropertyGroup):
     # Bake Jobs Props
@@ -2638,7 +2666,7 @@ class Global(PropertyGroup):
         default=False)
 
     pipeline_item_use_advanced_controls: BoolProperty(
-        name="Advanced Item Controls",
+        rame="Advanced Item Controls",
         description="Enable to configure whether item (map or/and object) should be skipped in baking, its baked part in the image from the atlas be overwritten, cleared, or created.\nSuitable for large bake pipelines when there's an atlas attached, and it shouldn't be fully rebaked, whereas some item's bake result needs to be overwritten in the image, cleared, created, or skipped baking",  # noqa: E501
         default=True)
 
