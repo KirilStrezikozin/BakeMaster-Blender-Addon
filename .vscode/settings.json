@@ -18,6 +18,10 @@
             "scheme": "file"
         }
     ],
+    "python.linting.flake8Args": [
+        "--max-line-length=79",
+        "--ignore=F722,F821",
+    ],
     "markdown.preview.breaks": true,
     "markdown.preview.typographer": true,
     "esbonio.sphinx.confDir": "",
