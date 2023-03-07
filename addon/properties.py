@@ -2644,6 +2644,8 @@ class Global(PropertyGroup):
 
     pipeline_config_is_attached: BoolProperty(default=False)
 
+    pipeline_import_is_used: BoolProperty(default=False)
+
     pipeline_config_include: EnumProperty(
         name="Include",
         description="What to include in the config's save/load",

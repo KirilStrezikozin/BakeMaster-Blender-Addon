@@ -231,7 +231,37 @@ class BM_OT_Pipeline_Config(Operator):
         row.prop(self, 'include')
 
 
+class BM_OT_Pipeline_Import(Operator):
+    bl_idname = 'bakemaster.pipeline_import'
+    bl_label = "Import .blend(s)"
+    bl_description = "Link Objects from other .blend file(s) to configure baking them too"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
 
+    # TODO: if import_is_used, edit button will load
+    # this operator and requery list of objects,
+    # the list of objects and its setup is not created in props
+
+    edit: BoolProperty(
+        name="Edit",
+        description="Edit imported objects' names",
+        default=False,
+        options={'SKIP_SAVE'})
+
+    def invoke(self, context):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        scene = context.scene
+        bakemaster = scene.bakemaster
+
+        bakemaster.pipeline_import_is_used = True
+
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def draw(self, context):
+        pass
 
 #####################################################
 
