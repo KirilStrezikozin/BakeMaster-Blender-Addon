@@ -2575,11 +2575,6 @@ class BakeJob(PropertyGroup):
         default=False,
         update=bm_props_utils.BakeJob_use_name_matching_Update)
 
-    use_save_log: BoolProperty(
-        name="Save Log",
-        description="Save log of time used to bake each map and a short summary of all baked maps for all baked objects into a .txt file",  # noqa: E501
-        default=False)
-
     use_bake_overwrite: BoolProperty(
         name="Overwrite",
         description="If checked, previous bake result will be erased and overwritten by the new one",  # noqa: E501
@@ -2606,6 +2601,22 @@ class Global(PropertyGroup):
 
     bakejobs_len: IntProperty(default=0)
 
+    # Pipeline Props
+
+    pipeline_is_config_attached: BoolProperty(default=False)
+
+    pipeline_config_include: EnumProperty(
+        name="Include",
+        description="What to include in the config's save/load",
+        default='ALL',
+        items=[('ALL', "Setup & Presets", "Save/load both setup and presets as a config"),  # noqa: E501
+               ('SETUP', "Setup only", "Save/load setup only as a config"),
+               ('PRESETS', "Presets only", "Save/load presets only as a config")])  # noqa: E501
+
+    pipeline_use_stamp_assets: BoolProperty(
+        name="Stamp Assets",
+        description="Mark assets' changes and edits for the current bake to be able to analyse
+
     # Addon Preferences Props
 
     prefs_use_show_help: BoolProperty(
@@ -2616,7 +2627,7 @@ class Global(PropertyGroup):
     prefs_use_pipeline: BoolProperty(
         name="Bake Pipeline",
         description="Enable/disable Bake Pipeline settings (Bake Configs save/load, Atlas Management, Asset Matching)",  # noqa: E501
-        default=False)
+        default=True)
 
     prefs_use_hide_notbaked: BoolProperty(
         name="Hide not baked",
