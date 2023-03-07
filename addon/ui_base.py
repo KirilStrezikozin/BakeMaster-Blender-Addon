@@ -149,28 +149,32 @@ class BM_PT_PipelineBase(Panel):
                      text="Save").use_save = True
         row.operator('bakemaster.pipeline_config',
                      text="Load").use_load = True
-        row.operator('bakemaster.pipeline_config')
         if bakemaster.pipeline_config_is_attached:
             row.operator('bakemaster.pipeline_config',
-                         icon='UNLINKED').detach = True
+                         text="", icon='UNLINKED').detach = True
         row = col.row(align=True)
         row.operator('bakemaster.pipeline_import')
         if bakemaster.pipeline_import_is_used:
             row.operator('bakemaster.pipeline_import',
-                         icon='GREASEPENCIL').edit = True
+                         text="", icon='GREASEPENCIL').edit = True
+            row.operator('bakemaster.pipeline_import',
+                         text="", icon='UNLINKED').detach = True
 
-        col = layout.column(align=True)
-        col.prop(bakemaster, 'pipeline_use_stamp_assets')
-        col.prop(bakemaster, 'pipeline_config_use_update')
-        col.active = bakemaster.pipeline_config_is_attached
+        if bakemaster.pipeline_config_is_attached:
+            col = layout.column(align=True)
+            col.prop(bakemaster, 'pipeline_use_stamp_assets')
+            col.prop(bakemaster, 'pipeline_config_use_update')
 
         col = layout.column(align=True)
         col.prop(bakemaster, 'pipeline_bake_use_verbose')
-        col = col.col(align=True)
-        col.prop(bakemaster, 'pipeline_item_use_advanced_controls')
-        col.operator('bakemaster.pipeline_analyse_edits',
-                     icon='HIDE_OFF')
-        col.active = bakemaster.pipeline_bake_use_verbose
+        prop = col.column(align=True)
+        prop.prop(bakemaster, 'pipeline_item_use_advanced_controls')
+        prop.active = bakemaster.pipeline_bake_use_verbose
+        prop = col.column(align=True)
+        prop.operator('bakemaster.pipeline_analyse_edits',
+                      icon='HIDE_OFF')
+        prop.active = all([bakemaster.pipeline_bake_use_verbose,
+                           bakemaster.pipeline_item_use_advanced_controls])
 
         layout.operator('bakemaster.pipeline_atlas_targets',
                         icon='ASSET_MANAGER')
@@ -247,7 +251,7 @@ class BM_PT_ObjectsBase(Panel):
                      icon='REMOVE')
         row.scale_y = 1.15
 
-        rows = 5 if bakejob.object_len >= 1 else 4
+        rows = 5 if bakejob.objects_len >= 1 else 4
         refresh = False
         for object in bakejob.objects:
             try:

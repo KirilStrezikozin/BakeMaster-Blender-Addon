@@ -35,7 +35,7 @@ def get_uilist_rows(len_of_idprop, min_rows: int, max_rows: int):
 def get_active_bakejob_and_object(context):
     try:
         bakejob = context.scene.bakemaster.bakejobs[
-                context.scene.bakemaster.bakejobs_active_index]
+            context.scene.bakemaster.bakejobs_active_index]
         object = bakejob.objects[bakejob.objects_active_index]
     except (IndexError, AttributeError):
         return None, None

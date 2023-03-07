@@ -165,14 +165,16 @@ class BM_OT_BakeJobs_Trash(Operator):
 class BM_OT_Pipeline_Config(Operator):
     bl_idname = 'bakemaster.pipeline_config'
     bl_label = "Config"
-    bl_description = "Load or save Bake Configuration data"
+    bl_description = "Load or save Bake Configuration data. A Config is a like a global preset that saves and carries all presets, settings, tables items, bake jobs etc. for the current BakeMaster session"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     def use_save_Update(self, context):
-        self.use_load = not self.use_save
+        if self.use_load == self.use_save:
+            self.use_load = not self.use_save
 
     def use_load_Update(self, context):
-        self.use_save = not self.use_load
+        if self.use_save == self.use_load:
+            self.use_save = not self.use_load
 
     use_save: BoolProperty(
         name="Save",
@@ -203,13 +205,13 @@ class BM_OT_Pipeline_Config(Operator):
         default=False,
         options={'SKIP_SAVE'})
 
-    def invoke(self, context):
+    def invoke(self, context, event):
         scene = context.scene
         bakemaster = scene.bakemaster
 
         self.use_save = bakemaster.pipeline_config_ot_use_save
 
-        if not self.detach:
+        if self.detach:
             return self.execute(context)
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
@@ -218,7 +220,7 @@ class BM_OT_Pipeline_Config(Operator):
         scene = context.scene
         bakemaster = scene.bakemaster
 
-        bakemaster.pipeline_config_is_attached = self.detach
+        bakemaster.pipeline_config_is_attached = not self.detach
         bakemaster.pipeline_config_ot_use_save = self.use_save
         bakemaster.pipeline_config_include = self.include
         print(self.use_save)
@@ -252,7 +254,15 @@ class BM_OT_Pipeline_Import(Operator):
         default=False,
         options={'SKIP_SAVE'})
 
-    def invoke(self, context):
+    detach: BoolProperty(
+        name="Detach",
+        description="Remove all imported objects' names",
+        default=False,
+        options={'SKIP_SAVE'})
+
+    def invoke(self, context, event):
+        if self.detach:
+            return self.execute(context)
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
@@ -260,7 +270,7 @@ class BM_OT_Pipeline_Import(Operator):
         scene = context.scene
         bakemaster = scene.bakemaster
 
-        bakemaster.pipeline_import_is_used = True
+        bakemaster.pipeline_import_is_used = not self.detach
 
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
@@ -275,7 +285,7 @@ class BM_OT_Pipeline_Analyse_Edits(Operator):
     bl_description = "Using the loaded asset stamps from config (if loaded) and changes to objects and maps after the last bake to quickly configure what needs to be overwritten, cleared, created, or skipped in the next bake"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
-    def invoke(self, context):
+    def invoke(self, context, event):
         return self.execute(context)
 
     def execute(self, context):
@@ -286,13 +296,13 @@ class BM_OT_Pipeline_Analyse_Edits(Operator):
 class BM_OT_Pipeline_Atlas_Targets(Operator):
     bl_idname = 'bakemaster.pipeline_atlas_targets'
     bl_label = "Atlas Targets"
-    bl_description = "Set up output map atlases targets or toggle their creation. An Atlas is a collection of maps, where each map can have a target image on the disk. Choosing them will give you the ability to not query bakes from scratch and saving to the new output files but updating existing textures on the disk even from BakeMaster in another .blend file"  # noqa: E501
+    bl_description = "Choosing target image for each map will give you the ability to not query bakes from scratch and saving to the new output files but updating existing textures on the disk"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     # TODO: operator opens the list of all maps (we need to somehow combine
     # them) and each map prop to choose a filepath or tick 'new (not baked)'
 
-    def invoke(self, context):
+    def invoke(self, context, event):
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
@@ -306,6 +316,7 @@ class BM_OT_Pipeline_Atlas_Targets(Operator):
 
 #####################################################
 
+import bpy
 # from ..utils.properties import *
 
 

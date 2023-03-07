@@ -2666,11 +2666,11 @@ class Global(PropertyGroup):
 
     pipeline_bake_use_verbose: BoolProperty(
         name="Verbose Bake",
-        description="Verbose bake means that each item (object or map) will be baked separately onto separate data images before combining into desired maps. Therefor, managing map atlases overwrites, appends, cleanings, and creations with Advance Item Controls will be faster and exact. It will require more space and additional output folders on the disk.",  # noqa: E501
+        description="Verbose bake means that each item (object or map) will be baked separately onto separate data images before combining into desired maps. Therefor, managing map atlases overwrites, appends, cleanings, and creations with Advance Item Controls will be faster and exact. It will require more space and additional output folders on the disk",  # noqa: E501
         default=False)
 
     pipeline_item_use_advanced_controls: BoolProperty(
-        rame="Advanced Item Controls",
+        name="Advanced Item Controls",
         description="Enable to configure whether item (map or/and object) should be skipped in baking, its baked part in the image from the atlas be overwritten, cleared, or created.\nSuitable for large bake pipelines when there's an atlas attached, and it shouldn't be fully rebaked, whereas some item's bake result needs to be overwritten in the image, cleared, created, or skipped baking",  # noqa: E501
         default=True)
 
