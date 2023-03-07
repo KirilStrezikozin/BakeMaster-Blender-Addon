@@ -117,6 +117,7 @@ classes = (
     operators.ui.BM_OT_Pipeline_Config,
     operators.ui.BM_OT_Pipeline_Import,
     operators.ui.BM_OT_Pipeline_Analyse_Edits,
+    operators.ui.BM_OT_Pipeline_Atlas_Targets,
 
     operators.ui.BM_OT_Table_of_Objects,
     operators.ui.BM_OT_Table_of_Objects_Add,

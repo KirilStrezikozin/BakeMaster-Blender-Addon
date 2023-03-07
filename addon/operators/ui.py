@@ -283,6 +283,27 @@ class BM_OT_Pipeline_Analyse_Edits(Operator):
         return {'FINISHED'}
 
 
+class BM_OT_Pipeline_Atlas_Targets(Operator):
+    bl_idname = 'bakemaster.pipeline_atlas_targets'
+    bl_label = "Atlas Targets"
+    bl_description = "Set up output map atlases targets or toggle their creation. An Atlas is a collection of maps, where each map can have a target image on the disk. Choosing them will give you the ability to not query bakes from scratch and saving to the new output files but updating existing textures on the disk even from BakeMaster in another .blend file"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    # TODO: operator opens the list of all maps (we need to somehow combine
+    # them) and each map prop to choose a filepath or tick 'new (not baked)'
+
+    def invoke(self, context):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def draw(self, context):
+        pass
+
+
 #####################################################
 
 # from ..utils.properties import *
