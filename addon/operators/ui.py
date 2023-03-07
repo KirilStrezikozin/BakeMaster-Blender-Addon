@@ -268,6 +268,21 @@ class BM_OT_Pipeline_Import(Operator):
     def draw(self, context):
         pass
 
+
+class BM_OT_Pipeline_Analyse_Edits(Operator):
+    bl_idname = 'bakemaster.pipeline_analyse_edits'
+    bl_label = "Analyse Edits"
+    bl_description = "Using the loaded asset stamps from config (if loaded) and changes to objects and maps after the last bake to quickly configure what needs to be overwritten, cleared, created, or skipped in the next bake"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def invoke(self, context):
+        return self.execute(context)
+
+    def execute(self, context):
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+
 #####################################################
 
 # from ..utils.properties import *
