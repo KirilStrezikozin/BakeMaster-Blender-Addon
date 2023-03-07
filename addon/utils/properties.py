@@ -27,8 +27,42 @@
 #
 # ##### END LICENSE BLOCK #####
 
+
+# BakeJob Prop Utils
+
+def BakeJob_manager_use_filter_baked(self, context):
+    pass
+
+
+def BakeJob_manager_container_share_items(self, context):
+    pass
+
+
+def BakeJob_manager_container_share_settings(self, context):
+    pass
+
+
+def BakeJob_manager_container_type_Update(self, context):
+    pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###############################################################
+
 import bpy
 from .map_previews import *
+
 
 ###############################################################
 ### Name Matching Funcs ###
