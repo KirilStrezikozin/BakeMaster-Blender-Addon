@@ -215,7 +215,7 @@ class Map(PropertyGroup):
                ('JPEG', "JPEG", "Output image in JPEG format. Uncompressed file format and takes the most amount of data and is the exact representation of the image. \n\nCons: With every edit and resave the image quality will deteriorate.\nPros: lightweight"),  # noqa: E501
                ('TIFF', "TIFF", "Output image in TIFF format. Photographic file standard in print"),  # noqa: E501
                ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps")],  # noqa: E501
-               # ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps with PSD set as file format for current Object will be saved to a single .psd file")],  # noqa: E501
+        # ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps with PSD set as file format for current Object will be saved to a single .psd file")],  # noqa: E501
         update=bm_props_utils.Map_out_file_format_Update)
 
     # out_psd_include: EnumProperty(
@@ -258,7 +258,7 @@ class Map(PropertyGroup):
                ('4096', "4K (4096x4096)", ""),
                ('8192', "8K (8192x8192)", ""),
                ('CUSTOM', "Custom", "Enter custom height and width")],
-               #  ('TEXEL', "Texel Density defined", "Define image resolution based on object's texel density")],  # noqa: E501
+        #  ('TEXEL', "Texel Density defined", "Define image resolution based on object's texel density")],  # noqa: E501
         update=bm_props_utils.Map_out_res_Update)
 
     out_res_height: IntProperty(
@@ -581,7 +581,7 @@ class Map(PropertyGroup):
         default='OPEN_GL',
         items=[('OPEN_GL', "OpenGL", "OpenGL Normal Map format. Green Channel Axis is +Y"),  # noqa: E501
                ('DIRECTX', "DirectX", "DirectX Normal Map format. Green Channel Axis is -Y")],  # noqa: E501
-               # ('CUSTOM', "Custom", "Set custom axes for channels")],
+        # ('CUSTOM', "Custom", "Set custom axes for channels")],
         update=bm_props_utils.Map_map_decal_normal_custom_preset_Update)
 
     map_decal_normal_r: EnumProperty(
@@ -1424,12 +1424,12 @@ class Map(PropertyGroup):
         name="Type",
         description="Style of color blending",
         items=[("LINEAR", "Linear", "Create a linear progression"),
-                 ("QUADRATIC", "Quadratic", "Create a quadratic progression"),
-                 ("EASING", "Easing", "Create progression easing from one step to the next"),  # noqa: E501
-                 ("DIAGONAL", "Diagonal", "Create a diagonal progression"),
-                 ("SPHERICAL", "Spherical", "Create a spherical progression"),
-                 ("QUADRATIC_SPHERE", "Quadratic Sphere", "Create a quadratic progression in the shape of a sphere"),  # noqa: E501
-                 ("RADIAL", "Radial", "Create a radial progression")],
+               ("QUADRATIC", "Quadratic", "Create a quadratic progression"),
+               ("EASING", "Easing", "Create progression easing from one step to the next"),  # noqa: E501
+               ("DIAGONAL", "Diagonal", "Create a diagonal progression"),
+               ("SPHERICAL", "Spherical", "Create a spherical progression"),
+               ("QUADRATIC_SPHERE", "Quadratic Sphere", "Create a quadratic progression in the shape of a sphere"),  # noqa: E501
+               ("RADIAL", "Radial", "Create a radial progression")],
         update=bm_props_utils.Map_map_gmask_type_Update)
 
     map_gmask_location_x: FloatProperty(
@@ -2025,7 +2025,7 @@ class Object(PropertyGroup):
                ('JPEG', "JPEG", "Output image in JPEG format. Uncompressed file format and takes the most amount of data and is the exact representation of the image. \n\nCons: With every edit and resave the image quality will deteriorate.\nPros: lightweight"),  # noqa: E501
                ('TIFF', "TIFF", "Output image in TIFF format. Photographic file standard in print"),  # noqa: E501
                ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps")],  # noqa: E501
-               # ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps for current Object will be saved to a single .psd file")],  # noqa: E501
+        # ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps for current Object will be saved to a single .psd file")],  # noqa: E501
         update=bm_props_utils.Object_out_file_format_Update)
 
     # out_psd_include: EnumProperty(
@@ -2069,7 +2069,7 @@ class Object(PropertyGroup):
                ('4096', "4K (4096x4096)", ""),
                ('8192', "8K (8192x8192)", ""),
                ('CUSTOM', "Custom", "Enter custom height and width")],
-               # ('TEXEL', "Texel Density defined", "Define image resolution based on object's texel density")],  # noqa: E501
+        # ('TEXEL', "Texel Density defined", "Define image resolution based on object's texel density")],  # noqa: E501
         update=bm_props_utils.Object_out_res_Update)
 
     out_res_height: IntProperty(
@@ -2495,7 +2495,7 @@ class TexSet_Object(PropertyGroup):
 
 class TexSet(PropertyGroup):
     name: StringProperty(
-            name="Texture Set Name.\nTexture Set is a set of objects that share the same image texture file for each map",  # noqa: E501
+        name="Texture Set Name.\nTexture Set is a set of objects that share the same image texture file for each map",  # noqa: E501
         default="Texture Set")
 
     index: IntProperty(default=-1)
@@ -2612,7 +2612,7 @@ class Global(PropertyGroup):
 
     # Pipeline Props
 
-    pipeline_is_config_attached: BoolProperty(default=False)
+    pipeline_config_is_attached: BoolProperty(default=False)
 
     pipeline_config_include: EnumProperty(
         name="Include",
@@ -2624,7 +2624,23 @@ class Global(PropertyGroup):
 
     pipeline_use_stamp_assets: BoolProperty(
         name="Stamp Assets",
-        description="Mark assets' changes and edits for the current bake to be able to analyse
+        description="Mark assets changes and edits for the current bake to be able to analyse and assign Advanced Item Controls for the next bake",  # noqa: E501
+        default=True)
+
+    pipeline_config_use_update: BoolProperty(
+        name="Update Config",
+        description="Update current loaded config data with each bake",
+        default=True)
+
+    pipeline_bake_use_verbose: BoolProperty(
+        name="Verbose Bake",
+        description="Verbose bake means that each item (object or map) will be baked separately onto separate data images before combining into desired maps. Therefor, managing map atlases overwrites, appends, cleanings, and creations with Advance Item Controls will be faster and exact. It will require more space and additional output folders on the disk.",  # noqa: E501
+        default=False)
+
+    pipeline_item_use_advanced_controls: BoolProperty(
+        name="Advanced Item Controls",
+        description="Enable to configure whether item (map or/and object) should be skipped in baking, its baked part in the image from the atlas be overwritten, cleared, or created.\nSuitable for large bake pipelines when there's an atlas attached, and it shouldn't be fully rebaked, whereas some item's bake result needs to be overwritten in the image, cleared, created, or skipped baking",  # noqa: E501
+        default=True)
 
     # Addon Preferences Props
 
