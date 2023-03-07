@@ -197,12 +197,20 @@ class BM_OT_Pipeline_Config(Operator):
                ('PRESETS', "Presets only", "Save/load presets only as a config")],  # noqa: E501
         options={'SKIP_SAVE'})
 
+    detach: BoolProperty(
+        name="Detach",
+        description="Config is linked through save or load. Press to detach it and destroy the link. This will allow you to resave or open another config",  # noqa: E501
+        default=False,
+        options={'SKIP_SAVE'})
+
     def invoke(self, context):
         scene = context.scene
         bakemaster = scene.bakemaster
 
         self.use_save = bakemaster.pipeline_config_ot_use_save
 
+        if not self.detach:
+            return self.execute(context)
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
@@ -210,7 +218,7 @@ class BM_OT_Pipeline_Config(Operator):
         scene = context.scene
         bakemaster = scene.bakemaster
 
-        bakemaster.pipeline_config_is_attached = True
+        bakemaster.pipeline_config_is_attached = self.detach
         bakemaster.pipeline_config_ot_use_save = self.use_save
         bakemaster.pipeline_config_include = self.include
         print(self.use_save)
@@ -224,9 +232,6 @@ class BM_OT_Pipeline_Config(Operator):
         layout.use_property_split = False
         layout.use_property_decorate = False
 
-        row = layout.row(align=True)
-        row.prop(self, 'use_load', toggle=True)
-        row.prop(self, 'use_save', toggle=True)
         row = layout.row()
         row.prop(self, 'include')
 
