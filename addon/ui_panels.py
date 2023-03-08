@@ -142,7 +142,7 @@ class BM_UL_Redolastaction_Objects_Item(UIList):
                   active_propname, index):
         bakemaster = context.scene.bakemaster
         object = bakemaster.bakejobs[item.bakejob_index].objects[
-                item.object_index]
+            item.object_index]
         if object is None:
             return
 
@@ -200,7 +200,7 @@ class BM_UL_BakeGroups_Item(UIList):
                   active_propname, index):
         bakemaster = context.scene.bakemaster
         object = bakemaster.bakejobs[item.bakejob_index].objects[
-                item.object_index]
+            item.object_index]
         if object is None:
             return
 
