@@ -287,6 +287,117 @@ class BM_OT_Pipeline_Atlas_Targets(Operator):
         pass
 
 
+class BM_OT_Manager_Presets(Operator):
+    bl_idname = 'bakemaster.manager_presets'
+    bl_label = "Presets"
+    bl_description = "Choose custom filepath for saving/loading settings presets or leave default"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def draw(self, context):
+        pass
+
+
+class BM_OT_Manager_RedoLastAction(Operator):
+    bl_idname = 'bakemaster.manager_redolastaction'
+    bl_label = "Redo Last Action"
+    bl_description = "Redo last action with the addon again for other bake jobs, maps, or objects: either setting value change, button press, preset load, or item add to the table"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def draw(self, context):
+        pass
+
+
+class BM_OT_Manager_GroupContainers(Operator):
+    bl_idname = 'bakemaster.manager_groupcontainers'
+    bl_label = "Group Containers"
+    bl_description = "Group objects or maps (depends on the Container Type) into a group of containers where configuring settings can be done at once for all"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def draw(self, context):
+        pass
+
+
+class BM_OT_Manager_BakeJob_Tools(Operator):
+    bl_idname = 'bakemaster.manager_bakejob_tools'
+    bl_label = "BakeJob Tools"
+    bl_description = "Press to see available tools to execute for the current bake job"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def run_migrate_update(self, context):
+        if self.run_migrate and any([
+                self.run_merge, self.run_isolate]):
+            self.run_merge = False
+            self.run_isolate = False
+
+    def run_merge_update(self, context):
+        if self.run_merge and any([
+                self.run_migrate, self.run_isolate]):
+            self.run_migrate = False
+            self.run_isolate = False
+
+    def run_isolate_update(self, context):
+        if self.run_isolate and any([
+                self.run_migrate, self.run_merge]):
+            self.run_migrate = False
+            self.run_merge = False
+
+    run_migrate: BoolProperty(
+        name="Migrate",
+        description="Move objects from the current bake job to another bake job",  # noqa: E501
+        default=True,
+        update=run_migrate_update)
+
+    run_merge: BoolProperty(
+        name="Merge",
+        description="Select two bake jobs to merge objects of each into a single bake job",  # noqa: E501
+        default=False,
+        update=run_merge_update)
+
+    run_isolate: BoolProperty(
+        name="Isolate",
+        description="Select objects in the current bake job to form a new bake job with. Those objects will be moved there",  # noqa: E501
+        default=False,
+        update=run_isolate_update)
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def draw(self, context):
+        row = self.layout.row(align=True)
+        row.prop(self, 'run_migrate', toggle=True)
+        row.prop(self, 'run_merge', toggle=True)
+        row.prop(self, 'run_isolate', toggle=True)
+
+
 #####################################################
 
 import bpy

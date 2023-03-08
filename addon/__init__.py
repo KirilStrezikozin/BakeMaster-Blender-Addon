@@ -118,6 +118,10 @@ classes = (
     operators.ui.BM_OT_Pipeline_Import,
     operators.ui.BM_OT_Pipeline_Analyse_Edits,
     operators.ui.BM_OT_Pipeline_Atlas_Targets,
+    operators.ui.BM_OT_Manager_BakeJob_Tools,
+    operators.ui.BM_OT_Manager_GroupContainers,
+    operators.ui.BM_OT_Manager_RedoLastAction,
+    operators.ui.BM_OT_Manager_Presets,
 
     operators.ui.BM_OT_Table_of_Objects,
     operators.ui.BM_OT_Table_of_Objects_Add,
@@ -186,7 +190,7 @@ def register():
     for cls in classes:
         bpy_utils_register_class(cls)
     bpy_types_Scene.bakemaster = PointerProperty(
-            type=properties.Global)
+        type=properties.Global)
 
 
 def unregister():
