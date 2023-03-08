@@ -163,7 +163,7 @@ class BM_PT_PipelineBase(Panel):
                          text="", icon='UNLINKED').detach = True
 
         col.operator('bakemaster.pipeline_atlas_targets',
-                        icon='ASSET_MANAGER')
+                     icon='ASSET_MANAGER')
 
         if bakemaster.pipeline_config_is_attached:
             col = layout.column(align=True)
@@ -194,7 +194,15 @@ class BM_PT_ManagerBase(Panel):
 
     @classmethod
     def poll(cls, context):
-        return hasattr(context.scene, "bakemaster")
+        if not hasattr(context.scene, "bakemaster"):
+            return False
+        try:
+            context.scene.bakemaster.bakejobs[
+                context.scene.bakemaster.bakejobs_active_index]
+        except IndexError:
+            return False
+        else:
+            return True
 
     def draw_header_preset(self, context):
         bakemaster = context.scene.bakemaster
@@ -206,7 +214,23 @@ class BM_PT_ManagerBase(Panel):
     def draw(self, context):
         scene = context.scene
         bakemaster = scene.bakemaster
+        bakejob = bakemaster.bakejobs[bakemaster.bakejobs_active_index]
         layout = self.layout
+
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        col = layout.column(align=True)
+        col.prop(bakejob, 'manager_container_type')
+        col.prop(bakejob, 'manager_container_share_settings')
+        col.prop(bakejob, 'manager_container_share_items')
+        col.prop(bakejob, 'manager_use_filter_baked')
+
+        col = layout.column(align=True)
+        col.operator('bakemaster.manager_presets')
+        col.operator('bakemaster.manager_redolastaction')
+        col.operator('bakemaster.manager_groupcontainers')
+        col.operator('bakemaster.manager_bakejob_tools')
 
 
 ################################################################
