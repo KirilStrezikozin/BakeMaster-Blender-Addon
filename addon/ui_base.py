@@ -143,43 +143,48 @@ class BM_PT_PipelineBase(Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        col = layout.column()
-        row = col.row(align=True)
-        row.operator('bakemaster.pipeline_config',
-                     text="Save").use_save = True
-        row.operator('bakemaster.pipeline_config',
-                     text="Load").use_load = True
+        row = layout.row(align=True)
         if bakemaster.pipeline_config_is_attached:
             row.operator('bakemaster.pipeline_config',
-                         text="", icon='UNLINKED').detach = True
+                         text="Reload Config").action = 'LOAD'
+            row.operator('bakemaster.pipeline_config',
+                         text="", icon='UNLINKED').action = 'DETACH'
+        else:
+            row.operator('bakemaster.pipeline_config',
+                         text="Load Config").action = 'LOAD'
+
+        col = layout.column(align=True)
         row = col.row(align=True)
-        row.operator('bakemaster.pipeline_import')
+        row.operator('bakemaster.pipeline_import', icon='FILE_BACKUP')
         if bakemaster.pipeline_import_is_used:
             row.operator('bakemaster.pipeline_import',
                          text="", icon='GREASEPENCIL').edit = True
             row.operator('bakemaster.pipeline_import',
                          text="", icon='UNLINKED').detach = True
 
+        col.operator('bakemaster.pipeline_atlas_targets',
+                        icon='ASSET_MANAGER')
+
         if bakemaster.pipeline_config_is_attached:
             col = layout.column(align=True)
-            col.prop(bakemaster, 'pipeline_use_stamp_assets')
             col.prop(bakemaster, 'pipeline_config_use_update')
+            col.prop(bakemaster, 'pipeline_use_stamp_assets')
 
         col = layout.column(align=True)
-        col.prop(bakemaster, 'pipeline_bake_use_verbose')
-        prop = col.column(align=True)
-        prop.prop(bakemaster, 'pipeline_item_use_advanced_controls')
-        prop.active = bakemaster.pipeline_bake_use_verbose
+        prop = col.column()
+        prop.prop(bakemaster, 'pipeline_config_auto_cache')
+        prop.active = not bakemaster.pipeline_config_is_attached
+        col.prop(bakemaster, 'pipeline_bake_use_write_log')
+
+        col = layout.column(align=True)
+        col.prop(bakemaster, 'pipeline_item_use_advanced_controls')
         prop = col.column(align=True)
         prop.operator('bakemaster.pipeline_analyse_edits',
                       icon='HIDE_OFF')
-        prop.active = all([bakemaster.pipeline_bake_use_verbose,
-                           bakemaster.pipeline_item_use_advanced_controls])
+        prop.active = bakemaster.pipeline_item_use_advanced_controls
 
-        layout.operator('bakemaster.pipeline_atlas_targets',
-                        icon='ASSET_MANAGER')
-
-        layout.prop(bakemaster, 'pipeline_bake_use_write_log')
+        layout.operator('bakemaster.pipeline_config',
+                        text="Save Config").action = 'SAVE'
 
 
 class BM_PT_ManagerBase(Panel):

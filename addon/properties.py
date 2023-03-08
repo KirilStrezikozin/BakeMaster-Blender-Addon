@@ -2640,8 +2640,6 @@ class Global(PropertyGroup):
 
     # Pipeline Props
 
-    pipeline_config_ot_use_save: BoolProperty(default=True)
-
     pipeline_config_is_attached: BoolProperty(default=False)
 
     pipeline_import_is_used: BoolProperty(default=False)
@@ -2654,29 +2652,29 @@ class Global(PropertyGroup):
                ('SETUP', "Setup only", "Save/load setup only as a config"),
                ('PRESETS', "Presets only", "Save/load presets only as a config")])  # noqa: E501
 
-    pipeline_use_stamp_assets: BoolProperty(
-        name="Stamp Assets",
-        description="Mark assets changes and edits for the current bake to be able to analyse and assign Advanced Item Controls for the next bake",  # noqa: E501
-        default=True)
-
     pipeline_config_use_update: BoolProperty(
         name="Update Config",
-        description="Update current loaded config data with each bake",
+        description="Update current loaded config data on each bake. That means map, objects changes and edits, newly created presets, and bake info will be written to the config. Press 'Save Config' below to do it manually whenever you'd like",  # noqa: E501
         default=True)
 
-    pipeline_bake_use_verbose: BoolProperty(
-        name="Verbose Bake",
-        description="Verbose bake means that each item (object or map) will be baked separately onto separate data images before combining into desired maps. Therefor, managing map atlases overwrites, appends, cleanings, and creations with Advance Item Controls will be faster and exact. It will require more space and additional output folders on the disk",  # noqa: E501
-        default=False)
+    pipeline_use_stamp_assets: BoolProperty(
+        name="Stamp Assets",
+        description="Stamping current assets states and data into the config will allow better analysis of their changes on the next bake. See 'Analyse Edits' below for description",  # noqa: E501
+        default=True)
 
-    pipeline_item_use_advanced_controls: BoolProperty(
-        name="Advanced Item Controls",
-        description="Enable to configure whether item (map or/and object) should be skipped in baking, its baked part in the image from the atlas be overwritten, cleared, or created.\nSuitable for large bake pipelines when there's an atlas attached, and it shouldn't be fully rebaked, whereas some item's bake result needs to be overwritten in the image, cleared, created, or skipped baking",  # noqa: E501
+    pipeline_config_auto_cache: BoolProperty(
+        name="Cache Config",
+        description="If no config loaded, BakeMaster will automatically cache temporary config data for the ability to Analyse Edits in the future. See 'Analyse Edits' for description",  # noqa: E501
         default=True)
 
     pipeline_bake_use_write_log: BoolProperty(
         name="Write Log",
         description="Write what you usually see in the Blender Console while baking into a separate .txt file. Can be useful for saving process feedback and error detection. BakeMaster also keeps its own error and status log for developers to detect errors",  # noqa: E501
+        default=False)
+
+    pipeline_item_use_advanced_controls: BoolProperty(
+        name="Advanced Item Controls",
+        description="Enable to configure whether item (map or/and object) should be skipped while baking, its baked part in the image from the atlas be overwritten, cleared, or created.\nSuitable for large bake pipelines when there's an atlas attached, and it shouldn't be fully rebaked, whereas some item's bake result needs to be overwritten in the image, cleared, created, or skipped while baking",  # noqa: E501
         default=False)
 
     # Addon Preferences Props

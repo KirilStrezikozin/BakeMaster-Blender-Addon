@@ -165,29 +165,14 @@ class BM_OT_BakeJobs_Trash(Operator):
 class BM_OT_Pipeline_Config(Operator):
     bl_idname = 'bakemaster.pipeline_config'
     bl_label = "Config"
-    bl_description = "Load or save Bake Configuration data. A Config is a like a global preset that saves and carries all presets, settings, tables items, bake jobs etc. for the current BakeMaster session"  # noqa: E501
+    bl_description = "Load/Save/Detach Bake Configuration data. You can use config as a super preset to save all tables data and items, presets, settings, bake jobs etc. for the current BakeMaster session"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
-    def use_save_Update(self, context):
-        if self.use_load == self.use_save:
-            self.use_load = not self.use_save
-
-    def use_load_Update(self, context):
-        if self.use_save == self.use_load:
-            self.use_save = not self.use_load
-
-    use_save: BoolProperty(
-        name="Save",
-        description="Save current config on the disk",
-        default=True,
-        update=use_save_Update,
-        options={'SKIP_SAVE'})
-
-    use_load: BoolProperty(
-        name="Load",
-        description="Load config from the disk",
-        default=False,
-        update=use_load_Update,
+    action: EnumProperty(
+        default='LOAD',
+        items=[('LOAD', "Load", ""),
+               ('SAVE', "Save", ""),
+               ('DETACH', "Detach", "")],
         options={'SKIP_SAVE'})
 
     include: EnumProperty(
@@ -199,19 +184,8 @@ class BM_OT_Pipeline_Config(Operator):
                ('PRESETS', "Presets only", "Save/load presets only as a config")],  # noqa: E501
         options={'SKIP_SAVE'})
 
-    detach: BoolProperty(
-        name="Detach",
-        description="Config is linked through save or load. Press to detach it and destroy the link. This will allow you to resave or open another config",  # noqa: E501
-        default=False,
-        options={'SKIP_SAVE'})
-
     def invoke(self, context, event):
-        scene = context.scene
-        bakemaster = scene.bakemaster
-
-        self.use_save = bakemaster.pipeline_config_ot_use_save
-
-        if self.detach:
+        if self.action == 'DETACH':
             return self.execute(context)
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
@@ -220,10 +194,9 @@ class BM_OT_Pipeline_Config(Operator):
         scene = context.scene
         bakemaster = scene.bakemaster
 
-        bakemaster.pipeline_config_is_attached = not self.detach
-        bakemaster.pipeline_config_ot_use_save = self.use_save
+        bakemaster.pipeline_config_is_attached = self.action != 'DETACH'
         bakemaster.pipeline_config_include = self.include
-        print(self.use_save)
+        print(self.action)
         print(self.include)
 
         self.report({'WARNING'}, "Not implemented")
@@ -241,7 +214,7 @@ class BM_OT_Pipeline_Config(Operator):
 class BM_OT_Pipeline_Import(Operator):
     bl_idname = 'bakemaster.pipeline_import'
     bl_label = "Import .blend(s)"
-    bl_description = "Link Objects from other .blend file(s) to configure baking them too"  # noqa: E501
+    bl_description = "Link/Unlink Objects from other .blend file(s) to configure baking them as well. The bake will be carried out in those blend files, no objects will be actually imported and you'll only see their names here in BakeMaster"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     # TODO: if import_is_used, edit button will load
@@ -282,7 +255,7 @@ class BM_OT_Pipeline_Import(Operator):
 class BM_OT_Pipeline_Analyse_Edits(Operator):
     bl_idname = 'bakemaster.pipeline_analyse_edits'
     bl_label = "Analyse Edits"
-    bl_description = "Using the loaded asset stamps from config (if loaded) and changes to objects and maps after the last bake to quickly configure what needs to be overwritten, cleared, created, or skipped in the next bake"  # noqa: E501
+    bl_description = "Using the loaded asset stamps from config (if loaded) and changes to objects and maps after the last bake to quickly configure what needs to be overwritten, cleared, created, or skipped in the next bake to save time in large asset pipelines"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     def invoke(self, context, event):
@@ -296,7 +269,7 @@ class BM_OT_Pipeline_Analyse_Edits(Operator):
 class BM_OT_Pipeline_Atlas_Targets(Operator):
     bl_idname = 'bakemaster.pipeline_atlas_targets'
     bl_label = "Atlas Targets"
-    bl_description = "Choosing target image for each map will give you the ability to not query bakes from scratch and saving to the new output files but updating existing textures on the disk"  # noqa: E501
+    bl_description = "Choosing target image for each map will give you the ability to not query bakes from scratch and saving them to the new output files but updating existing textures on the disk"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     # TODO: operator opens the list of all maps (we need to somehow combine
