@@ -227,8 +227,8 @@ class BM_PT_ManagerBase(Panel):
         col.prop(bakejob, 'manager_use_filter_baked')
 
         col = layout.column(align=True)
-        col.operator('bakemaster.manager_presets')
-        col.operator('bakemaster.manager_redolastaction')
+        col.operator('bakemaster.manager_presets', icon='PASTEDOWN')
+        col.operator('bakemaster.manager_redolastaction', icon='RECOVER_LAST')
         col.operator('bakemaster.manager_groupcontainers')
         col.operator('bakemaster.manager_bakejob_tools')
 
