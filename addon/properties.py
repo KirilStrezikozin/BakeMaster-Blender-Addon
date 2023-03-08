@@ -2620,8 +2620,8 @@ class BakeJob(PropertyGroup):
         update=bm_props_utils.BakeJob_manager_container_share_items)
 
     manager_use_filter_baked: BoolProperty(
-        name="Filter baked",
-        description="All objects, map, groups, texsets, bake jobs that were fully baked will be removed from bakemaster after it. Identical to 'Reset BakeMaster' in older version",  # noqa: E501
+        name="Filter out baked",
+        description="All objects, maps, groups, texsets, bake jobs that were fully baked will be completely removed after the bake. Identical to 'Reset BakeMaster' in older versions",  # noqa: E501
         default=False,
         update=bm_props_utils.BakeJob_manager_use_filter_baked)
 
