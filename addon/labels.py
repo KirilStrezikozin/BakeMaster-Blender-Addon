@@ -61,7 +61,7 @@ class BM_LABELS_Props():
     def get(self):
         try:
             label = self.labels[self.property_group][self.property_name][
-                    self.property_arg]
+                self.property_arg]
         except KeyError:
             label = ""
         return label
@@ -69,7 +69,7 @@ class BM_LABELS_Props():
 
 class BM_LABELS_Operators():
     labels = {
-        'BM_OT_ITEM_Bake': {
+        'BM_OT_Bake': {
             "bl_description": "",
         }
     }
@@ -96,6 +96,7 @@ class BM_URLs:
         self.addon_version = addon_version
 
     def get(self, identifier: str):
+        base = "https://bakemaster-blender-addon.readthedocs.io/en/"
         urls = {
             'INDEX': r'%s/',
             'BAKEJOBS': r'%s/',
@@ -111,6 +112,4 @@ class BM_URLs:
             url = urls[identifier]
         except KeyError:
             url = "%s"
-        return url % (
-                "https://bakemaster-blender-addon.readthedocs.io/en/" +
-                self.addon_version)
+        return url % (base + self.addon_version)
