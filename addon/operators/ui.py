@@ -213,8 +213,8 @@ class BM_OT_Pipeline_Config(Operator):
 
 class BM_OT_Pipeline_Import(Operator):
     bl_idname = 'bakemaster.pipeline_import'
-    bl_label = "Import .blend(s)"
-    bl_description = "Link/Unlink Objects from other .blend file(s) to configure baking them as well. The bake will be carried out in those blend files, no objects will be actually imported and you'll only see their names here in BakeMaster"  # noqa: E501
+    bl_label = "Import from scene or .blend"
+    bl_description = "Link/Unlink Objects from other scenes or .blend file(s) to configure baking them as well. The bake will be carried out in those scenes and blend files, no objects will be actually imported and you'll only see their names here in BakeMaster"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     # TODO: if import_is_used, edit button will load
@@ -407,7 +407,7 @@ import bpy
 class BM_OT_Bake(Operator):
     bl_idname = 'bakemaster.item_bake'
     bl_label = "BakeMaster Bake Operator"
-    bl_description = BM_LABELS_Operators('BM_OT_ITEM_Bake', "bl_description").get()
+    bl_description = BM_LABELS_Operators('BM_OT_Bake', "bl_description").get()
     bl_options = {'UNDO'}
 
     wait_delay = 0.1  # Time Step interval in seconds between timer events
@@ -417,8 +417,8 @@ class BM_OT_Bake(Operator):
     _timer = None
 
     control: EnumProperty(
-        items=[('BAKE_ALL', "Bake All", "Bake maps for all objects added"),
-               ('BAKE_THIS', "Bake This", "Bake maps only for the current object or container")])
+        items=[('BAKE_ALL', "Bake All", ""),
+               ('BAKE_THIS', "Bake This", "")])
 
     @classmethod
     def is_running(cls):
