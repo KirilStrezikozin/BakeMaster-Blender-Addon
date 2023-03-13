@@ -765,15 +765,7 @@ class BM_PT_BakeBase(Panel):
 
     @classmethod
     def poll(cls, context):
-        if not hasattr(context.scene, "bakemaster"):
-            return False
-        try:
-            context.scene.bakemaster.bakejobs[
-                    context.scene.bakemaster.bakejobs_active_index]
-        except IndexError:
-            return False
-        else:
-            return True
+        return hasattr(context.scene, "bakemaster")
 
     def draw_header(self, context):
         label = "Bake"
@@ -795,28 +787,27 @@ class BM_PT_BakeBase(Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        bakejob = bakemaster.bakejobs[bakemaster.bakejobs_active_index]
-
-        layout.prop(bakejob, 'use_bake_overwrite')
-        layout.prop(bakemaster, 'use_bakemaster_reset')
+        layout.prop(bakemaster, "bake_wait_user")
 
         col = layout.column(align=True)
+        col.operator('bakemaster.bake_one')
         row = col.row()
-        row.operator(BM_OT_Bake.bl_idname,
-                     text="Bake This").control = 'BAKE_THIS'
-
-        row = col.row()
-        row.operator(BM_OT_Bake.bl_idname,
-                     text="Bake All").control = 'BAKE_ALL'
+        row.operator('bakemaster.bake_all')
         row.scale_y = 1.5
+        col.active = bakemaster.is_bake_available
 
-        col.active = not BM_OT_Bake.is_running()
+        row = layout.row(align=True)
+        if bakemaster.bake_hold_on_pause:
+            text = "Resume"
+            icon = 'PLAY'
+        else:
+            text = "Pause"
+            icon = 'PAUSE'
+        row.operator('bakemaster.bake_pause', text=text, icon=icon)
+        row.operator('bakemaster.bake_stop', icon='QUIT')
+        row.operator('bakemaster.bake_cancel', icon='CANCEL')
+        row.active = not bakemaster.is_bake_available
 
-        col = layout.column(align=True)
-        col.operator(BM_OT_ApplyLastEditedProp.bl_idname, text="Apply Lastly Edited Setting")
-        col.operator(BM_OT_CreateArtificialUniContainer.bl_idname, text="Create Bake Job Group")
-
-        col = layout.column()
-        row = col.row()
-        row.prop(bakemaster, "bake_instruction", text="", icon='INFO')
+        row = layout.row()
+        row.prop(bakemaster, "short_bake_instruction", text="", icon='INFO')
         row.enabled = False
