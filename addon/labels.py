@@ -46,8 +46,8 @@ class BM_LABELS_Props():
             }
         },
         'Global': {
-            "bake_instruction": {
-                "description": "Press `BACKSPACE` to cancel baking all next maps.\nPress `ESC` key to cancel baking current map.\nPress `BACKSPACE`, then `ESC` to cancel baking.\nIf you want to undo the bake, press `Ctrl + Z` (`Cmd + Z` on Mac) just after it finished or canceled.\n\nOpen Blender Console to see more baking process information and, if you face an unexpected Blender freeze, be able to press `Ctrl + C` (`Cmd + C` on Mac) to abort the bake.\nNote that there are expectable Blender freezes when preparing maps for meshes with huge amount of geometry, baking map result to modifiers, Denoising baked result, or UV unwrapping and packing. Please be patient, BakeMaster will notify if any error occured",  # noqa: E501
+            "short_bake_instruction": {
+                "description": "Press `ESC` key to cancel baking current map iteration.\n\nOpen Blender Console to see more information about the baking process and, if you face an unexpected Blender freeze, be able to press `Ctrl + C` (Windows), `Cmd + C` (Mac), `Super + C` (Linux) to abort the bake. Enable Prompt before freeze for more control",  # noqa: E501
             }
         }
     }
@@ -63,6 +63,7 @@ class BM_LABELS_Props():
             label = self.labels[self.property_group][self.property_name][
                 self.property_arg]
         except KeyError:
+            print("asdfsadf")
             label = ""
         return label
 
