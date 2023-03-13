@@ -36,7 +36,6 @@ from bpy.props import (
     BoolProperty,
 )
 from ..labels import (
-    BM_LABELS_Operators,
     BM_URLs,
 )
 
@@ -367,36 +366,156 @@ class BM_OT_Manager_BakeJob_Tools(Operator):
         row.prop(self, 'action', expand=True)
 
 
-#####################################################
+class BM_OT_Bake_One(Operator):
+    bl_idname = 'bakemaster.bake_one'
+    bl_label = "Bake One"
+    bl_description = "Choose to bake the active selected Map, Object, or Bake Job"  # noqa: E501
+    bl_options = {'INTERNAL'}
 
-import bpy
-# from ..utils.properties import *
+    action: EnumProperty(
+        name="Choose an operation",
+        description="Choose an operation",
+        default='BAKEJOB',
+        items=[('MAP', "Map", "Bake the current active map"),
+               ('OBJECT', "Object", "Bake the current active object"),
+               ('BAKEJOB', "Bake Job", "Bake the current active bake job")])
 
-
-class BM_OT_Bake(Operator):
-    bl_idname = 'bakemaster.item_bake'
-    bl_label = "BakeMaster Bake Operator"
-    bl_description = BM_LABELS_Operators('BM_OT_Bake', "bl_description").get()
-    bl_options = {'UNDO'}
-
-    wait_delay = 0.1  # Time Step interval in seconds between timer events
-    report_delay = 2.0  # delay between each status report, seconds
-    _version_current = bpy.app.version  # to check compatibility
-    _handler = None
-    _timer = None
-
-    control: EnumProperty(
-        items=[('BAKE_ALL', "Bake All", ""),
-               ('BAKE_THIS', "Bake This", "")])
-
-    @classmethod
-    def is_running(cls):
-        return cls._handler is not None
+    def bake_poll(self, context):
+        if not context.scene.bakemaster.is_bake_available:
+            return False, "Another BakeMaster bake is running"
+        return True, ""
 
     def invoke(self, context, event):
-        self.report({'INFO'}, "Upgrade to Full Version")
+        bake_available, abort_message = self.bake_poll(context)
+        if not bake_available:
+            self.report({'ERROR'}, abort_message)
+            return {'CANCELLED'}
+
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        context.scene.bakemaster.bake_trigger_stop = False
+        context.scene.bakemaster.bake_trigger_cancel = False
+        context.scene.bakemaster.bake_hold_on_pause = False
+        context.scene.bakemaster.is_bake_available = False  # explicit
+        self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
+    def draw(self, context):
+        row = self.layout.row(align=True)
+        row.prop(self, 'action', expand=True)
+
+
+class BM_OT_Bake_All(Operator):
+    bl_idname = 'bakemaster.bake_all'
+    bl_label = "Bake All"
+    bl_description = "Bake the whole setup (all bake jobs, all maps for all objects)"  # noqa: E501
+    bl_options = {'INTERNAL'}
+
+    def bake_poll(self, context):
+        if not context.scene.bakemaster.is_bake_available:
+            return False, "Another BakeMaster bake is running"
+        return True, ""
+
+    def invoke(self, context, event):
+        bake_available, abort_message = self.bake_poll(context)
+        if not bake_available:
+            self.report({'ERROR'}, abort_message)
+            return {'CANCELLED'}
+
+        return self.execute(context)
+
+    def execute(self, context):
+        context.scene.bakemaster.is_bake_available = False  # explicit
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def draw(self, context):
+        row = self.layout.row(align=True)
+        row.prop(self, 'action', expand=True)
+
+
+class BM_OT_Bake_Pause(Operator):
+    bl_idname = 'bakemaster.bake_pause'
+    bl_label = "Pause/Resume"
+    bl_description = "Pause/Resume the bake"
+    bl_options = {'INTERNAL'}
+
+    def pause_poll(self, context):
+        if any([context.scene.bakemaster.bake_trigger_stop,
+                context.scene.bakemaster.bake_trigger_cancel]):
+            return False
+        return not context.scene.bakemaster.is_bake_available
+
+    def invoke(self, context, event):
+        if not self.pause_poll(context):
+            return {'CANCELLED'}
+        return self.execute(context)
+
+    def execute(self, context):
+        is_paused = context.scene.bakemaster.bake_hold_on_pause
+        context.scene.bakemaster.bake_hold_on_pause = not is_paused
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+
+class BM_OT_Bake_Stop(Operator):
+    bl_idname = 'bakemaster.bake_stop'
+    bl_label = "Stop"
+    bl_description = "Stop and save what's been baked"
+    bl_options = {'INTERNAL'}
+
+    def stop_poll(self, context):
+        if any([context.scene.bakemaster.bake_trigger_stop,
+                context.scene.bakemaster.bake_trigger_cancel]):
+            return False
+        return not context.scene.bakemaster.is_bake_available
+
+    def invoke(self, context, event):
+        if not self.stop_poll(context):
+            return {'CANCELLED'}
+        return self.execute(context)
+
+    def execute(self, context):
+        context.scene.bakemaster.bake_hold_on_pause = False
+        context.scene.bakemaster.bake_hold_on_cancel = False
+        context.scene.bakemaster.bake_trigger_stop = True
+
+        context.scene.bakemaster.bake_trigger_stop = False
+        context.scene.bakemaster.is_bake_available = True  # explicit
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+
+class BM_OT_Bake_Cancel(Operator):
+    bl_idname = 'bakemaster.bake_cancel'
+    bl_label = "Cancel"
+    bl_description = "Cancel - stop and erase what's been baked"
+    bl_options = {'INTERNAL'}
+
+    def stop_poll(self, context):
+        if any([context.scene.bakemaster.bake_trigger_stop,
+                context.scene.bakemaster.bake_trigger_cancel]):
+            return False
+        return not context.scene.bakemaster.is_bake_available
+
+    def invoke(self, context, event):
+        if not self.stop_poll(context):
+            return {'CANCELLED'}
+        return self.execute(context)
+
+    def execute(self, context):
+        context.scene.bakemaster.bake_hold_on_pause = False
+        context.scene.bakemaster.bake_hold_on_stop = False
+        context.scene.bakemaster.bake_trigger_cancel = True
+
+        context.scene.bakemaster.bake_trigger_cancel = False
+        context.scene.bakemaster.is_bake_available = True  # explicit
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+#####################################################
 
 class BM_OT_Table_of_Objects(Operator):
     bl_idname = 'bakemaster.table_of_objects'
