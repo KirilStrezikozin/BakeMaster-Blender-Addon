@@ -1183,7 +1183,7 @@ class BM_PresetPanel:
 
     @classmethod
     def draw_panel_header(cls, layout):
-        layout.embos_ = 'NONE'
+        layout.embos = 'NONE'
         layout.popover(
             panel=cls.__name__,
             icon='PRESET',
