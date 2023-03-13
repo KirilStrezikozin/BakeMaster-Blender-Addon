@@ -165,7 +165,7 @@ class BM_OT_BakeJobs_Trash(Operator):
 class BM_OT_Pipeline_Config(Operator):
     bl_idname = 'bakemaster.pipeline_config'
     bl_label = "Config"
-    bl_description = "Load/Save/Detach Bake Configuration data. You can use config as a super preset to save all tables data and items, presets, settings, bake jobs etc. for the current BakeMaster session"  # noqa: E501
+    bl_description = "Load/Save/Detach Bake Configuration data. You can use config as a super preset to save all tables data and items, presets, settings, bake jobs etc. of the current BakeMaster session"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     action: EnumProperty(
@@ -213,8 +213,8 @@ class BM_OT_Pipeline_Config(Operator):
 
 class BM_OT_Pipeline_Import(Operator):
     bl_idname = 'bakemaster.pipeline_import'
-    bl_label = "Import from scene or .blend"
-    bl_description = "Link/Unlink Objects from other scenes or .blend file(s) to configure baking them as well. The bake will be carried out in those scenes and blend files, no objects will be actually imported and you'll only see their names here in BakeMaster"  # noqa: E501
+    bl_label = "Import objects"
+    bl_description = "Link/Unlink Objects' names from other scenes or .blend files to bake them as well. The bake will carry out in those scenes and .blend files without actually importing"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     # TODO: if import_is_used, edit button will load
@@ -255,7 +255,7 @@ class BM_OT_Pipeline_Import(Operator):
 class BM_OT_Pipeline_Analyse_Edits(Operator):
     bl_idname = 'bakemaster.pipeline_analyse_edits'
     bl_label = "Analyse Edits"
-    bl_description = "Using the loaded asset stamps from config (if loaded) and changes to objects and maps after the last bake to quickly configure what needs to be overwritten, cleared, created, or skipped in the next bake to save time in large asset pipelines"  # noqa: E501
+    bl_description = "Using loaded asset stamps from a config (if loaded) and changes to objects and maps after the last bake to quickly configure what needs to be overwritten, cleared, created, or skipped in the next bake to save time for large baking pipelines"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     def invoke(self, context, event):
@@ -269,7 +269,7 @@ class BM_OT_Pipeline_Analyse_Edits(Operator):
 class BM_OT_Pipeline_Atlas_Targets(Operator):
     bl_idname = 'bakemaster.pipeline_atlas_targets'
     bl_label = "Atlas Targets"
-    bl_description = "Choosing target image for each map will give you the ability to not query bakes from scratch and saving them to the new output files but updating existing textures on the disk"  # noqa: E501
+    bl_description = "Choosing target image for each map will give you the ability to not query bakes from scratch and saving them to the new output files but updating previously baked textures on the disk"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     # TODO: operator opens the list of all maps (we need to somehow combine
@@ -290,7 +290,7 @@ class BM_OT_Pipeline_Atlas_Targets(Operator):
 class BM_OT_Manager_Presets(Operator):
     bl_idname = 'bakemaster.manager_presets'
     bl_label = "Presets"
-    bl_description = "Choose custom filepath for saving/loading settings presets or leave default"  # noqa: E501
+    bl_description = "Choose a folder path on the disk (or leave default) to save/load presets from"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     def invoke(self, context, event):
@@ -308,7 +308,7 @@ class BM_OT_Manager_Presets(Operator):
 class BM_OT_Manager_RedoLastAction(Operator):
     bl_idname = 'bakemaster.manager_redolastaction'
     bl_label = "Redo Last Action"
-    bl_description = "Redo last action with the addon again for other bake jobs, maps, or objects: either setting value change, button press, preset load, or item add to the table"  # noqa: E501
+    bl_description = "Redo last action for another map, object, or bake job. Value change, button press, preset load, adding a map etc"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     def invoke(self, context, event):
@@ -326,7 +326,7 @@ class BM_OT_Manager_RedoLastAction(Operator):
 class BM_OT_Manager_GroupContainers(Operator):
     bl_idname = 'bakemaster.manager_groupcontainers'
     bl_label = "Group Containers"
-    bl_description = "Group objects or maps (depends on the Container Type) into a group of containers where configuring settings can be done at once for all"  # noqa: E501
+    bl_description = "Select objects or maps (depends on the Container Type) to put into a group where they can share similar settings"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     def invoke(self, context, event):
@@ -344,44 +344,15 @@ class BM_OT_Manager_GroupContainers(Operator):
 class BM_OT_Manager_BakeJob_Tools(Operator):
     bl_idname = 'bakemaster.manager_bakejob_tools'
     bl_label = "BakeJob Tools"
-    bl_description = "Press to see available tools to execute for the current bake job"  # noqa: E501
+    bl_description = "Choose an operation to execute for the active bake job"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
-    def run_migrate_update(self, context):
-        if self.run_migrate and any([
-                self.run_merge, self.run_isolate]):
-            self.run_merge = False
-            self.run_isolate = False
-
-    def run_merge_update(self, context):
-        if self.run_merge and any([
-                self.run_migrate, self.run_isolate]):
-            self.run_migrate = False
-            self.run_isolate = False
-
-    def run_isolate_update(self, context):
-        if self.run_isolate and any([
-                self.run_migrate, self.run_merge]):
-            self.run_migrate = False
-            self.run_merge = False
-
-    run_migrate: BoolProperty(
-        name="Migrate",
-        description="Move objects from the current bake job to another bake job",  # noqa: E501
-        default=True,
-        update=run_migrate_update)
-
-    run_merge: BoolProperty(
-        name="Merge",
-        description="Select two bake jobs to merge objects of each into a single bake job",  # noqa: E501
-        default=False,
-        update=run_merge_update)
-
-    run_isolate: BoolProperty(
-        name="Isolate",
-        description="Select objects in the current bake job to form a new bake job with. Those objects will be moved there",  # noqa: E501
-        default=False,
-        update=run_isolate_update)
+    action: EnumProperty(
+        name="Choose an operation",
+        default='MIGRATE',
+        items=[('MIGRATE', "Migrate", "Select objects in the current bake job to move to another bake job"),  # noqa: E501
+               ('MERGE', "Merge", "Select two bake jobs to merge into one"),
+               ('ISOLATE', "Isolate", "Select objects in the current bake job to make a new bake job with. Those objects will be moved there")])  # noqa: E501
 
     def invoke(self, context, event):
         wm = context.window_manager
@@ -393,9 +364,7 @@ class BM_OT_Manager_BakeJob_Tools(Operator):
 
     def draw(self, context):
         row = self.layout.row(align=True)
-        row.prop(self, 'run_migrate', toggle=True)
-        row.prop(self, 'run_merge', toggle=True)
-        row.prop(self, 'run_isolate', toggle=True)
+        row.prop(self, 'action', expand=True)
 
 
 #####################################################

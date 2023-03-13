@@ -2624,7 +2624,7 @@ class BakeJob(PropertyGroup):
         name="Container Type",
         description="A Container is a Bake Job item. Choose its type. Hover over type values to see descriptions",  # noqa: E501
         default='OBJECTS',
-        items=[('OBJECTS', "Object", "Bake Job will contain Mesh Objects, where each of them will contain Maps to bake for the object"),  # noqa: E501
+        items=[('OBJECTS', "Object", "Bake Job will contain Mesh Objects, where each of them will contain Maps to bake"),  # noqa: E501
                ('MAPS', "Map", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for")],  # noqa: E501
         update=bm_props_utils.BakeJob_manager_container_type_Update)
 
@@ -2642,7 +2642,7 @@ class BakeJob(PropertyGroup):
 
     manager_use_filter_baked: BoolProperty(
         name="Filter out baked",
-        description="All objects, maps, groups, texsets, bake jobs that were fully baked will be completely removed after the bake. Identical to 'Reset BakeMaster' in older versions",  # noqa: E501
+        description="All objects, maps, groups, texsets, bake jobs that were fully baked will be completely removed after it's finished. Identical to 'Reset BakeMaster' in older versions",  # noqa: E501
         default=False,
         update=bm_props_utils.BakeJob_manager_use_filter_baked)
 
@@ -2685,12 +2685,12 @@ class Global(PropertyGroup):
 
     pipeline_config_auto_cache: BoolProperty(
         name="Cache Config",
-        description="If no config loaded, BakeMaster will automatically cache temporary config data for the ability to Analyse Edits in the future. See 'Analyse Edits' for description",  # noqa: E501
+        description="If no config loaded, BakeMaster will cache temporary config data for the ability to Analyse Edits in the future. See 'Analyse Edits' for description",  # noqa: E501
         default=True)
 
     pipeline_bake_use_write_log: BoolProperty(
         name="Write Log",
-        description="Write what you usually see in the Blender Console while baking into a separate .txt file. Can be useful for saving process feedback and error detection. BakeMaster also keeps its own error and status log for developers to detect errors",  # noqa: E501
+        description="Create a separate .txt. file with a log of what you usually see in the Blender Console while baking (each container will have it in their output filepath). Can be useful for saving process feedback and error detection. BakeMaster also keeps its own error and status log for developers to detect errors",  # noqa: E501
         default=False)
 
     pipeline_item_use_advanced_controls: BoolProperty(
