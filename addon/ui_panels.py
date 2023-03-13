@@ -121,6 +121,22 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
         layout.prop(bakemaster, 'bake_match_maps_type')
 
 
+class BM_UL_Container_Item(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data,
+                  active_propname, index):
+        layout.emboss = 'NONE'
+        layout.prop(item, "object", text="", icon='OUTLINER_OB_MESH')
+        icon = 'RESTRICT_RENDER_OFF' if item.use_bake else 'RESTRICT_RENDER_ON'
+        layout.prop(item, 'use_bake', text="", icon=icon, emboss=False)
+        layout.active = item.use_bake
+
+    def draw_filter(self, context, layout):
+        pass
+
+    def invoke(self, context, event):
+        pass
+
+
 class BM_UL_BakeJobs_Item(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
@@ -329,7 +345,7 @@ class BM_UL_BakeJob_Objects_Item(UIList):
                 continue
 
             visible = item.nm_is_expanded and items[
-                    item.nm_uc_index].nm_is_expanded
+                item.nm_uc_index].nm_is_expanded
             if not visible and any([item.nm_is_uc, item.nm_is_lc]):
                 parent = item
                 ftl_neworder.append(item.index)
@@ -364,7 +380,7 @@ class BM_UL_Highpolies_Item(UIList):
         index = item.index
         layout.emboss = 'PULLDOWN_MENU'
         row = layout.row()
-        split = row.split(factor=0.1*len(str(index)))
+        split = row.split(factor=0.1 * len(str(index)))
         index_column = split.column()
         index_column.label(text=str(index))
         layout.emboss = 'NORMAL'
@@ -381,7 +397,7 @@ class BM_UL_MatGroups_Item(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
         space_for_gindex = 0.13  # increase to give more space to gindex
-        factor = 1.0 - space_for_gindex*len(str(item.group_index))
+        factor = 1.0 - space_for_gindex * len(str(item.group_index))
         split = layout.row().split(factor=factor)
         split.column().label(text="%s " % item.material_name, icon='MATERIAL')
         index_column = split.column()
@@ -402,7 +418,7 @@ class BM_UL_Maps_Item(UIList):
         index = item.index
         layout.emboss = 'PULLDOWN_MENU'
         row = layout.row()
-        split = row.split(factor=0.1*len(str(index)))
+        split = row.split(factor=0.1 * len(str(index)))
         index_column = split.column()
         index_column.label(text=str(index))
         layout.emboss = 'NORMAL'
@@ -416,7 +432,7 @@ class BM_UL_Maps_Item(UIList):
         layout.active = item.use_bake
 
         object = bakemaster.bakejobs[item.bakejob_index].objects[
-                item.object_index]
+            item.object_index]
 
         uv_container = object
         if object.uv_use_unique_per_map:
@@ -458,7 +474,7 @@ class BM_UL_ChannelPacks_Item(UIList):
                   active_propname, index):
         bakemaster = context.scene.bakemater
         object = bakemaster.bakejobs[item.bakejob_index].objects[
-                item.object_index]
+            item.object_index]
 
         text = ""
         if object.bake_save_internal:
@@ -467,7 +483,7 @@ class BM_UL_ChannelPacks_Item(UIList):
 
         layout.emboss = 'NONE'
         row = layout.row()
-        split = row.split(factor=0.1*len(str(item.index)))
+        split = row.split(factor=0.1 * len(str(item.index)))
         index_column = split.column()
         index_column.label(text=str(item.index))
         layout.emboss = 'NORMAL'
@@ -484,7 +500,7 @@ class BM_UL_TextureSets_Item(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
         len_index = len(str(item.index))
-        split_factor = 1-0.05*3 if len_index < 4 else len_index
+        split_factor = 1 - 0.05 * 3 if len_index < 4 else len_index
         layout.emboss = 'NONE'
         row = layout.row()
         split = row.split(factor=split_factor)
@@ -507,13 +523,13 @@ class BM_UL_TextureSets_Objects_Item(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
         len_index = len(str(item.index))
-        split_factor = 1-0.05*3 if len_index < 4 else len_index
+        split_factor = 1 - 0.05 * 3 if len_index < 4 else len_index
 
         icon = 'BLANK1'
         if item.name != 'NONE':
             bakemaster = context.scene.bakemater
             object = bakemaster.bakejobs[item.bakejob_index].objects[
-                    item.object_index]
+                item.object_index]
             try:
                 context.scene.objects[object.name]
             except KeyError:
@@ -546,11 +562,11 @@ class BM_UL_TextureSets_Objects_Subitems_Item(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
         len_index = len(str(item.index))
-        split_factor = 1-0.05*3 if len_index < 4 else len_index
+        split_factor = 1 - 0.05 * 3 if len_index < 4 else len_index
 
         bakemaster = context.scene.bakemater
         object = bakemaster.bakejobs[item.bakejob_index].objects[
-                item.object_index]
+            item.object_index]
 
         icon = 'OUTLINER_OB_MESH'
         if object.hl_is_lowpoly:

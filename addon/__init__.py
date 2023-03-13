@@ -74,6 +74,7 @@ classes = (
 
     ui_panels.BM_PREFS_AddonPreferences,
     ui_panels.BM_UL_BakeJobs_Item,
+    ui_panels.BM_UL_Container_Item,
     ui_panels.BM_UL_Redolastaction_Objects_Item,
     ui_panels.BM_UL_Redolastaction_Maps_Item,
     ui_panels.BM_UL_BakeGroups_Item,
@@ -181,6 +182,7 @@ classes = (
     properties.TexSet_Object_Subitem,
     properties.TexSet_Object,
     properties.TexSet,
+    properties.Container,
     properties.BakeJob,
     properties.Global,
 )
