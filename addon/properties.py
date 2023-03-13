@@ -2659,6 +2659,27 @@ class Global(PropertyGroup):
 
     bakejobs_len: IntProperty(default=0)
 
+    # Bake Props
+
+    bake_wait_user: BoolProperty(
+        name="Prompt before freeze",
+        description="While baking, when a hard operation is about to be executed and freeze the interface, a prompt will appear and wait for your response to continue. Suitable when running bakes parallel to other processes, giving you a secure control.\n\nInterface freezes are expected when preparing maps for meshes with huge amount of geometry, baking map result to modifiers, denoising or channel packing baked result, or UV unwrapping and packing",  # noqa: E501
+        default=False)
+
+    bake_hold_on_pause: BoolProperty(default=False)
+
+    bake_trigger_stop: BoolProperty(default=False)
+
+    bake_trigger_cancel: BoolProperty(default=False)
+
+    is_bake_available: BoolProperty(default=True)
+
+    short_bake_instruction: StringProperty(
+        name="Short Bake Instruction",
+        description=BM_LABELS_Props("Global", "short_bake_instruction", "description").get(),  # noqa: E501
+        default="Short Bake Instruction",
+        options={'SKIP_SAVE'})
+
     # Pipeline Props
 
     pipeline_config_is_attached: BoolProperty(default=False)
@@ -2844,18 +2865,3 @@ class Global(PropertyGroup):
     is_map_uv_panel_expanded: BoolProperty(
         name="Expand/Collapse UV Settings panel",
         default=False)
-
-    # Idle Bake Props
-
-    use_bakemaster_reset: BoolProperty(
-        name="Reset BakeMaster",
-        description="Remove baked objects from BakeMaster Table of Objects after the bake",  # noqa: E501
-        default=False)
-
-    bake_instruction: StringProperty(
-        name="Bake Operator Instruction",
-        default="Short Bake Instruction",
-        description=BM_LABELS_Props('Global', "bake_instruction", "description").get())  # noqa: E501
-
-    is_bake_available: BoolProperty(
-        default=True)
