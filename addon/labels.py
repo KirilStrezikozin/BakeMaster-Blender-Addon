@@ -108,6 +108,7 @@ class BM_URLs:
             'OUTPUT': r'%s/',
             'TEXSETS': r'%s/',
             'BAKE': r'%s/',
+            'BAKEHISTORY': r'%s/',
         }
         try:
             url = urls[identifier]

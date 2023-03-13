@@ -71,6 +71,8 @@ classes = (
     ui_panels.BM_PT_Output,
     ui_panels.BM_PT_TextureSets,
     ui_panels.BM_PT_Bake,
+    ui_panels.BM_PT_BakeControls,
+    ui_panels.BM_PT_BakeHistory,
 
     ui_panels.BM_PREFS_AddonPreferences,
     ui_panels.BM_UL_BakeJobs_Item,

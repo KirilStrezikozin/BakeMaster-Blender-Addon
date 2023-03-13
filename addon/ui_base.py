@@ -780,6 +780,25 @@ class BM_PT_BakeBase(Panel):
                                    icon='HELP').action = 'BAKE'
 
     def draw(self, context):
+        pass
+
+
+class BM_PT_BakeControlsBase(Panel):
+    bl_label = " "
+    bl_idname = 'BM_PT_BakeControls'
+    bl_options = {'HIDE_HEADER'}
+
+    @classmethod
+    def poll(cls, context):
+        return hasattr(context.scene, "bakemaster")
+
+    def draw_header(self, context):
+        pass
+
+    def draw_header_preset(self, context):
+        pass
+
+    def draw(self, context):
         scene = context.scene
         bakemaster = scene.bakemaster
         layout = self.layout
@@ -811,3 +830,37 @@ class BM_PT_BakeBase(Panel):
         row = layout.row()
         row.prop(bakemaster, "short_bake_instruction", text="", icon='INFO')
         row.enabled = False
+
+        layout.separator(factor=1.5)
+
+
+class BM_PT_BakeHistoryBase(Panel):
+    bl_label = " "
+    bl_idname = 'BM_PT_BakeHistory'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return hasattr(context.scene, "bakemaster")
+
+    def draw_header(self, context):
+        label = "Bake History"
+        icon = 'TIME'
+        self.layout.label(text=label, icon=icon)
+
+    def draw_header_preset(self, context):
+        bakemaster = context.scene.bakemaster
+        if not bakemaster.prefs_use_show_help:
+            return
+        self.layout.row().operator('bakemaster.help', text="",
+                                   icon='HELP').action = 'BAKEHISTORY'
+
+    def draw(self, context):
+        # scene = context.scene
+        # bakemaster = scene.bakemaster
+        layout = self.layout
+
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        layout.label(text="Here")

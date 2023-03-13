@@ -36,6 +36,8 @@ from .ui_base import (
     BM_PT_MapsBase,
     BM_PT_OutputBase,
     BM_PT_TextureSetsBase,
+    BM_PT_BakeControlsBase,
+    BM_PT_BakeHistoryBase,
     BM_PT_BakeBase,
 )
 from bpy.types import (
@@ -101,6 +103,20 @@ class BM_PT_Bake(BM_PT_BakeBase):
     bl_space_type = bm_space_type
     bl_region_type = bm_region_type
     bl_category = bm_category
+
+
+class BM_PT_BakeControls(BM_PT_BakeControlsBase):
+    bl_space_type = bm_space_type
+    bl_region_type = bm_region_type
+    bl_category = bm_category
+    bl_parent_id = BM_PT_Bake.bl_idname
+
+
+class BM_PT_BakeHistory(BM_PT_BakeHistoryBase):
+    bl_space_type = bm_space_type
+    bl_region_type = bm_region_type
+    bl_category = bm_category
+    bl_parent_id = BM_PT_Bake.bl_idname
 
 
 class BM_PREFS_AddonPreferences(AddonPreferences):
