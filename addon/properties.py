@@ -30,6 +30,7 @@
 from bpy.types import (
     PropertyGroup,
     Camera as bpy_types_Camera,
+    Object as bpy_types_Object,
 )
 from bpy.props import (
     CollectionProperty,
@@ -1769,7 +1770,7 @@ class Object(PropertyGroup):
     bakejob_index: IntProperty(default=-1)
 
     use_bake: BoolProperty(
-        name="Include/Exclude the object for bake",
+        name="Include/Exclude the object from bake",
         default=True,
         update=bm_props_utils.Object_use_bake_Update)
 
@@ -2554,6 +2555,18 @@ class TexSet(PropertyGroup):
     texset_objects_len: IntProperty(default=0)
 
 
+class Container(PropertyGroup):
+    object: PointerProperty(type=bpy_types_Object)
+
+    index: IntProperty(default=-1)
+    bakejob_index: IntProperty(default=-1)
+
+    use_bake: BoolProperty(
+        name="Include/Exclude container from baking",
+        default=True,
+        update=bm_props_utils.Container_use_bake_Update)
+
+
 class BakeJob(PropertyGroup):
     # Bake Job Props
 
@@ -2568,6 +2581,14 @@ class BakeJob(PropertyGroup):
     use_bake: BoolProperty(
         name="Include/Exclude Bake Job from baking",
         default=True)
+
+    containers: CollectionProperty(type=Container)
+
+    containers_active_index: IntProperty(
+        name="Bake Job item - Container",
+        description="Map or Object, depends on the Container Type configured in Manager",  # noqa: E501
+        default=0,
+        update=bm_props_utils.BakeJob_containers_active_index_Update)
 
     objects: CollectionProperty(type=Object)
 
@@ -2602,9 +2623,9 @@ class BakeJob(PropertyGroup):
     manager_container_type: EnumProperty(
         name="Container Type",
         description="A Container is a Bake Job item. Choose its type. Hover over type values to see descriptions",  # noqa: E501
-        default='OBJECT',
-        items=[('OBJECT', "Object", "Bake Job will contain Mesh Objects, where each of them will contain Maps to bake for the object"),  # noqa: E501
-               ('MAP', "Map", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for")],  # noqa: E501
+        default='OBJECTS',
+        items=[('OBJECTS', "Object", "Bake Job will contain Mesh Objects, where each of them will contain Maps to bake for the object"),  # noqa: E501
+               ('MAPS', "Map", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for")],  # noqa: E501
         update=bm_props_utils.BakeJob_manager_container_type_Update)
 
     manager_container_share_settings: BoolProperty(

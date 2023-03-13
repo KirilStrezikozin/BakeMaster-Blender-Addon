@@ -248,14 +248,16 @@ class BM_PT_ObjectsBase(Panel):
             return False
         try:
             context.scene.bakemaster.bakejobs[
-                    context.scene.bakemaster.bakejobs_active_index]
+                context.scene.bakemaster.bakejobs_active_index]
         except IndexError:
             return False
         else:
             return True
 
     def draw_header(self, context):
-        label = "Objects"
+        bakemaster = context.scene.bakemaster
+        bakejob = bakemaster.bakejobs[bakemaster.bakejobs_active_index]
+        label = bakejob.manager_container_type.capitalize()
         self.layout.label(text=label)
 
     def draw_header_preset(self, context):
