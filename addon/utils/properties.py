@@ -30,6 +30,10 @@
 
 # BakeJob Prop Utils
 
+def BakeJob_containers_active_index_Update(self, context):
+    pass
+
+
 def BakeJob_manager_use_filter_baked(self, context):
     pass
 
@@ -46,7 +50,10 @@ def BakeJob_manager_container_type_Update(self, context):
     pass
 
 
+# Container Prop Utils
 
+def Container_use_bake_Update(self, context):
+    pass
 
 
 
