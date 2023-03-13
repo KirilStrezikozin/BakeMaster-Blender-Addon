@@ -229,8 +229,8 @@ class BM_PT_ManagerBase(Panel):
         col = layout.column(align=True)
         col.operator('bakemaster.manager_presets', icon='PASTEDOWN')
         col.operator('bakemaster.manager_redolastaction', icon='RECOVER_LAST')
-        col.operator('bakemaster.manager_groupcontainers')
-        col.operator('bakemaster.manager_bakejob_tools')
+        col.operator('bakemaster.manager_groupcontainers', icon='TRIA_DOWN')
+        col.operator('bakemaster.manager_bakejob_tools', icon='SEQUENCE')
 
 
 ################################################################
