@@ -27,6 +27,8 @@
 #
 # ##### END LICENSE BLOCK #####
 
+from . import get as bm_get
+
 
 # BakeJob Prop Utils
 
@@ -50,14 +52,89 @@ def BakeJob_manager_container_type_Update(self, context):
     pass
 
 
+def BakeJob_containers_add_new(bakejob, name, is_c: bool):
+    new_c = bakejob.add()
+    new_c.name_old = name
+    new_c.name = name
+    new_c.index = bakejob.containers_len
+    bakejob.containers_len += 1
+
+
+def BakeJob_containers_remove(bakejob, index):
+    bakejob.remove(index)
+    bakejob.containers_len -= 1
+    if bakejob.containers_active_index >= bakejob.containers_len:
+        bakejob.containers_active_index = bakejob.containers_len - 1
+
+
+def BakeJob_add_dropped_container(context, bakemaster, bakejob,
+                                  container_name):
+    if bakemaster.allow_drop_prompt:
+        return True
+    bakemaster.allow_drop_prompt = False
+
+    names = []
+    add_objects = False
+    for object in context.selected_objects:
+        if object.type == 'MESH':
+            names.append(object.name)
+        if object.name == container_name:
+            add_objects = True
+    if add_objects:
+        for name in names:
+            BakeJob_containers_add_new(bakejob, name, is_c=False)
+        return False
+
+    for collection in bpy.data.collections:
+        if collection.name != container_name:
+            continue
+        BakeJob_containers_add_new(bakejob, collection.name, is_c=True)
+        return False
+    return True
+
+
 # Container Prop Utils
+
+def Container_name_Update(self, context):
+    bakemaster = bm_get.bakemaster(context)
+    bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
+    if bakejob is None:
+        return
+
+    if self.name_old != self.name:
+        self.name_old = self.name
+        self.has_drop_prompt = BakeJob_add_dropped_container(context,
+                                                             bakemaster,
+                                                             bakejob,
+                                                             self.name)
+    if self.has_drop_prompt:
+        BakeJob_containers_remove(bakejob, self.index)
+
+
+def Container_drag_ticker_Update(self, context):
+    bakemaster = bm_get.bakemaster(context)
+    bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
+    if bakejob is None:
+        return
+
+    if not bakemaster.is_drag_possible or bakemaster.drag_from_index == -1:
+        bakejob.containers_active_index = self.index
+        bakemaster.drag_from_index = self.index
+        self.has_drag_prompt = True
+        return
+
+    if bakemaster.drag_to_index != -1:
+        bakejob.containers[bakemaster.drag_to_index].drag_placeholder = False
+    bakemaster.drag_to_index = self.index
+    self.drag_placeholder = True
+    drag_ticker_of_drag_from = bakejob.containers[
+            bakemaster.drag_from_index].drag_ticker
+    if self.drag_ticker == drag_ticker_of_drag_from:
+        self.drag_ticker = not drag_ticker_of_drag_from
+
 
 def Container_use_bake_Update(self, context):
     pass
-
-
-
-
 
 
 
