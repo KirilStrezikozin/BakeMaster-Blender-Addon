@@ -2556,7 +2556,9 @@ class TexSet(PropertyGroup):
 
 
 class Container(PropertyGroup):
-    name: StringProperty(default="")
+    name: StringProperty(
+        default="",
+        update=bm_props_utils.Container_name_Update)
 
     name_old: StringProperty(default="")
 
@@ -2566,7 +2568,7 @@ class Container(PropertyGroup):
     use_bake: BoolProperty(
         name="Include/Exclude the object from bake",
         default=True,
-        update=bm_props_utils.Object_use_bake_Update)
+        update=bm_props_utils.Container_use_bake_Update)
 
     # UIList walk handler Props
 
@@ -2575,7 +2577,7 @@ class Container(PropertyGroup):
 
     drag_ticker: BoolProperty(
         default=False,
-        update=bm_props_utils.Object_drag_ticker_Update)
+        update=bm_props_utils.Container_drag_ticker_Update)
 
     drag_empty: BoolProperty(default=False)
     drag_placeholder: BoolProperty(default=False)
@@ -2601,6 +2603,8 @@ class BakeJob(PropertyGroup):
         description="Map or Object, depends on the Container Type configured in the Manager",  # noqa: E501
         default=0,
         update=bm_props_utils.BakeJob_containers_active_index_Update)
+
+    containers_len: IntProperty(default=0)
 
     objects: CollectionProperty(type=Object)
 
