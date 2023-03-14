@@ -27,6 +27,47 @@
 #
 # ##### END LICENSE BLOCK #####
 
+def bakemaster(context: not None):
+    return context.scene.bakemaster
+
+
+def bakejob(bakemaster: not None, index=-1):
+    if index == -1:
+        index = bakemaster.bakejobs_active_index
+    try:
+        bakejob = bakemaster.bakejobs[index]
+    except IndexError:
+        return None
+    else:
+        return bakejob
+
+
+def container(bakejob, index=-1):
+    if bakejob is None:
+        return None
+    if index == -1:
+        index = bakejob.containers_active_index
+    try:
+        container = bakejob.containers[index]
+    except IndexError:
+        return None
+    else:
+        return container
+
+
+def item(container, index=-1):
+    if container is None:
+        return None
+    if index == -1:
+        index = container.items_active_index
+    try:
+        item = container.items[index]
+    except IndexError:
+        return None
+    else:
+        return item
+
+
 def BM_Object_Get(self, context):
     if self is None:
         object = [context.scene.bm_table_of_objects[
