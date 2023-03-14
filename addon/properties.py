@@ -1764,7 +1764,7 @@ class MatGroups_Item(PropertyGroup):
 
 
 class Object(PropertyGroup):
-    name: StringProperty()
+    name: StringProperty(default="")
 
     index: IntProperty(default=-1)
     bakejob_index: IntProperty(default=-1)
@@ -2556,20 +2556,32 @@ class TexSet(PropertyGroup):
 
 
 class Container(PropertyGroup):
-    object: PointerProperty(type=bpy_types_Object)
+    name: StringProperty(default="")
+
+    name_old: StringProperty(default="")
 
     index: IntProperty(default=-1)
     bakejob_index: IntProperty(default=-1)
 
     use_bake: BoolProperty(
-        name="Include/Exclude container from baking",
+        name="Include/Exclude the object from bake",
         default=True,
-        update=bm_props_utils.Container_use_bake_Update)
+        update=bm_props_utils.Object_use_bake_Update)
+
+    # UIList walk handler Props
+
+    has_drop_prompt: BoolProperty(default=False)
+    has_drag_prompt: BoolProperty(default=False)
+
+    drag_ticker: BoolProperty(
+        default=False,
+        update=bm_props_utils.Object_drag_ticker_Update)
+
+    drag_empty: BoolProperty(default=False)
+    drag_placeholder: BoolProperty(default=False)
 
 
 class BakeJob(PropertyGroup):
-    # Bake Job Props
-
     name: StringProperty(
         name="Bake Job",
         description="Double click to rename",
@@ -2586,7 +2598,7 @@ class BakeJob(PropertyGroup):
 
     containers_active_index: IntProperty(
         name="Bake Job item - Container",
-        description="Map or Object, depends on the Container Type configured in Manager",  # noqa: E501
+        description="Map or Object, depends on the Container Type configured in the Manager",  # noqa: E501
         default=0,
         update=bm_props_utils.BakeJob_containers_active_index_Update)
 
@@ -2658,6 +2670,13 @@ class Global(PropertyGroup):
         default=-1)
 
     bakejobs_len: IntProperty(default=0)
+
+    # UIList walk handler Props
+
+    allow_drop_prompt: BoolProperty()
+    is_drag_possible: BoolProperty()
+    drag_from_index: IntProperty(default=-1)
+    drag_to_index: IntProperty(default=-1)
 
     # Bake Props
 
