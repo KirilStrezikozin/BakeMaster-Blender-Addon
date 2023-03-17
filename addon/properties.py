@@ -2695,7 +2695,7 @@ class Global(PropertyGroup):
 
     bake_trigger_cancel: BoolProperty(default=False)
 
-    is_bake_available: BoolProperty(default=True)
+    bake_is_running: BoolProperty(default=False)
 
     short_bake_instruction: StringProperty(
         name="Short Bake Instruction",
