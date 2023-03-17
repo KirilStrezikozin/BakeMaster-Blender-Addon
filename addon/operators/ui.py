@@ -655,6 +655,37 @@ class BM_OT_BakeHistory_Config(Operator):
         layout.prop(self, 'action')
         layout.prop(self, 'include')
 
+
+class BM_OT_BakeHistory_Remove(Operator):
+    bl_idname = 'bakemaster.bakehistory_remove'
+    bl_label = "Remove",
+    bl_description = "Remove this bake from the history (its baked content will remain)"  # noqa: E501
+    bl_options = {'INTERNAL'}
+
+    index: IntProperty(default=-1)
+
+    def remove_poll(self, context):
+        bakemaster = context.scene.bakemaster
+        if not bm_ots_utils.ui_bakehistory_poll(self, bakemaster):
+            self.report({'ERROR'},
+                        "Internal Error: Cannot resolve item in Bake History")
+            return False
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+        for index in range(self.index + 1, len(bakemaster.bakehistory_len)):
+            bakemaster.bakehistory[index].index -= 1
+        bakemaster.bakehistory.remove(self.index)
+        bakemaster.bakehistory_len -= 1
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        if not self.remove_poll(context):
+            return {'CANCELLED'}
+
+        return self.execute(context)
+
 #####################################################
 
 class BM_OT_Table_of_Objects(Operator):
