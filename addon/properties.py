@@ -2663,6 +2663,21 @@ class BakeJob(PropertyGroup):
         update=bm_props_utils.BakeJob_manager_use_filter_baked)
 
 
+class BakeHistory(PropertyGroup):
+    name: StringProperty(
+        name="Name of this recent bake",
+        description="Double click to rename",
+        default="Bake")
+
+    index: IntProperty(default=-1)
+
+    time_stamp: StringProperty(
+        name="yyyyyy:mmmmm:dddd:hhh:mm:s",
+        default="0:0:0:0:0:0")
+
+    # TODO: config data
+
+
 class Global(PropertyGroup):
     # Bake Jobs Props
 
@@ -2702,6 +2717,16 @@ class Global(PropertyGroup):
         description=BM_LABELS_Props("Global", "short_bake_instruction", "description").get(),  # noqa: E501
         default="Short Bake Instruction",
         options={'SKIP_SAVE'})
+
+    # BakeHistory Props
+
+    bakehistory: CollectionProperty(type=BakeHistory)
+
+    bakehistory_active_index: IntProperty(
+        name="Bake History of recent bakes",
+        default=-1)
+
+    bakehistory_len: IntProperty(default=0)
 
     # Pipeline Props
 
