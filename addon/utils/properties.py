@@ -96,7 +96,7 @@ def BakeJob_add_dropped_container(context, bakemaster, bakejob,
 # Container Prop Utils
 
 def Container_name_Update(self, context):
-    bakemaster = bm_get.bakemaster(context)
+    bakemaster = context.scene.bakemaster
     bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
     if bakejob is None:
         return
