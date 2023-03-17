@@ -676,10 +676,7 @@ class BM_OT_BakeHistory_Remove(Operator):
 
     def execute(self, context):
         bakemaster = context.scene.bakemaster
-        for index in range(self.index + 1, len(bakemaster.bakehistory_len)):
-            bakemaster.bakehistory[index].index -= 1
-        bakemaster.bakehistory.remove(self.index)
-        bakemaster.bakehistory_len -= 1
+        bm_ots_utils.bakehistory_remove(bakemaster, self.index)
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
