@@ -34,3 +34,14 @@ def ui_bake_poll(bakemaster, bake_is_running):
             bakemaster.bake_trigger_stop]):
         return False, "Bake is not available"
     return True, ""
+
+
+def ui_bakehistory_poll(cls_instance, bakemaster):
+    if cls_instance.index == -1:
+        return False
+    try:
+        bakemaster.bakehistory[cls_instance.index]
+    except IndexError:
+        return False
+    else:
+        return True
