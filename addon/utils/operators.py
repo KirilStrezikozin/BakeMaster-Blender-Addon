@@ -43,6 +43,16 @@ def ui_bakehistory_poll(cls_instance, bakemaster):
         bakehistory = bakemaster.bakehistory[cls_instance.index]
     except IndexError:
         return False, "Internal Error: Cannot resolve item in Bake History"
-    if bakemaster.bakehistory_reserved_index == bakehistory.index
+    if bakemaster.bakehistory_reserved_index == bakehistory.index:
         return False, "Item in Bake History is currently baking"
     return True, ""
+
+
+def bakehistory_add(bakemaster):
+    new_item = bakemaster.bakehistory.add()
+    new_item.index = bakemaster.bakehistory_len
+    new_item.name += " %d" % new_item.index
+    bakemaster.bakehistory_len += 1
+
+    from datetime.datetime import now as datetime_now
+    new_item.time_stamp = str(datetime_now())
