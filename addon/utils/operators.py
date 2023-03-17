@@ -38,10 +38,11 @@ def ui_bake_poll(bakemaster, bake_is_running):
 
 def ui_bakehistory_poll(cls_instance, bakemaster):
     if cls_instance.index == -1:
-        return False
+        return False, "Internal Error: Cannot resolve item in Bake History"
     try:
-        bakemaster.bakehistory[cls_instance.index]
+        bakehistory = bakemaster.bakehistory[cls_instance.index]
     except IndexError:
-        return False
-    else:
-        return True
+        return False, "Internal Error: Cannot resolve item in Bake History"
+    if bakemaster.bakehistory_reserved_index == bakehistory.index
+        return False, "Item in Bake History is currently baking"
+    return True, ""

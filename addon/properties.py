@@ -2728,6 +2728,8 @@ class Global(PropertyGroup):
 
     bakehistory_len: IntProperty(default=0)
 
+    bakehistory_reserved_index: IntProperty(default=-1)
+
     # Pipeline Props
 
     pipeline_config_is_attached: BoolProperty(default=False)

@@ -565,9 +565,10 @@ class BM_OT_BakeHistory_Rebake(Operator):
 
     def rebake_poll(self, context):
         bakemaster = context.scene.bakemaster
-        if not bm_ots_utils.ui_bakehistory_poll(self, bakemaster):
-            self.report({'ERROR'},
-                        "Internal Error: Cannot resolve item in Bake History")
+        poll_success, message = bm_ots_utils.ui_bakehistory_poll(self,
+                                                                 bakemaster)
+        if not poll_success:
+            self.report({'ERROR'}, message)
             return False
         bake_is_running = bakemaster.bake_is_running
         poll_success, message = bm_ots_utils.ui_bake_poll(bakemaster,
@@ -625,9 +626,10 @@ class BM_OT_BakeHistory_Config(Operator):
 
     def config_poll(self, context):
         bakemaster = context.scene.bakemaster
-        if not bm_ots_utils.ui_bakehistory_poll(self, bakemaster):
-            self.report({'ERROR'},
-                        "Internal Error: Cannot resolve item in Bake History")
+        poll_success, message = bm_ots_utils.ui_bakehistory_poll(self,
+                                                                 bakemaster)
+        if not poll_success:
+            self.report({'ERROR'}, message)
             return False
         if bm_ops is None:
             self.report({'ERROR'},
@@ -666,9 +668,10 @@ class BM_OT_BakeHistory_Remove(Operator):
 
     def remove_poll(self, context):
         bakemaster = context.scene.bakemaster
-        if not bm_ots_utils.ui_bakehistory_poll(self, bakemaster):
-            self.report({'ERROR'},
-                        "Internal Error: Cannot resolve item in Bake History")
+        poll_success, message = bm_ots_utils.ui_bakehistory_poll(self,
+                                                                 bakemaster)
+        if not poll_success:
+            self.report({'ERROR'}, message)
             return False
 
     def execute(self, context):
