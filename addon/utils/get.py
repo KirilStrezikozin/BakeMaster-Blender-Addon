@@ -27,10 +27,6 @@
 #
 # ##### END LICENSE BLOCK #####
 
-def bakemaster(context: not None):
-    return context.scene.bakemaster
-
-
 def bakejob(bakemaster: not None, index=-1):
     if index == -1:
         index = bakemaster.bakejobs_active_index
