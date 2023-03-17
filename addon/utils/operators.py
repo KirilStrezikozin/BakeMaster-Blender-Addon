@@ -64,3 +64,7 @@ def bakehistory_remove(bakemaster, index):
         bakemaster.bakehistory[index].index -= 1
     bakemaster.bakehistory.remove(index)
     bakemaster.bakehistory_len -= 1
+
+
+def bakehistory_unreserve(bakemaster):
+    bakemaster.bakehistory_reserved_index = -1

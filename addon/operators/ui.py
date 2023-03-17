@@ -409,7 +409,9 @@ class BM_OT_Bake_One(Operator):
         return wm.invoke_props_dialog(self, width=300)
 
     def execute(self, context):
-        self.props_set_explicit(context.scene.bakemaster)
+        bakemaster = context.scene.bakemaster
+        self.props_set_explicit(bakemaster)
+        bm_ots_utils.bakehistory_add(bakemaster)
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
@@ -447,7 +449,9 @@ class BM_OT_Bake_All(Operator):
         return self.execute(context)
 
     def execute(self, context):
-        self.props_set_explicit(context.scene.bakemaster)
+        bakemaster = context.scene.bakemaster
+        self.props_set_explicit(bakemaster)
+        bm_ots_utils.bakehistory_add(bakemaster)
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
@@ -509,6 +513,7 @@ class BM_OT_Bake_Stop(Operator):
     def execute(self, context):
         bakemaster = context.scene.bakemaster
         self.props_set_explicit(bakemaster)
+        bm_ots_utils.bakehistory_unreserve(bakemaster)
         bakemaster.bake_trigger_stop = False
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
@@ -542,6 +547,7 @@ class BM_OT_Bake_Cancel(Operator):
     def execute(self, context):
         bakemaster = context.scene.bakemaster
         self.props_set_explicit(bakemaster)
+        bm_ots_utils.bakehistory_unreserve(bakemaster)
         bakemaster.bake_trigger_cancel = False
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
