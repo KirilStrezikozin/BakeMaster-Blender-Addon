@@ -27,6 +27,10 @@
 #
 # ##### END LICENSE BLOCK #####
 
+try:
+    from bpy.ops import bakemaster as bm_ops
+except ModuleNotFoundError:
+    bm_ops = None
 from bpy.types import (
     Operator,
 )
@@ -179,8 +183,8 @@ class BM_OT_Pipeline_Config(Operator):
         name="Include",
         description="Data to include when loading/saving the config",
         default='ALL',
-        items=[('ALL', "Setup & Presets", "Save/load both setup and presets as a config"),  # noqa: E501
-               ('SETUP', "Setup only", "Save/load setup only as a config"),
+        items=[('ALL', "Setup & Presets", "Save/load both settings and presets as a config"),  # noqa: E501
+               ('SETUP', "Setup only", "Save/load settings only as a config"),
                ('PRESETS', "Presets only", "Save/load presets only as a config")],  # noqa: E501
         options={'SKIP_SAVE'})
 
@@ -596,6 +600,60 @@ class BM_OT_BakeHistory_Rebake(Operator):
         layout.use_property_split = False
         layout.use_property_decorate = False
         layout.prop(self, 'action')
+
+
+class BM_OT_BakeHistory_Config(Operator):
+    bl_idname = 'bakemaster.bakehistory_config'
+    bl_label = "Save/Load Config",
+    bl_description = "Save/Load configuration (all addon settings) of this bake in the history"  # noqa: E501
+    bl_options = {'INTERNAL'}
+
+    index: IntProperty(default=-1)
+
+    action: EnumProperty(
+        default='LOAD',
+        items=[('LOAD', "Load", "Load all settings of this bake into the addon (e.g. bake jobs, objects, maps)"),  # noqa: E501
+               ('SAVE', "Save", "Save all addon settings of this bake into as a config file on the disk")])  # noqa: E501
+
+    include: EnumProperty(
+        name="Include",
+        description="Data to include when loading/saving the config",
+        default='ALL',
+        items=[('ALL', "Setup & Presets", "Save/load both settings and presets as a config"),  # noqa: E501
+               ('SETUP', "Setup only", "Save/load settings only as a config"),
+               ('PRESETS', "Presets only", "Save/load presets only as a config")])  # noqa: E501
+
+    def config_poll(self, context):
+        bakemaster = context.scene.bakemaster
+        if not bm_ots_utils.ui_bakehistory_poll(self, bakemaster):
+            self.report({'ERROR'},
+                        "Internal Error: Cannot resolve item in Bake History")
+            return False
+        if bm_ops is None:
+            self.report({'ERROR'},
+                        "Internal Error: Operator's module not found")
+            return False
+        return True
+
+    def execute(self, context):
+        self.report({'WARNING'}, "Not implemented")
+        bm_ops.pipeline_config('EXEC_DEFAULT', action=self.action,
+                               include=self.include)
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        if not self.config_poll(context):
+            return {'CANCELLED'}
+
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = False
+        layout.use_property_decorate = False
+        layout.prop(self, 'action')
+        layout.prop(self, 'include')
 
 #####################################################
 
