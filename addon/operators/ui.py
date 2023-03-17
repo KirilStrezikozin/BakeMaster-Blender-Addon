@@ -34,6 +34,7 @@ from bpy.props import (
     EnumProperty,
     StringProperty,
     BoolProperty,
+    IntProperty,
 )
 from ..utils import get as bm_get
 from ..utils import operators as bm_ots_utils
@@ -540,6 +541,45 @@ class BM_OT_Bake_Cancel(Operator):
         bakemaster.bake_trigger_cancel = False
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
+
+
+class BM_OT_BakeHistory_Rebake(Operator):
+    bl_idname = 'bakemaster.bakehistory_rebake'
+    bl_label = "Rebake",
+    bl_description = "Rebake content of this bake in the history"
+    bl_options = {'INTERNAL'}
+
+    index: IntProperty(default=-1)
+
+    action: EnumProperty(
+        name="Action",
+        description="Choose how to rebake content of this bake in the history",  # noqa: E501
+        default='NEW_BAKE',
+        items=[('NEW_BAKE', "New Bake Output", "Rebake all content of this bake in the history without deleting its initially baked files"),  # noqa: E501
+               ('FULL_OVERWRITE', "Full Overwrite", "Rebake and overwrite all content of this bake in the history"),  # noqa: E501
+               ('SMART_OVERWRITE', "Smart Overwrite", "Rebake and overwrite only what differs from this bake in the history and the current settings in BakeMaster. Visit Pipeline for advanced controls")])  # noqa: E501
+
+    def rebake_poll(self, context):
+        bakemaster = context.scene.bakemaster
+        return bm_ots_utils.ui_bakehistory_poll(self, bakemaster)
+
+    def execute(self, context):
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        if not self.rebake_poll(context):
+            self.report({'ERROR'},
+                        "Internal Error: Cannot resolve item in Bake History")
+            return {'CANCELLED'}
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = False
+        layout.use_property_decorate = False
+        layout.prop(self, 'action')
 
 #####################################################
 
