@@ -561,17 +561,33 @@ class BM_OT_BakeHistory_Rebake(Operator):
 
     def rebake_poll(self, context):
         bakemaster = context.scene.bakemaster
-        return bm_ots_utils.ui_bakehistory_poll(self, bakemaster)
+        if not bm_ots_utils.ui_bakehistory_poll(self, bakemaster):
+            self.report({'ERROR'},
+                        "Internal Error: Cannot resolve item in Bake History")
+            return False
+        bake_is_running = bakemaster.bake_is_running
+        poll_success, message = bm_ots_utils.ui_bake_poll(bakemaster,
+                                                          bake_is_running)
+        if not poll_success:
+            self.report({'ERROR'}, message)
+            return False
+        return True
+
+    def props_set_explicit(bakemaster):
+        bakemaster.bake_trigger_stop = False
+        bakemaster.bake_trigger_cancel = False
+        bakemaster.bake_hold_on_pause = False
+        bakemaster.bake_is_running = True
 
     def execute(self, context):
+        self.props_set_explicit(context.scene.bakemaster)
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
     def invoke(self, context, event):
         if not self.rebake_poll(context):
-            self.report({'ERROR'},
-                        "Internal Error: Cannot resolve item in Bake History")
             return {'CANCELLED'}
+
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
