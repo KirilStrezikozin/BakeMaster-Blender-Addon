@@ -28,7 +28,7 @@
 # ##### END LICENSE BLOCK #####
 
 import bpy
-from .getters import *
+from .get import *
 
 # Map Preview Configurators
 def Map_MapPreview_CustomNodes_Update(self, context, map_tag):
