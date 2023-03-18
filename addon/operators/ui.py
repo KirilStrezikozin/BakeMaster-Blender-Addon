@@ -27,10 +27,6 @@
 #
 # ##### END LICENSE BLOCK #####
 
-try:
-    from bpy.ops import bakemaster as bm_ops
-except ModuleNotFoundError:
-    bm_ops = None
 from bpy.types import (
     Operator,
 )
@@ -63,7 +59,8 @@ class BM_OT_Help(Operator):
                ('MAPS', "Maps", ""),
                ('OUTPUT', "Output", ""),
                ('TEXSETS', "Texture Sets", ""),
-               ('BAKE', "Bake", "")])
+               ('BAKE', "Bake", ""),
+               ('BAKEHISTORY', "Bake History", "")])
 
     def invoke(self, context, event):
         self.url = BM_URLs("latest").get(self.action)
@@ -395,7 +392,7 @@ class BM_OT_Bake_One(Operator):
             return False
         return True
 
-    def props_set_explicit(bakemaster):
+    def props_set_explicit(self, bakemaster):
         bakemaster.bake_trigger_stop = False
         bakemaster.bake_trigger_cancel = False
         bakemaster.bake_hold_on_pause = False
@@ -436,7 +433,7 @@ class BM_OT_Bake_All(Operator):
             return False
         return True
 
-    def props_set_explicit(bakemaster):
+    def props_set_explicit(self, bakemaster):
         bakemaster.bake_trigger_stop = False
         bakemaster.bake_trigger_cancel = False
         bakemaster.bake_hold_on_pause = False
@@ -469,7 +466,7 @@ class BM_OT_Bake_Pause(Operator):
                                                           not bake_is_running)
         return poll_success
 
-    def props_set_explicit(bakemaster):
+    def props_set_explicit(self, bakemaster):
         is_paused = bakemaster.bake_hold_on_pause
         bakemaster.bake_hold_on_pause = not is_paused
 
@@ -498,14 +495,14 @@ class BM_OT_Bake_Stop(Operator):
                                                           not bake_is_running)
         return poll_success
 
-    def props_set_explicit(bakemaster):
+    def props_set_explicit(self, bakemaster):
         bakemaster.bake_trigger_stop = True
         bakemaster.bake_trigger_cancel = False
         bakemaster.bake_hold_on_pause = False
         bakemaster.bake_is_running = False
 
     def invoke(self, context, event):
-        if not self.bake_poll(context):
+        if not self.stop_poll(context):
             return {'CANCELLED'}
 
         return self.execute(context)
@@ -532,14 +529,14 @@ class BM_OT_Bake_Cancel(Operator):
                                                           not bake_is_running)
         return poll_success
 
-    def props_set_explicit(bakemaster):
+    def props_set_explicit(self, bakemaster):
         bakemaster.bake_trigger_stop = False
         bakemaster.bake_trigger_cancel = True
         bakemaster.bake_hold_on_pause = False
         bakemaster.bake_is_running = False
 
     def invoke(self, context, event):
-        if not self.bake_poll(context):
+        if not self.cancel_poll(context):
             return {'CANCELLED'}
 
         return self.execute(context)
@@ -555,7 +552,7 @@ class BM_OT_Bake_Cancel(Operator):
 
 class BM_OT_BakeHistory_Rebake(Operator):
     bl_idname = 'bakemaster.bakehistory_rebake'
-    bl_label = "Rebake",
+    bl_label = "Rebake"
     bl_description = "Rebake content of this bake in the history"
     bl_options = {'INTERNAL'}
 
@@ -584,15 +581,11 @@ class BM_OT_BakeHistory_Rebake(Operator):
             return False
         return True
 
-    def props_set_explicit(bakemaster):
-        bakemaster.bake_trigger_stop = False
-        bakemaster.bake_trigger_cancel = False
-        bakemaster.bake_hold_on_pause = False
-        bakemaster.bake_is_running = True
-
     def execute(self, context):
-        self.props_set_explicit(context.scene.bakemaster)
+        from bpy import ops
+
         self.report({'WARNING'}, "Not implemented")
+        ops.bakemaster.bake_all('INVOKE_DEFAULT')
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -611,7 +604,7 @@ class BM_OT_BakeHistory_Rebake(Operator):
 
 class BM_OT_BakeHistory_Config(Operator):
     bl_idname = 'bakemaster.bakehistory_config'
-    bl_label = "Save/Load Config",
+    bl_label = "Save/Load Config"
     bl_description = "Save/Load configuration (all addon settings) of this bake in the history"  # noqa: E501
     bl_options = {'INTERNAL'}
 
@@ -637,16 +630,17 @@ class BM_OT_BakeHistory_Config(Operator):
         if not poll_success:
             self.report({'ERROR'}, message)
             return False
-        if bm_ops is None:
-            self.report({'ERROR'},
-                        "Internal Error: Operator's module not found")
+        if bakemaster.bake_is_running:
+            self.report({'ERROR'}, "Another bake is running")
             return False
         return True
 
     def execute(self, context):
+        from bpy import ops
+
         self.report({'WARNING'}, "Not implemented")
-        bm_ops.pipeline_config('EXEC_DEFAULT', action=self.action,
-                               include=self.include)
+        ops.bakemaster.pipeline_config('EXEC_DEFAULT', action=self.action,
+                                       include=self.include)
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -666,7 +660,7 @@ class BM_OT_BakeHistory_Config(Operator):
 
 class BM_OT_BakeHistory_Remove(Operator):
     bl_idname = 'bakemaster.bakehistory_remove'
-    bl_label = "Remove",
+    bl_label = "Remove"
     bl_description = "Remove this bake from the history (its baked content will remain)"  # noqa: E501
     bl_options = {'INTERNAL'}
 
@@ -679,6 +673,7 @@ class BM_OT_BakeHistory_Remove(Operator):
         if not poll_success:
             self.report({'ERROR'}, message)
             return False
+        return True
 
     def execute(self, context):
         bakemaster = context.scene.bakemaster
