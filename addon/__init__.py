@@ -89,6 +89,7 @@ classes = (
     ui_panels.BM_UL_TextureSets_Item,
     ui_panels.BM_UL_TextureSets_Objects_Item,
     ui_panels.BM_UL_TextureSets_Objects_Subitems_Item,
+    ui_panels.BM_UL_BakeHistory,
 
     presets.BM_PT_FULL_OBJECT_Presets,
     presets.BM_PT_OBJECT_Presets,
@@ -130,6 +131,9 @@ classes = (
     operators.ui.BM_OT_Bake_Pause,
     operators.ui.BM_OT_Bake_Stop,
     operators.ui.BM_OT_Bake_Cancel,
+    operators.ui.BM_OT_BakeHistory_Rebake,
+    operators.ui.BM_OT_BakeHistory_Config,
+    operators.ui.BM_OT_BakeHistory_Remove,
 
     operators.ui.BM_OT_Table_of_Objects,
     operators.ui.BM_OT_Table_of_Objects_Add,
@@ -190,6 +194,7 @@ classes = (
     properties.TexSet,
     properties.Container,
     properties.BakeJob,
+    properties.BakeHistory,
     properties.Global,
 )
 
