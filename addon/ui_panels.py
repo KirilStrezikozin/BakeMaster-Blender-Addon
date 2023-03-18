@@ -615,3 +615,36 @@ class BM_UL_TextureSets_Objects_Subitems_Item(UIList):
 
     def invoke(self, context, event):
         pass
+
+
+class BM_UL_BakeHistory(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data,
+                  active_propname, index):
+        # split = layout.split(factor=0.6)
+        # row = split.column().row(align=True)
+        # row.prop(item, 'name', text="", emboss=False)
+        # row = split.column().row(align=True)
+        row = layout.row()
+        row.prop(item, 'name', text="", emboss=False, icon='RENDER_STILL')
+        row.operator('bakemaster.bakehistory_rebake', text="",
+                     icon='RECOVER_LAST').index = item.index
+        row.operator('bakemaster.bakehistory_config', text="",
+                     icon='FOLDER_REDIRECT').index = item.index
+        row.operator('bakemaster.bakehistory_remove', text="",
+                     icon='TRASH').index = item.index
+        if context.scene.bakemaster.bakehistory_reserved_index == item.index:
+            row.active = False
+
+    def draw_filter(self, context, layout):
+        pass
+
+    def filter_items(self, context, data, propname):
+        """Draw Bake History in reversed order"""
+
+        flt_flags = [self.bitflag_filter_item] * data.bakehistory_len
+        flt_neworder = [index for index in reversed(
+            range(data.bakehistory_len))]
+        return flt_flags, flt_neworder
+
+    def invoke(self, context, event):
+        pass
