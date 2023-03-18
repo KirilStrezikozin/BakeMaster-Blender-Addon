@@ -2673,7 +2673,7 @@ class BakeHistory(PropertyGroup):
 
     time_stamp: StringProperty(
         name="yyyyyy:mmmmm:dddd:hhh:mm:s",
-        default="0:0:0:0:0:0")
+        default="")
 
     # TODO: config data
 
