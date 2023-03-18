@@ -55,12 +55,13 @@ def bakehistory_add(bakemaster):
     new_item = bakemaster.bakehistory.add()
     new_item.index = bakemaster.bakehistory_len
     new_item.name += " %d" % (new_item.index + 1)
-    new_item.time_stamp = str(datetime.now())
     bakemaster.bakehistory_len += 1
     bakemaster.bakehistory_reserved_index = new_item.index
 
 
 def bakehistory_remove(bakemaster, remove_index):
+    if bakemaster.bakehistory_reserved_index > remove_index:
+        bakemaster.bakehistory_reserved_index -= 1
     for index in range(remove_index + 1, bakemaster.bakehistory_len):
         bakemaster.bakehistory[index].index -= 1
     bakemaster.bakehistory.remove(remove_index)
@@ -68,4 +69,14 @@ def bakehistory_remove(bakemaster, remove_index):
 
 
 def bakehistory_unreserve(bakemaster):
+    if bakemaster.bakehistory_reserved_index == -1:
+        return
+    try:
+        bakehistory = bakemaster.bakehistory[
+            bakemaster.bakehistory_reserved_index]
+    except IndexError:
+        bakehistory = None
+
+    if bakehistory is not None:
+        bakehistory.time_stamp = str(datetime.now())
     bakemaster.bakehistory_reserved_index = -1
