@@ -27,6 +27,9 @@
 #
 # ##### END LICENSE BLOCK #####
 
+from datetime import datetime
+
+
 def ui_bake_poll(bakemaster, bake_is_running):
     if bake_is_running:
         return False, "Another bake is running"
@@ -52,11 +55,9 @@ def bakehistory_add(bakemaster):
     new_item = bakemaster.bakehistory.add()
     new_item.index = bakemaster.bakehistory_len
     new_item.name += " %d" % (new_item.index + 1)
+    new_item.time_stamp = str(datetime.now())
     bakemaster.bakehistory_len += 1
     bakemaster.bakehistory_reserved_index = new_item.index
-
-    from datetime import datetime
-    new_item.time_stamp = str(datetime.now())
 
 
 def bakehistory_remove(bakemaster, remove_index):
