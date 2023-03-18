@@ -39,6 +39,7 @@ from .ui_base import (
     BM_PT_BakeControlsBase,
     BM_PT_BakeHistoryBase,
     BM_PT_BakeBase,
+    bm_ui_utils,
 )
 from bpy.types import (
     UIList,
@@ -620,12 +621,10 @@ class BM_UL_TextureSets_Objects_Subitems_Item(UIList):
 class BM_UL_BakeHistory(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
-        # split = layout.split(factor=0.6)
-        # row = split.column().row(align=True)
-        # row.prop(item, 'name', text="", emboss=False)
-        # row = split.column().row(align=True)
         row = layout.row()
         row.prop(item, 'name', text="", emboss=False, icon='RENDER_STILL')
+        row.label(text=bm_ui_utils.bakehistory_timestamp_get_label(
+            context.scene.bakemaster, item))
         row.operator('bakemaster.bakehistory_rebake', text="",
                      icon='RECOVER_LAST').index = item.index
         row.operator('bakemaster.bakehistory_config', text="",
