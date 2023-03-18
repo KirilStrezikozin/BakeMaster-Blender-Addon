@@ -563,8 +563,8 @@ class BM_OT_BakeHistory_Rebake(Operator):
         description="Choose how to rebake content of this bake in the history",  # noqa: E501
         default='NEW_BAKE',
         items=[('NEW_BAKE', "New Bake Output", "Rebake all content of this bake in the history without deleting its initially baked files"),  # noqa: E501
-               ('FULL_OVERWRITE', "Full Overwrite", "Rebake and overwrite all content of this bake in the history"),  # noqa: E501
-               ('SMART_OVERWRITE', "Smart Overwrite", "Rebake and overwrite only what differs from this bake in the history and the current settings in BakeMaster. Visit Pipeline for advanced controls")])  # noqa: E501
+               ('FULL_OVERWRITE', "Full Overwrite", "Rebake and overwrite all content of this bake in the history by the current addon setup and settings"),  # noqa: E501
+               ('SMART_OVERWRITE', "Smart Overwrite", "Rebake and overwrite only what differs from this bake in the history and the current addon setup and settings. Visit Pipeline for advanced controls")])  # noqa: E501
 
     def rebake_poll(self, context):
         bakemaster = context.scene.bakemaster
