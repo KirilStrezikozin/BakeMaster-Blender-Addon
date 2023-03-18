@@ -31,19 +31,9 @@ from bpy.app import version as bpy_app_version
 from bpy.types import (
     Panel,
 )
-from .utils.ui import (
-    get_uilist_rows as bm_utils_ui_get_uilist_rows,
-    get_active_bakejob_and_object as bm_utils_get_active_bakejob_and_object,
-    are_object_props_drawable as bm_utils_are_object_props_drawable,
-    get_object_ui_label as bm_utils_get_object_ui_label,
-    is_mapsettings_active as bm_utils_is_mapsettings_active,
-    ui_draw_hl as bm_utils_ui_draw_hl,
-    ui_draw_uv as bm_utils_ui_draw_uv,
-    ui_draw_out as bm_utils_ui_draw_out,
-    ui_draw_decal as bm_utils_ui_draw_decal,
-    ui_draw_matgroups as bm_utils_ui_draw_matgroups,
-    ui_draw_mapsettings as bm_utils_ui_draw_mapsettings,
-    ui_draw_csh as bm_utils_ui_draw_csh,
+from .utils import (
+    ui as bm_ui_utils,
+    get as bm_get,
 )
 from .presets import (
     BM_PT_FULL_OBJECT_Presets,
@@ -83,7 +73,7 @@ class BM_PT_BakeJobsBase(Panel):
         box = layout.box()
         row = box.row()
         min_rows = 1 if bakemaster.bakejobs_len < 2 else 5
-        rows = bm_utils_ui_get_uilist_rows(bakemaster.bakejobs_len, min_rows,
+        rows = bm_ui_utils.get_uilist_rows(bakemaster.bakejobs_len, min_rows,
                                            5)
         row.template_list('BM_UL_BakeJobs_Item', "", bakemaster,
                           'bakejobs', bakemaster,
@@ -214,7 +204,7 @@ class BM_PT_ManagerBase(Panel):
     def draw(self, context):
         scene = context.scene
         bakemaster = scene.bakemaster
-        bakejob = bakemaster.bakejobs[bakemaster.bakejobs_active_index]
+        bakejob = bm_get.bakejob(bakemaster)
         layout = self.layout
 
         layout.use_property_split = True
@@ -246,17 +236,13 @@ class BM_PT_ObjectsBase(Panel):
     def poll(cls, context):
         if not hasattr(context.scene, "bakemaster"):
             return False
-        try:
-            context.scene.bakemaster.bakejobs[
-                context.scene.bakemaster.bakejobs_active_index]
-        except IndexError:
-            return False
-        else:
-            return True
+        bakemaster = context.scene.bakemaster
+        bakejob = bm_get.bakejob(bakemaster)
+        return bakejob is not None
 
     def draw_header(self, context):
         bakemaster = context.scene.bakemaster
-        bakejob = bakemaster.bakejobs[bakemaster.bakejobs_active_index]
+        bakejob = bm_get.bakejob(bakemaster)
         label = bakejob.manager_container_type.capitalize()
         self.layout.label(text=label)
 
@@ -272,7 +258,7 @@ class BM_PT_ObjectsBase(Panel):
         bakemaster = scene.bakemaster
         layout = self.layout
 
-        bakejob = bakemaster.bakejobs[bakemaster.bakejobs_active_index]
+        bakejob = bm_get.bakejob(bakemaster)
 
         box = layout.box()
         row = box.row(align=True)
@@ -284,11 +270,11 @@ class BM_PT_ObjectsBase(Panel):
 
         rows = 5 if bakejob.objects_len >= 1 else 4
         refresh = False
-        for object in bakejob.objects:
+        for container in bakejob.objects:
             try:
-                scene.objects[object.name]
+                scene.objects[container.name]
             except KeyError:
-                if any([object.nm_is_uc, object.nm_is_lc]):
+                if any([container.nm_is_uc, container.nm_is_lc]):
                     continue
                 refresh = True
                 rows += 1
@@ -330,20 +316,26 @@ class BM_PT_ObjectBase(Panel):
     def poll(cls, context):
         if not hasattr(context.scene, "bakemaster"):
             return False
-        bakejob, object = bm_utils_get_active_bakejob_and_object
-        return bm_utils_are_object_props_drawable(bakejob, object)
+
+        bakemaster = context.scene.bakemaster
+        bakejob = bm_get.bakejob(bakemaster)
+        container = bm_get.container(bakejob)
+        return bm_ui_utils.are_c_props_drawable(bakejob, container)
 
     def draw_header(self, context):
-        bakejob, object = bm_utils_get_active_bakejob_and_object
-        packed = bm_utils_get_object_ui_label(context.scene, bakejob.objects,
-                                              object)
+        bakemaster = context.scene.bakemaster
+        bakejob = bm_get.bakejob(bakemaster)
+        container = bm_get.container(bakejob)
+        packed = bm_ui_utils.get_c_ui_label(context.scene, bakejob.objects,
+                                            container)
         self.object_exists, label, icon = packed
         row = self.layout.row(align=True)
         row.use_property_split = False
         row.label(text=label, icon=icon)
 
-        if object.nm_is_uc:
-            row.prop(object, 'nm_uc_is_global', text="", icon='NETWORK_DRIVE')
+        if container.nm_is_uc:
+            row.prop(container, 'nm_uc_is_global', text="",
+                     icon='NETWORK_DRIVE')
         BM_PT_OBJECT_Presets.draw_panel_header(row)
 
     def draw(self, context):
@@ -353,22 +345,24 @@ class BM_PT_ObjectBase(Panel):
 
         layout.active = self.object_exists
 
-        bakejob, object = bm_utils_get_active_bakejob_and_object
+        bakemaster = context.scene.bakemaster
+        bakejob = bm_get.bakejob(bakemaster)
+        container = bm_get.container(bakejob)
         draw_all = any([not bakejob.objects[
-            object.nm_uc_index].nm_uc_is_global,
-                        object.nm_uc_is_global])
+            container.nm_uc_index].nm_uc_is_global,
+                        container.nm_uc_is_global])
 
         if draw_all:
-            bm_utils_ui_draw_decal(layout, bakemaster, object)
-        if not object.decal_is_decal:
-            bm_utils_ui_draw_hl(layout, bakemaster, bakejob, object, object,
+            bm_ui_utils.draw_decal(layout, bakemaster, container)
+        if not container.decal_is_decal:
+            bm_ui_utils.draw_hl(layout, bakemaster, bakejob, container, container,
                                 bpy_app_version)
         if draw_all:
-            bm_utils_ui_draw_uv(layout, bakemaster, bakejob, object, object)
-        bm_utils_ui_draw_matgroups(layout, bakemaster, object)
+            bm_ui_utils.draw_uv(layout, bakemaster, bakejob, container, container)
+        bm_ui_utils.draw_matgroups(layout, bakemaster, container)
 
         if draw_all:
-            bm_utils_ui_draw_csh(layout, bakemaster, object)
+            bm_ui_utils.draw_csh(layout, bakemaster, container)
 
 
 class BM_PT_MapsBase(Panel):
@@ -380,8 +374,10 @@ class BM_PT_MapsBase(Panel):
     def poll(cls, context):
         if not hasattr(context.scene, "bakemaster"):
             return False
-        bakejob, object = bm_utils_get_active_bakejob_and_object(context)
-        return bm_utils_are_object_props_drawable(bakejob, object)
+        bakemaster = context.scene.bakemaster
+        bakejob = bm_get.bakejob(bakemaster)
+        container = bm_get.container(bakejob)
+        return bm_ui_utils.are_c_props_drawable(bakejob, container)
 
     def draw_header(self, context):
         label = "Maps"
@@ -400,39 +396,39 @@ class BM_PT_MapsBase(Panel):
         bakemaster = scene.bakemaster
         layout = self.layout
 
-        bakejob = bakemaster.bakejobs[bakemaster.bakejobs_active_index]
-        object = bakejob.objects[bakejob.objects_active_index]
+        bakejob = bm_get.bakejob(bakemaster)
+        container = bm_get.container(bakejob)
 
         # maps table
         box = layout.box()
         row = box.row()
 
-        min_rows = 1 if object.maps_len < 2 else 3
-        rows = bm_utils_ui_get_uilist_rows(object.maps_len, min_rows, 5)
-        row.template_list('BM_UL_Maps_Item', "", object, 'maps',
-                          object, 'maps_active_index', rows=rows)
+        min_rows = 1 if container.maps_len < 2 else 3
+        rows = bm_ui_utils.get_uilist_rows(container.maps_len, min_rows, 5)
+        row.template_list('BM_UL_Maps_Item', "", container, 'maps',
+                          container, 'maps_active_index', rows=rows)
         col = row.column(align=True)
         col.operator(BM_OT_ITEM_Maps.bl_idname, text="",
                      icon='ADD').control = 'ADD'
-        if object.maps_len > 0:
+        if container.maps_len > 0:
             col.operator(BM_OT_ITEM_Maps.bl_idname, text="",
                          icon='REMOVE').control = 'REMOVE'
             col.separator(factor=1.0)
             BM_PT_MAP_Presets.draw_panel_header(col)
         else:
             return
-        if object.maps_len > 1:
+        if container.maps_len > 1:
             col.separator(factor=1.0)
             col.operator(BM_OT_ITEM_Maps.bl_idname, text="",
                          icon='TRASH').control = 'TRASH'
 
-        map = object.maps[object.maps_active_index]
+        map = container.maps[container.maps_active_index]
 
         # map settings
         col = box.column()
         col.use_property_split = True
         col.use_property_decorate = False
-        col.active = bm_utils_is_mapsettings_active(object, map)
+        col.active = bm_ui_utils.is_mapsettings_active(container, map)
 
         col.prop(map, 'map_%s_prefix' % map.map_type)
 
@@ -441,20 +437,20 @@ class BM_PT_MapsBase(Panel):
             row_mapprev = col.row()
             row_mapprev.prop(map, 'map_%s_use_preview' % map.map_type)
 
-        if object.nm_is_uc and row_mapprev is not None:
+        if container.nm_is_uc and row_mapprev is not None:
             row_mapprev.active = False
 
         if hasattr(map, 'map_%s_use_default' % map.map_type):
             col.prop(map, 'map_%s_use_default' % map.map_type)
 
-        bm_utils_ui_draw_mapsettings(context, col, row_mapprev, object, map,
+        bm_ui_utils.draw_mapsettings(context, col, row_mapprev, container, map,
                                      bpy_app_version)
-        bm_utils_ui_draw_out(layout, bakemaster, object, map)
-        if not object.decal_is_decal and object.hl_use_unique_per_map:
-            bm_utils_ui_draw_hl(layout, bakemaster, bakejob, object,
+        bm_ui_utils.draw_out(layout, bakemaster, container, map)
+        if not container.decal_is_decal and container.hl_use_unique_per_map:
+            bm_ui_utils.draw_hl(layout, bakemaster, bakejob, container,
                                 bpy_app_version)
-        if object.uv_use_unique_per_map:
-            bm_utils_ui_draw_uv(layout, bakemaster, object, map)
+        if container.uv_use_unique_per_map:
+            bm_ui_utils.draw_uv(layout, bakemaster, container, map)
 
 
 class BM_PT_OutputBase(Panel):
@@ -466,8 +462,10 @@ class BM_PT_OutputBase(Panel):
     def poll(cls, context):
         if not hasattr(context.scene, "bakemaster"):
             return False
-        bakejob, object = bm_utils_get_active_bakejob_and_object(context)
-        return bm_utils_are_object_props_drawable(bakejob, object)
+        bakemaster = context.scene.bakemaster
+        bakejob = bm_get.bakejob(bakemaster)
+        container = bm_get.container(bakejob)
+        return bm_ui_utils.are_c_props_drawable(bakejob, container)
 
     def draw_header(self, context):
         label = "Output"
@@ -485,8 +483,8 @@ class BM_PT_OutputBase(Panel):
         bakemaster = scene.bakemaster
         layout = self.layout
 
-        bakejob = bakemaster.bakejobs[bakemaster.bakejobs_active_index]
-        object = bakejob.objects[bakejob.objects_active_index]
+        bakejob = bm_get.bakejob(bakemaster)
+        container = bm_get.container(bakejob)
 
         # channel packing
         box = layout.box()
@@ -504,18 +502,18 @@ class BM_PT_OutputBase(Panel):
             # channel packing body
             row = box.row()
 
-            min_rows = 1 if object.chnlps_len < 2 else 3
-            rows = bm_utils_ui_get_uilist_rows(object.chnlps_len, min_rows, 3)
+            min_rows = 1 if container.chnlps_len < 2 else 3
+            rows = bm_ui_utils.get_uilist_rows(container.chnlps_len, min_rows, 3)
             row.template_list('BM_UL_ChannelPacks_Item', "",
-                              object, "chnlps", object, "chnlps_active_index",
+                              container, "chnlps", container, "chnlps_active_index",
                               rows=rows)
             col = row.column(align=True)
             col.operator(BM_OT_ITEM_ChannelPack_Table_Add.bl_idname, text="",
                          icon='ADD')
-            if object.chnlps_len > 0:
+            if container.chnlps_len > 0:
                 col.operator(BM_OT_ITEM_ChannelPack_Table_Remove.bl_idname,
                              text="", icon='REMOVE')
-            if object.chnlps_len > 1:
+            if container.chnlps_len > 1:
                 col.separator(factor=1.0)
                 col.emboss = 'NONE'
                 BM_PT_CHNLP_Presets.draw_panel_header(col)
@@ -524,7 +522,7 @@ class BM_PT_OutputBase(Panel):
                              text="", icon='TRASH')
 
             try:
-                channel_pack = object.chnlps[object.chnlps_active_index]
+                channel_pack = container.chnlps[container.chnlps_active_index]
             except IndexError:
                 pass
             else:
@@ -587,38 +585,38 @@ class BM_PT_OutputBase(Panel):
             return
 
         col = box.column(align=True)
-        col.prop(object, 'bake_batchname')
-        col.prop(object, 'bake_batchname_use_caps')
+        col.prop(container, 'bake_batchname')
+        col.prop(container, 'bake_batchname_use_caps')
         # col.emboss = 'NONE'
         split = col.split(factor=0.4)
         split.column()
         split.column().operator(BM_OT_ITEM_BatchNaming_Preview.bl_idname)
 
         col = box.column(align=True)
-        col.prop(object, 'bake_save_internal')
-        if object.bake_save_internal is False:
-            col.prop(object, 'bake_output_filepath')
-            col.prop(object, 'bake_create_subfolder')
-            if object.bake_create_subfolder:
-                col.prop(object, 'bake_subfolder_name')
+        col.prop(container, 'bake_save_internal')
+        if container.bake_save_internal is False:
+            col.prop(container, 'bake_output_filepath')
+            col.prop(container, 'bake_create_subfolder')
+            if container.bake_create_subfolder:
+                col.prop(container, 'bake_subfolder_name')
         col = box.column(align=True)
         row = col.row()
-        row.prop(object, 'bake_device')
-        if object.bake_device != 'GPU':
+        row.prop(container, 'bake_device')
+        if container.bake_device != 'GPU':
             row.active = True
         else:
             row.active = context.preferences.addons[
                     'cycles'].preferences.has_active_device()
         if bpy.app.version >= (3, 4, 0):
-            col.prop(object, 'bake_view_from')
-        col.prop(object, 'bake_create_material')
-        col.prop(object, 'bake_assign_modifiers')
+            col.prop(container, 'bake_view_from')
+        col.prop(container, 'bake_create_material')
+        col.prop(container, 'bake_assign_modifiers')
         col.prop(bakejob, 'bake_use_save_log')
 
         col = box.column(align=True)
-        col.prop(object, 'bake_hide_when_inactive')
-        if object.bake_hide_when_inactive is False:
-            col.prop(object, 'bake_vg_index')
+        col.prop(container, 'bake_hide_when_inactive')
+        if container.bake_hide_when_inactive is False:
+            col.prop(container, 'bake_vg_index')
 
 
 class BM_PT_TextureSetsBase(Panel):
@@ -658,13 +656,13 @@ class BM_PT_TextureSetsBase(Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        bakejob = bakemaster.bakejobs[bakemaster.bakejobs_active_index]
+        bakejob = bm_get.bakejob(bakemaster)
 
         box = layout.box()
         row = box.row()
 
         min_rows = 1 if bakejob.texsets_len < 2 else 3
-        rows = bm_utils_ui_get_uilist_rows(bakejob.texsets_len, min_rows, 3)
+        rows = bm_ui_utils.get_uilist_rows(bakejob.texsets_len, min_rows, 3)
         row.template_list('BM_UL_TextureSets_Item', "", bakejob, 'texsets',
                           bakejob, 'texsets_active_index', rows=rows)
         col = row.column(align=True)
@@ -691,7 +689,7 @@ class BM_PT_TextureSetsBase(Panel):
         texset = bakejob.texsets[bakejob.texsets_active_index]
         row = box.row()
 
-        rows = bm_utils_ui_get_uilist_rows(texset.texset_objects_len, 1, 3)
+        rows = bm_ui_utils.get_uilist_rows(texset.texset_objects_len, 1, 3)
         row.template_list('BM_UL_TextureSets_Objects_Item', "", texset,
                           'texset_objects', texset,
                           'texset_objects_active_index', rows=rows)
@@ -721,14 +719,14 @@ class BM_PT_TextureSetsBase(Panel):
         try:
             texset_object = texset.texset_objects[
                     texset.texset_objects_active_index]
-            object = bakejob.objects[texset_object.object_index]
+            container = bakejob.objects[texset_object.object_index]
         except IndexError:
             return
 
-        if object.nm_is_uc:
+        if container.nm_is_uc:
             box.label(text="Container's Objects to include")
             row = box.row()
-            rows = bm_utils_ui_get_uilist_rows(texset_object.subitems_len, 1,
+            rows = bm_ui_utils.get_uilist_rows(texset_object.subitems_len, 1,
                                                3)
             row.template_list('BM_UL_TextureSets_Objects_Subitems_Item',
                               "", texset_object, "subitems", texset_object,
@@ -757,6 +755,10 @@ class BM_PT_TextureSetsBase(Panel):
 
         row = box.row()
         row.prop(texset, 'textureset_naming')
+
+
+#####################################################
+#####################################################
 
 
 class BM_PT_BakeBase(Panel):
@@ -813,7 +815,7 @@ class BM_PT_BakeControlsBase(Panel):
         row = col.row()
         row.operator('bakemaster.bake_all')
         row.scale_y = 1.5
-        col.active = bakemaster.is_bake_available
+        col.active = not bakemaster.bake_is_running
 
         row = layout.row(align=True)
         if bakemaster.bake_hold_on_pause:
@@ -825,7 +827,7 @@ class BM_PT_BakeControlsBase(Panel):
         row.operator('bakemaster.bake_pause', text=text, icon=icon)
         row.operator('bakemaster.bake_stop', icon='QUIT')
         row.operator('bakemaster.bake_cancel', icon='CANCEL')
-        row.active = not bakemaster.is_bake_available
+        row.active = bakemaster.bake_is_running
 
         row = layout.row()
         row.prop(bakemaster, "short_bake_instruction", text="", icon='INFO')
@@ -856,11 +858,15 @@ class BM_PT_BakeHistoryBase(Panel):
                                    icon='HELP').action = 'BAKEHISTORY'
 
     def draw(self, context):
-        # scene = context.scene
-        # bakemaster = scene.bakemaster
+        scene = context.scene
+        bakemaster = scene.bakemaster
         layout = self.layout
 
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        layout.label(text="Here")
+        row = layout.row()
+        rows = bm_ui_utils.get_uilist_rows(bakemaster.bakehistory_len, 1, 10)
+        row.template_list('BM_UL_BakeHistory', "", bakemaster,
+                          'bakehistory', bakemaster,
+                          'bakehistory_active_index', rows=rows)
