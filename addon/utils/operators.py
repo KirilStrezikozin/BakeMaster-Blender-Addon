@@ -51,16 +51,16 @@ def ui_bakehistory_poll(cls_instance, bakemaster):
 def bakehistory_add(bakemaster):
     new_item = bakemaster.bakehistory.add()
     new_item.index = bakemaster.bakehistory_len
-    new_item.name += " %d" % new_item.index
+    new_item.name += " %d" % (new_item.index + 1)
     bakemaster.bakehistory_len += 1
     bakemaster.bakehistory_reserved_index = new_item.index
 
-    from datetime.datetime import now as datetime_now
-    new_item.time_stamp = str(datetime_now())
+    from datetime import datetime
+    new_item.time_stamp = str(datetime.now())
 
 
 def bakehistory_remove(bakemaster, index):
-    for index in range(index + 1, len(bakemaster.bakehistory_len)):
+    for index in range(index + 1, bakemaster.bakehistory_len):
         bakemaster.bakehistory[index].index -= 1
     bakemaster.bakehistory.remove(index)
     bakemaster.bakehistory_len -= 1
