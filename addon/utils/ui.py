@@ -32,18 +32,7 @@ def get_uilist_rows(len_of_idprop, min_rows: int, max_rows: int):
     return min(max_rows, max(min_rows, len_of_idprop))
 
 
-def get_active_bakejob_and_object(context):
-    try:
-        bakejob = context.scene.bakemaster.bakejobs[
-            context.scene.bakemaster.bakejobs_active_index]
-        object = bakejob.objects[bakejob.objects_active_index]
-    except (IndexError, AttributeError):
-        return None, None
-    else:
-        return bakejob, object
-
-
-def are_object_props_drawable(bakejob, object):
+def are_c_props_drawable(bakejob, object):
     if bakejob is None or object is None:
         return False
 
@@ -86,7 +75,7 @@ def get_highpoly_object_index(hl_container):
     return h_object_index
 
 
-def get_object_ui_label(scene, objects, object):
+def get_c_ui_label(scene, objects, object):
     label = ""
     icon = ''
     exists = True
