@@ -59,10 +59,10 @@ def bakehistory_add(bakemaster):
     new_item.time_stamp = str(datetime.now())
 
 
-def bakehistory_remove(bakemaster, index):
-    for index in range(index + 1, bakemaster.bakehistory_len):
+def bakehistory_remove(bakemaster, remove_index):
+    for index in range(remove_index + 1, bakemaster.bakehistory_len):
         bakemaster.bakehistory[index].index -= 1
-    bakemaster.bakehistory.remove(index)
+    bakemaster.bakehistory.remove(remove_index)
     bakemaster.bakehistory_len -= 1
 
 
