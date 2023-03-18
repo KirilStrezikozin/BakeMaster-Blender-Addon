@@ -866,6 +866,9 @@ class BM_PT_BakeHistoryBase(Panel):
         layout.use_property_decorate = False
 
         row = layout.row()
+        if bakemaster.bakehistory_len == 0:
+            row.label(text="No bakes in the history")
+            return
         rows = bm_ui_utils.get_uilist_rows(bakemaster.bakehistory_len, 1, 10)
         row.template_list('BM_UL_BakeHistory', "", bakemaster,
                           'bakehistory', bakemaster,
