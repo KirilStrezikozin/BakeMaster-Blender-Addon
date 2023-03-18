@@ -27,9 +27,44 @@
 #
 # ##### END LICENSE BLOCK #####
 
+from datetime import datetime
+
 
 def get_uilist_rows(len_of_idprop, min_rows: int, max_rows: int):
     return min(max_rows, max(min_rows, len_of_idprop))
+
+
+def bakehistory_timestamp_get_label(bakemaster, bakehistory):
+    if bakehistory.index == bakemaster.bakehistory_reserved_index:
+        return "in progress..."
+
+    try:
+        timediff = datetime.now() - datetime.strptime(bakehistory.time_stamp,
+                                                      "%Y-%m-%d %H:%M:%S.%f")
+    except ValueError:
+        return ""
+    seconds = timediff.total_seconds()
+    if seconds < 1:
+        return "in progress..."
+    elif seconds < 60:
+        return "%dsec ago" % seconds.__int__()
+    minutes = seconds / 60
+    if minutes < 60:
+        return "%dmin ago" % minutes.__int__()
+    hours = minutes / 60
+    if hours < 24:
+        return "%dh ago" % hours.__int__()
+    days = hours / 24
+    ending = "s" if days.__int__() > 1 else ""
+    if days < 30:
+        return "%dday%s ago" % (days.__int__(), ending)
+    months = days / 30
+    ending = "s" if months.__int__() > 1 else ""
+    if months < 12:
+        return "%dmonth%s ago" % (months.__int__(), ending)
+    years = months / 12
+    ending = "s" if years.__int__() > 1 else ""
+    return "%dyear%s ago" % (years.__int__(), ending)
 
 
 def are_c_props_drawable(bakejob, object):
@@ -68,7 +103,7 @@ def get_highpoly_object_index(hl_container):
     h_object_index = -1
     try:
         highpoly = hl_container.hl_highpolies[
-                hl_container.hl_highpolies_active_index]
+            hl_container.hl_highpolies_active_index]
         h_object_index = highpoly.object_index
     except IndexError:
         pass
