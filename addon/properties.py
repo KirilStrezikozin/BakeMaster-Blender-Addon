@@ -30,7 +30,6 @@
 from bpy.types import (
     PropertyGroup,
     Camera as bpy_types_Camera,
-    Object as bpy_types_Object,
 )
 from bpy.props import (
     CollectionProperty,
