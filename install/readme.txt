@@ -1,1 +1,1 @@
-Download a preferable archived file to quickly install the add-on in Blender.
+Download a preferable archived file to quickly install the add-on into Blender.
