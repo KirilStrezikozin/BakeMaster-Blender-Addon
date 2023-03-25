@@ -1,28 +1,37 @@
-# ##### BEGIN GPL LICENSE BLOCK #####
+# ##### BEGIN LICENSE BLOCK #####
 #
-# "BakeMaster" Add-on
+# "BakeMaster" Blender Add-on (version 3.0.0)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
+# This License permits you to use this software for any purpose including
+# personal, educational, and commercial; You are allowed to modify it to suit
+# your needs, and to redistribute the software or any modifications you make
+# to it, as long as you follow the terms of this License and the
+# GNU General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
 #
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTIBILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# General Public License for more details.
+# This License grants permission to redistribute this software to
+# UNLIMITED END USER SEATS (OPEN SOURCE VARIANT) defined by the
+# acquired License type. A redistributed copy of this software
+# must follow and share similar rights of free software and usage
+# specifications determined by the GNU General Public License.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
+# This program is free software and is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
 #
-# ##### END GPL LICENSE BLOCK #####
+# You should have received a copy of the GNU General Public License in
+# GNU.txt file along with this program. If not,
+# see <http://www.gnu.org/licenses/>.
+#
+# ##### END LICENSE BLOCK #####
 
 import bpy
-from .utils_bm_gets import *
+from .get import *
 
 # Map Preview Configurators
-def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
+def Map_MapPreview_CustomNodes_Update(self, context, map_tag):
     object_item_full = BM_Object_Get(self, context)
     if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
         return
@@ -520,7 +529,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
                         nodes[map_nodes[0]].outputs[0].default_value = getattr(map, "map_mask_color%d" % i)
                         nodes[map_nodes[1]].inputs[0].default_value = map.map_mask_use_invert
 
-def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
+def Map_MapPreview_CustomNodes_Add(self, context, map_tag):
     object_item_full = BM_Object_Get(self, context)
     if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
         return
@@ -1052,9 +1061,9 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
             material.node_tree.nodes['BM_OutputMaterial'].select = True
             material.node_tree.nodes.active = nodes['BM_OutputMaterial']
 
-    BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag)
+    Map_MapPreview_CustomNodes_Update(self, context, map_tag)
 
-def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
+def Map_MapPreview_RelinkMaterials_Add(self, context, map_tag):
     object_item_full = BM_Object_Get(self, context)
     if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
         return
@@ -1318,7 +1327,7 @@ def BM_IterableData_GetNewUniqueName_Simple(data, name_starter):
             index += 1
     return "%s.%d" % (name_starter, index)
 
-def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
+def Map_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
     object_item_full = BM_Object_Get(self, context)
     if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
         return
@@ -1524,7 +1533,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
         # exit edit mode
         bpy.ops.object.mode_set(mode='EDIT', toggle=True)
 
-def BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(self, context):
+def Map_MapPreview_ReassignMaterials_Restore(self, context):
     object_item = BM_Object_Get(self, context)
     if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
         return
@@ -1556,7 +1565,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(self, context):
     bpy.ops.object.mode_set(mode='OBJECT')
                         
     # no matter what preview with reassignmats,
-    # bm_nodes, and bm_custommaterials are removed in BM_MAP_PROPS_MapPreview_CustomNodes_Remove
+    # bm_nodes, and bm_custommaterials are removed in Map_MapPreview_CustomNodes_Remove
     # here need restore old materials assignments to mesh parts, stored in object vertex groups
     tag = "bm_material_backup_"
     for object in objects:
@@ -1588,7 +1597,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(self, context):
         for vrtx_group in to_remove:
             object.vertex_groups.remove(vrtx_group)
 
-def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context):
+def Map_MapPreview_CustomNodes_Remove(self, context):
     object_item = BM_Object_Get(self, context)
     if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
         return

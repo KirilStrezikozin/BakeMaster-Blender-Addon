@@ -1,195 +1,216 @@
-# ##### BEGIN GPL LICENSE BLOCK #####
+# ##### BEGIN LICENSE BLOCK #####
 #
-# "BakeMaster" Add-on
+# "BakeMaster" Blender Add-on (version 3.0.0)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
+# This License permits you to use this software for any purpose including
+# personal, educational, and commercial; You are allowed to modify it to suit
+# your needs, and to redistribute the software or any modifications you make
+# to it, as long as you follow the terms of this License and the
+# GNU General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
 #
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTIBILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# General Public License for more details.
+# This License grants permission to redistribute this software to
+# UNLIMITED END USER SEATS (OPEN SOURCE VARIANT) defined by the
+# acquired License type. A redistributed copy of this software
+# must follow and share similar rights of free software and usage
+# specifications determined by the GNU General Public License.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
+# This program is free software and is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
 #
-# ##### END GPL LICENSE BLOCK #####
+# You should have received a copy of the GNU General Public License in
+# GNU.txt file along with this program. If not,
+# see <http://www.gnu.org/licenses/>.
+#
+# ##### END LICENSE BLOCK #####
+
+from bpy.utils import (
+    register_class as bpy_utils_register_class,
+    unregister_class as bpy_utils_unregister_class,
+)
+from bpy.types import Scene as bpy_types_Scene
+from bpy.props import PointerProperty
+
+from . import ui_panels
+from . import properties
+from . import presets
+from . import operators
+
+if "bpy_utils_register_class" in locals():
+    from importlib import reload as module_reload
+
+    module_reload(ui_panels)
+    module_reload(properties)
+    module_reload(presets)
+    module_reload(operators)
 
 bl_info = {
-    "name" : "BakeMaster",
-    "description" : "Bake various PBR-based or Cycles maps with ease and comfort",
-    "author" : "kemplerart",
-    "version" : (3, 0, 0),
-    "blender" : (2, 83, 0),
-    "location" : "View3D > Sidebar > BakeMaster",
-    "warning" : "",
+    "name": "BakeMaster",
+    "description":
+        "Bake various PBR-based or Cycles maps with ease and comfort",
+    "author": "kemplerart",
+    "version": (3, 0, 0),
+    "blender": (2, 83, 0),
+    "location": "View3D > Sidebar > BakeMaster",
+    "warning": "",
     "wiki_url": "",
     "tracker_url": "",
-    "category" : "Material"
+    "category": "Material"
 }
 
-if "bpy" in locals():
-    from .ui_panels import *
-    from .operators import *
-    from .properties import *
-    from .operator_bake import *
-    from .presets import *
-
-    from . import ui_panels
-    from . import operators
-    from . import properties
-    from . import operator_bake
-    from . import presets
-
-    import importlib
-    importlib.reload(ui_panels)
-    importlib.reload(operators)
-    importlib.reload(properties)
-    importlib.reload(operator_bake)
-    importlib.reload(presets)
-
-else:
-    from .ui_panels import *
-    from .operators import *
-    from .properties import *
-    from .operator_bake import *
-    from .presets import *
-    
 classes = (
-    BM_PREFS_Addon_Preferences,
+    ui_panels.BM_PT_BakeJobs,
+    ui_panels.BM_PT_Pipeline,
+    ui_panels.BM_PT_Manager,
+    ui_panels.BM_PT_Objects,
+    ui_panels.BM_PT_Object,
+    ui_panels.BM_PT_Maps,
+    ui_panels.BM_PT_Output,
+    ui_panels.BM_PT_TextureSets,
+    ui_panels.BM_PT_Bake,
+    ui_panels.BM_PT_BakeControls,
+    ui_panels.BM_PT_BakeHistory,
 
-    BM_ALEP_UL_Objects_Item,
-    BM_ALEP_UL_Maps_Item,
-    BM_CAUC_UL_Objects_Item,
-    BM_FMR_UL_Item,
-    BM_UL_Table_of_Objects_Item,
-    BM_UL_Table_of_Objects_Item_Highpoly,
-    BM_UL_Table_of_Maps_Item,
-    BM_UL_Table_of_Maps_Item_Highpoly,
-    BM_UL_Table_of_MatGroups_Item,
-    BM_UL_Table_of_Objects_Item_ChannelPack,
-    BM_UL_Table_of_TextureSets,
-    BM_UL_TextureSets_Objects_Table_Item,
-    BM_UL_TextureSets_Objects_Table_Item_SubItem,
-    BM_UL_Table_of_Objects_Item_BatchNamingTable_Item,
+    ui_panels.BM_PREFS_AddonPreferences,
+    ui_panels.BM_UL_BakeJobs_Item,
+    ui_panels.BM_UL_Container_Item,
+    ui_panels.BM_UL_Redolastaction_Objects_Item,
+    ui_panels.BM_UL_Redolastaction_Maps_Item,
+    ui_panels.BM_UL_BakeGroups_Item,
+    ui_panels.BM_UL_Matchres_Item,
+    ui_panels.BM_UL_BakeJob_Objects_Item,
+    ui_panels.BM_UL_Highpolies_Item,
+    ui_panels.BM_UL_MatGroups_Item,
+    ui_panels.BM_UL_Maps_Item,
+    ui_panels.BM_UL_ChannelPacks_Item,
+    ui_panels.BM_UL_TextureSets_Item,
+    ui_panels.BM_UL_TextureSets_Objects_Item,
+    ui_panels.BM_UL_TextureSets_Objects_Subitems_Item,
+    ui_panels.BM_UL_BakeHistory,
 
-    BM_PT_Main,
-    BM_PT_Item,
-    BM_PT_Item_Object,
-    BM_PT_Item_Maps,
-    BM_PT_Item_Output,
-    BM_PT_TextureSets,
-    BM_PT_Bake,
-    BM_PT_Help,
+    presets.BM_PT_FULL_OBJECT_Presets,
+    presets.BM_PT_OBJECT_Presets,
+    presets.BM_PT_DECAL_Presets,
+    presets.BM_PT_HL_Presets,
+    presets.BM_PT_UV_Presets,
+    presets.BM_PT_CSH_Presets,
+    presets.BM_PT_OUT_Presets,
+    presets.BM_PT_FULL_MAP_Presets,
+    presets.BM_PT_MAP_Presets,
+    presets.BM_PT_CHNLP_Presets,
+    presets.BM_PT_BAKE_Presets,
+    presets.BM_MT_FULL_OBJECT_Presets,
+    presets.BM_MT_OBJECT_Presets,
+    presets.BM_MT_DECAL_Presets,
+    presets.BM_MT_HL_Presets,
+    presets.BM_MT_UV_Presets,
+    presets.BM_MT_CSH_Presets,
+    presets.BM_MT_OUT_Presets,
+    presets.BM_MT_FULL_MAP_Presets,
+    presets.BM_MT_MAP_Presets,
+    presets.BM_MT_CHNLP_Presets,
+    presets.BM_MT_BAKE_Presets,
 
-    BM_OT_ExecutePreset,
+    operators.ui.BM_OT_Help,
+    operators.ui.BM_OT_BakeJobs_AddRemove,
+    operators.ui.BM_OT_BakeJobs_Move,
+    operators.ui.BM_OT_BakeJobs_Trash,
+    operators.ui.BM_OT_Pipeline_Config,
+    operators.ui.BM_OT_Pipeline_Import,
+    operators.ui.BM_OT_Pipeline_Analyse_Edits,
+    operators.ui.BM_OT_Pipeline_Atlas_Targets,
+    operators.ui.BM_OT_Manager_BakeJob_Tools,
+    operators.ui.BM_OT_Manager_GroupContainers,
+    operators.ui.BM_OT_Manager_RedoLastAction,
+    operators.ui.BM_OT_Manager_Presets,
+    operators.ui.BM_OT_Bake_One,
+    operators.ui.BM_OT_Bake_All,
+    operators.ui.BM_OT_Bake_Pause,
+    operators.ui.BM_OT_Bake_Stop,
+    operators.ui.BM_OT_Bake_Cancel,
+    operators.ui.BM_OT_BakeHistory_Rebake,
+    operators.ui.BM_OT_BakeHistory_Config,
+    operators.ui.BM_OT_BakeHistory_Remove,
 
-    BM_PT_FULL_OBJECT_Presets,
-    BM_MT_FULL_OBJECT_Presets,
-    BM_PT_OBJECT_Presets,
-    BM_MT_OBJECT_Presets,
-    BM_PT_DECAL_Presets,
-    BM_MT_DECAL_Presets,
-    BM_PT_HL_Presets,
-    BM_MT_HL_Presets,
-    BM_PT_UV_Presets,
-    BM_MT_UV_Presets,
-    BM_PT_CSH_Presets,
-    BM_MT_CSH_Presets,
-    BM_PT_OUT_Presets,
-    BM_MT_OUT_Presets,
-    BM_PT_FULL_MAP_Presets,
-    BM_MT_FULL_MAP_Presets,
-    BM_PT_MAP_Presets,
-    BM_MT_MAP_Presets,
-    BM_PT_CHNLP_Presets,
-    BM_MT_CHNLP_Presets,
-    BM_PT_BAKE_Presets,
-    BM_MT_BAKE_Presets,
+    operators.ui.BM_OT_Table_of_Objects,
+    operators.ui.BM_OT_Table_of_Objects_Add,
+    operators.ui.BM_OT_Table_of_Objects_Remove,
+    operators.ui.BM_OT_Table_of_Objects_Refresh,
+    operators.ui.BM_OT_Table_of_Objects_Trash,
+    operators.ui.BM_OT_ITEM_Highpoly_Table_Add,
+    operators.ui.BM_OT_ITEM_Highpoly_Table_Remove,
+    operators.ui.BM_OT_MAP_Highpoly_Table_Add,
+    operators.ui.BM_OT_MAP_Highpoly_Table_Remove,
+    operators.ui.BM_OT_ITEM_MatGroups_Table_Refresh,
+    operators.ui.BM_OT_ITEM_MatGroups_Table_EqualizeGroups,
+    operators.ui.BM_OT_ITEM_MatGroups_Table_UnequalizeGroups,
+    operators.ui.BM_OT_ITEM_ChannelPack_Table_Add,
+    operators.ui.BM_OT_ITEM_ChannelPack_Table_Remove,
+    operators.ui.BM_OT_ITEM_ChannelPack_Table_Trash,
+    operators.ui.BM_OT_SCENE_TextureSets_Table_Add,
+    operators.ui.BM_OT_SCENE_TextureSets_Table_Remove,
+    operators.ui.BM_OT_SCENE_TextureSets_Table_Trash,
+    operators.ui.BM_OT_SCENE_TextureSets_Objects_Table_Add,
+    operators.ui.BM_OT_SCENE_TextureSets_Objects_Table_Remove,
+    operators.ui.BM_OT_SCENE_TextureSets_Objects_Table_Trash,
+    operators.ui.BM_OT_SCENE_TextureSets_Objects_Table_InvertSubItems,
+    operators.ui.BM_OT_ITEM_BatchNaming_Preview,
+    operators.ui.BM_OT_ITEM_Maps,
+    operators.ui.BM_OT_ApplyLastEditedProp_SelectAll,
+    operators.ui.BM_OT_ApplyLastEditedProp_InvertSelection,
+    operators.ui.BM_OT_ApplyLastEditedProp,
+    operators.ui.BM_OT_CreateArtificialUniContainer_DeselectAll,
+    operators.ui.BM_OT_CreateArtificialUniContainer,
+    operators.ui.BM_OT_ITEM_and_MAP_Format_MatchResolution,
+    operators.ui.BM_OT_ReportMessage,
 
-    BM_OT_Table_of_Objects,
-    BM_OT_Table_of_Objects_Add,
-    BM_OT_Table_of_Objects_Remove,
-    BM_OT_Table_of_Objects_Refresh,
-    BM_OT_Table_of_Objects_Trash,
-    BM_OT_ITEM_Highpoly_Table_Add,
-    BM_OT_ITEM_Highpoly_Table_Remove,
-    BM_OT_MAP_Highpoly_Table_Add,
-    BM_OT_MAP_Highpoly_Table_Remove,
-    BM_OT_ITEM_MatGroups_Table_Refresh,
-    BM_OT_ITEM_MatGroups_Table_EqualizeGroups,
-    BM_OT_ITEM_MatGroups_Table_UnequalizeGroups,
-    BM_OT_ITEM_ChannelPack_Table_Add,
-    BM_OT_ITEM_ChannelPack_Table_Remove,
-    BM_OT_ITEM_ChannelPack_Table_Trash,
-    BM_OT_SCENE_TextureSets_Table_Add,
-    BM_OT_SCENE_TextureSets_Table_Remove,
-    BM_OT_SCENE_TextureSets_Table_Trash,
-    BM_OT_SCENE_TextureSets_Objects_Table_Add,
-    BM_OT_SCENE_TextureSets_Objects_Table_Remove,
-    BM_OT_SCENE_TextureSets_Objects_Table_Trash,
-    BM_OT_SCENE_TextureSets_Objects_Table_InvertSubItems,
-    BM_OT_ITEM_BatchNaming_Preview,
-    BM_OT_ITEM_Maps,
-    BM_OT_ITEM_Bake,
-    BM_OT_ApplyLastEditedProp_SelectAll,
-    BM_OT_ApplyLastEditedProp_InvertSelection,
-    BM_OT_ApplyLastEditedProp,
-    BM_OT_CreateArtificialUniContainer_DeselectAll,
-    BM_OT_CreateArtificialUniContainer,
-    BM_OT_ITEM_and_MAP_Format_MatchResolution,
-    BM_OT_ReportMessage,
-    BM_OT_Help,
+    presets.BM_OT_FULL_OBJECT_Preset_Add,
+    presets.BM_OT_OBJECT_Preset_Add,
+    presets.BM_OT_DECAL_Preset_Add,
+    presets.BM_OT_HL_Preset_Add,
+    presets.BM_OT_UV_Preset_Add,
+    presets.BM_OT_CSH_Preset_Add,
+    presets.BM_OT_OUT_Preset_Add,
+    presets.BM_OT_FULL_MAP_Preset_Add,
+    presets.BM_OT_MAP_Preset_Add,
+    presets.BM_OT_CHNLP_Preset_Add,
+    presets.BM_OT_BAKE_Preset_Add,
 
-    BM_OT_FULL_OBJECT_Preset_Add,
-    BM_OT_OBJECT_Preset_Add,
-    BM_OT_DECAL_Preset_Add,
-    BM_OT_HL_Preset_Add,
-    BM_OT_UV_Preset_Add,
-    BM_OT_CSH_Preset_Add,
-    BM_OT_OUT_Preset_Add,
-    BM_OT_FULL_MAP_Preset_Add,
-    BM_OT_MAP_Preset_Add,
-    BM_OT_CHNLP_Preset_Add,
-    BM_OT_BAKE_Preset_Add,
+    properties.Map_Highpoly,
+    properties.Map,
+    properties.Object_Highpoly,
+    properties.Object_ChannelPack,
+    properties.MatGroups_Item,
+    properties.Object,
+    properties.RedoLastAction_Object,
+    properties.RedoLastAction_Map,
+    properties.BakeGroup,
+    properties.MatchRes,
+    properties.TexSet_Object_Subitem,
+    properties.TexSet_Object,
+    properties.TexSet,
+    properties.Container,
+    properties.BakeJob,
+    properties.BakeHistory,
+    properties.Global,
+)
 
-    BM_ALEP_Object,
-    BM_ALEP_Map,
-    BM_CAUC_Object,
-    BM_FMR_Item,
-    BM_Map_Highpoly,
-    BM_Map,
-    BM_Object_Highpoly,
-    BM_Object_ChannelPack,
-    BM_MATGROUPS_Item,
-    BM_Object,
-    BM_SceneProps_TextureSet_Object_SubObject,
-    BM_SceneProps_TextureSet_Object,
-    BM_SceneProps_TextureSet,
-    BM_SceneProps)
-
-from bpy import utils as bpy_utils
-from bpy.types import Scene as types_Scene
-from bpy.props import CollectionProperty, PointerProperty
 
 def register():
     for cls in classes:
-        bpy_utils.register_class(cls)
-    types_Scene.bm_table_of_objects = CollectionProperty(type=BM_Object)
-    types_Scene.bm_props = PointerProperty(type=BM_SceneProps)
+        bpy_utils_register_class(cls)
+    bpy_types_Scene.bakemaster = PointerProperty(
+        type=properties.Global)
 
-    BM_Presets_FolderSetup()
 
 def unregister():
     for cls in reversed(classes):
-        bpy_utils.unregister_class(cls)
+        bpy_utils_unregister_class(cls)
+    del bpy_types_Scene.bakemaster
 
-    del types_Scene.bm_table_of_objects
-    del types_Scene.bm_props
 
 if __name__ == "__main__":
     register()
-

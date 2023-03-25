@@ -27,30 +27,16 @@
 #
 # ##### END LICENSE BLOCK #####
 
+import sys
 
-# This file is used by addon's dev.
-# This file is not included with the addon.
-# Addon's actual tree is located in ./addon/
+lines = []
+with open(sys.argv[1], 'r+') as f:
+    lines = f.readlines()
+    f.writelines([])
 
-from . import addon
-
-bl_info = {
-    "name": "BakeMaster",
-    "description":
-        "Bake various PBR-based or Cycles maps with ease and comfort",
-    "author": "kemplerart",
-    "version": (3, 0, 0),
-    "blender": (2, 83, 0),
-    "location": "View3D > Sidebar > BakeMaster",
-    "warning": "",
-    "wiki_url": "",
-    "tracker_url": "",
-    "category": "Material"
-}
-
-register = addon.register
-unregister = addon.unregister
-
-
-# if __name__ == "__main__":
-#    register()
+with open(sys.argv[1], 'w') as f:
+    for line in lines:
+        if len(line.strip()) <= 79:
+            f.write(line)
+            continue
+        f.write(line.strip("\n") + "  # noqa: E501\n")

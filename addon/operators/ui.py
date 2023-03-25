@@ -1,52 +1,718 @@
-# ##### BEGIN GPL LICENSE BLOCK #####
+# ##### BEGIN LICENSE BLOCK #####
 #
-# "BakeMaster" Add-on
+# "BakeMaster" Blender Add-on (version 3.0.0)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
+# This License permits you to use this software for any purpose including
+# personal, educational, and commercial; You are allowed to modify it to suit
+# your needs, and to redistribute the software or any modifications you make
+# to it, as long as you follow the terms of this License and the
+# GNU General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
 #
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTIBILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# General Public License for more details.
+# This License grants permission to redistribute this software to
+# UNLIMITED END USER SEATS (OPEN SOURCE VARIANT) defined by the
+# acquired License type. A redistributed copy of this software
+# must follow and share similar rights of free software and usage
+# specifications determined by the GNU General Public License.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
+# This program is free software and is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
 #
-# ##### END GPL LICENSE BLOCK #####
+# You should have received a copy of the GNU General Public License in
+# GNU.txt file along with this program. If not,
+# see <http://www.gnu.org/licenses/>.
+#
+# ##### END LICENSE BLOCK #####
 
-import bpy
-import webbrowser
-from .utils import *
-from .labels import BM_Labels
+from bpy.types import (
+    Operator,
+)
+from bpy.props import (
+    EnumProperty,
+    StringProperty,
+    BoolProperty,
+    IntProperty,
+)
+from ..utils import get as bm_get
+from ..utils import operators as bm_ots_utils
+from ..labels import (
+    BM_URLs,
+)
 
-class BM_OT_Table_of_Objects(bpy.types.Operator):
+
+class BM_OT_Help(Operator):
+    bl_idname = 'bakemaster.help'
+    bl_label = "Help"
+    bl_description = "Press to visit the according BakeMaster's online documentation page"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    action: EnumProperty(
+        default='INDEX',
+        items=[('INDEX', "Index", ""),
+               ('BAKEJOBS', "Bake Jobs", ""),
+               ('PIPELINE', "Pipeline", ""),
+               ('MANAGER', "Manager", ""),
+               ('OBJECTS', "Objects", ""),
+               ('MAPS', "Maps", ""),
+               ('OUTPUT', "Output", ""),
+               ('TEXSETS', "Texture Sets", ""),
+               ('BAKE', "Bake", ""),
+               ('BAKEHISTORY', "Bake History", "")])
+
+    def invoke(self, context, event):
+        self.url = BM_URLs("latest").get(self.action)
+        return self.execute(context)
+
+    def execute(self, context):
+        from webbrowser import open as webbrowser_open
+        webbrowser_open(self.url)
+        return {'FINISHED'}
+
+
+class BM_OT_BakeJobs_AddRemove(Operator):
+    bl_idname = 'bakemaster.bakejobs_addremove'
+    bl_label = "Add/Remove"
+    bl_description = "Add or Remove Bake Job from the list on the left"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    action: EnumProperty(
+        items=[('ADD', "Add", ""),
+               ('REMOVE', "Remove", "")])
+
+    def invoke(self, context, event):
+        return self.execute(context)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+
+        if self.action == 'ADD':
+            new_bakejob = bakemaster.bakejobs.add()
+            new_bakejob.index = bakemaster.bakejobs_len
+            new_bakejob.name = "Bake Job %d" % (new_bakejob.index + 1)
+            bakemaster.bakejobs_active_index = new_bakejob.index
+            bakemaster.bakejobs_len += 1
+            return {'FINISHED'}
+
+        bakejob = bm_get.bakejob(bakemaster)
+        if bakejob is None:
+            return {'CANCELLED'}
+
+        if self.action == 'REMOVE':
+            for index in range(bakejob.index + 1, bakemaster.bakejobs_len):
+                bakemaster.bakejobs[index].index -= 1
+            bakemaster.bakejobs.remove(bakejob.index)
+            bakemaster.bakejobs_len -= 1
+            if not bakemaster.bakejobs_active_index < bakemaster.bakejobs_len:
+                bakemaster.bakejobs_active_index = bakemaster.bakejobs_len - 1
+            return {'FINISHED'}
+
+
+class BM_OT_BakeJobs_Move(Operator):
+    bl_idname = 'bakemaster.bakejobs_move'
+    bl_label = "Move"
+    bl_description = "Move the current selected Bake Job up or down (change its bake order)"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    action: EnumProperty(
+        default='MOVE_UP',
+        items=[('MOVE_UP', "Move up", ""),
+               ('MOVE_DOWN', "Move down", "")])
+
+    def invoke(self, context, event):
+        self.mover_indexes = {
+            'MOVE_UP': -1,
+            'MOVE_DOWN': 1
+        }
+        return self.execute(context)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+        bakejob = bm_get.bakejob(bakemaster)
+        if bakejob is None:
+            return {'CANCELLED'}
+
+        move_to_index = bakejob.index + self.mover_indexes[self.action]
+        if move_to_index < 0 or move_to_index >= bakemaster.bakejobs_len:
+            return {'CANCELLED'}
+
+        bakejob_next = bakemaster.bakejobs[move_to_index]
+        bakemaster.bakejobs.move(bakejob.index, bakejob_next.index)
+        bakejob.index, bakejob_next.index = bakejob_next.index, bakejob.index
+        bakemaster.bakejobs_active_index = bakejob_next.index
+        return {'FINISHED'}
+
+
+class BM_OT_BakeJobs_Trash(Operator):
+    bl_idname = 'bakemaster.bakejobs_trash'
+    bl_label = "Trash"
+    bl_description = "Remove all Bake Jobs from the list on the left"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def invoke(self, context, event):
+        return self.execute(context)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+        [bakemaster.bakejobs.remove(index) for index in
+         reversed(range(bakemaster.bakejobs_len))]
+        bakemaster.bakejobs_active_index = -1
+        bakemaster.bakejobs_len = 0
+        return {'FINISHED'}
+
+
+class BM_OT_Pipeline_Config(Operator):
+    bl_idname = 'bakemaster.pipeline_config'
+    bl_label = "Config"
+    bl_description = "Load/Save/Detach Bake Configuration data. You can use config as a super preset to save all tables data and items, presets, settings, bake jobs etc. of the current BakeMaster session"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    action: EnumProperty(
+        default='LOAD',
+        items=[('LOAD', "Load", ""),
+               ('SAVE', "Save", ""),
+               ('DETACH', "Detach", "")],
+        options={'SKIP_SAVE'})
+
+    include: EnumProperty(
+        name="Include",
+        description="Data to include when loading/saving the config",
+        default='ALL',
+        items=[('ALL', "Setup & Presets", "Save/load both settings and presets as a config"),  # noqa: E501
+               ('SETUP', "Setup only", "Save/load settings only as a config"),
+               ('PRESETS', "Presets only", "Save/load presets only as a config")],  # noqa: E501
+        options={'SKIP_SAVE'})
+
+    def invoke(self, context, event):
+        if self.action == 'DETACH':
+            return self.execute(context)
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        scene = context.scene
+        bakemaster = scene.bakemaster
+
+        bakemaster.pipeline_config_is_attached = self.action != 'DETACH'
+        bakemaster.pipeline_config_include = self.include
+        print(self.action)
+        print(self.include)
+
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = False
+        layout.use_property_decorate = False
+
+        row = layout.row()
+        row.prop(self, 'include')
+
+
+class BM_OT_Pipeline_Import(Operator):
+    bl_idname = 'bakemaster.pipeline_import'
+    bl_label = "Import objects"
+    bl_description = "Link/Unlink Objects' names from other scenes or .blend files to bake them as well. The bake will carry out in those scenes and .blend files without actually importing"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    # TODO: if import_is_used, edit button will load
+    # this operator and requery list of objects,
+    # the list of objects and its setup is not created in props
+
+    edit: BoolProperty(
+        name="Edit",
+        description="Edit imported objects' names",
+        default=False,
+        options={'SKIP_SAVE'})
+
+    detach: BoolProperty(
+        name="Detach",
+        description="Remove all imported objects' names",
+        default=False,
+        options={'SKIP_SAVE'})
+
+    def invoke(self, context, event):
+        if self.detach:
+            return self.execute(context)
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        scene = context.scene
+        bakemaster = scene.bakemaster
+
+        bakemaster.pipeline_import_is_used = not self.detach
+
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def draw(self, context):
+        pass
+
+
+class BM_OT_Pipeline_Analyse_Edits(Operator):
+    bl_idname = 'bakemaster.pipeline_analyse_edits'
+    bl_label = "Analyse Edits"
+    bl_description = "Using loaded asset stamps from a config (if loaded) and changes to objects and maps after the last bake to quickly configure what needs to be overwritten, cleared, created, or skipped in the next bake to save time for large baking pipelines"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def invoke(self, context, event):
+        return self.execute(context)
+
+    def execute(self, context):
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+
+class BM_OT_Pipeline_Atlas_Targets(Operator):
+    bl_idname = 'bakemaster.pipeline_atlas_targets'
+    bl_label = "Atlas Targets"
+    bl_description = "Choosing target image for each map will give you the ability to not query bakes from scratch and saving them to the new output files but updating previously baked textures on the disk"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    # TODO: operator opens the list of all maps (we need to somehow combine
+    # them) and each map prop to choose a filepath or tick 'new (not baked)'
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def draw(self, context):
+        pass
+
+
+class BM_OT_Manager_Presets(Operator):
+    bl_idname = 'bakemaster.manager_presets'
+    bl_label = "Presets"
+    bl_description = "Choose a folder path on the disk (or leave default) to save/load presets from"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def draw(self, context):
+        pass
+
+
+class BM_OT_Manager_RedoLastAction(Operator):
+    bl_idname = 'bakemaster.manager_redolastaction'
+    bl_label = "Redo Last Action"
+    bl_description = "Redo last action for another map, object, or bake job. Value change, button press, preset load, adding a map etc"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def draw(self, context):
+        pass
+
+
+class BM_OT_Manager_GroupContainers(Operator):
+    bl_idname = 'bakemaster.manager_groupcontainers'
+    bl_label = "Group Containers"
+    bl_description = "Select objects or maps (depends on the Container Type) to put into a group where they can share similar settings"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def draw(self, context):
+        pass
+
+
+class BM_OT_Manager_BakeJob_Tools(Operator):
+    bl_idname = 'bakemaster.manager_bakejob_tools'
+    bl_label = "BakeJob Tools"
+    bl_description = "Choose an operation to execute for the active bake job"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    action: EnumProperty(
+        name="Choose an operation",
+        default='MIGRATE',
+        items=[('MIGRATE', "Migrate", "Select objects in the current bake job to move to another bake job"),  # noqa: E501
+               ('MERGE', "Merge", "Select two bake jobs to merge into one"),
+               ('ISOLATE', "Isolate", "Select objects in the current bake job to make a new bake job with. Those objects will be moved there")])  # noqa: E501
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def draw(self, context):
+        row = self.layout.row(align=True)
+        row.prop(self, 'action', expand=True)
+
+
+class BM_OT_Bake_One(Operator):
+    bl_idname = 'bakemaster.bake_one'
+    bl_label = "Bake One"
+    bl_description = "Choose to bake the active selected Map, Object, or Bake Job"  # noqa: E501
+    bl_options = {'INTERNAL'}
+
+    action: EnumProperty(
+        name="Choose an operation",
+        description="Choose an operation",
+        default='BAKEJOB',
+        items=[('MAP', "Map", "Bake the current active map"),
+               ('OBJECT', "Object", "Bake the current active object"),
+               ('BAKEJOB', "Bake Job", "Bake the current active bake job")])
+
+    def bake_poll(self, context):
+        bakemaster = context.scene.bakemaster
+        bake_is_running = bakemaster.bake_is_running
+        poll_success, message = bm_ots_utils.ui_bake_poll(bakemaster,
+                                                          bake_is_running)
+        if not poll_success:
+            self.report({'ERROR'}, message)
+            return False
+        return True
+
+    def props_set_explicit(self, bakemaster):
+        bakemaster.bake_trigger_stop = False
+        bakemaster.bake_trigger_cancel = False
+        bakemaster.bake_hold_on_pause = False
+        bakemaster.bake_is_running = True
+
+    def invoke(self, context, event):
+        if not self.bake_poll(context):
+            return {'CANCELLED'}
+
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+        self.props_set_explicit(bakemaster)
+        bm_ots_utils.bakehistory_add(bakemaster)
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def draw(self, context):
+        row = self.layout.row(align=True)
+        row.prop(self, 'action', expand=True)
+
+
+class BM_OT_Bake_All(Operator):
+    bl_idname = 'bakemaster.bake_all'
+    bl_label = "Bake All"
+    bl_description = "Bake the whole setup (all bake jobs, all maps for all objects)"  # noqa: E501
+    bl_options = {'INTERNAL'}
+
+    def bake_poll(self, context):
+        bakemaster = context.scene.bakemaster
+        bake_is_running = bakemaster.bake_is_running
+        poll_success, message = bm_ots_utils.ui_bake_poll(bakemaster,
+                                                          bake_is_running)
+        if not poll_success:
+            self.report({'ERROR'}, message)
+            return False
+        return True
+
+    def props_set_explicit(self, bakemaster):
+        bakemaster.bake_trigger_stop = False
+        bakemaster.bake_trigger_cancel = False
+        bakemaster.bake_hold_on_pause = False
+        bakemaster.bake_is_running = True
+
+    def invoke(self, context, event):
+        if not self.bake_poll(context):
+            return {'CANCELLED'}
+
+        return self.execute(context)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+        self.props_set_explicit(bakemaster)
+        bm_ots_utils.bakehistory_add(bakemaster)
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+
+class BM_OT_Bake_Pause(Operator):
+    bl_idname = 'bakemaster.bake_pause'
+    bl_label = "Pause/Resume"
+    bl_description = "Pause/Resume the bake"
+    bl_options = {'INTERNAL'}
+
+    def pause_poll(self, context):
+        bakemaster = context.scene.bakemaster
+        bake_is_running = bakemaster.bake_is_running
+        poll_success, message = bm_ots_utils.ui_bake_poll(bakemaster,
+                                                          not bake_is_running)
+        return poll_success
+
+    def props_set_explicit(self, bakemaster):
+        is_paused = bakemaster.bake_hold_on_pause
+        bakemaster.bake_hold_on_pause = not is_paused
+
+    def invoke(self, context, event):
+        if not self.pause_poll(context):
+            return {'CANCELLED'}
+
+        return self.execute(context)
+
+    def execute(self, context):
+        self.props_set_explicit(context.scene.bakemaster)
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+
+class BM_OT_Bake_Stop(Operator):
+    bl_idname = 'bakemaster.bake_stop'
+    bl_label = "Stop"
+    bl_description = "Stop and save what's been baked"
+    bl_options = {'INTERNAL'}
+
+    def stop_poll(self, context):
+        bakemaster = context.scene.bakemaster
+        bake_is_running = bakemaster.bake_is_running
+        poll_success, message = bm_ots_utils.ui_bake_poll(bakemaster,
+                                                          not bake_is_running)
+        return poll_success
+
+    def props_set_explicit(self, bakemaster):
+        bakemaster.bake_trigger_stop = True
+        bakemaster.bake_trigger_cancel = False
+        bakemaster.bake_hold_on_pause = False
+        bakemaster.bake_is_running = False
+
+    def invoke(self, context, event):
+        if not self.stop_poll(context):
+            return {'CANCELLED'}
+
+        return self.execute(context)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+        self.props_set_explicit(bakemaster)
+        bm_ots_utils.bakehistory_unreserve(bakemaster)
+        bakemaster.bake_trigger_stop = False
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+
+class BM_OT_Bake_Cancel(Operator):
+    bl_idname = 'bakemaster.bake_cancel'
+    bl_label = "Cancel"
+    bl_description = "Cancel - stop and erase what's been baked"
+    bl_options = {'INTERNAL'}
+
+    def cancel_poll(self, context):
+        bakemaster = context.scene.bakemaster
+        bake_is_running = bakemaster.bake_is_running
+        poll_success, message = bm_ots_utils.ui_bake_poll(bakemaster,
+                                                          not bake_is_running)
+        return poll_success
+
+    def props_set_explicit(self, bakemaster):
+        bakemaster.bake_trigger_stop = False
+        bakemaster.bake_trigger_cancel = True
+        bakemaster.bake_hold_on_pause = False
+        bakemaster.bake_is_running = False
+
+    def invoke(self, context, event):
+        if not self.cancel_poll(context):
+            return {'CANCELLED'}
+
+        return self.execute(context)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+        self.props_set_explicit(bakemaster)
+        bm_ots_utils.bakehistory_unreserve(bakemaster)
+        bakemaster.bake_trigger_cancel = False
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+
+class BM_OT_BakeHistory_Rebake(Operator):
+    bl_idname = 'bakemaster.bakehistory_rebake'
+    bl_label = "Rebake"
+    bl_description = "Rebake content of this bake in the history"
+    bl_options = {'INTERNAL'}
+
+    index: IntProperty(default=-1)
+
+    action: EnumProperty(
+        name="Action",
+        description="Choose how to rebake content of this bake in the history",  # noqa: E501
+        default='NEW_BAKE',
+        items=[('NEW_BAKE', "New Bake Output", "Rebake all content of this bake in the history without deleting its initially baked files"),  # noqa: E501
+               ('FULL_OVERWRITE', "Full Overwrite", "Rebake and overwrite all content of this bake in the history by the current addon setup and settings"),  # noqa: E501
+               ('SMART_OVERWRITE', "Smart Overwrite", "Rebake and overwrite only what differs from this bake in the history and the current addon setup and settings. Visit Pipeline for advanced controls")])  # noqa: E501
+
+    def rebake_poll(self, context):
+        bakemaster = context.scene.bakemaster
+        poll_success, message = bm_ots_utils.ui_bakehistory_poll(self,
+                                                                 bakemaster)
+        if not poll_success:
+            self.report({'ERROR'}, message)
+            return False
+        bake_is_running = bakemaster.bake_is_running
+        poll_success, message = bm_ots_utils.ui_bake_poll(bakemaster,
+                                                          bake_is_running)
+        if not poll_success:
+            self.report({'ERROR'}, message)
+            return False
+        return True
+
+    def execute(self, context):
+        from bpy import ops
+
+        self.report({'WARNING'}, "Not implemented")
+        ops.bakemaster.bake_all('INVOKE_DEFAULT')
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        if not self.rebake_poll(context):
+            return {'CANCELLED'}
+
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = False
+        layout.use_property_decorate = False
+        layout.prop(self, 'action')
+
+
+class BM_OT_BakeHistory_Config(Operator):
+    bl_idname = 'bakemaster.bakehistory_config'
+    bl_label = "Save/Load Config"
+    bl_description = "Save/Load configuration (all addon settings) of this bake in the history"  # noqa: E501
+    bl_options = {'INTERNAL'}
+
+    index: IntProperty(default=-1)
+
+    action: EnumProperty(
+        default='LOAD',
+        items=[('LOAD', "Load", "Load all settings of this bake into the addon (e.g. bake jobs, objects, maps)"),  # noqa: E501
+               ('SAVE', "Save", "Save all addon settings of this bake into as a config file on the disk")])  # noqa: E501
+
+    include: EnumProperty(
+        name="Include",
+        description="Data to include when loading/saving the config",
+        default='ALL',
+        items=[('ALL', "Setup & Presets", "Save/load both settings and presets as a config"),  # noqa: E501
+               ('SETUP', "Setup only", "Save/load settings only as a config"),
+               ('PRESETS', "Presets only", "Save/load presets only as a config")])  # noqa: E501
+
+    def config_poll(self, context):
+        bakemaster = context.scene.bakemaster
+        poll_success, message = bm_ots_utils.ui_bakehistory_poll(self,
+                                                                 bakemaster)
+        if not poll_success:
+            self.report({'ERROR'}, message)
+            return False
+        if bakemaster.bake_is_running:
+            self.report({'ERROR'}, "Another bake is running")
+            return False
+        return True
+
+    def execute(self, context):
+        from bpy import ops
+
+        self.report({'WARNING'}, "Not implemented")
+        ops.bakemaster.pipeline_config('EXEC_DEFAULT', action=self.action,
+                                       include=self.include)
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        if not self.config_poll(context):
+            return {'CANCELLED'}
+
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = False
+        layout.use_property_decorate = False
+        layout.prop(self, 'action')
+        layout.prop(self, 'include')
+
+
+class BM_OT_BakeHistory_Remove(Operator):
+    bl_idname = 'bakemaster.bakehistory_remove'
+    bl_label = "Remove"
+    bl_description = "Remove this bake from the history (its baked content will remain)"  # noqa: E501
+    bl_options = {'INTERNAL'}
+
+    index: IntProperty(default=-1)
+
+    def remove_poll(self, context):
+        bakemaster = context.scene.bakemaster
+        poll_success, message = bm_ots_utils.ui_bakehistory_poll(self,
+                                                                 bakemaster)
+        if not poll_success:
+            self.report({'ERROR'}, message)
+            return False
+        return True
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+        bm_ots_utils.bakehistory_remove(bakemaster, self.index)
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        if not self.remove_poll(context):
+            return {'CANCELLED'}
+
+        return self.execute(context)
+
+#####################################################
+
+class BM_OT_Table_of_Objects(Operator):
     bl_idname = 'bakemaster.table_of_objects'
     bl_label = ""
     bl_description = "Move the bake priority of object in the list up and down.\nWhen Name Matching is on, moving Containers bake priority is possible"
     bl_options = {'INTERNAL', 'UNDO'}
 
-    control: bpy.props.EnumProperty(
+    control: EnumProperty(
         items=[('UP', "Up", ""), ('DOWN', "Down", "")])
 
     def execute(self, context):
         scene = context.scene
-        global_active_index = scene.bm_props.global_active_index
+        active_index = scene.bm_props.active_index
 
         try:
-            scene.bm_table_of_objects[global_active_index]
+            scene.bm_table_of_objects[active_index]
         except IndexError:
             pass
         else:
-            item = scene.bm_table_of_objects[global_active_index]
-            if self.control == 'UP' and global_active_index > 0:
+            item = scene.bm_table_of_objects[active_index]
+            if self.control == 'UP' and active_index > 0:
                 # default move for regular objects
-                if scene.bm_props.global_use_name_matching is False:
-                    BM_Table_of_Objects_Move(scene, context, global_active_index, global_active_index - 1)
-                    scene.bm_props.global_active_index -= 1
+                if scene.bm_props.use_name_matching is False:
+                    BM_Table_of_Objects_Move(scene, context, active_index, active_index - 1)
+                    scene.bm_props.active_index -= 1
                 # move nm items
                 else:
                     to_move = []
@@ -63,7 +729,7 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                                 move_starter_index = index
                                 move_to_index = index
                                 break
-                        to_move.append(global_active_index)
+                        to_move.append(active_index)
                         if move_starter_index == -1:
                             return {'FINISHED'}
                         # moving each in to_move on the starter_index and index += 1 each move iteration
@@ -82,7 +748,7 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                                 if move_starter_index == -1:
                                     move_starter_index = index
                                     move_to_index = index
-                        to_move.append(global_active_index)
+                        to_move.append(active_index)
                         if move_starter_index == -1:
                             return {'FINISHED'}
                         # moving all items within the same local container 
@@ -106,7 +772,7 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                         if len_of_local_items < 1:
                             return {'FINISHED'}
                         else:
-                            BM_Table_of_Objects_Move(scene, context, global_active_index, move_starter_index)
+                            BM_Table_of_Objects_Move(scene, context, active_index, move_starter_index)
                     
                     # move detached
                     else:
@@ -123,19 +789,19 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                         if move_starter_index == -1:
                             return {'FINISHED'}
                         # moving detached on top of the previous uni_c or before the previous detached
-                        BM_Table_of_Objects_Move(scene, context, global_active_index, move_starter_index)
+                        BM_Table_of_Objects_Move(scene, context, active_index, move_starter_index)
 
                     # updating active index
                     if move_to_index != -1:
-                        scene.bm_props.global_active_index = move_to_index
+                        scene.bm_props.active_index = move_to_index
                     # updating nm master_indexes
                     BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)
 
-            elif self.control == 'DOWN' and global_active_index < len(scene.bm_table_of_objects) - 1:
+            elif self.control == 'DOWN' and active_index < len(scene.bm_table_of_objects) - 1:
                 # default move for regular objects
-                if scene.bm_props.global_use_name_matching is False:
-                    BM_Table_of_Objects_Move(scene, context, global_active_index, global_active_index + 1)
-                    scene.bm_props.global_active_index += 1
+                if scene.bm_props.use_name_matching is False:
+                    BM_Table_of_Objects_Move(scene, context, active_index, active_index + 1)
+                    scene.bm_props.active_index += 1
                 # move nm items
                 else:
                     to_move = []
@@ -160,14 +826,14 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                                 for object1 in scene.bm_table_of_objects:
                                     if object1.nm_item_uni_container_master_index == object.nm_master_index:
                                         len_of_locals += 1
-                                move_to_index = global_active_index + len_of_locals + 1 
+                                move_to_index = active_index + len_of_locals + 1 
                                 break
-                        to_move.append(global_active_index)
+                        to_move.append(active_index)
                         if move_starter_index == -1:
                             return {'FINISHED'}
                         # moving each in to_move on the starter_index and index -= 1 each move iteration
                         for index in sorted(to_move):
-                            BM_Table_of_Objects_Move(scene, context, global_active_index, move_starter_index + len_of_locals)
+                            BM_Table_of_Objects_Move(scene, context, active_index, move_starter_index + len_of_locals)
 
                     # moving local container (cant move out of its uni)
                     elif item.nm_is_local_container:
@@ -183,14 +849,14 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                                 for object1 in scene.bm_table_of_objects:
                                     if object1.nm_item_uni_container_master_index == object.nm_item_uni_container_master_index and object1.nm_item_local_container_master_index == object.nm_master_index:
                                         len_of_locals += 1
-                                move_to_index = global_active_index + len_of_locals + 1
+                                move_to_index = active_index + len_of_locals + 1
                                 break
-                        to_move.append(global_active_index)
+                        to_move.append(active_index)
                         if move_starter_index == -1:
                             return {'FINISHED'}
                         # moving all items within the same local container 
                         for index in sorted(to_move):
-                            BM_Table_of_Objects_Move(scene, context, global_active_index, move_starter_index + len_of_locals)
+                            BM_Table_of_Objects_Move(scene, context, active_index, move_starter_index + len_of_locals)
 
                     # move local item
                     elif item.nm_is_detached is False:
@@ -208,7 +874,7 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                         if len_of_locals < 1:
                             return {'FINISHED'}
                         else:
-                            BM_Table_of_Objects_Move(scene, context, global_active_index, move_starter_index)
+                            BM_Table_of_Objects_Move(scene, context, active_index, move_starter_index)
 
                     # move detached
                     else:
@@ -222,17 +888,17 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
                                 for object1 in scene.bm_table_of_objects:
                                     if object1.nm_item_uni_container_master_index == object.nm_master_index:
                                         len_of_locals += 1
-                                move_to_index = global_active_index + len_of_locals + 1
+                                move_to_index = active_index + len_of_locals + 1
                                 move_starter_index = index + len_of_locals
                                 break
                         if move_starter_index == -1:
                             return {'FINISHED'}
                         # moving detached on top of the previous uni_c or before the previous detached
-                        BM_Table_of_Objects_Move(scene, context, global_active_index, move_starter_index)
+                        BM_Table_of_Objects_Move(scene, context, active_index, move_starter_index)
 
                     # updating active index
                     if move_to_index != -1:
-                        scene.bm_props.global_active_index = move_to_index
+                        scene.bm_props.active_index = move_to_index
                     # updating nm master_indexes
                     BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)
         return {'FINISHED'}
@@ -240,7 +906,7 @@ class BM_OT_Table_of_Objects(bpy.types.Operator):
     def invoke(self, context, event):
         return self.execute(context)
 
-class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
+class BM_OT_Table_of_Objects_Add(Operator):
     bl_idname = 'bakemaster.table_of_objects_add'
     bl_label = ""
     bl_description = "Add selected mesh object(s) in the scene to the list below.\nWhen Name Matching is on, added object(s) will be automatically matched"
@@ -253,25 +919,25 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
         objects = []
         objects_data = []
         # get prefixes
-        lowpoly_prefix_raw = context.scene.bm_props.global_lowpoly_tag
-        highpoly_prefix_raw = context.scene.bm_props.global_highpoly_tag
-        cage_prefix_raw = context.scene.bm_props.global_cage_tag
-        decal_prefix_raw = context.scene.bm_props.global_decal_tag
+        lowpoly_prefix_raw = context.scene.bm_props.lowpoly_tag
+        highpoly_prefix_raw = context.scene.bm_props.highpoly_tag
+        cage_prefix_raw = context.scene.bm_props.cage_tag
+        decal_prefix_raw = context.scene.bm_props.decal_tag
         refresh_nm_config = False
 
         if context.object:
             for object in scene.bm_table_of_objects:
-                objects.append(object.global_object_name)
+                objects.append(object.object_name)
                 try:
-                    context.scene.objects[object.global_object_name]
+                    context.scene.objects[object.object_name]
                 except (KeyError, AttributeError, UnboundLocalError):
                     pass
                 else:
-                    object_pointer = context.scene.objects[object.global_object_name]
+                    object_pointer = context.scene.objects[object.object_name]
                     objects_data.append(object_pointer.data)
                 
         # default add
-        if scene.bm_props.global_use_name_matching is False:
+        if scene.bm_props.use_name_matching is False:
             if context.object:
                 for object in context.selected_objects:
                     if object.type != 'MESH':
@@ -280,15 +946,15 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
 
                     if object not in objects and object.data not in objects_data:
                         new_item = BM_Table_of_Objects_Add(scene, context)
-                        new_item.global_object_name = object.name
-                        scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+                        new_item.object_name = object.name
+                        scene.bm_props.active_index = len(scene.bm_table_of_objects) - 1
                     else:
                         exists = True
 
         # adding with name matching
         else:
             if len(scene.bm_table_of_objects) == 0:
-                scene.bm_props.global_use_name_matching = False
+                scene.bm_props.use_name_matching = False
                 refresh_nm_config = True
 
             if context.object:
@@ -309,7 +975,7 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                     new_objs.append(object.name)
                 for object in scene.bm_table_of_objects:
                     if object.nm_is_detached:
-                        new_objs.append(object.global_object_name)
+                        new_objs.append(object.object_name)
                 
                 # try match some
                 for object_name in new_objs:
@@ -317,9 +983,9 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                     root_name = BM_Table_of_Objects_NameMatching_GetNameChunks(object_name_chunked, 'ROOT', context)
                     match_found = False
                     for object in scene.bm_table_of_objects:
-                        if not any([object.nm_is_universal_container, object.nm_is_local_container, object.nm_is_detached]) and object.global_object_name != object_name:
+                        if not any([object.nm_is_universal_container, object.nm_is_local_container, object.nm_is_detached]) and object.object_name != object_name:
 
-                            pair_object_name_chunked = BM_Table_of_Objects_NameMatching_GenerateNameChunks(object.global_object_name)
+                            pair_object_name_chunked = BM_Table_of_Objects_NameMatching_GenerateNameChunks(object.object_name)
                             pair_root_name = BM_Table_of_Objects_NameMatching_GetNameChunks(pair_object_name_chunked, 'ROOT', context)
 
                             # check if found match
@@ -390,7 +1056,7 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                         if skip_add_container is False:
                             new_container = BM_Table_of_Objects_Add(scene, context)
 
-                            new_container.nm_container_name_old = BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, container_names[shell[3]])
+                            new_container.nm_container_name_old = Object_nm_container_name_GlobalUpdate_OnCreate(context, container_names[shell[3]])
                             new_container.nm_container_name = new_container.nm_container_name_old
                             new_container.nm_this_indent = 1
                             new_container.nm_is_local_container = True
@@ -398,11 +1064,11 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             setattr(new_container, container_props[shell[3]], True)
 
                             new_item = BM_Table_of_Objects_Add(scene, context)
-                            new_item.global_object_name = shell[0]
+                            new_item.object_name = shell[0]
                             new_item.nm_this_indent = 2
                             new_item.nm_is_expanded = True
                             # setattr(new_item, shell[4], True)
-                            # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
+                            # new_item.bake_batchname_preview = Object_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
                             # move item to the right place
                             BM_Table_of_Objects_Move(scene, context, len(scene.bm_table_of_objects) - 2, container_insert_index + 1)
                             BM_Table_of_Objects_Move(scene, context, len(scene.bm_table_of_objects) - 1, container_insert_index + 2)
@@ -416,11 +1082,11 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             if object.nm_item_uni_container_master_index == shell[1] and object.nm_item_local_container_master_index == shell[2]:
                                 insert_index = index
                         new_item = BM_Table_of_Objects_Add(scene, context)
-                        new_item.global_object_name = shell[0]
+                        new_item.object_name = shell[0]
                         new_item.nm_this_indent = 2
                         new_item.nm_is_expanded = True
                         # setattr(new_item, shell[4], True)
-                        # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
+                        # new_item.bake_batchname_preview = Object_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
                         # move item to the right place
                         BM_Table_of_Objects_Move(scene, context, len(scene.bm_table_of_objects) - 1, insert_index + 1)
                         # update master indexes
@@ -430,12 +1096,12 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                 # trash existing new_data to refresh it
                 to_remove = []
                 for index, object in enumerate(scene.bm_table_of_objects):
-                    if object.global_object_name in new_data:
+                    if object.object_name in new_data:
                         to_remove.append(index)
                 for index in sorted(to_remove, reverse=True):
                     BM_Table_of_Objects_Remove(scene, context, index)
                 # update table active index
-                scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+                scene.bm_props.active_index = len(scene.bm_table_of_objects) - 1
 
                 # get groups, roots, detached from construct
                 NameChunks = BM_Table_of_Objects_NameMatching_GenerateNameChunks
@@ -447,12 +1113,12 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                     universal_container = BM_Table_of_Objects_Add(scene, context)
 
                     # name is set to the root_name of the first object in the shell
-                    universal_container.nm_container_name_old = BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, CombineToRaw(roots[shell[0]][0]))
+                    universal_container.nm_container_name_old = Object_nm_container_name_GlobalUpdate_OnCreate(context, CombineToRaw(roots[shell[0]][0]))
                     universal_container.nm_container_name = universal_container.nm_container_name_old
                     universal_container.nm_this_indent = 0
                     universal_container.nm_is_universal_container = True
                     universal_container.nm_is_expanded = True
-                    # universal_container.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, universal_container.bake_batchname)
+                    # universal_container.bake_batchname_preview = Object_bake_batchname_ConstructPreview(context, universal_container.bake_batchname)
 
                     # objs[] : 0 - lowpolies, 1 - highpolies, 2 - cages
                     object_names = [[], [], []]
@@ -496,18 +1162,18 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             local_container.nm_is_local_container = True
                             local_container.nm_is_expanded = True
                             setattr(local_container, container_types_props[local_index], True)
-                            # local_container.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, local_container.bake_batchname)
+                            # local_container.bake_batchname_preview = Object_bake_batchname_ConstructPreview(context, local_container.bake_batchname)
 
                             for obj_index, object_name in enumerate(local_names):
                                 # do not add detached names
                                 if object_name in detached:
                                     continue
                                 new_item = BM_Table_of_Objects_Add(scene, context)
-                                new_item.global_object_name = object_name
+                                new_item.object_name = object_name
                                 new_item.nm_this_indent = 2
                                 new_item.nm_is_expanded = True
                                 # setattr(new_item, prefix_props[local_index], True)
-                                # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
+                                # new_item.bake_batchname_preview = Object_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
 
                     # auto configure decals, highpolies, and cages
                     universal_container.nm_uni_container_is_global = True
@@ -515,25 +1181,25 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                 # adding detached as regular items
                 for object_name in detached:
                     new_item = BM_Table_of_Objects_Add(scene, context)
-                    new_item.global_object_name = object_name
+                    new_item.object_name = object_name
                     new_item.nm_is_detached = True
                     new_item.nm_is_expanded = True
-                    # new_item.bake_batchname_preview = BM_ITEM_PROPS_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
+                    # new_item.bake_batchname_preview = Object_bake_batchname_ConstructPreview(context, new_item.bake_batchname)
 
                 # update master indexes
                 BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)
 
                 # update table active index
-                scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+                scene.bm_props.active_index = len(scene.bm_table_of_objects) - 1
 
                 # update uni containers names
                 for index, object in enumerate(context.scene.bm_table_of_objects):
                     if object.nm_is_universal_container:
-                        object.nm_container_name = BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, object.nm_container_name, index)
+                        object.nm_container_name = Object_nm_container_name_GlobalUpdate_OnCreate(context, object.nm_container_name, index)
 
             # refresh nm if was added on empty table
             if refresh_nm_config:
-                scene.bm_props.global_use_name_matching = True
+                scene.bm_props.use_name_matching = True
 
         # reports
         if exists:
@@ -545,7 +1211,7 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
 
         return {'FINISHED'}
 
-class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
+class BM_OT_Table_of_Objects_Remove(Operator):
     bl_idname = 'bakemaster.table_of_objects_remove'
     bl_label = ""
     bl_description = "Remove active object from the list below.\nWhen Name Matching is on, removing Container will remove all objects underneath it as well"
@@ -553,15 +1219,15 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
-        global_active_index = scene.bm_props.global_active_index
+        active_index = scene.bm_props.active_index
 
         if len(scene.bm_table_of_objects):
-            item = scene.bm_table_of_objects[global_active_index]
+            item = scene.bm_table_of_objects[active_index]
             # default removal
-            if scene.bm_props.global_use_name_matching is False or item.nm_is_detached is True:
-                BM_Table_of_Objects_Remove(scene, context, global_active_index)
-                if global_active_index != 0:
-                    scene.bm_props.global_active_index -= 1
+            if scene.bm_props.use_name_matching is False or item.nm_is_detached is True:
+                BM_Table_of_Objects_Remove(scene, context, active_index)
+                if active_index != 0:
+                    scene.bm_props.active_index -= 1
 
             else:
                 to_remove = []
@@ -569,7 +1235,7 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                 # removing local_c and its items
                 if item.nm_is_local_container:
                     len_of_local_items = 0
-                    to_remove.append(global_active_index)
+                    to_remove.append(active_index)
                     for index, object in enumerate(scene.bm_table_of_objects):
                         if object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and object.nm_item_local_container_master_index == item.nm_master_index:
                             to_remove.append(index)
@@ -589,7 +1255,7 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
 
                 # removing uni_c and its items
                 elif item.nm_is_universal_container:
-                    to_remove.append(global_active_index)
+                    to_remove.append(active_index)
                     for index, object in enumerate(scene.bm_table_of_objects):
                         if object.nm_item_uni_container_master_index == item.nm_master_index:
                             to_remove.append(index)
@@ -613,12 +1279,12 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                             uni_removed_index = index
                     # item is the only one in the local, detached its pairs and remove uni_c, local_cs, else just remove the item
                     if len_of_local > 1:
-                        BM_Table_of_Objects_Remove(scene, context, global_active_index)
+                        BM_Table_of_Objects_Remove(scene, context, active_index)
                     else:
                         # same removal as uni_c removal
                         # if remove local container, if only had one local container, remove the uni_container as well then
                         if local_removed_index != -1 and uni_removed_index != -1:
-                            to_remove.append(global_active_index)
+                            to_remove.append(active_index)
                             to_remove.append(local_removed_index)
                             # removing uni if there was only one local
                             for index, object in enumerate(scene.bm_table_of_objects):
@@ -634,12 +1300,12 @@ class BM_OT_Table_of_Objects_Remove(bpy.types.Operator):
                 # updating nm master_indexes
                 BM_Table_of_Objects_NameMatching_UpdateAllNMIndexes(context)
                 # active index update
-                if global_active_index >= len(scene.bm_table_of_objects):
-                    scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+                if active_index >= len(scene.bm_table_of_objects):
+                    scene.bm_props.active_index = len(scene.bm_table_of_objects) - 1
 
         return {'FINISHED'}
 
-class BM_OT_Table_of_Objects_Refresh(bpy.types.Operator):
+class BM_OT_Table_of_Objects_Refresh(Operator):
     bl_idname = 'bakemaster.table_of_objects_refresh'
     bl_label = ""
     bl_description = "Some objects cannot be found in the scene. Press the refresh button to remove them from the list"
@@ -658,24 +1324,24 @@ class BM_OT_Table_of_Objects_Refresh(bpy.types.Operator):
             else:
                 return True
 
-        for global_index, global_object in enumerate(scene.bm_table_of_objects):
+        for index, object in enumerate(scene.bm_table_of_objects):
             try:
-                scene.objects[global_object.global_object_name]
+                scene.objects[object.object_name]
             except (KeyError, AttributeError):
-                if scene.bm_props.global_use_name_matching is False or global_object.nm_is_detached is True:
-                    to_remove.append(global_index)
+                if scene.bm_props.use_name_matching is False or object.nm_is_detached is True:
+                    to_remove.append(index)
                 else:
-                    if global_object.nm_is_local_container or global_object.nm_is_universal_container:
+                    if object.nm_is_local_container or object.nm_is_universal_container:
                         continue
                     # refreshing local items
-                    item = global_object
+                    item = object
                     len_of_local = 0
                     len_of_local_items = 0
                     uni_removed_index = -1
                     local_removed_index = -1
                     for index, object in enumerate(scene.bm_table_of_objects):
                         # found item in the same local
-                        if object.nm_item_local_container_master_index == item.nm_item_local_container_master_index and object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and exists(object.global_object_name):
+                        if object.nm_item_local_container_master_index == item.nm_item_local_container_master_index and object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and exists(object.object_name):
                             len_of_local += 1
                         # found the container the item belongs to
                         if object.nm_is_local_container and object.nm_master_index == item.nm_item_local_container_master_index and object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index:
@@ -684,17 +1350,17 @@ class BM_OT_Table_of_Objects_Refresh(bpy.types.Operator):
                             uni_removed_index = index
                     # item is the only one in the local, remove uni_c, local_cs, else just remove the item
                     if len_of_local > 1:
-                        to_remove.append(global_index)
+                        to_remove.append(index)
                     else:
                         # same removal as uni_c removal
                         # if remove local container, if only had one local container, remove the uni_container as well then
                         if local_removed_index != -1 and uni_removed_index != -1:
-                            to_remove.append(global_index)
+                            to_remove.append(index)
                             to_remove.append(local_removed_index)
                             # removing uni if there was only one local
                             for index, object in enumerate(scene.bm_table_of_objects):
                                 # found local in the same uni
-                                if object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and object.nm_is_local_container is False and exists(object.global_object_name):
+                                if object.nm_item_uni_container_master_index == item.nm_item_uni_container_master_index and object.nm_is_local_container is False and exists(object.object_name):
                                     len_of_local_items += 1
                             if len_of_local_items == 0:
                                 to_remove.append(uni_removed_index)
@@ -707,11 +1373,11 @@ class BM_OT_Table_of_Objects_Refresh(bpy.types.Operator):
         for index in sorted(list(dict.fromkeys(to_remove)), reverse=True):
             BM_Table_of_Objects_Remove(scene, context, index)
         # active index update
-        if scene.bm_props.global_active_index >= len(scene.bm_table_of_objects):
-            scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+        if scene.bm_props.active_index >= len(scene.bm_table_of_objects):
+            scene.bm_props.active_index = len(scene.bm_table_of_objects) - 1
         return {'FINISHED'}
 
-class BM_OT_Table_of_Objects_Trash(bpy.types.Operator):
+class BM_OT_Table_of_Objects_Trash(Operator):
     bl_idname = 'bakemaster.table_of_objects_trash'
     bl_label = ""
     bl_description = "Remove all objects from the list (resets BakeMaster)"
@@ -725,18 +1391,18 @@ class BM_OT_Table_of_Objects_Trash(bpy.types.Operator):
             context.scene.bm_table_of_objects.remove(index)
         # trash texsets
         to_remove = []
-        for index, item in enumerate(context.scene.bm_props.global_texturesets_table):
+        for index, item in enumerate(context.scene.bm_props.texturesets_table):
             to_remove.append(index)
         for index in to_remove[::-1]:
-            context.scene.bm_props.global_texturesets_table.remove(index)
+            context.scene.bm_props.texturesets_table.remove(index)
 
-        context.scene.bm_props.global_active_index = 0
+        context.scene.bm_props.active_index = 0
         context.scene.bm_props.bake_available = True
         return {'FINISHED'}
 
 ###########################################################################
 
-class BM_OT_ITEM_Highpoly_Table_Add(bpy.types.Operator):
+class BM_OT_ITEM_Highpoly_Table_Add(Operator):
     bl_idname = 'bakemaster.item_highpoly_table_add'
     bl_label = ""
     bl_description = "Add new highpoly for the current object"
@@ -745,17 +1411,17 @@ class BM_OT_ITEM_Highpoly_Table_Add(bpy.types.Operator):
     def execute(self, context):
         object = BM_Object_Get(None, context)[0]
         new_item = object.hl_highpoly_table.add()
-        new_item.global_item_index = len(object.hl_highpoly_table)
-        new_item.global_holder_index = context.scene.bm_props.global_active_index
+        new_item.item_index = len(object.hl_highpoly_table)
+        new_item.holder_index = context.scene.bm_props.active_index
         # set chosen highpoly hl_is_highpoly to True on add
-        BM_ITEM_PROPS_hl_add_highpoly_Update(new_item, context)
-        BM_ITEM_PROPS_hl_highpoly_UpdateOnMoveOT(context)
+        Object_hl_add_highpoly_Update(new_item, context)
+        Object_hl_highpoly_UpdateOnMoveOT(context)
         object.hl_highpoly_table_active_index = len(object.hl_highpoly_table) - 1
 
         object.hl_is_lowpoly = True
         return {'FINISHED'}
 
-class BM_OT_ITEM_Highpoly_Table_Remove(bpy.types.Operator):
+class BM_OT_ITEM_Highpoly_Table_Remove(Operator):
     bl_idname = 'bakemaster.item_highpoly_table_remove'
     bl_label = ""
     bl_description = "Remove new highpoly from the current object"
@@ -764,15 +1430,15 @@ class BM_OT_ITEM_Highpoly_Table_Remove(bpy.types.Operator):
     def execute(self, context):
         object = BM_Object_Get(None, context)[0]
         if len(object.hl_highpoly_table):
-            # BM_ITEM_PROPS_hl_highpoly_RemoveNone(context, object)
+            # Object_hl_highpoly_RemoveNone(context, object)
 
             for item in object.hl_highpoly_table:
-                if item.global_item_index > object.hl_highpoly_table[object.hl_highpoly_table_active_index].global_item_index:
-                    item.global_item_index -= 1
+                if item.item_index > object.hl_highpoly_table[object.hl_highpoly_table_active_index].item_index:
+                    item.item_index -= 1
             # set hl_is_highpoly to False for chosen highpoly on remove
-            BM_ITEM_PROPS_hl_remove_highpoly_Update(object.hl_highpoly_table[object.hl_highpoly_table_active_index], context)
+            Object_hl_remove_highpoly_Update(object.hl_highpoly_table[object.hl_highpoly_table_active_index], context)
             object.hl_highpoly_table.remove(object.hl_highpoly_table_active_index)
-            BM_ITEM_PROPS_hl_highpoly_UpdateOnMoveOT(context)
+            Object_hl_highpoly_UpdateOnMoveOT(context)
             if object.hl_highpoly_table_active_index > 0:
                 object.hl_highpoly_table_active_index -= 1
 
@@ -781,7 +1447,7 @@ class BM_OT_ITEM_Highpoly_Table_Remove(bpy.types.Operator):
                 object.hl_is_lowpoly = False
         return {'FINISHED'}
 
-class BM_OT_MAP_Highpoly_Table_Add(bpy.types.Operator):
+class BM_OT_MAP_Highpoly_Table_Add(Operator):
     bl_idname = 'bakemaster.map_highpoly_table_add'
     bl_label = ""
     bl_description = "Add new highpoly for the current map"
@@ -791,17 +1457,17 @@ class BM_OT_MAP_Highpoly_Table_Add(bpy.types.Operator):
         object = BM_Object_Get(None, context)[0]
         map = BM_Map_Get(None, object)
         new_item = map.hl_highpoly_table.add()
-        new_item.global_item_index = len(map.hl_highpoly_table)
-        new_item.global_holder_index = context.scene.bm_props.global_active_index
+        new_item.item_index = len(map.hl_highpoly_table)
+        new_item.holder_index = context.scene.bm_props.active_index
         # set chosen highpoly hl_is_highpoly to True on add
-        BM_ITEM_PROPS_hl_add_highpoly_Update(new_item, context)
-        BM_ITEM_PROPS_hl_highpoly_UpdateOnMoveOT(context)
+        Object_hl_add_highpoly_Update(new_item, context)
+        Object_hl_highpoly_UpdateOnMoveOT(context)
         map.hl_highpoly_table_active_index = len(map.hl_highpoly_table) - 1
 
         object.hl_is_lowpoly = True
         return {'FINISHED'}
 
-class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
+class BM_OT_MAP_Highpoly_Table_Remove(Operator):
     bl_idname = 'bakemaster.map_highpoly_table_remove'
     bl_label = ""
     bl_description = "Remove highpoly from the current map"
@@ -811,15 +1477,15 @@ class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
         object = BM_Object_Get(None, context)[0]
         map = BM_Map_Get(None, object)
         if len(map.hl_highpoly_table):
-            # BM_ITEM_PROPS_hl_highpoly_RemoveNone(context, map)
+            # Object_hl_highpoly_RemoveNone(context, map)
 
             for item in map.hl_highpoly_table:
-                if item.global_item_index > map.hl_highpoly_table[map.hl_highpoly_table_active_index].global_item_index:
-                    item.global_item_index -= 1
+                if item.item_index > map.hl_highpoly_table[map.hl_highpoly_table_active_index].item_index:
+                    item.item_index -= 1
             # set hl_is_highpoly to False for chosen highpoly on remove
-            BM_ITEM_PROPS_hl_remove_highpoly_Update(map.hl_highpoly_table[map.hl_highpoly_table_active_index], context)
+            Object_hl_remove_highpoly_Update(map.hl_highpoly_table[map.hl_highpoly_table_active_index], context)
             map.hl_highpoly_table.remove(map.hl_highpoly_table_active_index)
-            BM_ITEM_PROPS_hl_highpoly_UpdateOnMoveOT(context)
+            Object_hl_highpoly_UpdateOnMoveOT(context)
             if map.hl_highpoly_table_active_index > 0:
                 map.hl_highpoly_table_active_index -= 1
 
@@ -828,13 +1494,13 @@ class BM_OT_MAP_Highpoly_Table_Remove(bpy.types.Operator):
 
             # count highpolies and set object.hl_is_lowpoly based of that
             len_of_highpolies = 0
-            for map1 in object.global_maps:
+            for map1 in object.maps:
                 len_of_highpolies += len(map1.hl_highpoly_table)
             if len_of_highpolies == 0:
                 object.hl_is_lowpoly = False
         return {'FINISHED'}
 
-class BM_OT_ITEM_MatGroups_Table_Refresh(bpy.types.Operator):
+class BM_OT_ITEM_MatGroups_Table_Refresh(Operator):
     bl_idname = 'bakemaster.item_matgroups_table_refresh'
     bl_label = ""
     bl_description = "Recreate Object's materials groups"
@@ -844,11 +1510,11 @@ class BM_OT_ITEM_MatGroups_Table_Refresh(bpy.types.Operator):
         object = BM_Object_Get(None, context)
         if not object[1]:
             return {'FINISHED'}
-        source_object = context.scene.objects[object[0].global_object_name]
-        BM_ITEM_PROPS_matgroups_Refresh(object[0], source_object)
+        source_object = context.scene.objects[object[0].object_name]
+        Object_matgroups_Refresh(object[0], source_object)
         return {'FINISHED'}
 
-class BM_OT_ITEM_MatGroups_Table_EqualizeGroups(bpy.types.Operator):
+class BM_OT_ITEM_MatGroups_Table_EqualizeGroups(Operator):
     bl_idname = 'bakemaster.item_matgroups_table_equalizegroups'
     bl_label = ""
     bl_description = "Make all materials sit in the same material group"
@@ -857,10 +1523,10 @@ class BM_OT_ITEM_MatGroups_Table_EqualizeGroups(bpy.types.Operator):
     def execute(self, context):
         object = BM_Object_Get(None, context)[0]
         for matgroup in object.matgroups_table_of_mats:
-            matgroup.global_group_index = 1
+            matgroup.group_index = 1
         return {'FINISHED'}
 
-class BM_OT_ITEM_MatGroups_Table_UnequalizeGroups(bpy.types.Operator):
+class BM_OT_ITEM_MatGroups_Table_UnequalizeGroups(Operator):
     bl_idname = 'bakemaster.item_matgroups_table_unequalizegroups'
     bl_label = ""
     bl_description = "Make all materials sit in different material groups"
@@ -869,10 +1535,10 @@ class BM_OT_ITEM_MatGroups_Table_UnequalizeGroups(bpy.types.Operator):
     def execute(self, context):
         object = BM_Object_Get(None, context)[0]
         for matgroup_index, matgroup in enumerate(object.matgroups_table_of_mats):
-            matgroup.global_group_index = matgroup_index + 1
+            matgroup.group_index = matgroup_index + 1
         return {'FINISHED'}
 
-class BM_OT_ITEM_ChannelPack_Table_Add(bpy.types.Operator):
+class BM_OT_ITEM_ChannelPack_Table_Add(Operator):
     bl_idname = 'bakemaster.item_channelpack_table_add'
     bl_label = ""
     bl_description = "Add new Map Channel Pack for the current object"
@@ -881,13 +1547,13 @@ class BM_OT_ITEM_ChannelPack_Table_Add(bpy.types.Operator):
     def execute(self, context):
         object = BM_Object_Get(None, context)[0]
         new_item = object.chnlp_channelpacking_table.add()
-        new_item.global_channelpack_index = len(object.chnlp_channelpacking_table)
-        new_item.global_channelpack_name = "ChannelPack{}".format(len(object.chnlp_channelpacking_table))
-        new_item.global_channelpack_object_index = context.scene.bm_props.global_active_index
+        new_item.channelpack_index = len(object.chnlp_channelpacking_table)
+        new_item.channelpack_name = "ChannelPack{}".format(len(object.chnlp_channelpacking_table))
+        new_item.channelpack_object_index = context.scene.bm_props.active_index
         object.chnlp_channelpacking_table_active_index = len(object.chnlp_channelpacking_table) - 1
         return {'FINISHED'}
 
-class BM_OT_ITEM_ChannelPack_Table_Remove(bpy.types.Operator):
+class BM_OT_ITEM_ChannelPack_Table_Remove(Operator):
     bl_idname = 'bakemaster.item_channelpack_table_remove'
     bl_label = ""
     bl_description = "Remove Map Channel Pack for the current object"
@@ -897,14 +1563,14 @@ class BM_OT_ITEM_ChannelPack_Table_Remove(bpy.types.Operator):
         object = BM_Object_Get(None, context)[0]
         if len(object.chnlp_channelpacking_table):
             for item in object.chnlp_channelpacking_table:
-                if item.global_channelpack_index > object.chnlp_channelpacking_table[object.chnlp_channelpacking_table_active_index].global_channelpack_index:
-                    item.global_channelpack_index -= 1
+                if item.channelpack_index > object.chnlp_channelpacking_table[object.chnlp_channelpacking_table_active_index].channelpack_index:
+                    item.channelpack_index -= 1
             object.chnlp_channelpacking_table.remove(object.chnlp_channelpacking_table_active_index)
             if object.chnlp_channelpacking_table_active_index > 0:
                 object.chnlp_channelpacking_table_active_index -= 1
         return {'FINISHED'}
 
-class BM_OT_ITEM_ChannelPack_Table_Trash(bpy.types.Operator):
+class BM_OT_ITEM_ChannelPack_Table_Trash(Operator):
     bl_idname = 'bakemaster.item_channelpack_table_trash'
     bl_label = ""
     bl_description = "Remove all Map Channel Packs"
@@ -920,7 +1586,7 @@ class BM_OT_ITEM_ChannelPack_Table_Trash(bpy.types.Operator):
         object.chnlp_channelpacking_table_active_index = 0
         return {'FINISHED'}
 
-class BM_OT_SCENE_TextureSets_Table_Add(bpy.types.Operator):
+class BM_OT_SCENE_TextureSets_Table_Add(Operator):
     bl_idname = 'bakemaster.scene_texturesets_table_add'
     bl_label = ""
     bl_description = "Add new Texture Set.\nTexture Set is a set of objects that share the same image texture file for each map"
@@ -928,13 +1594,13 @@ class BM_OT_SCENE_TextureSets_Table_Add(bpy.types.Operator):
 
     def execute(self, context):
         bm_props = context.scene.bm_props
-        new_item = bm_props.global_texturesets_table.add()
-        new_item.global_textureset_index = len(bm_props.global_texturesets_table)
-        new_item.global_textureset_name = "TextureSet{}".format(len(bm_props.global_texturesets_table))
-        bm_props.global_texturesets_active_index = len(bm_props.global_texturesets_table) - 1
+        new_item = bm_props.texturesets_table.add()
+        new_item.textureset_index = len(bm_props.texturesets_table)
+        new_item.textureset_name = "TextureSet{}".format(len(bm_props.texturesets_table))
+        bm_props.texturesets_active_index = len(bm_props.texturesets_table) - 1
         return {'FINISHED'}
 
-class BM_OT_SCENE_TextureSets_Table_Remove(bpy.types.Operator):
+class BM_OT_SCENE_TextureSets_Table_Remove(Operator):
     bl_idname = 'bakemaster.scene_texturesets_table_remove'
     bl_label = ""
     bl_description = "Remove Texture Set"
@@ -942,23 +1608,23 @@ class BM_OT_SCENE_TextureSets_Table_Remove(bpy.types.Operator):
 
     def execute(self, context):
         bm_props = context.scene.bm_props
-        if len(bm_props.global_texturesets_table):
-            for item in bm_props.global_texturesets_table:
-                if item.global_textureset_index > bm_props.global_texturesets_table[bm_props.global_texturesets_active_index].global_textureset_index:
-                    item.global_textureset_index -= 1
+        if len(bm_props.texturesets_table):
+            for item in bm_props.texturesets_table:
+                if item.textureset_index > bm_props.texturesets_table[bm_props.texturesets_active_index].global_textureset_index:
+                    item.textureset_index -= 1
                     
-            texset = bm_props.global_texturesets_table[bm_props.global_texturesets_active_index]
-            table_of_objs = texset.global_textureset_table_of_objects
+            texset = bm_props.texturesets_table[bm_props.texturesets_active_index]
+            table_of_objs = texset.textureset_table_of_objects
             for item1 in table_of_objs:
-                context.scene.bm_table_of_objects[item1.global_source_object_index].global_is_included_in_texset = False
+                context.scene.bm_table_of_objects[item1.source_object_index].is_included_in_texset = False
 
-            bm_props.global_texturesets_table.remove(bm_props.global_texturesets_active_index)
-            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context)
-            if bm_props.global_texturesets_active_index > 0:
-                bm_props.global_texturesets_active_index -= 1
+            bm_props.texturesets_table.remove(bm_props.texturesets_active_index)
+            TexSet_Object_name_UpdateOnMoveOT(context)
+            if bm_props.texturesets_active_index > 0:
+                bm_props.texturesets_active_index -= 1
         return {'FINISHED'}
 
-class BM_OT_SCENE_TextureSets_Table_Trash(bpy.types.Operator):
+class BM_OT_SCENE_TextureSets_Table_Trash(Operator):
     bl_idname = 'bakemaster.scene_texturesets_table_trash'
     bl_label = ""
     bl_description = "Remove all Texture Sets"
@@ -967,19 +1633,19 @@ class BM_OT_SCENE_TextureSets_Table_Trash(bpy.types.Operator):
     def execute(self, context):
         bm_props = context.scene.bm_props
         to_remove = []
-        for index, item in enumerate(bm_props.global_texturesets_table):
+        for index, item in enumerate(bm_props.texturesets_table):
 
-            table_of_objs = item.global_textureset_table_of_objects
+            table_of_objs = item.textureset_table_of_objects
             for item1 in table_of_objs:
-                context.scene.bm_table_of_objects[item1.global_source_object_index].global_is_included_in_texset = False
+                context.scene.bm_table_of_objects[item1.source_object_index].is_included_in_texset = False
 
             to_remove.append(index)
         for index in to_remove[::-1]:
-            bm_props.global_texturesets_table.remove(index)
-        bm_props.global_texturesets_active_index = 0
+            bm_props.texturesets_table.remove(index)
+        bm_props.texturesets_active_index = 0
         return {'FINISHED'}
 
-class BM_OT_SCENE_TextureSets_Objects_Table_Add(bpy.types.Operator):
+class BM_OT_SCENE_TextureSets_Objects_Table_Add(Operator):
     bl_idname = 'bakemaster.scene_texturesets_objects_table_add'
     bl_label = ""
     bl_description = "Add new Object to the current Texture Set"
@@ -987,26 +1653,26 @@ class BM_OT_SCENE_TextureSets_Objects_Table_Add(bpy.types.Operator):
 
     def execute(self, context):
         bm_props = context.scene.bm_props
-        table = bm_props.global_texturesets_table[bm_props.global_texturesets_active_index].global_textureset_table_of_objects
+        table = bm_props.texturesets_table[bm_props.texturesets_active_index].textureset_table_of_objects
 
         new_item = table.add()
-        new_item.global_object_index = len(table)
-        new_item.global_object_name_old = new_item.global_object_name
-        new_item.global_object_name_include = new_item.global_object_name
+        new_item.object_index = len(table)
+        new_item.object_name_old = new_item.object_name
+        new_item.object_name_include = new_item.object_name
         for index, object in enumerate(context.scene.bm_table_of_objects):
-            if context.scene.bm_props.global_use_name_matching and object.nm_container_name == new_item.global_object_name:
-                new_item.global_source_object_index = index
+            if context.scene.bm_props.use_name_matching and object.nm_container_name == new_item.object_name:
+                new_item.source_object_index = index
                 break
-            elif object.global_object_name == new_item.global_object_name:
-                new_item.global_source_object_index = index
+            elif object.object_name == new_item.object_name:
+                new_item.source_object_index = index
                 break
-        context.scene.bm_table_of_objects[new_item.global_source_object_index].global_is_included_in_texset = True
-        BM_TEXSET_OBJECT_PROPS_global_object_name_RecreateSubitems(context, new_item)
-        BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context)
-        bm_props.global_texturesets_table[bm_props.global_texturesets_active_index].global_textureset_table_of_objects_active_index = len(table) - 1
+        context.scene.bm_table_of_objects[new_item.source_object_index].is_included_in_texset = True
+        TexSet_Object_name_RecreateSubitems(context, new_item)
+        TexSet_Object_name_UpdateOnMoveOT(context)
+        bm_props.texturesets_table[bm_props.texturesets_active_index].textureset_table_of_objects_active_index = len(table) - 1
         return {'FINISHED'}
 
-class BM_OT_SCENE_TextureSets_Objects_Table_Remove(bpy.types.Operator):
+class BM_OT_SCENE_TextureSets_Objects_Table_Remove(Operator):
     bl_idname = 'bakemaster.scene_texturesets_objects_table_remove'
     bl_label = ""
     bl_description = "Remove Texture Set Object"
@@ -1014,23 +1680,23 @@ class BM_OT_SCENE_TextureSets_Objects_Table_Remove(bpy.types.Operator):
 
     def execute(self, context):
         bm_props = context.scene.bm_props
-        active_texset = bm_props.global_texturesets_table[bm_props.global_texturesets_active_index]
-        objects = active_texset.global_textureset_table_of_objects
+        active_texset = bm_props.texturesets_table[bm_props.texturesets_active_index]
+        objects = active_texset.textureset_table_of_objects
         if len(objects):
             for item in objects:
-                if item.global_object_index > objects[active_texset.global_textureset_table_of_objects_active_index].global_object_index:
-                    item.global_object_index -= 1
+                if item.object_index > objects[active_texset.textureset_table_of_objects_active_index].object_index:
+                    item.object_index -= 1
 
-            item = active_texset.global_textureset_table_of_objects[active_texset.global_textureset_table_of_objects_active_index]
-            context.scene.bm_table_of_objects[item.global_source_object_index].global_is_included_in_texset = False
+            item = active_texset.textureset_table_of_objects[active_texset.textureset_table_of_objects_active_index]
+            context.scene.bm_table_of_objects[item.source_object_index].is_included_in_texset = False
 
-            objects.remove(active_texset.global_textureset_table_of_objects_active_index)
-            BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOnMoveOT(context)
-            if active_texset.global_textureset_table_of_objects_active_index > 0:
-                active_texset.global_textureset_table_of_objects_active_index -= 1
+            objects.remove(active_texset.textureset_table_of_objects_active_index)
+            TexSet_Object_name_UpdateOnMoveOT(context)
+            if active_texset.textureset_table_of_objects_active_index > 0:
+                active_texset.textureset_table_of_objects_active_index -= 1
         return {'FINISHED'}
 
-class BM_OT_SCENE_TextureSets_Objects_Table_Trash(bpy.types.Operator):
+class BM_OT_SCENE_TextureSets_Objects_Table_Trash(Operator):
     bl_idname = 'bakemaster.scene_texturesets_objects_table_trash'
     bl_label = ""
     bl_description = "Remove all Texture Set Objects"
@@ -1038,18 +1704,18 @@ class BM_OT_SCENE_TextureSets_Objects_Table_Trash(bpy.types.Operator):
 
     def execute(self, context):
         bm_props = context.scene.bm_props
-        table = bm_props.global_texturesets_table[bm_props.global_texturesets_active_index].global_textureset_table_of_objects
+        table = bm_props.texturesets_table[bm_props.texturesets_active_index].textureset_table_of_objects
         to_remove = []
         for index, item in enumerate(table):
-            context.scene.bm_table_of_objects[item.global_source_object_index].global_is_included_in_texset = False
+            context.scene.bm_table_of_objects[item.source_object_index].is_included_in_texset = False
 
             to_remove.append(index)
         for index in to_remove[::-1]:
             table.remove(index)
-        bm_props.global_texturesets_active_index = 0
+        bm_props.texturesets_active_index = 0
         return {'FINISHED'}
 
-class BM_OT_SCENE_TextureSets_Objects_Table_InvertSubItems(bpy.types.Operator):
+class BM_OT_SCENE_TextureSets_Objects_Table_InvertSubItems(Operator):
     bl_idname = 'bakemaster.scene_texturesets_objects_table_invertsubitems'
     bl_label = ""
     bl_description = "Invert selection of Container's Objects"
@@ -1057,13 +1723,13 @@ class BM_OT_SCENE_TextureSets_Objects_Table_InvertSubItems(bpy.types.Operator):
 
     def execute(self, context):
         bm_props = context.scene.bm_props
-        texset = bm_props.global_texturesets_table[bm_props.global_texturesets_active_index]
-        table = texset.global_textureset_table_of_objects[texset.global_textureset_table_of_objects_active_index].global_object_name_subitems
+        texset = bm_props.texturesets_table[bm_props.texturesets_active_index]
+        table = texset.textureset_table_of_objects[texset.textureset_table_of_objects_active_index].object_name_subitems
         for subitem in table:
-            subitem.global_object_include_in_texset = False if subitem.global_object_include_in_texset else True
+            subitem.object_include_in_texset = False if subitem.object_include_in_texset else True
         return {'FINISHED'}
 
-class BM_OT_ITEM_BatchNaming_Preview(bpy.types.Operator):
+class BM_OT_ITEM_BatchNaming_Preview(Operator):
     bl_idname = 'bakemaster.item_batchnaming_preview'
     bl_label = "Preview Batch Name"
     bl_description = "Preview how the configured batch naming convention will look in the output image filename.\n(Demo, values for each keyword might be different for each baked map's image file)"
@@ -1071,48 +1737,48 @@ class BM_OT_ITEM_BatchNaming_Preview(bpy.types.Operator):
     
     def execute(self, context):
         object = BM_Object_Get(None, context)[0]
-        preview = BM_ITEM_PROPS_bake_batchname_GetPreview(object, context)
+        preview = Object_bake_batchname_GetPreview(object, context)
         self.report({'INFO'}, preview)
         return {'FINISHED'}
 
-class BM_OT_ITEM_Maps(bpy.types.Operator):
+class BM_OT_ITEM_Maps(Operator):
     bl_idname = 'bakemaster.item_maps_table'
     bl_label = ""
     bl_description = "Add/Remove map passes from the list"
     bl_options = {'INTERNAL', 'UNDO'}
 
-    control : bpy.props.EnumProperty(
+    control : EnumProperty(
         items = [('ADD', "Add", ""), ('REMOVE', "Remove", ""), ('TRASH', "Trash", "")])
 
     def execute(self, context):
         object = BM_Object_Get(None, context)[0]
-        global_active_index = object.global_maps_active_index
+        active_index = object.maps_active_index
 
         try:
-            object.global_maps[global_active_index]
+            object.maps[active_index]
         except IndexError:
             pass
         else:
             if self.control == 'REMOVE' or self.control == 'TRASH':
-                BM_MAP_PROPS_MapPreview_Unset(None, context)
+                Map_MapPreview_Unset(None, context)
 
             if self.control == 'REMOVE':
                 # update maps indexes
-                for map in object.global_maps:
-                    if map.global_map_index > object.global_maps[global_active_index].global_map_index:
-                        map.global_map_index -= 1
+                for map in object.maps:
+                    if map.map_index > object.maps[active_index].global_map_index:
+                        map.map_index -= 1
 
                 # trash chnlp if removing last map
-                if len(object.global_maps) == 1:
+                if len(object.maps) == 1:
                     to_remove = []
                     for index, _ in enumerate(object.chnlp_channelpacking_table):
                         to_remove.append(index)
                     for index in sorted(to_remove, reverse=True):
                         object.chnlp_channelpacking_table.remove(index)
 
-                BM_Table_of_Maps_Remove(object.global_maps, context, global_active_index)
-                if object.global_maps_active_index != 0:
-                    object.global_maps_active_index -= 1
+                BM_Table_of_Maps_Remove(object.maps, context, active_index)
+                if object.maps_active_index != 0:
+                    object.maps_active_index -= 1
                 
             elif self.control == 'TRASH':
                 # trash chnlp first
@@ -1124,26 +1790,26 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
 
                 # trash maps
                 to_remove = []
-                for index, _ in enumerate(object.global_maps):
+                for index, _ in enumerate(object.maps):
                     to_remove.append(index)
                 for index in sorted(to_remove, reverse=True):
-                    BM_Table_of_Maps_Remove(object.global_maps, context, index)
+                    BM_Table_of_Maps_Remove(object.maps, context, index)
 
-                object.global_maps_active_index = 0
+                object.maps_active_index = 0
 
         if self.control == 'ADD':
-            new_pass = object.global_maps.add()
-            new_pass.global_map_type = 'ALBEDO'
-            new_pass.global_map_index = len(object.global_maps)
-            new_pass.global_map_object_index = context.scene.bm_props.global_active_index
-            object.global_maps_active_index = len(object.global_maps) - 1
+            new_pass = object.maps.add()
+            new_pass.map_type = 'ALBEDO'
+            new_pass.map_index = len(object.maps)
+            new_pass.map_object_index = context.scene.bm_props.active_index
+            object.maps_active_index = len(object.maps) - 1
 
         return {'FINISHED'}
     
     def invoke(self, context, event):
         return self.execute(context)
 
-class BM_OT_ApplyLastEditedProp_SelectAll(bpy.types.Operator):
+class BM_OT_ApplyLastEditedProp_SelectAll(Operator):
     bl_label = "Select All"
     bl_idname = "bakemaster.apply_proprety_selectall"
     bl_description = "Select all Items"
@@ -1152,21 +1818,21 @@ class BM_OT_ApplyLastEditedProp_SelectAll(bpy.types.Operator):
     def execute(self, context):
         bm_props = context.scene.bm_props
         object = BM_Object_Get(None, context)[0]
-        prop_is_map = context.scene.bm_props.global_last_edited_prop_is_map
+        prop_is_map = context.scene.bm_props.last_edited_prop_is_map
         
         # invert selection of maps
-        if prop_is_map and bm_props.global_alep_affect_objects is False and len(object.global_maps):
-            for map_item in bm_props.global_alep_maps:
+        if prop_is_map and bm_props.alep_affect_objects is False and len(object.maps):
+            for map_item in bm_props.alep_maps:
                 map_item.use_affect = True
             
         # invert selection of objects
-        if (prop_is_map and bm_props.global_alep_affect_objects) or prop_is_map is False:
-            for object_item in bm_props.global_alep_objects:
+        if (prop_is_map and bm_props.alep_affect_objects) or prop_is_map is False:
+            for object_item in bm_props.alep_objects:
                 object_item.use_affect = True
 
         return {'FINISHED'}
 
-class BM_OT_ApplyLastEditedProp_InvertSelection(bpy.types.Operator):
+class BM_OT_ApplyLastEditedProp_InvertSelection(Operator):
     bl_label = "Invert"
     bl_idname = "bakemaster.apply_proprety_invert"
     bl_description = "Invert selection of Items"
@@ -1175,21 +1841,21 @@ class BM_OT_ApplyLastEditedProp_InvertSelection(bpy.types.Operator):
     def execute(self, context):
         bm_props = context.scene.bm_props
         object = BM_Object_Get(None, context)[0]
-        prop_is_map = context.scene.bm_props.global_last_edited_prop_is_map
+        prop_is_map = context.scene.bm_props.last_edited_prop_is_map
         
         # invert selection of maps
-        if prop_is_map and bm_props.global_alep_affect_objects is False and len(object.global_maps):
-            for map_item in bm_props.global_alep_maps:
+        if prop_is_map and bm_props.alep_affect_objects is False and len(object.maps):
+            for map_item in bm_props.alep_maps:
                 map_item.use_affect = False if map_item.use_affect else True
             
         # invert selection of objects
-        if (prop_is_map and bm_props.global_alep_affect_objects) or prop_is_map is False:
-            for object_item in bm_props.global_alep_objects:
+        if (prop_is_map and bm_props.alep_affect_objects) or prop_is_map is False:
+            for object_item in bm_props.alep_objects:
                 object_item.use_affect = False if object_item.use_affect else True
 
         return {'FINISHED'}
 
-class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
+class BM_OT_ApplyLastEditedProp(Operator):
     bl_label = "Apply Lastly Edited Property"
     bl_idname = "bakemaster.apply_proprety"
     bl_description = "Select maps or objects to apply value of lastly edited property for"
@@ -1198,10 +1864,10 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
     def execute(self, context):
         bm_props = context.scene.bm_props
 
-        prop = context.scene.bm_props.global_last_edited_prop
-        prop_value = context.scene.bm_props.global_last_edited_prop_value
-        prop_type = context.scene.bm_props.global_last_edited_prop_type
-        prop_is_map = context.scene.bm_props.global_last_edited_prop_is_map
+        prop = context.scene.bm_props.last_edited_prop
+        prop_value = context.scene.bm_props.last_edited_prop_value
+        prop_type = context.scene.bm_props.last_edited_prop_type
+        prop_is_map = context.scene.bm_props.last_edited_prop_is_map
 
 
         if prop_type == "int":
@@ -1220,46 +1886,48 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
 
         object = BM_Object_Get(None, context)[0]
 
+        was_error = False
         # apply to maps
         if prop_is_map:
             # apply to object's maps
-            if bm_props.global_alep_affect_objects is False:
-                for index, map in enumerate(object.global_maps):
-                    if bm_props.global_alep_maps[index].use_affect is False:
+            if bm_props.alep_affect_objects is False:
+                for index, map in enumerate(object.maps):
+                    if bm_props.alep_maps[index].use_affect is False:
                         continue
                     try:
                         setattr(map, prop, prop_value_real)
                     except TypeError:
                         self.report({'ERROR'}, "Cannot apply property, aborting")
-                        return {'FINISHED'}
+                        print("BakeMaster Error: Cannot apply property: %s, skipping" % prop)
+                        was_error = True
 
             # apply to all chosen object's maps
             else:
                 for object1 in context.scene.bm_table_of_objects:
                     if object1.nm_is_universal_container:
-                        items = [item for item in bm_props.global_alep_objects if item.object_name == object1.nm_container_name]
+                        items = [item for item in bm_props.alep_objects if item.object_name == object1.nm_container_name]
                     else:
-                        items = [item for item in bm_props.global_alep_objects if item.object_name == object1.global_object_name]
+                        items = [item for item in bm_props.alep_objects if item.object_name == object1.object_name]
                     if len(items) == 0:
                         continue
                     if items[0].use_affect is False:
                         continue
 
-                    for index, map in enumerate(object1.global_maps):
+                    for index, map in enumerate(object1.maps):
                         try:
                             setattr(map, prop, prop_value_real)
                         except TypeError:
                             self.report({'ERROR'}, "Cannot apply property, aborting")
-                            return {'FINISHED'}
+                            print("BakeMaster Error: Cannot apply property: %s, skipping" % prop)
+                            was_error = True
 
         # apply to selected objects
         else:
-            was_error = False
             for object1 in context.scene.bm_table_of_objects:
                 if object1.nm_is_universal_container:
-                    items = [item for item in bm_props.global_alep_objects if item.object_name == object1.nm_container_name + " Container"]
+                    items = [item for item in bm_props.alep_objects if item.object_name == object1.nm_container_name + " Container"]
                 else:
-                    items = [item for item in bm_props.global_alep_objects if item.object_name == object1.global_object_name]
+                    items = [item for item in bm_props.alep_objects if item.object_name == object1.object_name]
                 if len(items) == 0:
                     continue
                 if items[0].use_affect is False:
@@ -1278,6 +1946,7 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
                         try:
                             setattr(object2, prop, prop_value_real)
                         except TypeError:
+                            self.report({'ERROR'}, "Cannot apply property, aborting")
                             print("BakeMaster Error: Cannot apply property: %s, skipping" % prop)
                             was_error = True
 
@@ -1293,8 +1962,8 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        prop_name = context.scene.bm_props.global_last_edited_prop_name
-        prop_is_map = context.scene.bm_props.global_last_edited_prop_is_map
+        prop_name = context.scene.bm_props.last_edited_prop_name
+        prop_is_map = context.scene.bm_props.last_edited_prop_is_map
 
         object = BM_Object_Get(None, context)[0]
 
@@ -1303,29 +1972,29 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
         column.label(text=prop_name)
 
         if prop_is_map:
-            layout.prop(bm_props, "global_alep_affect_objects")
+            layout.prop(bm_props, "alep_affect_objects")
 
         items_box = layout.box()
         items_box.use_property_split = True
         items_box.use_property_decorate = False
         if prop_is_map:
-            if bm_props.global_alep_affect_objects is False and len(object.global_maps):
+            if bm_props.alep_affect_objects is False and len(object.maps):
 
                 table = items_box.column().row()
-                rows = BM_template_list_get_rows(bm_props.global_alep_maps, 1, 1, 5, True)
-                table.template_list('BM_ALEP_UL_Maps_Item', "", bm_props, 'global_alep_maps', bm_props, 'global_alep_maps_active_index', rows=rows)
+                rows = BM_template_list_get_rows(bm_props.alep_maps, 1, 1, 5, True)
+                table.template_list('BM_ALEP_UL_Maps_Item', "", bm_props, 'alep_maps', bm_props, 'alep_maps_active_index', rows=rows)
                 column = table.column(align=True)
                 column.operator(BM_OT_ApplyLastEditedProp_SelectAll.bl_idname, text="", icon='WORLD')
                 column.operator(BM_OT_ApplyLastEditedProp_InvertSelection.bl_idname, text="", icon='CHECKBOX_HLT')
 
-            elif len(object.global_maps) == 0:
+            elif len(object.maps) == 0:
                 items_box.label(text="Object has no maps")
 
-        if (prop_is_map and bm_props.global_alep_affect_objects) or prop_is_map is False:
+        if (prop_is_map and bm_props.alep_affect_objects) or prop_is_map is False:
 
             table = items_box.column().row()
-            rows = BM_template_list_get_rows(bm_props.global_alep_objects, 1, 1, 5, True)
-            table.template_list('BM_ALEP_UL_Objects_Item', "", bm_props, 'global_alep_objects', bm_props, 'global_alep_objects_active_index', rows=rows)
+            rows = BM_template_list_get_rows(bm_props.alep_objects, 1, 1, 5, True)
+            table.template_list('BM_ALEP_UL_Objects_Item', "", bm_props, 'alep_objects', bm_props, 'alep_objects_active_index', rows=rows)
             column = table.column(align=True)
             column.operator(BM_OT_ApplyLastEditedProp_SelectAll.bl_idname, text="", icon='WORLD')
             column.operator(BM_OT_ApplyLastEditedProp_InvertSelection.bl_idname, text="", icon='CHECKBOX_HLT')
@@ -1333,25 +2002,25 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
 
     def invoke(self, context, event):
         bm_props = context.scene.bm_props
-        prop = context.scene.bm_props.global_last_edited_prop
-        prop_name = context.scene.bm_props.global_last_edited_prop_name
-        prop_value = context.scene.bm_props.global_last_edited_prop_value
-        prop_is_map = context.scene.bm_props.global_last_edited_prop_is_map
+        prop = context.scene.bm_props.last_edited_prop
+        prop_name = context.scene.bm_props.last_edited_prop_name
+        prop_value = context.scene.bm_props.last_edited_prop_value
+        prop_is_map = context.scene.bm_props.last_edited_prop_is_map
 
         # trash all maps and objects items
-        bm_props.global_alep_maps_active_index = 0
+        bm_props.alep_maps_active_index = 0
         to_remove = []
-        for index, _ in enumerate(bm_props.global_alep_maps):
+        for index, _ in enumerate(bm_props.alep_maps):
             to_remove.append(index)
         for index in sorted(to_remove, reverse=True):
-            bm_props.global_alep_maps.remove(index)
+            bm_props.alep_maps.remove(index)
 
-        bm_props.global_alep_objects_active_index = 0
+        bm_props.alep_objects_active_index = 0
         to_remove = []
-        for index, _ in enumerate(bm_props.global_alep_objects):
+        for index, _ in enumerate(bm_props.alep_objects):
             to_remove.append(index)
         for index in sorted(to_remove, reverse=True):
-            bm_props.global_alep_objects.remove(index)
+            bm_props.alep_objects.remove(index)
 
         # construct maps and objects items
         maps_names = {
@@ -1395,38 +2064,38 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
         }                  
         
         object = BM_Object_Get(None, context)[0]
-        for map in object.global_maps:
-            new_map = bm_props.global_alep_maps.add()
-            new_map.map_name = "{} {}".format(map.global_map_index, maps_names[map.global_map_type])
+        for map in object.maps:
+            new_map = bm_props.alep_maps.add()
+            new_map.map_name = "{} {}".format(map.map_index, maps_names[map.map_type])
 
-        global_uni_c_master_index = -1
+        uni_c_master_index = -1
         for object1 in context.scene.bm_table_of_objects:
             add_object = False
-            if context.scene.bm_props.global_use_name_matching:
+            if context.scene.bm_props.use_name_matching:
                 if object1.nm_is_universal_container and object1.nm_uni_container_is_global is False:
-                    global_uni_c_master_index = -1
+                    uni_c_master_index = -1
                 if object1.nm_is_detached:
                     add_object = True
                 elif object1.nm_is_universal_container and object1.nm_uni_container_is_global:
                     add_object = True
-                    global_uni_c_master_index = object1.nm_master_index
+                    uni_c_master_index = object1.nm_master_index
                 elif not any([object1.hl_is_highpoly, object1.hl_is_cage, object1.nm_is_local_container]) and object1.nm_item_uni_container_master_index != -1:
                     add_object = True
             elif not any([object1.hl_is_highpoly, object1.hl_is_cage]):
                 add_object = True
             
             if add_object:
-                new_object = bm_props.global_alep_objects.add()
+                new_object = bm_props.alep_objects.add()
                 if object1.nm_is_universal_container:
                     new_object_name = object1.nm_container_name + " Container"
                 else:
-                    new_object_name = object1.global_object_name
+                    new_object_name = object1.object_name
                 new_object.object_name = new_object_name
 
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
-class BM_OT_CreateArtificialUniContainer_DeselectAll(bpy.types.Operator):
+class BM_OT_CreateArtificialUniContainer_DeselectAll(Operator):
     bl_label = "Deselect All"
     bl_idname = "bakemaster.artificial_container_deselect_all"
     bl_description = "Deselect all chosen objects"
@@ -1439,12 +2108,12 @@ class BM_OT_CreateArtificialUniContainer_DeselectAll(bpy.types.Operator):
             'is_highpoly' : False,
             'is_cage' : False,
         }
-        for object_item in bm_props.global_cauc_objects:
+        for object_item in bm_props.cauc_objects:
             for key in data:
                 setattr(object_item, key, data[key])
         return {'FINISHED'}
 
-class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
+class BM_OT_CreateArtificialUniContainer(Operator):
     bl_label = "Create Artificial Container"
     bl_idname = "bakemaster.artificial_container"
     bl_description = "Group objects into a Bake Job Container, where all settings can be set at once for all"
@@ -1454,7 +2123,7 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
         bm_props = context.scene.bm_props
         scene = context.scene
 
-        if bm_props.global_use_name_matching is False:
+        if bm_props.use_name_matching is False:
             self.report({'WARNING'}, "Turn on Name Matching to create artificial container")
             return {'FINISHED'}
 
@@ -1463,7 +2132,7 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
         highpolies = []
         cages = []
         has_any_selected = False
-        for object_item in bm_props.global_cauc_objects:
+        for object_item in bm_props.cauc_objects:
             if object_item.use_include:
                 lowpolies.append(object_item.object_name)
                 has_any_selected = True
@@ -1482,7 +2151,7 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
         all_chosen_names = lowpolies + highpolies + cages
         to_remove = []
         for index, object in enumerate(context.scene.bm_table_of_objects):
-            if object.nm_is_detached and object.global_object_name in all_chosen_names:
+            if object.nm_is_detached and object.object_name in all_chosen_names:
                 to_remove.append(index)
         for index in sorted(to_remove, reverse=True):
             BM_Table_of_Objects_Remove(scene, context, index)
@@ -1491,7 +2160,7 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
         universal_container = BM_Table_of_Objects_Add(scene, context)
         universal_container.nm_master_index = last_uni_c_index + 1
         # name is set to the root_name of the first object in the shell
-        universal_container.nm_container_name_old = BM_ITEM_PROPS_nm_container_name_GlobalUpdate_OnCreate(context, "Bake Job")
+        universal_container.nm_container_name_old = Object_nm_container_name_GlobalUpdate_OnCreate(context, "Bake Job")
         universal_container.nm_container_name = universal_container.nm_container_name_old
         universal_container.nm_this_indent = 0
         universal_container.nm_is_universal_container = True
@@ -1521,7 +2190,7 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
 
                 for obj_index, object_name in enumerate(local_names):
                     new_item = BM_Table_of_Objects_Add(scene, context)
-                    new_item.global_object_name = object_name
+                    new_item.object_name = object_name
                     new_item.nm_master_index = obj_index
                     new_item.nm_this_indent = 2
                     new_item.nm_item_uni_container_master_index = last_uni_c_index + 1
@@ -1544,7 +2213,7 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        if bm_props.global_use_name_matching is False:
+        if bm_props.use_name_matching is False:
             layout.label(text="Cannot create. Enable Name Matching")
             return
         layout.label(text="Choose Objects to create new Container with:")
@@ -1553,8 +2222,8 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
         items_box.use_property_split = True
         items_box.use_property_decorate = False
         table = items_box.column().row()
-        rows = BM_template_list_get_rows(bm_props.global_cauc_objects, 1, 1, 5, True)
-        table.template_list('BM_CAUC_UL_Objects_Item', "", bm_props, 'global_cauc_objects', bm_props, 'global_cauc_objects_active_index', rows=rows)
+        rows = BM_template_list_get_rows(bm_props.cauc_objects, 1, 1, 5, True)
+        table.template_list('BM_CAUC_UL_Objects_Item', "", bm_props, 'cauc_objects', bm_props, 'cauc_objects_active_index', rows=rows)
         column = table.column(align=True)
         column.operator(BM_OT_CreateArtificialUniContainer_DeselectAll.bl_idname, text="", icon='CHECKBOX_HLT')
 
@@ -1564,23 +2233,23 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
 
         # trash
         to_remove = []
-        for index, _ in enumerate(bm_props.global_cauc_objects):
+        for index, _ in enumerate(bm_props.cauc_objects):
             to_remove.append(index)
         for index in sorted(to_remove, reverse=True):
-            bm_props.global_cauc_objects.remove(index)
+            bm_props.cauc_objects.remove(index)
 
         # add
-        if bm_props.global_use_name_matching is False:
+        if bm_props.use_name_matching is False:
             return wm.invoke_props_dialog(self, width=300)
         
         for object in context.scene.bm_table_of_objects:
             if object.nm_is_detached:
-                new_item = bm_props.global_cauc_objects.add()
-                new_item.object_name = object.global_object_name
+                new_item = bm_props.cauc_objects.add()
+                new_item.object_name = object.object_name
 
         return wm.invoke_props_dialog(self, width=300)
 
-class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
+class BM_OT_ITEM_and_MAP_Format_MatchResolution(Operator):
     bl_label = "Match Resolution"
     bl_idname = "bakemaster.item_and_map_format_match_resolution"
     bl_description = "Match output image resolution with the specified type of Image Texture Node resolution within the Object's materials"
@@ -1591,7 +2260,7 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
         if any([object.nm_is_universal_container, object.nm_is_local_container]):
             return None
 
-        source_objects = [obj for obj in context.scene.objects if obj.name == object.global_object_name]
+        source_objects = [obj for obj in context.scene.objects if obj.name == object.object_name]
         if len(source_objects) == 0:
             return None
 
@@ -1612,21 +2281,21 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
     def execute(self, context):
         bm_props = context.scene.bm_props
         try:
-            bm_props.global_fmr_items[bm_props.global_fmr_items_active_index]
+            bm_props.fmr_items[bm_props.fmr_items_active_index]
         except IndexError:
             self.report({'ERROR'}, "Cannot Apply Resolution")
             return {'FINISHED'}
         else:
             object = BM_Object_Get(None, context)[0]
             if object.out_use_unique_per_map:
-                if len(object.global_maps) == 0:
+                if len(object.maps) == 0:
                     self.report({'ERROR'}, "No maps but Format is Unique per map")
                     return {'FINISHED'}
                 container = BM_Map_Get(None, object)
             else:
                 container = object
 
-            chosen_image = bm_props.global_fmr_items[bm_props.global_fmr_items_active_index]
+            chosen_image = bm_props.fmr_items[bm_props.fmr_items_active_index]
             container.out_res_height = chosen_image.image_height
             container.out_res_width = chosen_image.image_width
         return {'FINISHED'}
@@ -1640,7 +2309,7 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
             layout.label(text="Unavailable. Object has no materials or is Container")
             return
 
-        if len(bm_props.global_fmr_items) == 0:
+        if len(bm_props.fmr_items) == 0:
             layout.label(text="No Images found")
             return
         
@@ -1648,20 +2317,20 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
         layout.use_property_split = True
         layout.use_property_decorate = False
         table = layout.column().row()
-        rows = BM_template_list_get_rows(bm_props.global_fmr_items, 1, 1, 5, True)
-        table.template_list('BM_FMR_UL_Item', "", bm_props, 'global_fmr_items', bm_props, 'global_fmr_items_active_index', rows=rows)
+        rows = BM_template_list_get_rows(bm_props.fmr_items, 1, 1, 5, True)
+        table.template_list('BM_FMR_UL_Item', "", bm_props, 'fmr_items', bm_props, 'fmr_items_active_index', rows=rows)
 
     def invoke(self, context, event):
         wm = context.window_manager
         bm_props = context.scene.bm_props
 
-        # trash global_fmr_items
+        # trash fmr_items
         to_remove = []
-        bm_props.global_fmr_items_active_index = 0
-        for index, _ in enumerate(bm_props.global_fmr_items):
+        bm_props.fmr_items_active_index = 0
+        for index, _ in enumerate(bm_props.fmr_items):
             to_remove.append(index)
         for index in sorted(to_remove, reverse=True):
-            bm_props.global_fmr_items.remove(index)
+            bm_props.fmr_items.remove(index)
 
         object = BM_Object_Get(None, context)[0]
         materials = self.available(context, object)
@@ -1679,7 +2348,7 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
                 if node.image is None:
                     continue
                 # add image item to items
-                new_item = bm_props.global_fmr_items.add()
+                new_item = bm_props.fmr_items.add()
                 new_item.image_name = node.image.name
                 new_item.image_res = "x".join(map(str, tuple(node.image.size)))
                 new_item.image_height = tuple(node.image.size)[0]
@@ -1693,17 +2362,17 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
 
         return wm.invoke_props_dialog(self, width=400)
 
-class BM_OT_ReportMessage(bpy.types.Operator):
+class BM_OT_ReportMessage(Operator):
     bl_label = "BakeMaster Message"
     bl_idname = "bakemaster.report_message"
     bl_options = {'INTERNAL'}
     
-    message_type : bpy.props.StringProperty(
+    message_type : StringProperty(
         name="Type",
         description="Type of the Report Message",
         default="INFO",
         options={'SKIP_SAVE'})
-    message : bpy.props.StringProperty(
+    message : StringProperty(
         name="Message",
         description="Text of the Report Message",
         default="Message not specified",
@@ -1727,24 +2396,3 @@ class BM_OT_ReportMessage(bpy.types.Operator):
     def invoke(self, context, event):
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
-
-class BM_OT_Help(bpy.types.Operator):
-    bl_label = "BakeMaster Help Source"
-    bl_idname = "bakemaster.help"
-    bl_description = BM_Labels.OPERATOR_HELP_DESCRIPTION
-
-    url_base_type: bpy.props.StringProperty(
-        default="Main Page",
-        options={'SKIP_SAVE'},
-    )
-    
-    def execute(self, context):
-        url_base_data = {
-            "Main Page" : BM_Labels.URL_HELP_MAIN,
-            "How to Setup Objects" : BM_Labels.URL_HELP_OBJS,
-            "How to Setup Maps" : BM_Labels.URL_HELP_MAPS,
-            "How to Bake" : BM_Labels.URL_HELP_BAKE,
-            "Support" : BM_Labels.URL_HELP_SUPPORT,
-        }
-        webbrowser.open(url_base_data[self.url_base_type])
-        return {'FINISHED'}
