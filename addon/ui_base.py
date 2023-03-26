@@ -60,7 +60,7 @@ class BM_PT_BakeJobsBase(Panel):
         min_rows = 1 if bakemaster.bakejobs_len < 2 else 5
         rows = bm_ui_utils.get_uilist_rows(bakemaster.bakejobs_len, min_rows,
                                            5)
-        row.template_list('BM_UL_BakeJobs_Item', "", bakemaster,
+        row.template_list('BM_UL_BakeJobs', "", bakemaster,
                           'bakejobs', bakemaster,
                           'bakejobs_active_index', rows=rows)
         col = row.column(align=True)

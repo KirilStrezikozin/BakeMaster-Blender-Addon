@@ -66,7 +66,7 @@ classes = (
     ui_panels.BM_PT_BakeHistory,
 
     ui_panels.BM_PREFS_AddonPreferences,
-    ui_panels.BM_UL_BakeJobs_Item,
+    ui_panels.BM_UL_BakeJobs,
     ui_panels.BM_UL_BakeHistory,
 
     operators.ui.BM_OT_Help,
