@@ -129,6 +129,44 @@ class BM_OT_BakeJobs_Trash(Operator):
         return {'FINISHED'}
 
 
+class BM_OT_BakeJob_ToggleType(Operator):
+    bl_idname = 'bakemaster.bakejob_toggletype'
+    bl_label = "Bake Job Type"
+    bl_description = "Click to choose the Bake Job type"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    type: EnumProperty(
+        name="Bake Job Type",
+        description="Choose a Bake Job type. Hover over type values to see descriptions",  # noqa: E501
+        default='OBJECTS',
+        items=[('OBJECTS', "Objects", "Bake Job will contain Objects, where each of them will contain Maps to bake", 'BAKEMASTER_OBJECTS'),  # noqa: E501
+               ('MAPS', "Maps", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for", 'RENDERLAYERS')])  # noqa: E501
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+        bakejob = bm_get.bakejob(bakemaster, index=self.index)
+        if bakejob is None:
+            return {'CANCELLED'}
+        bakejob.type = self.type
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        bakemaster = context.scene.bakemaster
+        bakejob = bm_get.bakejob(bakemaster, index=self.index)
+        if bakejob is None:
+            return {'CANCELLED'}
+        self.type = bakejob.type
+
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = False
+        layout.use_property_decorate = False
+        layout.column(align=True).prop(self, 'type', expand=True)
+
+
 class BM_OT_Setup(Operator):
     bl_idname = 'bakemaster.setup'
     bl_label = "Setup"
