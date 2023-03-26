@@ -100,9 +100,6 @@ class BM_UL_BakeJobs(UIList):
         layout.prop(item, 'use_bake', text="", icon=icon, emboss=False)
         layout.active = item.use_bake
 
-    def draw_filter(self, context, layout):
-        pass
-
     def invoke(self, context, event):
         pass
 
