@@ -62,28 +62,3 @@ def item(container, index=-1):
         return None
     else:
         return item
-
-
-def BM_Object_Get(self, context):
-    if self is None:
-        object = [context.scene.bm_table_of_objects[
-            context.scene.bm_props.global_active_index], True]
-    else:
-        if hasattr(self, "global_map_object_index"):
-            object1 = context.scene.bm_table_of_objects[
-                self.global_map_object_index]
-        else:
-            object1 = self
-        object = [object1, True]
-    try:
-        context.scene.objects[object[0].global_object_name]
-    except (KeyError, AttributeError, UnboundLocalError):
-        object[1] = False
-    return object
-
-
-def BM_Map_Get(self, object):
-    if self is not None and hasattr(self, "global_map_object_index"):
-        return self
-    map = object.global_maps[object.global_maps_active_index]
-    return map

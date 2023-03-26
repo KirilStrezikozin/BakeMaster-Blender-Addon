@@ -36,7 +36,6 @@ from bpy.props import PointerProperty
 
 from . import ui_panels
 from . import properties
-from . import presets
 from . import operators
 
 if "bpy_utils_register_class" in locals():
@@ -44,7 +43,6 @@ if "bpy_utils_register_class" in locals():
 
     module_reload(ui_panels)
     module_reload(properties)
-    module_reload(presets)
     module_reload(operators)
 
 bl_info = {
@@ -63,56 +61,13 @@ bl_info = {
 
 classes = (
     ui_panels.BM_PT_BakeJobs,
-    ui_panels.BM_PT_Pipeline,
-    ui_panels.BM_PT_Manager,
-    ui_panels.BM_PT_Objects,
-    ui_panels.BM_PT_Object,
-    ui_panels.BM_PT_Maps,
-    ui_panels.BM_PT_Output,
-    ui_panels.BM_PT_TextureSets,
     ui_panels.BM_PT_Bake,
     ui_panels.BM_PT_BakeControls,
     ui_panels.BM_PT_BakeHistory,
 
     ui_panels.BM_PREFS_AddonPreferences,
     ui_panels.BM_UL_BakeJobs_Item,
-    ui_panels.BM_UL_Container_Item,
-    ui_panels.BM_UL_Redolastaction_Objects_Item,
-    ui_panels.BM_UL_Redolastaction_Maps_Item,
-    ui_panels.BM_UL_BakeGroups_Item,
-    ui_panels.BM_UL_Matchres_Item,
-    ui_panels.BM_UL_BakeJob_Objects_Item,
-    ui_panels.BM_UL_Highpolies_Item,
-    ui_panels.BM_UL_MatGroups_Item,
-    ui_panels.BM_UL_Maps_Item,
-    ui_panels.BM_UL_ChannelPacks_Item,
-    ui_panels.BM_UL_TextureSets_Item,
-    ui_panels.BM_UL_TextureSets_Objects_Item,
-    ui_panels.BM_UL_TextureSets_Objects_Subitems_Item,
     ui_panels.BM_UL_BakeHistory,
-
-    presets.BM_PT_FULL_OBJECT_Presets,
-    presets.BM_PT_OBJECT_Presets,
-    presets.BM_PT_DECAL_Presets,
-    presets.BM_PT_HL_Presets,
-    presets.BM_PT_UV_Presets,
-    presets.BM_PT_CSH_Presets,
-    presets.BM_PT_OUT_Presets,
-    presets.BM_PT_FULL_MAP_Presets,
-    presets.BM_PT_MAP_Presets,
-    presets.BM_PT_CHNLP_Presets,
-    presets.BM_PT_BAKE_Presets,
-    presets.BM_MT_FULL_OBJECT_Presets,
-    presets.BM_MT_OBJECT_Presets,
-    presets.BM_MT_DECAL_Presets,
-    presets.BM_MT_HL_Presets,
-    presets.BM_MT_UV_Presets,
-    presets.BM_MT_CSH_Presets,
-    presets.BM_MT_OUT_Presets,
-    presets.BM_MT_FULL_MAP_Presets,
-    presets.BM_MT_MAP_Presets,
-    presets.BM_MT_CHNLP_Presets,
-    presets.BM_MT_BAKE_Presets,
 
     operators.ui.BM_OT_Help,
     operators.ui.BM_OT_BakeJobs_AddRemove,
@@ -167,32 +122,6 @@ classes = (
     operators.ui.BM_OT_ITEM_and_MAP_Format_MatchResolution,
     operators.ui.BM_OT_ReportMessage,
 
-    presets.BM_OT_FULL_OBJECT_Preset_Add,
-    presets.BM_OT_OBJECT_Preset_Add,
-    presets.BM_OT_DECAL_Preset_Add,
-    presets.BM_OT_HL_Preset_Add,
-    presets.BM_OT_UV_Preset_Add,
-    presets.BM_OT_CSH_Preset_Add,
-    presets.BM_OT_OUT_Preset_Add,
-    presets.BM_OT_FULL_MAP_Preset_Add,
-    presets.BM_OT_MAP_Preset_Add,
-    presets.BM_OT_CHNLP_Preset_Add,
-    presets.BM_OT_BAKE_Preset_Add,
-
-    properties.Map_Highpoly,
-    properties.Map,
-    properties.Object_Highpoly,
-    properties.Object_ChannelPack,
-    properties.MatGroups_Item,
-    properties.Object,
-    properties.RedoLastAction_Object,
-    properties.RedoLastAction_Map,
-    properties.BakeGroup,
-    properties.MatchRes,
-    properties.TexSet_Object_Subitem,
-    properties.TexSet_Object,
-    properties.TexSet,
-    properties.Container,
     properties.BakeJob,
     properties.BakeHistory,
     properties.Global,
@@ -202,8 +131,7 @@ classes = (
 def register():
     for cls in classes:
         bpy_utils_register_class(cls)
-    bpy_types_Scene.bakemaster = PointerProperty(
-        type=properties.Global)
+    bpy_types_Scene.bakemaster = PointerProperty(type=properties.Global)
 
 
 def unregister():
