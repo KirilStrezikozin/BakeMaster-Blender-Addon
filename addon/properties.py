@@ -160,3 +160,7 @@ class Global(PropertyGroup):
         name="Show Help buttons",
         description="Allow help buttons in panels' headers",
         default=True)
+
+    # Custom Icons Props
+
+    icons = {}

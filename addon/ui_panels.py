@@ -88,11 +88,11 @@ class BM_UL_BakeJobs(UIList):
         layout.emboss = 'NONE'
 
         if item.type == 'OBJECTS':
-            type_icon = 'BAKEMASTER_OBJECTS'
+            type_icon = 'OUTLINER_OB_MESH'
         else:
             type_icon = 'RENDERLAYERS'
         layout.operator('bakemaster.bakejob_toggletype', text="",
-                        icon=type_icon, emboss=False)
+                        icon=type_icon, emboss=False).index = item.index
 
         layout.prop(item, "name", text="")
 

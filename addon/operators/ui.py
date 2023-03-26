@@ -135,12 +135,14 @@ class BM_OT_BakeJob_ToggleType(Operator):
     bl_description = "Click to choose the Bake Job type"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
+    index: IntProperty(default=-1)
+
     type: EnumProperty(
         name="Bake Job Type",
         description="Choose a Bake Job type. Hover over type values to see descriptions",  # noqa: E501
         default='OBJECTS',
-        items=[('OBJECTS', "Objects", "Bake Job will contain Objects, where each of them will contain Maps to bake", 'BAKEMASTER_OBJECTS'),  # noqa: E501
-               ('MAPS', "Maps", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for", 'RENDERLAYERS')])  # noqa: E501
+        items=[('OBJECTS', "Objects", "Bake Job will contain Objects, where each of them will contain Maps to bake", 'OUTLINER_OB_MESH', 0),  # noqa: E501
+               ('MAPS', "Maps", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for", 'RENDERLAYERS', 1)])  # noqa: E501
 
     def execute(self, context):
         bakemaster = context.scene.bakemaster
@@ -151,6 +153,9 @@ class BM_OT_BakeJob_ToggleType(Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
+        if self.index == -1:
+            self.report({'WARNING', "Cannot resolve Bake Job"})
+            return {'CANCELLED'}
         bakemaster = context.scene.bakemaster
         bakejob = bm_get.bakejob(bakemaster, index=self.index)
         if bakejob is None:

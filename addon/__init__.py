@@ -36,14 +36,16 @@ from bpy.props import PointerProperty
 
 from . import ui_panels
 from . import properties
-from . import operators
+from .operators import (
+    ui as operators_ui,
+)
 
 if "bpy_utils_register_class" in locals():
     from importlib import reload as module_reload
 
     module_reload(ui_panels)
     module_reload(properties)
-    module_reload(operators)
+    module_reload(operators_ui)
 
 bl_info = {
     "name": "BakeMaster",
@@ -71,7 +73,6 @@ classes = (
 
     operators.ui.BM_OT_Help,
     operators.ui.BM_OT_BakeJobs_AddRemove,
-    operators.ui.BM_OT_BakeJobs_Move,
     operators.ui.BM_OT_BakeJobs_Trash,
     operators.ui.BM_OT_BakeJob_ToggleType,
     operators.ui.BM_OT_Setup,
@@ -85,6 +86,7 @@ classes = (
     operators.ui.BM_OT_BakeHistory_Config,
     operators.ui.BM_OT_BakeHistory_Remove,
 
+    properties.Item,
     properties.BakeJob,
     properties.BakeHistory,
     properties.Global,
