@@ -27,12 +27,15 @@
 #
 # ##### END LICENSE BLOCK #####
 
+from bpy import ops as bpy_ops
 from bpy.types import (
     Operator,
 )
 from bpy.props import (
     EnumProperty,
     IntProperty,
+    StringProperty,
+    BoolProperty,
 )
 from ..utils import get as bm_get
 from ..utils import operators as bm_ots_utils
@@ -126,53 +129,139 @@ class BM_OT_BakeJobs_Trash(Operator):
         return {'FINISHED'}
 
 
-class BM_OT_Pipeline_Config(Operator):
-    bl_idname = 'bakemaster.pipeline_config'
+class BM_OT_Setup(Operator):
+    bl_idname = 'bakemaster.setup'
+    bl_label = "Setup"
+    bl_description = "Choose a filepath for presets, manage addon config (load/save all settings into a file)"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def config_run_save_update(self, context):
+        if not self.config_run_save:
+            return
+        bpy_ops.bakemaster.config('INVOKE_DEFAULT', action='SAVE',
+                                  filepath=self.config_filepath)
+        self.config_run_save = False
+
+    def config_run_detach_update(self, context):
+        if not self.config_run_detach:
+            return
+        bpy_ops.bakemaster.config('INVOKE_DEFAULT', action='DETACH',
+                                  filepath=self.config_filepath)
+        self.config_run_detach = False
+
+    config_action: EnumProperty(
+        name="Config",
+        description="Choose an action for the config. Hover over values to see descriptions",  # noqa: E501
+        default='SAVE',
+        items=[('LOAD', "Load", "Load all addon settings from a config file on the disk"),  # noqa: E501
+               ('SAVE', "Save", "Save all addon settings into a config file on the disk")])  # noqa: E501
+
+    config_filepath: StringProperty(
+        name="Config Filepath",
+        description="Where to Save/Load a config from. // is relative to this .blend file",  # noqa: E501
+        default="",
+        subtype='DIR_PATH')
+
+    config_run_save: BoolProperty(
+        name="Save Config",
+        description="Save all addon settings and tables' items into a config file on the disk",  # noqa: E501
+        default=False,
+        update=config_run_save_update,
+        options={'SKIP_SAVE'})
+
+    config_run_detach: BoolProperty(
+        name="Detach Config",
+        description="Unlink current attached config. Leave all addon settings as is",  # noqa: E501
+        default=False,
+        update=config_run_detach_update,
+        options={'SKIP_SAVE'})
+
+    presets_filepath: StringProperty(
+        name="Presets Filepath",
+        description="Choose a folder on the disk containing presets for BakeMaster (leave empty for default path). // is relative to this .blend file",  # noqa: E501
+        default="",
+        subtype='DIR_PATH')
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+        bakemaster.presets_filepath = self.presets_filepath
+
+        bpy_ops.bakemaster.config('INVOKE_DEFAULT', action=self.config_action,
+                                  filepath=self.config_filepath)
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        bakemaster = context.scene.bakemaster
+        self.presets_filepath = bakemaster.presets_filepath
+        self.config_filepath = bakemaster.config_filepath
+
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def draw(self, context):
+        bakemaster = context.scene.bakemaster
+        layout = self.layout
+
+        layout.use_property_split = False
+        layout.use_property_decorate = False
+
+        layout.prop(self, 'presets_filepath')
+
+        col = layout.column(align=True)
+
+        if bakemaster.config_is_attached:
+            cf_row = col.row()
+            cf_row.prop(self, 'config_filepath')
+            cf_row.enabled = False
+
+            row = col.row(align=True)
+            row.prop(self, 'config_run_save')
+            row.prop(self, 'config_run_detach', text="", icon='UNLINKED')
+            return
+
+        col.prop(self, 'config_action')
+        if self.config_action == 'LOAD':
+            text = "Load from"
+        else:
+            text = "Save to"
+        col.prop(self, 'config_filepath', text=text)
+
+
+class BM_OT_Config(Operator):
+    bl_idname = 'bakemaster.config'
     bl_label = "Config"
-    bl_description = "Load/Save/Detach Bake Configuration data. You can use config as a super preset to save all tables data and items, presets, settings, bake jobs etc. of the current BakeMaster session"  # noqa: E501
+    bl_description = "Load/Save/Detach Bake Configuration data. You can use config as a super preset that holds all settings and tables' items of the current BakeMaster session"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     action: EnumProperty(
+        name="Action",
+        description="Choose an action for the config. Hover over values to see descriptions",  # noqa: E501
         default='LOAD',
         items=[('LOAD', "Load", ""),
                ('SAVE', "Save", ""),
                ('DETACH', "Detach", "")],
         options={'SKIP_SAVE'})
 
-    include: EnumProperty(
-        name="Include",
-        description="Data to include when loading/saving the config",
-        default='ALL',
-        items=[('ALL', "Setup & Presets", "Save/load both settings and presets as a config"),  # noqa: E501
-               ('SETUP', "Setup only", "Save/load settings only as a config"),
-               ('PRESETS', "Presets only", "Save/load presets only as a config")],  # noqa: E501
-        options={'SKIP_SAVE'})
-
-    def invoke(self, context, event):
-        if self.action == 'DETACH':
-            return self.execute(context)
-        wm = context.window_manager
-        return wm.invoke_props_dialog(self, width=300)
+    filepath: StringProperty(
+        name="Filepath",
+        description="Where to Save/Load a config from",
+        default="",
+        subtype='DIR_PATH')
 
     def execute(self, context):
         scene = context.scene
         bakemaster = scene.bakemaster
 
-        bakemaster.pipeline_config_is_attached = self.action != 'DETACH'
-        bakemaster.pipeline_config_include = self.include
+        bakemaster.config_is_attached = self.action != 'DETACH'
+        bakemaster.config_filepath = self.filepath
         print(self.action)
-        print(self.include)
+        print(self.filepath)
 
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
-    def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = False
-        layout.use_property_decorate = False
-
-        row = layout.row()
-        row.prop(self, 'include')
+    def invoke(self, context, event):
+        return self.execute(context)
 
 
 class BM_OT_Bake_One(Operator):
@@ -389,10 +478,7 @@ class BM_OT_BakeHistory_Rebake(Operator):
         return True
 
     def execute(self, context):
-        from bpy import ops
-
         self.report({'WARNING'}, "Not implemented")
-        ops.bakemaster.bake_all('INVOKE_DEFAULT')
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -418,17 +504,17 @@ class BM_OT_BakeHistory_Config(Operator):
     index: IntProperty(default=-1)
 
     action: EnumProperty(
+        name="Action",
+        description="Choose an action for the config. Hover over values to see descriptions",  # noqa: E501
         default='LOAD',
         items=[('LOAD', "Load", "Load all settings of this bake into the addon (e.g. bake jobs, objects, maps)"),  # noqa: E501
-               ('SAVE', "Save", "Save all addon settings of this bake into as a config file on the disk")])  # noqa: E501
+               ('SAVE', "Save", "Save all addon settings of this bake into a config file on the disk")])  # noqa: E501
 
-    include: EnumProperty(
-        name="Include",
-        description="Data to include when loading/saving the config",
-        default='ALL',
-        items=[('ALL', "Setup & Presets", "Save/load both settings and presets as a config"),  # noqa: E501
-               ('SETUP', "Setup only", "Save/load settings only as a config"),
-               ('PRESETS', "Presets only", "Save/load presets only as a config")])  # noqa: E501
+    filepath: StringProperty(
+        name="Filepath",
+        description="Where to save a config file",
+        default="",
+        subtype='DIR_PATH')
 
     def config_poll(self, context):
         bakemaster = context.scene.bakemaster
@@ -443,11 +529,7 @@ class BM_OT_BakeHistory_Config(Operator):
         return True
 
     def execute(self, context):
-        from bpy import ops
-
         self.report({'WARNING'}, "Not implemented")
-        ops.bakemaster.pipeline_config('EXEC_DEFAULT', action=self.action,
-                                       include=self.include)
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -462,7 +544,8 @@ class BM_OT_BakeHistory_Config(Operator):
         layout.use_property_split = False
         layout.use_property_decorate = False
         layout.prop(self, 'action')
-        layout.prop(self, 'include')
+        if self.action == 'SAVE':
+            layout.prop(self, 'filepath')
 
 
 class BM_OT_BakeHistory_Remove(Operator):
