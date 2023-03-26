@@ -142,11 +142,17 @@ class Global(PropertyGroup):
 
     bakehistory_reserved_index: IntProperty(default=-1)
 
-    # Pipeline Props
+    # Configuration Props
 
     config_is_attached: BoolProperty(default=False)
     config_filepath: StringProperty(default="")
     presets_filepath: StringProperty(default="")
+
+    # UI Walker Props
+
+    walker_is_running: BoolProperty(
+        name="Drag & Drop interface is activated",
+        default=False)
 
     # Addon Preferences Props
 
