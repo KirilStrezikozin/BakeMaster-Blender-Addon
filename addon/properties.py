@@ -144,8 +144,9 @@ class Global(PropertyGroup):
 
     # Pipeline Props
 
-    pipeline_config_is_attached: BoolProperty(default=False)
-    pipeline_config_filepath: StringProperty(default="")
+    config_is_attached: BoolProperty(default=False)
+    config_filepath: StringProperty(default="")
+    presets_filepath: StringProperty(default="")
 
     # Addon Preferences Props
 
