@@ -82,11 +82,20 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
         col.prop(bakemaster, "prefs_use_show_help")
 
 
-class BM_UL_BakeJobs_Item(UIList):
+class BM_UL_BakeJobs(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
         layout.emboss = 'NONE'
-        layout.prop(item, "name", text="", icon='SEQUENCE')
+
+        if item.type == 'OBJECTS':
+            type_icon = 'BAKEMASTER_OBJECTS'
+        else:
+            type_icon = 'RENDERLAYERS'
+        layout.operator('bakemaster.bakejob_toggletype', text="",
+                        icon=type_icon, emboss=False)
+
+        layout.prop(item, "name", text="")
+
         icon = 'RESTRICT_RENDER_OFF' if item.use_bake else 'RESTRICT_RENDER_ON'
         layout.prop(item, 'use_bake', text="", icon=icon, emboss=False)
         layout.active = item.use_bake
