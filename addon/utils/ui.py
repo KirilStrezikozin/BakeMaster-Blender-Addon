@@ -34,6 +34,18 @@ def get_uilist_rows(len_of_idprop, min_rows: int, max_rows: int):
     return min(max_rows, max(min_rows, len_of_idprop))
 
 
+def get_icon_id(bakemaster, icon_name: str):
+    try:
+        thumb = bakemaster.preview_collections["main"].get(icon_name)
+        if thumb is None:
+            raise AttributeError
+    except AttributeError:
+        print("BakeMaster Internal Warning: icon %s not loaded" % icon_name)
+        return 'BLANK1'
+    else:
+        return thumb.icon_id
+
+
 def bakehistory_timestamp_get_label(bakemaster, bakehistory):
     if bakehistory.index == bakemaster.bakehistory_reserved_index:
         return "in progress..."
