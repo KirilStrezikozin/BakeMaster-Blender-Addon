@@ -193,7 +193,7 @@ class BM_OT_BakeJob_ToggleType(Operator):
             self.type_maps = True
 
         wm = context.window_manager
-        return wm.invoke_props_dialog(self, width=300)
+        return wm.invoke_props_dialog(self, width=100)
 
     def draw(self, context):
         layout = self.layout
