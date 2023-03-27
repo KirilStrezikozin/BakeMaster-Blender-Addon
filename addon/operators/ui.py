@@ -574,24 +574,16 @@ class BM_OT_BakeHistory_Rebake(Operator):
 
 class BM_OT_BakeHistory_Config(Operator):
     bl_idname = 'bakemaster.bakehistory_config'
-    bl_label = "Save/Load Config"
-    bl_description = "Save/Load configuration (all addon settings) of this bake in the history"  # noqa: E501
+    bl_label = "Load Config"
+    bl_description = "Load all settings of this bake into the addon (e.g. bake jobs, objects, maps, all settings)"  # noqa: E501
     bl_options = {'INTERNAL'}
 
     index: IntProperty(default=-1)
 
-    action: EnumProperty(
-        name="Action",
-        description="Choose an action for the config. Hover over values to see descriptions",  # noqa: E501
-        default='LOAD',
-        items=[('LOAD', "Load", "Load all settings of this bake into the addon (e.g. bake jobs, objects, maps)"),  # noqa: E501
-               ('SAVE', "Save", "Save all addon settings of this bake into a config file on the disk")])  # noqa: E501
-
-    filepath: StringProperty(
-        name="Filepath",
-        description="Where to save a config file",
-        default="",
-        subtype='DIR_PATH')
+    hard_load: BoolProperty(
+        name="Replace settings",
+        description="All current addon settings and setup will be replaced with the loaded config's",  # noqa: E501
+        default=True)
 
     def config_poll(self, context):
         bakemaster = context.scene.bakemaster
@@ -620,9 +612,7 @@ class BM_OT_BakeHistory_Config(Operator):
         layout = self.layout
         layout.use_property_split = False
         layout.use_property_decorate = False
-        layout.prop(self, 'action')
-        if self.action == 'SAVE':
-            layout.prop(self, 'filepath')
+        layout.prop(self, 'hard_load')
 
 
 class BM_OT_BakeHistory_Remove(Operator):
