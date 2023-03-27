@@ -27,10 +27,12 @@
 #
 # ##### END LICENSE BLOCK #####
 
+from bpy import context as bpy_context
 from bpy.utils import (
     register_class as bpy_utils_register_class,
     unregister_class as bpy_utils_unregister_class,
 )
+import bpy.utils.previews as bpy_utils_previews
 from bpy.types import Scene as bpy_types_Scene
 from bpy.props import PointerProperty
 
@@ -62,6 +64,11 @@ bl_info = {
 }
 
 classes = (
+    properties.Item,
+    properties.BakeJob,
+    properties.BakeHistory,
+    properties.Global,
+
     ui_panels.BM_PT_BakeJobs,
     ui_panels.BM_PT_Bake,
     ui_panels.BM_PT_BakeControls,
@@ -85,11 +92,6 @@ classes = (
     operators.ui.BM_OT_BakeHistory_Rebake,
     operators.ui.BM_OT_BakeHistory_Config,
     operators.ui.BM_OT_BakeHistory_Remove,
-
-    properties.Item,
-    properties.BakeJob,
-    properties.BakeHistory,
-    properties.Global,
 )
 
 
@@ -102,6 +104,15 @@ def register():
 def unregister():
     for cls in reversed(classes):
         bpy_utils_unregister_class(cls)
+
+    # clearing preview_collections - custom icons
+    for scene in bpy_context.data.scenes:
+        if not hasattr(scene, "bakemaster"):
+            continue
+        for pcoll in scene.bakemaster.preview_collections.values():
+            bpy_utils_previews.remove(pcoll)
+        scene.bakemaster.preview_collections.clear()
+
     del bpy_types_Scene.bakemaster
 
 
