@@ -77,17 +77,6 @@ class BM_PT_BakeJobsBase(Panel):
             return
 
         col.separator(factor=1.0)
-        move_up_row = col.row()
-        move_up_row.operator('bakemaster.bakejobs_move', text="",
-                             icon='TRIA_UP').action = 'MOVE_UP'
-        move_up_row.active = bakemaster.bakejobs_active_index - 1 >= 0
-        move_down_row = col.row()
-        move_down_row.operator('bakemaster.bakejobs_move', text="",
-                               icon='TRIA_DOWN').action = 'MOVE_DOWN'
-        move_down_row.active = False
-        if bakemaster.bakejobs_active_index + 1 < bakemaster.bakejobs_len:
-            move_down_row.active = True
-        col.separator(factor=1.0)
         col.emboss = 'NONE'
         col.operator('bakemaster.bakejobs_trash', text="", icon='TRASH')
 
