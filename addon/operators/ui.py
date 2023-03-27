@@ -37,8 +37,11 @@ from bpy.props import (
     StringProperty,
     BoolProperty,
 )
-from ..utils import get as bm_get
-from ..utils import operators as bm_ots_utils
+from ..utils import (
+    get as bm_get,
+    operators as bm_ots_utils,
+)
+from ..utils.ui import get_icon_id as bm_ui_utils_get_icon_id
 from ..labels import (
     BM_URLs,
 )
@@ -135,32 +138,57 @@ class BM_OT_BakeJob_ToggleType(Operator):
     bl_description = "Click to choose the Bake Job type"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
+    def type_objects_update(self, context):
+        if self.type_maps is not self.type_objects:
+            return
+        self.type_maps = not self.type_objects
+
+    def type_maps_update(self, context):
+        if self.type_objects is not self.type_maps:
+            return
+        self.type_objects = not self.type_maps
+
     index: IntProperty(default=-1)
 
-    type: EnumProperty(
-        name="Bake Job Type",
-        description="Choose a Bake Job type. Hover over type values to see descriptions",  # noqa: E501
-        default='OBJECTS',
-        items=[('OBJECTS', "Objects", "Bake Job will contain Objects, where each of them will contain Maps to bake", 'OUTLINER_OB_MESH', 0),  # noqa: E501
-               ('MAPS', "Maps", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for", 'RENDERLAYERS', 1)])  # noqa: E501
+    type_objects: BoolProperty(
+        name="Objects",
+        description="Bake Job will contain Objects, where each of them will contain Maps to bake",  # noqa: E501
+        default=True,
+        update=type_objects_update,
+        options={'SKIP_SAVE'})
+
+    type_maps: BoolProperty(
+        name="Maps",
+        description="Bake Job will contain Maps, where each of them will contain Objects the map should be baked for",  # noqa: E501
+        default=False,
+        update=type_maps_update,
+        options={'SKIP_SAVE'})
+
+    bakejob = None
 
     def execute(self, context):
-        bakemaster = context.scene.bakemaster
-        bakejob = bm_get.bakejob(bakemaster, index=self.index)
-        if bakejob is None:
+        if self.bakejob is None:
             return {'CANCELLED'}
-        bakejob.type = self.type
+        if self.type_objects:
+            self.bakejob.type = 'OBJECTS'
+        else:
+            self.bakejob.type = 'MAPS'
         return {'FINISHED'}
 
     def invoke(self, context, event):
         if self.index == -1:
-            self.report({'WARNING', "Cannot resolve Bake Job"})
+            self.report({'WARNING', "Internal error: Cannot resolve Bake Job"})
             return {'CANCELLED'}
-        bakemaster = context.scene.bakemaster
-        bakejob = bm_get.bakejob(bakemaster, index=self.index)
-        if bakejob is None:
+        self.bakejob = bm_get.bakejob(context.scene.bakemaster, self.index)
+        if self.bakejob is None:
+            self.report({'WARNING', "Internal error: Cannot resolve Bake Job"})
             return {'CANCELLED'}
-        self.type = bakejob.type
+        if self.bakejob.type == 'OBJECTS':
+            self.type_objects = True
+            self.type_maps = False
+        else:
+            self.type_objects = False
+            self.type_maps = True
 
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
@@ -169,7 +197,13 @@ class BM_OT_BakeJob_ToggleType(Operator):
         layout = self.layout
         layout.use_property_split = False
         layout.use_property_decorate = False
-        layout.column(align=True).prop(self, 'type', expand=True)
+
+        icon_objects = bm_ui_utils_get_icon_id(context.scene.bakemaster,
+                                               "bakemaster_objects.png")
+
+        col = layout.column(align=True)
+        col.prop(self, "type_objects", icon_value=icon_objects)
+        col.prop(self, "type_maps", icon='RENDERLAYERS')
 
 
 class BM_OT_Setup(Operator):
