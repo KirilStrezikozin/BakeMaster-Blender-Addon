@@ -88,11 +88,16 @@ class BM_UL_BakeJobs(UIList):
         layout.emboss = 'NONE'
 
         if item.type == 'OBJECTS':
-            type_icon = 'OUTLINER_OB_MESH'
+            type_icon = bm_ui_utils.get_icon_id(context.scene.bakemaster,
+                                                "bakemaster_objects.png")
+            type_ot = layout.operator('bakemaster.bakejob_toggletype',
+                                      text="", icon_value=type_icon,
+                                      emboss=False)
         else:
-            type_icon = 'RENDERLAYERS'
-        layout.operator('bakemaster.bakejob_toggletype', text="",
-                        icon=type_icon, emboss=False).index = item.index
+            type_ot = layout.operator('bakemaster.bakejob_toggletype',
+                                      text="", icon='RENDERLAYERS',
+                                      emboss=False)
+        type_ot.index = item.index
 
         layout.prop(item, "name", text="")
 
