@@ -134,6 +134,47 @@ class BM_OT_BakeJobs_Trash(Operator):
         return {'FINISHED'}
 
 
+class BM_OT_BakeJob_Rename(Operator):
+    bl_idname = 'bakemaster.bakejob_rename'
+    bl_label = "Rename the Bake Job"
+    bl_description = "Click to rename the Bake Job"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    index: IntProperty(default=-1)
+
+    name: StringProperty(
+        name="New name",
+        default="",
+        options={'SKIP_SAVE'})
+
+    bakejob = None
+
+    def execute(self, context):
+        if self.bakejob is None:
+            return {'CANCELLED'}
+        self.bakejob.name = self.name
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        if self.index == -1:
+            self.report({'WARNING', "Internal error: Cannot resolve Bake Job"})
+            return {'CANCELLED'}
+        self.bakejob = bm_get.bakejob(context.scene.bakemaster, self.index)
+        if self.bakejob is None:
+            self.report({'WARNING', "Internal error: Cannot resolve Bake Job"})
+            return {'CANCELLED'}
+        self.name = self.bakejob.name
+
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = False
+        layout.use_property_decorate = False
+        layout.prop(self, "name")
+
+
 class BM_OT_BakeJob_ToggleType(Operator):
     bl_idname = 'bakemaster.bakejob_toggletype'
     bl_label = "Bake Job Type"

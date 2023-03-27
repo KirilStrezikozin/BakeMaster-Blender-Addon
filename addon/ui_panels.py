@@ -85,10 +85,11 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
 class BM_UL_BakeJobs(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
+        bakemaster = context.scene.bakemaster
         layout.emboss = 'NONE'
 
         if item.type == 'OBJECTS':
-            type_icon = bm_ui_utils.get_icon_id(context.scene.bakemaster,
+            type_icon = bm_ui_utils.get_icon_id(bakemaster,
                                                 "bakemaster_objects.png")
             type_ot = layout.operator('bakemaster.bakejob_toggletype',
                                       text="", icon_value=type_icon,
@@ -103,6 +104,11 @@ class BM_UL_BakeJobs(UIList):
 
         icon = 'RESTRICT_RENDER_OFF' if item.use_bake else 'RESTRICT_RENDER_ON'
         layout.prop(item, 'use_bake', text="", icon=icon, emboss=False)
+
+        if item.index == bakemaster.bakejobs_active_index:
+            layout.operator('bakemaster.bakejob_rename', text="",
+                            icon='GREASEPENCIL').index = item.index
+
         layout.active = item.use_bake
 
     def invoke(self, context, event):
