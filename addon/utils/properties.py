@@ -26,3 +26,21 @@
 # see <http://www.gnu.org/licenses/>.
 #
 # ##### END LICENSE BLOCK #####
+
+from os import (
+    path as os_path,
+    listdir as os_listdir,
+)
+import bpy.utils.previews as bpy_utils_previews
+
+
+def load_preview_collections():
+    """Load custom icons into preview_collections"""
+    pcoll = bpy_utils_previews.new()
+    icons_dir = os_path.join(os_path.dirname(os_path.dirname(__file__)),
+                             "icons")  # no check if path doesn't exist
+    for filename in os_listdir(icons_dir):
+        filepath = os_path.join(icons_dir, filename)
+        pcoll.load(filename, filepath, 'IMAGE')
+
+    return pcoll
