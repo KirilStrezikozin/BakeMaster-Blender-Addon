@@ -148,8 +148,16 @@ class Global(PropertyGroup):
     # Configuration Props
 
     config_is_attached: BoolProperty(default=False)
-    config_filepath: StringProperty(default="")
-    presets_filepath: StringProperty(default="")
+
+    config_filepath: StringProperty(
+        name="Filepath",
+        description="Where to Save/Load a config from. // is relative to this .blend file",  # noqa: E501
+        default="")
+
+    presets_filepath: StringProperty(
+        name="Presets",
+        description="Choose a folder on the disk containing presets for BakeMaster (leave empty for default path). // is relative to this .blend file",  # noqa: E501
+        default="")
 
     # UI Walker Props
 
