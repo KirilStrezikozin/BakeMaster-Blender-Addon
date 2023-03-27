@@ -37,6 +37,9 @@ from bpy.props import (
     BoolProperty,
     EnumProperty,
 )
+from .utils import (
+    properties as bm_props_utils,
+)
 from .labels import BM_LABELS_Props
 
 
@@ -161,6 +164,8 @@ class Global(PropertyGroup):
         description="Allow help buttons in panels' headers",
         default=True)
 
-    # Custom Icons Props
+    # Preview Collections - Custom Icons Props
 
-    icons = {}
+    preview_collections = {
+        "main": bm_props_utils.load_preview_collections(),
+    }
