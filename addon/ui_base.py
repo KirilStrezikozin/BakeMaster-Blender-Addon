@@ -57,9 +57,9 @@ class BM_PT_BakeJobsBase(Panel):
 
         box = layout.box()
         row = box.row()
-        min_rows = 1 if bakemaster.bakejobs_len < 2 else 3
+        min_rows = 2 if bakemaster.bakejobs_len < 2 else 4
         rows = bm_ui_utils.get_uilist_rows(bakemaster.bakejobs_len, min_rows,
-                                           3)
+                                           4)
         row.template_list('BM_UL_BakeJobs', "", bakemaster,
                           'bakejobs', bakemaster,
                           'bakejobs_active_index', rows=rows)
@@ -67,18 +67,16 @@ class BM_PT_BakeJobsBase(Panel):
         col.operator('bakemaster.bakejobs_addremove', text="",
                      icon='ADD').action = 'ADD'
 
-        if bakemaster.bakejobs_len < 1:
-            return
+        if bakemaster.bakejobs_len > 0:
+            col.operator('bakemaster.bakejobs_addremove', text="",
+                         icon='REMOVE').action = 'REMOVE'
 
-        col.operator('bakemaster.bakejobs_addremove', text="",
-                     icon='REMOVE').action = 'REMOVE'
-
-        if bakemaster.bakejobs_len < 2:
-            return
-
+        if bakemaster.bakejobs_len > 1:
+            col.separator(factor=1.0)
+            col.emboss = 'NONE'
+            col.operator('bakemaster.bakejobs_trash', text="", icon='TRASH')
         col.separator(factor=1.0)
-        col.emboss = 'NONE'
-        col.operator('bakemaster.bakejobs_trash', text="", icon='TRASH')
+        col.operator('bakemaster.setup', text="", icon='PROPERTIES')
 
 
 class BM_PT_BakeBase(Panel):
