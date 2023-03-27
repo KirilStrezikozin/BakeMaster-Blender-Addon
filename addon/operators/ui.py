@@ -27,6 +27,7 @@
 #
 # ##### END LICENSE BLOCK #####
 
+from os import path as os_path
 from bpy import ops as bpy_ops
 from bpy.types import (
     Operator,
@@ -37,6 +38,7 @@ from bpy.props import (
     StringProperty,
     BoolProperty,
 )
+from bpy_extras.io_utils import ImportHelper
 from ..utils import (
     get as bm_get,
     operators as bm_ots_utils,
@@ -206,72 +208,40 @@ class BM_OT_BakeJob_ToggleType(Operator):
         col.prop(self, "type_maps", icon='RENDERLAYERS')
 
 
+class BM_OT_FileChooseDialog(Operator, ImportHelper):
+    bl_idname = 'bakemaster.filechoosedialog'
+    bl_label = "Choose a filepath"
+    bl_description = "Open a file browser, hold Shift to open the file, Alt to browse containing directory"  # noqa: E501
+    bl_options = {'INTERNAL'}
+
+    prop_name: StringProperty(default="", options={'HIDDEN'})
+
+    config_lookup: BoolProperty(default=False, options={'HIDDEN'})
+    config_action: StringProperty(default="", options={'HIDDEN'})
+
+    def execute(self, context):
+        if os_path.isfile(self.filepath):
+            self.filepath = os_path.dirname(self.filepath)
+        # no safe check if property is invalid
+        setattr(context.scene.bakemaster, self.prop_name, self.filepath)
+
+        if not self.config_lookup:
+            return {'FINISHED'}
+
+        bpy_ops.bakemaster.config('EXEC_DEFAULT', action=self.config_action)
+        return {'FINISHED'}
+
+
 class BM_OT_Setup(Operator):
     bl_idname = 'bakemaster.setup'
     bl_label = "Setup"
     bl_description = "Choose a filepath for presets, manage addon config (load/save all settings into a file)"  # noqa: E501
-    bl_options = {'INTERNAL', 'UNDO'}
-
-    def config_run_save_update(self, context):
-        if not self.config_run_save:
-            return
-        bpy_ops.bakemaster.config('INVOKE_DEFAULT', action='SAVE',
-                                  filepath=self.config_filepath)
-        self.config_run_save = False
-
-    def config_run_detach_update(self, context):
-        if not self.config_run_detach:
-            return
-        bpy_ops.bakemaster.config('INVOKE_DEFAULT', action='DETACH',
-                                  filepath=self.config_filepath)
-        self.config_run_detach = False
-
-    config_action: EnumProperty(
-        name="Config",
-        description="Choose an action for the config. Hover over values to see descriptions",  # noqa: E501
-        default='SAVE',
-        items=[('LOAD', "Load", "Load all addon settings from a config file on the disk"),  # noqa: E501
-               ('SAVE', "Save", "Save all addon settings into a config file on the disk")])  # noqa: E501
-
-    config_filepath: StringProperty(
-        name="Config Filepath",
-        description="Where to Save/Load a config from. // is relative to this .blend file",  # noqa: E501
-        default="",
-        subtype='DIR_PATH')
-
-    config_run_save: BoolProperty(
-        name="Save Config",
-        description="Save all addon settings and tables' items into a config file on the disk",  # noqa: E501
-        default=False,
-        update=config_run_save_update,
-        options={'SKIP_SAVE'})
-
-    config_run_detach: BoolProperty(
-        name="Detach Config",
-        description="Unlink current attached config. Leave all addon settings as is",  # noqa: E501
-        default=False,
-        update=config_run_detach_update,
-        options={'SKIP_SAVE'})
-
-    presets_filepath: StringProperty(
-        name="Presets Filepath",
-        description="Choose a folder on the disk containing presets for BakeMaster (leave empty for default path). // is relative to this .blend file",  # noqa: E501
-        default="",
-        subtype='DIR_PATH')
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        bakemaster = context.scene.bakemaster
-        bakemaster.presets_filepath = self.presets_filepath
-
-        bpy_ops.bakemaster.config('INVOKE_DEFAULT', action=self.config_action,
-                                  filepath=self.config_filepath)
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        bakemaster = context.scene.bakemaster
-        self.presets_filepath = bakemaster.presets_filepath
-        self.config_filepath = bakemaster.config_filepath
-
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
@@ -282,26 +252,49 @@ class BM_OT_Setup(Operator):
         layout.use_property_split = False
         layout.use_property_decorate = False
 
-        layout.prop(self, 'presets_filepath')
+        row = layout.row(align=True)
+        row.prop(bakemaster, 'presets_filepath')
+        p_fc = row.operator('bakemaster.filechoosedialog', text="",
+                            icon='FILEBROWSER')
+        p_fc.filepath = bakemaster.presets_filepath
+        p_fc.prop_name = "presets_filepath"
 
+        layout.separator(factor=1.0)
         col = layout.column(align=True)
+        col.label(text="Config:")
+        c_load_text = "Load"
 
         if bakemaster.config_is_attached:
-            cf_row = col.row()
-            cf_row.prop(self, 'config_filepath')
+            cf_row = col.row(align=True)
+            cf_row.prop(bakemaster, 'config_filepath')
+            c_fc = cf_row.operator('bakemaster.filechoosedialog', text="",
+                                   icon='FILEBROWSER')
+            c_fc.filepath = bakemaster.config_filepath
+            c_fc.prop_name = "config_filepath"
             cf_row.enabled = False
 
-            row = col.row(align=True)
-            row.prop(self, 'config_run_save')
-            row.prop(self, 'config_run_detach', text="", icon='UNLINKED')
-            return
+            c_load_text = "Reload"
 
-        col.prop(self, 'config_action')
-        if self.config_action == 'LOAD':
-            text = "Load from"
+        row = col.row(align=True)
+
+        if bakemaster.config_is_attached:
+            row.operator('bakemaster.config', text="Save").action = 'SAVE'
         else:
-            text = "Save to"
-        col.prop(self, 'config_filepath', text=text)
+            c_save = row.operator('bakemaster.filechoosedialog', text="Save")
+            c_save.filepath = bakemaster.config_filepath
+            c_save.prop_name = "config_filepath"
+            c_save.config_lookup = True
+            c_save.config_action = 'SAVE'
+
+        c_load = row.operator('bakemaster.filechoosedialog', text=c_load_text)
+        c_load.filepath = bakemaster.config_filepath
+        c_load.prop_name = "config_filepath"
+        c_load.config_lookup = True
+        c_load.config_action = 'LOAD'
+
+        if bakemaster.config_is_attached:
+            row.operator('bakemaster.config', text="",
+                         icon='UNLINKED').action = 'DETACH'
 
 
 class BM_OT_Config(Operator):
@@ -330,7 +323,8 @@ class BM_OT_Config(Operator):
         bakemaster = scene.bakemaster
 
         bakemaster.config_is_attached = self.action != 'DETACH'
-        bakemaster.config_filepath = self.filepath
+        if self.filepath != "":
+            bakemaster.config_filepath = self.filepath
         print(self.action)
         print(self.filepath)
 

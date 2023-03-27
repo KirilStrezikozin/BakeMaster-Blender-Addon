@@ -82,6 +82,7 @@ classes = (
     operators.ui.BM_OT_BakeJobs_AddRemove,
     operators.ui.BM_OT_BakeJobs_Trash,
     operators.ui.BM_OT_BakeJob_ToggleType,
+    operators.ui.BM_OT_FileChooseDialog,
     operators.ui.BM_OT_Setup,
     operators.ui.BM_OT_Config,
     operators.ui.BM_OT_Bake_One,
