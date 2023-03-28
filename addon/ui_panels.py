@@ -86,30 +86,58 @@ class BM_UL_BakeJobs(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
         bakemaster = context.scene.bakemaster
-        layout.emboss = 'NONE'
+        col = layout.column(align=True)
+
+        # draw a darker line when dragging a bake job
+        if item.is_drag_placeholder and bakemaster.is_drag_possible:
+            drag_placeholder = col.row().box()
+            drag_placeholder.label(text="")
+            drag_placeholder.scale_y = 0.1
+
+        row = col.row(align=True)
+        row.alignment = 'LEFT'
+
+        # draw an empty item at the end
+        if item.is_drag_empty:
+            if bakemaster.drag_to_index == -1:
+                return
+            row.prop(item, "drag_ticker", text="...", emboss=False,
+                     toggle=True)
+            return
+
+        # draw a drop prompt ("Add new Bake Job...")
+        if item.has_drop_prompt:
+            row.prop(item, "drop_name", text="", emboss=True)
+            return
+
+        if item.index != bakemaster.bakejobs_active_index:
+            row.emboss = 'NONE'
 
         if item.type == 'OBJECTS':
             type_icon = bm_ui_utils.get_icon_id(bakemaster,
                                                 "bakemaster_objects.png")
-            type_ot = layout.operator('bakemaster.bakejob_toggletype',
-                                      text="", icon_value=type_icon,
-                                      emboss=False)
+            type_ot = row.operator('bakemaster.bakejob_toggletype',
+                                   text="", icon_value=type_icon)
         else:
-            type_ot = layout.operator('bakemaster.bakejob_toggletype',
-                                      text="", icon='RENDERLAYERS',
-                                      emboss=False)
+            type_ot = row.operator('bakemaster.bakejob_toggletype',
+                                   text="", icon='RENDERLAYERS')
         type_ot.index = item.index
-
-        layout.prop(item, "name", text="")
+        row.emboss = 'NONE'
 
         icon = 'RESTRICT_RENDER_OFF' if item.use_bake else 'RESTRICT_RENDER_ON'
-        layout.prop(item, 'use_bake', text="", icon=icon, emboss=False)
+        row.prop(item, 'use_bake', text="", icon=icon)
+        row.active = item.use_bake
+
+        row.prop(item, "drag_ticker", text=item.name, toggle=True)
 
         if item.index == bakemaster.bakejobs_active_index:
-            layout.operator('bakemaster.bakejob_rename', text="",
-                            icon='GREASEPENCIL').index = item.index
+            row.operator('bakemaster.bakejob_rename', text="",
+                         icon='GREASEPENCIL').index = item.index
 
-        layout.active = item.use_bake
+        # fade out row while dragging if item in it isn't dragged
+        if all([bakemaster.is_drag_possible, not item.has_drag_prompt,
+                bakemaster.drag_to_index != -1]):
+            row.active = False
 
     def invoke(self, context, event):
         pass
