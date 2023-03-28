@@ -183,8 +183,8 @@ class Global(PropertyGroup):
         default="")
 
     presets_filepath: StringProperty(
-        name="Presets",
-        description="Choose a folder on the disk containing presets for BakeMaster (leave empty for default path). // is relative to this .blend file",  # noqa: E501
+        name="Presets Filepath",
+        description="Choose a folder on the disk containing Presets for BakeMaster (leave empty for default path). // is relative to this .blend file",  # noqa: E501
         default="")
 
     # UI Walker Props

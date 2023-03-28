@@ -314,6 +314,13 @@ class BM_OT_FileChooseDialog(Operator, ImportHelper):
     config_lookup: BoolProperty(default=False, options={'HIDDEN'})
     config_action: StringProperty(default="", options={'HIDDEN'})
 
+    message: StringProperty(default="", options={'HIDDEN'})
+
+    def process_exit(self):
+        if self.message != "":
+            self.report({'INFO'}, self.message)
+        return {'FINISHED'}
+
     def execute(self, context):
         if os_path.isfile(self.filepath):
             self.filepath = os_path.dirname(self.filepath)
@@ -321,17 +328,27 @@ class BM_OT_FileChooseDialog(Operator, ImportHelper):
         setattr(context.scene.bakemaster, self.prop_name, self.filepath)
 
         if not self.config_lookup:
-            return {'FINISHED'}
+            return self.process_exit()
 
         bpy_ops.bakemaster.config('EXEC_DEFAULT', action=self.config_action)
-        return {'FINISHED'}
+        return self.process_exit()
 
 
 class BM_OT_Setup(Operator):
     bl_idname = 'bakemaster.setup'
-    bl_label = "Setup"
+    bl_label = "Configure the Setup"
     bl_description = "Choose a filepath for presets, manage addon config (load/save all settings into a file)"  # noqa: E501
     bl_options = {'INTERNAL'}
+
+    def config_instruction_update(self, context):
+        default = "Config: save/load all addon settings & setup:"
+        self.config_instruction = default
+
+    config_instruction: StringProperty(
+        name="What is Config?",
+        description="Use config file as a super preset to save all addon settings, setup, presets, and tables items (e.g Bake Jobs, Objects, Maps...). BakeMaster Config file can be loaded in another .blend file, and it will still remember where to pick Objects from to bake",  # noqa: E501
+        default="Config: save/load all addon settings & setup:",
+        update=config_instruction_update)
 
     def execute(self, context):
         return {'FINISHED'}
@@ -347,16 +364,21 @@ class BM_OT_Setup(Operator):
         layout.use_property_split = False
         layout.use_property_decorate = False
 
-        row = layout.row(align=True)
-        row.prop(bakemaster, 'presets_filepath')
-        p_fc = row.operator('bakemaster.filechoosedialog', text="",
-                            icon='FILEBROWSER')
-        p_fc.filepath = bakemaster.presets_filepath
-        p_fc.prop_name = "presets_filepath"
+        if not bakemaster.config_is_attached:
+            row = layout.row(align=True)
+            row.prop(bakemaster, 'presets_filepath', text="Presets Dir")
+            p_fc = row.operator('bakemaster.filechoosedialog', text="",
+                                icon='FILEBROWSER')
+            p_fc.filepath = bakemaster.presets_filepath
+            p_fc.prop_name = "presets_filepath"
+            p_fc.message = "Filepath for Presets set successfully"
 
-        layout.separator(factor=1.0)
+            layout.separator(factor=1.0)
+
         col = layout.column(align=True)
-        col.label(text="Config:")
+        row = col.row()
+        row.prop(self, "config_instruction", text="")
+        row.enabled = False
         c_load_text = "Load"
 
         if bakemaster.config_is_attached:
@@ -366,6 +388,7 @@ class BM_OT_Setup(Operator):
                                    icon='FILEBROWSER')
             c_fc.filepath = bakemaster.config_filepath
             c_fc.prop_name = "config_filepath"
+            c_fc.message = "Filepath for Config set successfully"
             cf_row.enabled = False
 
             c_load_text = "Reload"
@@ -380,12 +403,14 @@ class BM_OT_Setup(Operator):
             c_save.prop_name = "config_filepath"
             c_save.config_lookup = True
             c_save.config_action = 'SAVE'
+            c_save.message = "Config saved successfully"
 
         c_load = row.operator('bakemaster.filechoosedialog', text=c_load_text)
         c_load.filepath = bakemaster.config_filepath
         c_load.prop_name = "config_filepath"
         c_load.config_lookup = True
         c_load.config_action = 'LOAD'
+        c_load.message = "Config loaded successfully"
 
         if bakemaster.config_is_attached:
             row.operator('bakemaster.config', text="",
