@@ -64,7 +64,13 @@ class BakeJob(PropertyGroup):
         description="Double click to rename",
         default="Bake Job")
 
-    name_old: StringProperty(default="Bake Job")
+    drop_name: StringProperty(
+        name="New Bake Job",
+        description="Drop objects here to create a new Bake Job with them",
+        default="New Bake Job...",
+        update=bm_props_utils.BakeJob_drop_name_Update)
+
+    drop_name_old: StringProperty(default="Bake Job")
 
     index: IntProperty(default=-1)
 
