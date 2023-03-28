@@ -80,6 +80,7 @@ classes = (
 
     operators.ui.BM_OT_Help,
     operators.ui.BM_OT_BakeJobs_AddRemove,
+    operators.ui.BM_OT_BakeJobs_AddDropped,
     operators.ui.BM_OT_BakeJobs_Trash,
     operators.ui.BM_OT_BakeJob_Rename,
     operators.ui.BM_OT_BakeJob_ToggleType,

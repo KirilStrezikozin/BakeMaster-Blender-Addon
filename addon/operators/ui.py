@@ -118,6 +118,58 @@ class BM_OT_BakeJobs_AddRemove(Operator):
             return {'FINISHED'}
 
 
+class BM_OT_BakeJobs_AddDropped(Operator):
+    bl_idname = 'bakemaster.bakejobs_adddropped'
+    bl_label = "New Bake Job.."
+    bl_description = "Add dropped objects into a new Bake Job"
+    bl_options = {'INTERNAL'}
+
+    index: IntProperty(default=-1)
+
+    bakejob = None
+
+    def remove_bakejob(self):
+        bpy_ops.bakemaster.bakejobs_addremove('INVOKE_DEFAULT',
+                                              action='REMOVE',
+                                              index=self.index)
+
+    def invoke(self, context, event):
+        if self.index == -1:
+            return {'CANCELLED'}
+
+        bakemaster = context.scene.bakemaster
+        self.bakejob = bakemaster.bakejobs[self.index]
+
+        if bakemaster.allow_drop_prompt:
+            self.remove_bakejob()
+            return {'FINISHED'}
+
+        return self.execute(context)
+
+    def execute(self, context):
+        if self.bakejob is None:
+            return {'CANCELLED'}
+
+        add_names = []
+        proceed = False
+
+        for object in context.selected_objects:
+            if object.type == 'MESH':
+                add_names.append(object.name)
+            if object.name == self.bakejob.drop_name:
+                proceed = True
+
+        if not proceed:
+            self.remove_bakejob()
+            return {'FINISHED'}
+
+        for name in add_names:
+            print("adding %s" % name)
+
+        self.bakejob.has_drop_prompt = False
+        return {'FINISHED'}
+
+
 class BM_OT_BakeJobs_Trash(Operator):
     bl_idname = 'bakemaster.bakejobs_trash'
     bl_label = "Trash"
