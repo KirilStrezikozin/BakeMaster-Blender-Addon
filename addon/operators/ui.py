@@ -88,6 +88,8 @@ class BM_OT_BakeJobs_AddRemove(Operator):
         items=[('ADD', "Add", ""),
                ('REMOVE', "Remove", "")])
 
+    index: IntProperty(default=-1)
+
     def invoke(self, context, event):
         return self.execute(context)
 
@@ -97,13 +99,12 @@ class BM_OT_BakeJobs_AddRemove(Operator):
         if self.action == 'ADD':
             new_bakejob = bakemaster.bakejobs.add()
             new_bakejob.index = bakemaster.bakejobs_len
-            new_bakejob.name_old = "Bake Job %d" % (new_bakejob.index + 1)
             new_bakejob.name = "Bake Job %d" % (new_bakejob.index + 1)
             bakemaster.bakejobs_active_index = new_bakejob.index
             bakemaster.bakejobs_len += 1
             return {'FINISHED'}
 
-        bakejob = bm_get.bakejob(bakemaster)
+        bakejob = bm_get.bakejob(bakemaster, self.index)
         if bakejob is None:
             return {'CANCELLED'}
 
@@ -153,7 +154,6 @@ class BM_OT_BakeJob_Rename(Operator):
     def execute(self, context):
         if self.bakejob is None:
             return {'CANCELLED'}
-        self.bakejob.name_old = self.name
         self.bakejob.name = self.name
         return {'FINISHED'}
 
