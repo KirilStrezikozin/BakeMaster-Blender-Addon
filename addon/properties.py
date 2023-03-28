@@ -54,7 +54,7 @@ class Item(PropertyGroup):
     bakejob_index: IntProperty(default=-1)
 
     use_bake: BoolProperty(
-        name="Include/Exclude the object from bake",
+        name="Include/Exclude Item from bake",
         default=True)
 
 
@@ -63,6 +63,8 @@ class BakeJob(PropertyGroup):
         name="Bake Job",
         description="Double click to rename",
         default="Bake Job")
+
+    name_old: StringProperty(default="Bake Job")
 
     index: IntProperty(default=-1)
 
@@ -74,7 +76,7 @@ class BakeJob(PropertyGroup):
                ('MAPS', "Maps", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for")])  # noqa: E501
 
     use_bake: BoolProperty(
-        name="Include/Exclude Bake Job from baking",
+        name="Include/Exclude Bake Job from bake",
         default=True)
 
     items: CollectionProperty(type=Item)
@@ -85,6 +87,18 @@ class BakeJob(PropertyGroup):
         default=0)
 
     items_len: IntProperty(default=0)
+
+    # UIList Walk Handler Props
+
+    has_drop_prompt: BoolProperty(default=False)
+    has_drag_prompt: BoolProperty(default=False)
+
+    drag_ticker: BoolProperty(
+        default=False,
+        update=bm_props_utils.BakeJob_drag_ticker_Update)
+
+    is_drag_empty: BoolProperty(default=False)
+    is_drag_placeholder: BoolProperty(default=False)
 
 
 class BakeHistory(PropertyGroup):
@@ -111,6 +125,14 @@ class Global(PropertyGroup):
         default=-1)
 
     bakejobs_len: IntProperty(default=0)
+
+    # UIList walk handler Props
+
+    allow_drop_prompt: BoolProperty(default=False)
+
+    is_drag_possible: BoolProperty(default=False)
+    drag_from_index: IntProperty(default=-1)
+    drag_to_index: IntProperty(default=-1)
 
     # Bake Props
 
