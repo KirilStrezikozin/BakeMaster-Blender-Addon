@@ -31,6 +31,7 @@ from os import (
     path as os_path,
     listdir as os_listdir,
 )
+from bpy import ops as bpy_ops
 import bpy.utils.previews as bpy_utils_previews
 
 
@@ -44,3 +45,31 @@ def load_preview_collections():
         pcoll.load(filename, filepath, 'IMAGE')
 
     return pcoll
+
+
+def BakeJob_drop_name_Update(self, context):
+    if self.drop_name_old == self.drop_name:
+        return
+
+    self.name_old = self.name
+    bpy_ops.bakemaster.bakejobs_adddropped('INVOKE_DEFAULT', index=self.index)
+
+
+def BakeJob_drag_ticker_Update(self, context):
+    bakemaster = context.scene.bakemaster
+
+    if not bakemaster.is_drag_possible or bakemaster.drag_from_index == -1:
+        bakemaster.bakejobs_active_index = self.index
+        bakemaster.drag_from_index = self.index
+        self.has_drag_prompt = True
+        return
+
+    if bakemaster.drag_to_index != -1:
+        bakemaster.bakejobs[bakemaster.drag_to_index
+                            ].is_drag_placeholder = False
+    bakemaster.drag_to_index = self.index
+    self.is_drag_placeholder = True
+
+    ticker_old = bakemaster.bakejobs[bakemaster.drag_from_index].drag_ticker
+    if self.drag_ticker == ticker_old:
+        self.drag_ticker = not ticker_old
