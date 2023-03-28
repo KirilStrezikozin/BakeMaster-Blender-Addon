@@ -38,27 +38,27 @@ def bakejob(bakemaster: not None, index=-1):
         return bakejob
 
 
-def container(bakejob, index=-1):
+def item(bakejob, index=-1):
     if bakejob is None:
         return None
     if index == -1:
-        index = bakejob.containers_active_index
+        index = bakejob.items_active_index
     try:
-        container = bakejob.containers[index]
-    except IndexError:
-        return None
-    else:
-        return container
-
-
-def item(container, index=-1):
-    if container is None:
-        return None
-    if index == -1:
-        index = container.items_active_index
-    try:
-        item = container.items[index]
+        item = bakejob.items[index]
     except IndexError:
         return None
     else:
         return item
+
+
+def subitem(item, index=-1):
+    if item is None:
+        return None
+    if index == -1:
+        index = item.subitems_active_index
+    try:
+        subitem = item.subitems[index]
+    except IndexError:
+        return None
+    else:
+        return subitem
