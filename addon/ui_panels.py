@@ -187,10 +187,8 @@ class BM_UL_BakeHistory(UIList):
         for item in items:
             name = propname_getter(data, item)
             if fnmatch(name, pattern):
-                print(name, True)
                 flt_flags.append(bitflag)
             else:
-                print(name, False)
                 flt_flags.append(~bitflag)
 
         if reverse:
@@ -216,9 +214,6 @@ class BM_UL_BakeHistory(UIList):
                                             reverse=self.use_filter_invert)
         if not flt_flags:
             flt_flags = [self.bitflag_filter_item] * data.bakehistory_len
-
-        # flt_flags = [self.bitflag_filter_item] * data.bakehistory_len
-        # flt_neworder = [index for index in range(data.bakehistory_len)]
 
         return flt_flags, flt_neworder
 
