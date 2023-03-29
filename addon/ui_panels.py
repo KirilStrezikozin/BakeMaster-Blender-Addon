@@ -38,6 +38,7 @@ from bpy.types import (
     UIList,
     AddonPreferences,
 )
+from fnmatch import fnmatch as fnmatch
 
 bm_space_type = 'VIEW_3D'
 bm_region_type = 'UI'
@@ -146,6 +147,8 @@ class BM_UL_BakeJobs(UIList):
 class BM_UL_BakeHistory(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
+        self.use_filter_sort_reverse = True
+
         bakemaster = context.scene.bakemaster
         timestamp = bm_ui_utils.bakehistory_timestamp_get_label(bakemaster,
                                                                 item)
@@ -165,14 +168,58 @@ class BM_UL_BakeHistory(UIList):
             row.active = False
 
     def draw_filter(self, context, layout):
-        pass
+        row = layout.row(align=True)
+        row.prop(self, "filter_name", text="")
+        row.prop(self, "use_filter_invert", text="", toggle=True,
+                 icon='ARROW_LEFTRIGHT')
+
+    def item_get_name(self, data, item):
+        timestamp = bm_ui_utils.bakehistory_timestamp_get_label(data,
+                                                                item)
+        return "%s%s" % (item.name, timestamp)
+
+    def filter_by_name(self, data, pattern, bitflag, items,
+                       propname_getter, flags=None, reverse=False):
+        flt_flags = []
+        pattern = "*%s*" % pattern
+        print(pattern)
+
+        for item in items:
+            name = propname_getter(data, item)
+            if fnmatch(name, pattern):
+                print(name, True)
+                flt_flags.append(bitflag)
+            else:
+                print(name, False)
+                flt_flags.append(~bitflag)
+
+        if reverse:
+            flt_flags.reverse()
+
+        return flt_flags
 
     def filter_items(self, context, data, propname):
-        """Draw Bake History in reversed order"""
+        # Sort items by filter_name on item.name + item.timestamp combined
 
-        flt_flags = [self.bitflag_filter_item] * data.bakehistory_len
-        flt_neworder = [index for index in reversed(
-            range(data.bakehistory_len))]
+        bakehistory = getattr(data, propname)
+
+        # Default return values
+        flt_flags = []
+        flt_neworder = []
+
+        # Filtering by name
+        if self.filter_name:
+            flt_flags = self.filter_by_name(data, self.filter_name,
+                                            self.bitflag_filter_item,
+                                            bakehistory,
+                                            self.item_get_name,
+                                            reverse=self.use_filter_invert)
+        if not flt_flags:
+            flt_flags = [self.bitflag_filter_item] * data.bakehistory_len
+
+        # flt_flags = [self.bitflag_filter_item] * data.bakehistory_len
+        # flt_neworder = [index for index in range(data.bakehistory_len)]
+
         return flt_flags, flt_neworder
 
     def invoke(self, context, event):
