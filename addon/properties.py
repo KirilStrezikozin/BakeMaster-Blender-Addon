@@ -106,6 +106,11 @@ class BakeJob(PropertyGroup):
     is_drag_empty: BoolProperty(default=False)
     is_drag_placeholder: BoolProperty(default=False)
 
+    # Helper Funcs
+
+    def get_items_names(self):
+        return [item.name for item in self.items]
+
 
 class BakeHistory(PropertyGroup):
     name: StringProperty(
