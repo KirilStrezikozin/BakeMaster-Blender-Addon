@@ -199,17 +199,14 @@ class BM_UL_BakeHistory(UIList):
     def filter_items(self, context, data, propname):
         # Sort items by filter_name on item.name + item.timestamp combined
 
-        bakehistory = getattr(data, propname)
-
         # Default return values
         flt_flags = []
         flt_neworder = []
 
-        # Filtering by name
         if self.filter_name:
             flt_flags = self.filter_by_name(data, self.filter_name,
                                             self.bitflag_filter_item,
-                                            bakehistory,
+                                            getattr(data, propname),
                                             self.item_get_name,
                                             reverse=self.use_filter_invert)
         if not flt_flags:
