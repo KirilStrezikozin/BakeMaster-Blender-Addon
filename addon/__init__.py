@@ -35,6 +35,11 @@ from bpy.utils import (
 import bpy.utils.previews as bpy_utils_previews
 from bpy.types import Scene as bpy_types_Scene
 from bpy.props import PointerProperty
+from bpy import ops as bpy_ops
+from bpy.app.handlers import (
+    depsgraph_update_pre as bpy_depsgraph_update_pre,
+    persistent,
+)
 
 from . import ui_panels
 from . import properties
@@ -79,6 +84,7 @@ classes = (
     ui_panels.BM_UL_BakeHistory,
 
     operators.ui.BM_OT_Help,
+    operators.ui.BM_OT_UIList_WalkHandler,
     operators.ui.BM_OT_BakeJobs_AddRemove,
     operators.ui.BM_OT_BakeJobs_AddDropped,
     operators.ui.BM_OT_BakeJobs_Trash,
@@ -98,10 +104,20 @@ classes = (
 )
 
 
+@persistent
+def BM_UIList_WalkHandler_callback(scene):
+    ticker = scene.bakemaster.uilist_walkhandler_ticker
+    scene.bakemaster.uilist_walkhandler_ticker = not ticker
+    # print("no")
+    # bpy_ops.bakemaster.uilist_walkhandler('INVOKE_DEFAULT')
+
+
 def register():
     for cls in classes:
         bpy_utils_register_class(cls)
     bpy_types_Scene.bakemaster = PointerProperty(type=properties.Global)
+
+    bpy_depsgraph_update_pre.append(BM_UIList_WalkHandler_callback)
 
 
 def unregister():
@@ -109,12 +125,18 @@ def unregister():
         bpy_utils_unregister_class(cls)
 
     # clearing preview_collections - custom icons
-    for scene in bpy_context.data.scenes:
-        if not hasattr(scene, "bakemaster"):
+    # for scene in bpy_context.data.scenes:
+    #     if not hasattr(scene, "bakemaster"):
+    #         continue
+    #     for pcoll in scene.bakemaster.preview_collections.values():
+    #         bpy_utils_previews.remove(pcoll)
+    #     scene.bakemaster.preview_collections.clear()
+
+    # removing calls handlers
+    for item in bpy_depsgraph_update_pre:
+        if item.__name__ != "bakemaster_uilist_walkhandler_callhandler":
             continue
-        for pcoll in scene.bakemaster.preview_collections.values():
-            bpy_utils_previews.remove(pcoll)
-        scene.bakemaster.preview_collections.clear()
+        bpy_depsgraph_update_pre.remove(item)
 
     del bpy_types_Scene.bakemaster
 

@@ -150,6 +150,13 @@ class BM_UL_BakeHistory(UIList):
         self.use_filter_sort_reverse = True
 
         bakemaster = context.scene.bakemaster
+        ticker = bakemaster.uilist_walkhandler_ticker
+        ticker_old = bakemaster.uilist_walkhandler_ticker_old
+
+        if ticker != ticker_old:
+            layout.prop(item, "name", text="")
+            return
+
         timestamp = bm_ui_utils.bakehistory_timestamp_get_label(bakemaster,
                                                                 item)
 

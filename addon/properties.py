@@ -137,7 +137,15 @@ class Global(PropertyGroup):
 
     bakejobs_len: IntProperty(default=0)
 
-    # UIList walk handler Props
+    # UIList WalkHandler Props
+
+    is_uilist_walkhandler_running: BoolProperty(
+        name="Press to deactivate Drag & Drop functionality",
+        default=False,
+        options={'SKIP_SAVE'})
+
+    uilist_walkhandler_ticker: BoolProperty(default=False)
+    uilist_walkhandler_ticker_old: BoolProperty(default=False)
 
     allow_drop_prompt: BoolProperty(default=False)
 

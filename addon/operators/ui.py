@@ -78,6 +78,43 @@ class BM_OT_Help(Operator):
         return {'FINISHED'}
 
 
+class BM_OT_UIList_WalkHandler(Operator):
+    bl_idname = 'bakemaster.uilist_walkhandler'
+    bl_label = "Drag & Drop"
+    bl_description = "Drag & Drop functionality was accidentally deactivated. Press to turn it back on"  # noqa: E501
+    bl_options = {'INTERNAL'}
+
+    _handler = None
+
+    @classmethod
+    def is_running(cls):
+        return cls._handler is not None
+
+    def execute(self, context):
+        cls = self.__class__
+        cls._handler = None
+        print('FINISHED')
+        return {'FINISHED'}
+
+    def modal(self, context, event):
+        print(context.region, event.type)
+        if event.type == 'ESC':
+            return self.execute(context)
+        return {'PASS_THROUGH'}
+
+    def invoke(self, context, event):
+        print('invoke')
+        cls = self.__class__
+        if cls._handler is not None:
+            print('CANCELLED')
+            return {'CANCELLED'}
+        cls._handler = self
+
+        wm = context.window_manager
+        wm.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
+
+
 class BM_OT_BakeJobs_AddRemove(Operator):
     bl_idname = 'bakemaster.bakejobs_addremove'
     bl_label = "Add/Remove"
