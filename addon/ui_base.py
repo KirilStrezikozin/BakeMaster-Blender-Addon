@@ -35,20 +35,37 @@ from .utils import (
 )
 
 
-class BM_PT_BakeJobsBase(Panel):
-    bl_label = "Bake Jobs"
-    bl_idname = 'BM_PT_BakeJobsBase'
+class BM_PT_Helper(Panel):
+    """BakeMaster UI Panel Helper class"""
 
     @classmethod
     def poll(cls, context):
-        return hasattr(context.scene, "bakemaster")
+        # Default poll (determine whether able to draw a panel)
+        return all([hasattr(context.scene, "bakemaster"),
+                    cls.panel_poll(context)])
+
+    @classmethod
+    def panel_poll(cls, context):
+        # Default empty panel_poll for additional poll checks
+        return True
+
+    def draw_header_layout(self, context, help_action='INDEX'):
+        # Draw default header layout
+
+        bakemaster = context.scene.bakemaster
+        row = self.layout.row()
+
+        if bakemaster.prefs_use_show_help:
+            row.operator('bakemaster.help', text="",
+                         icon='HELP').action = help_action
+
+
+class BM_PT_BakeJobsBase(BM_PT_Helper):
+    bl_label = "Bake Jobs"
+    bl_idname = 'BM_PT_BakeJobs'
 
     def draw_header_preset(self, context):
-        bakemaster = context.scene.bakemaster
-        if not bakemaster.prefs_use_show_help:
-            return
-        self.layout.row().operator('bakemaster.help', text="",
-                                   icon='HELP').action = 'BAKEJOBS'
+        self.draw_header_layout(context, help_action='BAKEJOBS')
 
     def draw(self, context):
         scene = context.scene
@@ -71,21 +88,17 @@ class BM_PT_BakeJobsBase(Panel):
             col.operator('bakemaster.bakejobs_addremove', text="",
                          icon='REMOVE').action = 'REMOVE'
 
+        col.emboss = 'NONE'
         if bakemaster.bakejobs_len > 1:
             col.separator(factor=1.0)
-            col.emboss = 'NONE'
             col.operator('bakemaster.bakejobs_trash', text="", icon='TRASH')
         col.separator(factor=1.0)
         col.operator('bakemaster.setup', text="", icon='PROPERTIES')
 
 
-class BM_PT_BakeBase(Panel):
+class BM_PT_BakeBase(BM_PT_Helper):
     bl_label = " "
     bl_idname = 'BM_PT_Bake'
-
-    @classmethod
-    def poll(cls, context):
-        return hasattr(context.scene, "bakemaster")
 
     def draw_header(self, context):
         label = "Bake"
@@ -93,24 +106,16 @@ class BM_PT_BakeBase(Panel):
         self.layout.label(text=label, icon=icon)
 
     def draw_header_preset(self, context):
-        bakemaster = context.scene.bakemaster
-        if not bakemaster.prefs_use_show_help:
-            return
-        self.layout.row().operator('bakemaster.help', text="",
-                                   icon='HELP').action = 'BAKE'
+        self.draw_header_layout(context, help_action='BAKE')
 
     def draw(self, context):
         pass
 
 
-class BM_PT_BakeControlsBase(Panel):
+class BM_PT_BakeControlsBase(BM_PT_Helper):
     bl_label = " "
     bl_idname = 'BM_PT_BakeControls'
     bl_options = {'HIDE_HEADER'}
-
-    @classmethod
-    def poll(cls, context):
-        return hasattr(context.scene, "bakemaster")
 
     def draw_header(self, context):
         pass
@@ -154,14 +159,10 @@ class BM_PT_BakeControlsBase(Panel):
         layout.separator(factor=1.5)
 
 
-class BM_PT_BakeHistoryBase(Panel):
+class BM_PT_BakeHistoryBase(BM_PT_Helper):
     bl_label = " "
     bl_idname = 'BM_PT_BakeHistory'
     bl_options = {'DEFAULT_CLOSED'}
-
-    @classmethod
-    def poll(cls, context):
-        return hasattr(context.scene, "bakemaster")
 
     def draw_header(self, context):
         label = "Bake History"
@@ -169,11 +170,7 @@ class BM_PT_BakeHistoryBase(Panel):
         self.layout.label(text=label, icon=icon)
 
     def draw_header_preset(self, context):
-        bakemaster = context.scene.bakemaster
-        if not bakemaster.prefs_use_show_help:
-            return
-        self.layout.row().operator('bakemaster.help', text="",
-                                   icon='HELP').action = 'BAKEHISTORY'
+        self.draw_header_layout(context, help_action='BAKEHISTORY')
 
     def draw(self, context):
         scene = context.scene
