@@ -93,7 +93,7 @@ class BM_PT_BakeJobsBase(BM_PT_Helper):
             col.separator(factor=1.0)
             col.operator('bakemaster.bakejobs_trash', text="", icon='TRASH')
         col.separator(factor=1.0)
-        col.operator('bakemaster.setup', text="", icon='PROPERTIES')
+        col.operator('bakemaster.setup', text="", icon='PREFERENCES')
 
 
 class BM_PT_BakeBase(BM_PT_Helper):
