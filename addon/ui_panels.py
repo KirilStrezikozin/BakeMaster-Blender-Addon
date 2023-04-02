@@ -86,7 +86,7 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
 class BM_UL_BakeJobs(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
-        bakemaster = context.scene.bakemaster
+        bakemaster = data
         col = layout.column(align=True)
 
         # draw a darker line when dragging a bake job
@@ -149,14 +149,7 @@ class BM_UL_BakeHistory(UIList):
                   active_propname, index):
         self.use_filter_sort_reverse = True
 
-        bakemaster = context.scene.bakemaster
-        ticker = bakemaster.uilist_walkhandler_ticker
-        ticker_old = bakemaster.uilist_walkhandler_ticker_old
-
-        if ticker != ticker_old:
-            layout.prop(item, "name", text="")
-            return
-
+        bakemaster = data
         timestamp = bm_ui_utils.bakehistory_timestamp_get_label(bakemaster,
                                                                 item)
 
@@ -174,7 +167,7 @@ class BM_UL_BakeHistory(UIList):
         if bakemaster.bakehistory_reserved_index == item.index:
             row.active = False
 
-    def draw_filter(self, context, layout):
+    def draw_filter(self, _, layout):
         row = layout.row(align=True)
         row.prop(self, "filter_name", text="")
         row.prop(self, "use_filter_invert", text="", toggle=True,
@@ -185,11 +178,10 @@ class BM_UL_BakeHistory(UIList):
                                                                 item)
         return "%s%s" % (item.name, timestamp)
 
-    def filter_by_name(self, data, pattern, bitflag, items,
-                       propname_getter, flags=None, reverse=False):
+    def filter_by_name(self, data, pattern, bitflag, items, propname_getter,
+                       reverse=False):
         flt_flags = []
         pattern = "*%s*" % pattern
-        print(pattern)
 
         for item in items:
             name = propname_getter(data, item)
@@ -203,7 +195,7 @@ class BM_UL_BakeHistory(UIList):
 
         return flt_flags
 
-    def filter_items(self, context, data, propname):
+    def filter_items(self, _, data, propname):
         # Sort items by filter_name on item.name + item.timestamp combined
 
         # Default return values
