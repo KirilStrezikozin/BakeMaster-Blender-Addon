@@ -49,11 +49,27 @@ from ..labels import (
 )
 
 
+class BM_OT_RemovePreviewCollections(Operator):
+    bl_idname = 'bakemaster.removepreviewcollections'
+    bl_label = "Remove Preview Collections"
+    bl_options = {'INTERNAL'}
+
+    def execute(self, context):
+        import bpy.utils.previews as bpy_utils_previews
+        preview_collections = context.scene.bakemaster.preview_collections
+
+        for pcoll in preview_collections.values():
+            bpy_utils_previews.remove(pcoll)
+
+        preview_collections.clear()
+        return {'FINISHED'}
+
+
 class BM_OT_Help(Operator):
     bl_idname = 'bakemaster.help'
     bl_label = "Help"
     bl_description = "Press to visit the according BakeMaster's online documentation page"  # noqa: E501
-    bl_options = {'INTERNAL', 'UNDO'}
+    bl_options = {'INTERNAL'}
 
     action: EnumProperty(
         default='INDEX',

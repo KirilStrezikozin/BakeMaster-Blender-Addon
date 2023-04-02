@@ -36,7 +36,14 @@ import bpy.utils.previews as bpy_utils_previews
 
 
 def load_preview_collections():
-    """Load custom icons into preview_collections"""
+    """
+    Load custom icons into preview_collections.
+
+    Raises ResourceWarning(ImagePreviewCollection left open).
+    Warning is handled with bpy.ops.bakemaster.previewcollectionsremove()
+    by removing preview collections in unregister().
+    """
+
     pcoll = bpy_utils_previews.new()
     icons_dir = os_path.join(os_path.dirname(os_path.dirname(__file__)),
                              "icons")  # no check if path doesn't exist
@@ -47,7 +54,7 @@ def load_preview_collections():
     return pcoll
 
 
-def BakeJob_drop_name_Update(self, context):
+def BakeJob_drop_name_Update(self, _):
     if self.drop_name_old == self.drop_name:
         return
 

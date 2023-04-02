@@ -84,6 +84,7 @@ classes = (
     ui_panels.BM_UL_BakeJobs,
     ui_panels.BM_UL_BakeHistory,
 
+    operators_ui.BM_OT_RemovePreviewCollections,
     operators_ui.BM_OT_Help,
     operators_ui.BM_OT_UIList_WalkHandler,
     operators_ui.BM_OT_BakeJobs_AddRemove,
@@ -122,20 +123,15 @@ def register():
 
 
 def unregister():
+    # remove custom icons
+    bpy_ops.bakemaster.removepreviewcollections('EXEC_DEFAULT')
+
     for cls in reversed(classes):
         bpy_utils_unregister_class(cls)
 
-    # clearing preview_collections - custom icons
-    # for scene in bpy_context.data.scenes:
-    #     if not hasattr(scene, "bakemaster"):
-    #         continue
-    #     for pcoll in scene.bakemaster.preview_collections.values():
-    #         bpy_utils_previews.remove(pcoll)
-    #     scene.bakemaster.preview_collections.clear()
-
-    # removing calls handlers
+    # remove calls handlers
     for item in bpy_depsgraph_update_pre:
-        if item.__name__ != "bakemaster_uilist_walkhandler_callhandler":
+        if item.__name__ != "BM_UIList_WalkHandler_callback":
             continue
         bpy_depsgraph_update_pre.remove(item)
 
