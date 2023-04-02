@@ -131,7 +131,8 @@ class BM_UL_BakeJobs(UIList):
 
         row.prop(item, "drag_ticker", text=item.name, toggle=True)
 
-        if item.index == bakemaster.bakejobs_active_index:
+        if all([item.index == bakemaster.bakejobs_active_index,
+                not bakemaster.is_drag_possible]):
             row.operator('bakemaster.bakejob_rename', text="",
                          icon='GREASEPENCIL').index = item.index
 
