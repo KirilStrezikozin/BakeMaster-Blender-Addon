@@ -47,6 +47,7 @@ from .operators import (
     ui as operators_ui,
 )
 
+
 if "bpy_utils_register_class" in locals():
     from importlib import reload as module_reload
 
@@ -83,24 +84,24 @@ classes = (
     ui_panels.BM_UL_BakeJobs,
     ui_panels.BM_UL_BakeHistory,
 
-    operators.ui.BM_OT_Help,
-    operators.ui.BM_OT_UIList_WalkHandler,
-    operators.ui.BM_OT_BakeJobs_AddRemove,
-    operators.ui.BM_OT_BakeJobs_AddDropped,
-    operators.ui.BM_OT_BakeJobs_Trash,
-    operators.ui.BM_OT_BakeJob_Rename,
-    operators.ui.BM_OT_BakeJob_ToggleType,
-    operators.ui.BM_OT_FileChooseDialog,
-    operators.ui.BM_OT_Setup,
-    operators.ui.BM_OT_Config,
-    operators.ui.BM_OT_Bake_One,
-    operators.ui.BM_OT_Bake_All,
-    operators.ui.BM_OT_Bake_Pause,
-    operators.ui.BM_OT_Bake_Stop,
-    operators.ui.BM_OT_Bake_Cancel,
-    operators.ui.BM_OT_BakeHistory_Rebake,
-    operators.ui.BM_OT_BakeHistory_Config,
-    operators.ui.BM_OT_BakeHistory_Remove,
+    operators_ui.BM_OT_Help,
+    operators_ui.BM_OT_UIList_WalkHandler,
+    operators_ui.BM_OT_BakeJobs_AddRemove,
+    operators_ui.BM_OT_BakeJobs_AddDropped,
+    operators_ui.BM_OT_BakeJobs_Trash,
+    operators_ui.BM_OT_BakeJob_Rename,
+    operators_ui.BM_OT_BakeJob_ToggleType,
+    operators_ui.BM_OT_FileChooseDialog,
+    operators_ui.BM_OT_Setup,
+    operators_ui.BM_OT_Config,
+    operators_ui.BM_OT_Bake_One,
+    operators_ui.BM_OT_Bake_All,
+    operators_ui.BM_OT_Bake_Pause,
+    operators_ui.BM_OT_Bake_Stop,
+    operators_ui.BM_OT_Bake_Cancel,
+    operators_ui.BM_OT_BakeHistory_Rebake,
+    operators_ui.BM_OT_BakeHistory_Config,
+    operators_ui.BM_OT_BakeHistory_Remove,
 )
 
 
