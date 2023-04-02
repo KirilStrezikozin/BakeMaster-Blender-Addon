@@ -86,7 +86,7 @@ classes = (
 
     operators_ui.BM_OT_RemovePreviewCollections,
     operators_ui.BM_OT_Help,
-    operators_ui.BM_OT_UIList_WalkHandler,
+    operators_ui.BM_OT_UIList_Walk_Drag,
     operators_ui.BM_OT_BakeJobs_AddRemove,
     operators_ui.BM_OT_BakeJobs_AddDropped,
     operators_ui.BM_OT_BakeJobs_Trash,

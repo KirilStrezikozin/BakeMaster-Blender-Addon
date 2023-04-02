@@ -94,32 +94,92 @@ class BM_OT_Help(Operator):
         return {'FINISHED'}
 
 
-class BM_OT_UIList_WalkHandler(Operator):
-    bl_idname = 'bakemaster.uilist_walkhandler'
-    bl_label = "Drag & Drop"
-    bl_description = "Drag & Drop functionality was accidentally deactivated. Press to turn it back on"  # noqa: E501
+class BM_OT_UIList_Walk_Drag(Operator):
+    bl_idname = 'bakemaster.uilist_walk_drag'
+    bl_label = "Drag"
+    bl_description = "Drag item to move it to a new location or to see other options"  # noqa: E501
     bl_options = {'INTERNAL'}
 
     _handler = None
+    bakemaster = None
 
     @classmethod
     def is_running(cls):
         return cls._handler is not None
 
+    def bakejobs_prepare_for_drag(self, bakemaster):
+        drag_empty = bakemaster.bakejobs.add()
+        drag_empty.is_drag_empty = True
+        drag_empty.index = bakemaster.bakejobs_len - 1
+        bakemaster.bakejobs_len += 1
+
+        for bakejob in bakemaster.bakejobs:
+            bakejob.drag_ticker = False
+
+    def bakejobs_clean_after_drag(self, bakemaster):
+        index = 0
+        to_remove = []
+        for bakejob in bakemaster.bakejobs:
+            bakejob.is_drag_placeholder = False
+            if bakejob.is_drag_empty:
+                to_remove.append(index)
+                continue
+            bakejob.index = index
+            index += 1
+
+        for index in reversed(to_remove):
+            bakemaster.bakejobs.remove(index)
+        bakemaster.bakejobs_len -= len(to_remove)
+
     def execute(self, context):
         cls = self.__class__
         cls._handler = None
+
+        if self.bakemaster is None:
+            bakemaster = context.scene.bakemaster
+        else:
+            bakemaster = self.bakemaster
+
+        if any([not bakemaster.is_drag_possible,
+                bakemaster.drag_from_index == -1,
+                bakemaster.drag_to_index == -1]):
+            return {'CANCELLED'}
+
+        if bakemaster.drag_to_index > bakemaster.drag_from_index:
+            new_index = bakemaster.drag_to_index - 1
+        else:
+            new_index = bakemaster.drag_to_index
+
+        bakemaster.bakejobs.move(bakemaster.drag_from_index, new_index)
+        bakemaster.bakejobs_active_index = new_index
+
+        self.bakejobs_clean_after_drag(bakemaster.bakejobs)
+
+        bakemaster.is_drag_possible = False
+        bakemaster.drag_from_index = -1
+        bakemaster.drag_to_index = -1
+
         print('FINISHED')
         return {'FINISHED'}
 
     def modal(self, context, event):
-        print(context.region, event.type)
-        if event.type == 'ESC':
-            return self.execute(context)
-        return {'PASS_THROUGH'}
+        print('MODAL')
+        if 'TIMER' in event.type:
+            return {'PASS_THROUGH'}
 
-    def invoke(self, context, event):
-        print('invoke')
+        elif event.type == 'LEFTMOUSE' or self.bakemaster is None:
+            print('EXIT')
+            return self.execute(context)
+
+        elif self.bakemaster.drag_to_index != -1 and 'MOUSEMOVE' in event.type:
+            print('MOVE')
+            return self.execute(context)
+
+        else:
+            return {'PASS_THROUGH'}
+
+    def invoke(self, context, _):
+        print('CALL')
         cls = self.__class__
         if cls._handler is not None:
             print('CANCELLED')
@@ -128,6 +188,12 @@ class BM_OT_UIList_WalkHandler(Operator):
 
         wm = context.window_manager
         wm.modal_handler_add(self)
+
+        self.bakemaster = context.scene.bakemaster
+        self.bakemaster.is_drag_possible = True
+        self.bakemaster.drag_from_index = -1
+        self.bakemaster.drag_to_index = -1
+        self.bakejobs_prepare_for_drag(self.bakemaster)
         return {'RUNNING_MODAL'}
 
 
