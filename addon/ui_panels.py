@@ -145,6 +145,28 @@ class BM_UL_BakeJobs(UIList):
                 bakemaster.drag_to_index != -1]):
             row.active = False
 
+    def draw_filter(self, context, layout):
+        if all([context.scene.bakemaster.allow_drag,
+                context.scene.bakemaster.drag_to_index != -1]):
+            return
+
+        row = layout.row()
+
+        subrow = row.row(align=True)
+        subrow.prop(self, "filter_name", text="")
+        subrow.prop(self, "use_filter_invert", text="", toggle=True,
+                    icon='ARROW_LEFTRIGHT')
+
+        subrow = row.row(align=True)
+        subrow.prop(self, "use_filter_sort_alpha", text="", toggle=True,
+                    icon='SORTALPHA')
+        if self.use_filter_sort_reverse:
+            icon = 'SORT_DESC'
+        else:
+            icon = 'SORT_ASC'
+        subrow.prop(self, "use_filter_sort_reverse", text="", toggle=True,
+                    icon=icon)
+
     def invoke(self, context, event):
         pass
 
