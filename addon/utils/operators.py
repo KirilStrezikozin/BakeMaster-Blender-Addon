@@ -30,6 +30,10 @@
 from datetime import datetime
 
 
+def get_items_bakejobs(bakemaster):
+    return bakemaster, bakemaster.bakejobs, "bakejobs"
+
+
 def ui_bake_poll(bakemaster, bake_is_running):
     if bake_is_running:
         return False, "Another bake is running"
