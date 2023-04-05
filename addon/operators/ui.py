@@ -49,22 +49,6 @@ from ..labels import (
 )
 
 
-class BM_OT_RemovePreviewCollections(Operator):
-    bl_idname = 'bakemaster.removepreviewcollections'
-    bl_label = "Remove Preview Collections"
-    bl_options = {'INTERNAL'}
-
-    def execute(self, context):
-        import bpy.utils.previews as bpy_utils_previews
-        preview_collections = context.scene.bakemaster.preview_collections
-
-        for pcoll in preview_collections.values():
-            bpy_utils_previews.remove(pcoll)
-
-        preview_collections.clear()
-        return {'FINISHED'}
-
-
 class BM_OT_Help(Operator):
     bl_idname = 'bakemaster.help'
     bl_label = "Help"
@@ -84,116 +68,273 @@ class BM_OT_Help(Operator):
                ('BAKE', "Bake", ""),
                ('BAKEHISTORY', "Bake History", "")])
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         self.url = BM_URLs("latest").get(self.action)
         return self.execute(context)
 
-    def execute(self, context):
+    def execute(self, _):
         from webbrowser import open as webbrowser_open
         webbrowser_open(self.url)
         return {'FINISHED'}
 
 
-class BM_OT_UIList_Walk_Drag(Operator):
-    bl_idname = 'bakemaster.uilist_walk_drag'
+class BM_OT_UIList_Walk_Handler(Operator):
+    bl_idname = 'bakemaster.uilist_walk_handler'
     bl_label = "Drag"
     bl_description = "Drag item to move it to a new location or to see other options"  # noqa: E501
     bl_options = {'INTERNAL'}
 
     _handler = None
-    bakemaster = None
 
-    @classmethod
-    def is_running(cls):
-        return cls._handler is not None
+    def __del__(self):
+        """
+        Called on class unregister.
+        """
+        pass
 
-    def bakejobs_prepare_for_drag(self, bakemaster):
-        drag_empty = bakemaster.bakejobs.add()
-        drag_empty.is_drag_empty = True
-        drag_empty.index = bakemaster.bakejobs_len - 1
-        bakemaster.bakejobs_len += 1
-
-        for bakejob in bakemaster.bakejobs:
-            bakejob.drag_ticker = False
-
-    def bakejobs_clean_after_drag(self, bakemaster):
-        index = 0
-        to_remove = []
-        for bakejob in bakemaster.bakejobs:
-            bakejob.is_drag_placeholder = False
-            if bakejob.is_drag_empty:
-                to_remove.append(index)
-                continue
-            bakejob.index = index
-            index += 1
-
-        for index in reversed(to_remove):
-            bakemaster.bakejobs.remove(index)
-        bakemaster.bakejobs_len -= len(to_remove)
-
-    def execute(self, context):
+    def handler_poll(self):
         cls = self.__class__
-        cls._handler = None
+        if cls._handler is not None:
+            return False
+        cls._handler = self
+        return True
 
-        if self.bakemaster is None:
-            bakemaster = context.scene.bakemaster
+    def reset_props(self, bakemaster):
+        self.is_dropping = False
+        self.is_dragging = False
+
+        self.wait_events_end = False
+        self.query_events_end = False
+        # self.get_items = None
+        self.get_items = bm_ots_utils.get_items_bakejobs  # no implement
+
+        bakemaster.uilist_walk_handler_items_getter_name = ""  # no implement
+
+        bakemaster.allow_drop = False
+        bakemaster.allow_drag = False
+
+        bakemaster.drag_from_index = -1
+        bakemaster.drag_to_index = -1
+
+    def is_cursor_in_region(self, region, event):
+        # area as region is acceptable
+        if all([region.x <= event.mouse_x <= region.x + region.width,
+                region.y <= event.mouse_y <= region.y + region.height]):
+            return True
         else:
-            bakemaster = self.bakemaster
+            return False
 
-        if any([not bakemaster.is_drag_possible,
-                bakemaster.drag_from_index == -1,
-                bakemaster.drag_to_index == -1]):
-            return {'CANCELLED'}
+    def get_uiarea_of_type(self, screen: not None, area_type: str):
+        for area in screen.areas:
+            if area is None:
+                continue
+            if area.type == area_type:
+                return area
+        return None
 
+    def is_drop_available(self, context, event, bakemaster):
+        if self.is_dropping:
+            return True
+        elif event.type != 'LEFTMOUSE':
+            self.drop_end(bakemaster)
+            return False
+
+        outliner_area = self.get_uiarea_of_type(context.screen, 'OUTLINER')
+
+        if outliner_area is None:
+            return False
+        return self.is_cursor_in_region(outliner_area, event)
+
+    def is_drag_available(self, context, event, bakemaster):
+        if bakemaster.allow_drag:
+            return True
+        elif event.type != 'LEFTMOUSE':
+            return False
+
+        viewport_area = self.get_uiarea_of_type(context.screen, 'VIEW_3D')
+
+        if viewport_area is None:
+            return False
+        for region in viewport_area.regions:
+            if region is None:
+                continue
+            if region.type != 'UI':
+                continue
+            return self.is_cursor_in_region(region, event)
+        return False
+
+    def drop_init(self, bakemaster):
+        if self.is_dropping or self.get_items is None:
+            return
+
+        bakemaster.allow_drop = True
+        self.is_dropping = True
+        self.wait_events_end = False
+
+        data, items, attr = self.get_items(bakemaster)
+        items_len = getattr(data, "%s_len" % attr)
+
+        new_item = items.add()
+        new_item.index = items_len
+        new_item.drop_name_old = "Add new?"
+        new_item.drop_name = "Add new?"
+        new_item.has_drop_prompt = True
+
+        setattr(data, "%s_active_index" % attr, items_len)
+
+    def drag_init(self, bakemaster):
+        if self.is_dragging or self.get_items is None:
+            return
+
+        data, items, attr = self.get_items(bakemaster)
+        items_len = getattr(data, "%s_len" % attr)
+
+        items_active_index = getattr(data, "%s_active_index" % attr)
+        self.drag_end(bakemaster)
+
+        drag_empty = items.add()
+        drag_empty.index = items_len
+        drag_empty.is_drag_empty = True
+
+        for item in items:
+            item.drag_ticker = False
+
+        setattr(data, "%s_active_index" % attr, items_active_index)
+
+        bakemaster.allow_drag = True
+        self.is_dragging = True
+
+    def remove_drop_prompts(self, bakemaster):
+        if self.get_items is None:
+            return
+
+        _, items, _ = self.get_items(bakemaster)
+        to_remove = []
+        for item in items:
+            #name_update(item, context)
+            if not item.has_drop_prompt:
+                continue
+            to_remove.append(item.index)
+        for index in reversed(to_remove):
+            items.remove(index)
+
+    def drop_end(self, _):
+        if self.is_dropping:
+            self.query_events_end = True
+        self.is_dropping = False
+        self.wait_events_end = False
+
+    def drag_end(self, bakemaster):
+        bakemaster.allow_drag = False
+        bakemaster.drag_from_index = -1
+        bakemaster.drag_to_index = -1
+        self.is_dragging = False
+
+        if self.get_items is None:
+            return
+
+        _, items, _ = self.get_items(bakemaster)
+        to_remove = []
+        index = 0
+        for item in items:
+            item.has_drag_prompt = False
+            item.is_drag_placeholder = False
+            # item.is_drag_placeholder = False
+            if item.is_drag_empty:
+                to_remove.append(item.index)
+                continue
+            item.index = index
+            index += 1
+        for index in reversed(to_remove):
+            items.remove(index)
+
+    def events_end(self, bakemaster):
+        self.drop_end(bakemaster)
+        self.drag_end(bakemaster)
+
+    def events_init(self, bakemaster, is_drop_available, is_drag_available):
+        if is_drop_available:
+            self.drag_end(bakemaster)
+            self.drop_init(bakemaster)
+        elif is_drag_available:
+            self.drop_end(bakemaster)
+            self.drag_init(bakemaster)
+
+    def evaluate_event(self, event, bakemaster, is_drop_available,
+                       is_drag_available):
+        """
+        Start drag/drop events on Press,
+        End on Click or Release.
+        """
+        if event.value == 'PRESS':
+            self.events_init(bakemaster, is_drop_available, is_drag_available)
+        elif event.value in ['CLICK', 'RELEASE']:
+            self.events_end(bakemaster)
+
+        if self.is_dropping and event.value == 'CLICK_DRAG':
+            self.events_init(bakemaster, is_drop_available, is_drag_available)
+
+            self.wait_events_end = True
+
+    def drag(self, bakemaster):
         if bakemaster.drag_to_index > bakemaster.drag_from_index:
             new_index = bakemaster.drag_to_index - 1
         else:
             new_index = bakemaster.drag_to_index
 
-        bakemaster.bakejobs.move(bakemaster.drag_from_index, new_index)
-        bakemaster.bakejobs_active_index = new_index
+        if self.get_items is not None:
+            data, items, attr = self.get_items(bakemaster)
+            items.move(bakemaster.drag_from_index, new_index)
+            setattr(data, "%s_active_index" % attr, new_index)
 
-        self.bakejobs_clean_after_drag(bakemaster.bakejobs)
-
-        bakemaster.is_drag_possible = False
-        bakemaster.drag_from_index = -1
-        bakemaster.drag_to_index = -1
-
-        print('FINISHED')
-        return {'FINISHED'}
+        self.drag_end(bakemaster)
 
     def modal(self, context, event):
-        print('MODAL')
         if 'TIMER' in event.type:
             return {'PASS_THROUGH'}
 
-        elif event.type == 'LEFTMOUSE' or self.bakemaster is None:
-            print('EXIT')
-            return self.execute(context)
+        bakemaster = context.scene.bakemaster
 
-        elif self.bakemaster.drag_to_index != -1 and 'MOUSEMOVE' in event.type:
-            print('MOVE')
-            return self.execute(context)
+        if self.query_events_end:
+            self.remove_drop_prompts(bakemaster)
+            self.query_events_end = False
+            bakemaster.allow_drop = False
 
-        else:
+        if all([bakemaster.allow_drag,
+                bakemaster.drag_from_index != -1,
+                bakemaster.drag_to_index != -1]):
+            self.drag(bakemaster)
+        elif bakemaster.allow_drag and bakemaster.drag_from_index == -1:
+            self.drag_end(bakemaster)
+
+        is_drop_available = self.is_drop_available(context, event, bakemaster)
+        is_drag_available = self.is_drag_available(context, event, bakemaster)
+
+        if not any([is_drop_available, is_drag_available]) and not bakemaster.allow_drag:
             return {'PASS_THROUGH'}
 
+        if not self.wait_events_end:
+            self.evaluate_event(event, bakemaster, is_drop_available,
+                                is_drag_available)
+            return {'PASS_THROUGH'}
+
+        if 'MOUSEMOVE' not in event.type and event.type != 'NONE':
+            print("not mousemove")
+            self.events_end(bakemaster)
+            return {'PASS_THROUGH'}
+
+        self.wait_events_end = True
+        if not bakemaster.allow_drag:
+            self.is_dropping = True
+        return {'PASS_THROUGH'}
+
     def invoke(self, context, _):
-        print('CALL')
-        cls = self.__class__
-        if cls._handler is not None:
-            print('CANCELLED')
+        if not self.handler_poll():
             return {'CANCELLED'}
-        cls._handler = self
 
         wm = context.window_manager
         wm.modal_handler_add(self)
-
-        self.bakemaster = context.scene.bakemaster
-        self.bakemaster.is_drag_possible = True
-        self.bakemaster.drag_from_index = -1
-        self.bakemaster.drag_to_index = -1
-        self.bakejobs_prepare_for_drag(self.bakemaster)
+        self.reset_props(context.scene.bakemaster)
         return {'RUNNING_MODAL'}
 
 
@@ -209,7 +350,7 @@ class BM_OT_BakeJobs_AddRemove(Operator):
 
     index: IntProperty(default=-1)
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         return self.execute(context)
 
     def execute(self, context):
@@ -252,7 +393,7 @@ class BM_OT_BakeJobs_AddDropped(Operator):
                                               action='REMOVE',
                                               index=self.index)
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         if self.index == -1:
             return {'CANCELLED'}
 
@@ -295,7 +436,7 @@ class BM_OT_BakeJobs_Trash(Operator):
     bl_description = "Remove all Bake Jobs from the list on the left"
     bl_options = {'INTERNAL', 'UNDO'}
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         return self.execute(context)
 
     def execute(self, context):
@@ -322,13 +463,13 @@ class BM_OT_BakeJob_Rename(Operator):
 
     bakejob = None
 
-    def execute(self, context):
+    def execute(self, _):
         if self.bakejob is None:
             return {'CANCELLED'}
         self.bakejob.name = self.name
         return {'FINISHED'}
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         if self.index == -1:
             self.report({'WARNING', "Internal error: Cannot resolve Bake Job"})
             return {'CANCELLED'}
@@ -341,7 +482,7 @@ class BM_OT_BakeJob_Rename(Operator):
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
-    def draw(self, context):
+    def draw(self, _):
         layout = self.layout
         layout.use_property_split = False
         layout.use_property_decorate = False
@@ -354,12 +495,12 @@ class BM_OT_BakeJob_ToggleType(Operator):
     bl_description = "Click to choose the Bake Job type"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
-    def type_objects_update(self, context):
+    def type_objects_update(self, _):
         if self.type_maps is not self.type_objects:
             return
         self.type_maps = not self.type_objects
 
-    def type_maps_update(self, context):
+    def type_maps_update(self, _):
         if self.type_objects is not self.type_maps:
             return
         self.type_objects = not self.type_maps
@@ -382,7 +523,7 @@ class BM_OT_BakeJob_ToggleType(Operator):
 
     bakejob = None
 
-    def execute(self, context):
+    def execute(self, _):
         if self.bakejob is None:
             return {'CANCELLED'}
         if self.type_objects:
@@ -391,7 +532,7 @@ class BM_OT_BakeJob_ToggleType(Operator):
             self.bakejob.type = 'MAPS'
         return {'FINISHED'}
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         if self.index == -1:
             self.report({'WARNING', "Internal error: Cannot resolve Bake Job"})
             return {'CANCELLED'}
@@ -459,7 +600,7 @@ class BM_OT_Setup(Operator):
     bl_description = "Choose a filepath for presets, manage addon config (load/save all settings into a file)"  # noqa: E501
     bl_options = {'INTERNAL'}
 
-    def config_instruction_update(self, context):
+    def config_instruction_update(self, _):
         default = "Config: save/load all addon settings & setup:"
         self.config_instruction = default
 
@@ -469,10 +610,10 @@ class BM_OT_Setup(Operator):
         default="Config: save/load all addon settings & setup:",
         update=config_instruction_update)
 
-    def execute(self, context):
+    def execute(self, _):
         return {'FINISHED'}
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
@@ -570,7 +711,7 @@ class BM_OT_Config(Operator):
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         return self.execute(context)
 
 
@@ -604,7 +745,7 @@ class BM_OT_Bake_One(Operator):
         bakemaster.bake_hold_on_pause = False
         bakemaster.bake_is_running = True
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         if not self.bake_poll(context):
             return {'CANCELLED'}
 
@@ -618,7 +759,7 @@ class BM_OT_Bake_One(Operator):
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
-    def draw(self, context):
+    def draw(self, _):
         row = self.layout.row(align=True)
         row.prop(self, 'action', expand=True)
 
@@ -645,7 +786,7 @@ class BM_OT_Bake_All(Operator):
         bakemaster.bake_hold_on_pause = False
         bakemaster.bake_is_running = True
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         if not self.bake_poll(context):
             return {'CANCELLED'}
 
@@ -668,15 +809,15 @@ class BM_OT_Bake_Pause(Operator):
     def pause_poll(self, context):
         bakemaster = context.scene.bakemaster
         bake_is_running = bakemaster.bake_is_running
-        poll_success, message = bm_ots_utils.ui_bake_poll(bakemaster,
-                                                          not bake_is_running)
+        poll_success, _ = bm_ots_utils.ui_bake_poll(bakemaster,
+                                                    not bake_is_running)
         return poll_success
 
     def props_set_explicit(self, bakemaster):
         is_paused = bakemaster.bake_hold_on_pause
         bakemaster.bake_hold_on_pause = not is_paused
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         if not self.pause_poll(context):
             return {'CANCELLED'}
 
@@ -697,8 +838,8 @@ class BM_OT_Bake_Stop(Operator):
     def stop_poll(self, context):
         bakemaster = context.scene.bakemaster
         bake_is_running = bakemaster.bake_is_running
-        poll_success, message = bm_ots_utils.ui_bake_poll(bakemaster,
-                                                          not bake_is_running)
+        poll_success, _ = bm_ots_utils.ui_bake_poll(bakemaster,
+                                                    not bake_is_running)
         return poll_success
 
     def props_set_explicit(self, bakemaster):
@@ -707,7 +848,7 @@ class BM_OT_Bake_Stop(Operator):
         bakemaster.bake_hold_on_pause = False
         bakemaster.bake_is_running = False
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         if not self.stop_poll(context):
             return {'CANCELLED'}
 
@@ -731,8 +872,8 @@ class BM_OT_Bake_Cancel(Operator):
     def cancel_poll(self, context):
         bakemaster = context.scene.bakemaster
         bake_is_running = bakemaster.bake_is_running
-        poll_success, message = bm_ots_utils.ui_bake_poll(bakemaster,
-                                                          not bake_is_running)
+        poll_success, _ = bm_ots_utils.ui_bake_poll(bakemaster,
+                                                    not bake_is_running)
         return poll_success
 
     def props_set_explicit(self, bakemaster):
@@ -741,7 +882,7 @@ class BM_OT_Bake_Cancel(Operator):
         bakemaster.bake_hold_on_pause = False
         bakemaster.bake_is_running = False
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         if not self.cancel_poll(context):
             return {'CANCELLED'}
 
@@ -787,18 +928,18 @@ class BM_OT_BakeHistory_Rebake(Operator):
             return False
         return True
 
-    def execute(self, context):
+    def execute(self, _):
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         if not self.rebake_poll(context):
             return {'CANCELLED'}
 
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
-    def draw(self, context):
+    def draw(self, _):
         layout = self.layout
         layout.use_property_split = False
         layout.use_property_decorate = False
@@ -830,18 +971,18 @@ class BM_OT_BakeHistory_Config(Operator):
             return False
         return True
 
-    def execute(self, context):
+    def execute(self, _):
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         if not self.config_poll(context):
             return {'CANCELLED'}
 
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
-    def draw(self, context):
+    def draw(self, _):
         layout = self.layout
         layout.use_property_split = False
         layout.use_property_decorate = False
@@ -871,7 +1012,7 @@ class BM_OT_BakeHistory_Remove(Operator):
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         if not self.remove_poll(context):
             return {'CANCELLED'}
 
