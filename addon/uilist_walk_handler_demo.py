@@ -7,6 +7,150 @@ from bpy.props import *
 # 3 - ui
 
 
+def add_item(context, name):
+    new_item = context.scene.my_collection.add()
+    new_item.index = len(context.scene.my_collection) - 1
+    new_item.name_old = name
+    new_item.name = name
+
+
+def drop_prompt_add_container(context):
+    if context.scene.drop_prompt_collection_name == "":
+        return
+    add_item(context, context.scene.drop_prompt_collection_name)
+    context.scene.drop_prompt_collection_name = ""
+
+
+def drop_prompt_add_objects(context):
+    if not context.scene.drop_prompt_allow_add:
+        return
+    #print("adding")
+    context.scene.drop_prompt_allow_add = False
+    for object in context.selected_objects:
+        add_item(context, object.name)
+    else:
+        drop_prompt_add_container(context)
+
+    context.scene.my_index = len(context.scene.my_collection) - 1
+
+
+def remove_dropped_item(item, context):
+    #print(item.name)
+    if context.scene.drop_prompt_allow_add:
+        #print("NOPE")
+        return True
+    #print("TT", context.scene.drop_prompt_allow_add)
+    context.scene.drop_prompt_allow_add = False
+    #objects = [object for object in context.selected_objects if object.name == item.name and object.type == 'MESH']
+
+    names = []
+    add_objects = False
+    for object in context.selected_objects:
+        if object.type == 'MESH':
+            names.append(object.name)
+        if object.name == item.name:
+            add_objects = True
+    if add_objects:
+        for name in names:
+            add_item(context, name)
+        context.scene.my_index = len(context.scene.my_collection) - 1
+        return False
+        
+    #if len(objects) != 0:
+        #add_item(context, objects[0].name)
+        #item.has_drop_prompt = False
+        #item.name = object.name
+        #return False
+    collections = [coll for coll in bpy.data.collections if coll.name == item.name]
+    if len(collections) != 0:
+    #if context.collection is not None and item.name == context.collection.name:
+        #item.has_drop_prompt = False
+        #self.name = collections[0].name
+        add_item(context, collections[0].name)
+        context.scene.my_index = len(context.scene.my_collection) - 1
+        return False
+    return True
+
+def name_update(self, context):
+    #print("name update called: " + self.name + " " + self.name_old)
+    #print("'" + self.name_old + "' " + str(self.has_drop_prompt))
+    
+    #if self.name_old == "":
+        #print(self.name)
+        #drop_prompt_add_objects(context)
+    
+    if self.name_old != self.name:
+        self.name_old = self.name
+        self.has_drop_prompt = remove_dropped_item(self, context)
+    if self.has_drop_prompt:
+        #print("REMOVED")
+        context.scene.my_collection.remove(self.index)
+        if context.scene.my_index >= len(context.scene.my_collection):
+            context.scene.my_index = len(context.scene.my_collection) - 1
+            
+def drag_ticker_update(self, context):
+    #for item in context.scene.my_collection:
+    #    if item.index == self.index:
+    #        continue
+    #    item.has_drop_prompt = False
+    #try:
+    #    print(self.name)
+    #except RecursionError:
+    #    pass
+    
+    if context.scene.item_drag_possible:
+        if context.scene.item_drag_index == -1:
+            context.scene.my_index = self.index
+            context.scene.item_drag_index = self.index
+            self.has_drag_prompt = True
+            return
+            #context.scene.item_drag_ticker_updator_index = -1
+        #context.scene.item_drag_possible = False
+        if context.scene.dragged_item_new_index != -1:
+            context.scene.my_collection[context.scene.dragged_item_new_index].drag_placeholder = False
+        context.scene.dragged_item_new_index = self.index
+        if context.scene.item_drag_index != self.index:
+            self.drag_placeholder = True
+        #if self.index == context.scene.item_drag_index:
+            #return
+        if self.drag_ticker == context.scene.my_collection[context.scene.item_drag_index].drag_ticker:
+            self.drag_ticker = not context.scene.my_collection[context.scene.item_drag_index].drag_ticker
+        #print("Update", self.index)
+            
+            
+        #for item in context.scene.my_collection:
+        #    if item.index == self.index:
+        #        continue
+        #    if item.drag_ticker == self.drag_ticker:
+        #        item.drag_ticker = not self.drag_ticker
+        
+        return
+    
+    context.scene.my_index = self.index
+    self.has_drag_prompt = False
+    #context.scene.item_drag_possible = False
+        
+
+class MyItem(bpy.types.PropertyGroup):
+    name: StringProperty(
+        default="",
+        update=name_update)
+        
+    name_old: StringProperty(default="")
+    
+    index: IntProperty(default=-1)
+    
+    has_drop_prompt: BoolProperty(default=False)
+    
+    has_drag_prompt: BoolProperty(default=False)
+    drag_ticker: BoolProperty(
+        default=False,
+        update=drag_ticker_update)
+        
+    drag_empty: BoolProperty(default=False)
+    drag_placeholder: BoolProperty(default=False)
+    
+
 class MyList(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         #print("ui")
@@ -74,7 +218,7 @@ class MY_OT_Mouse(bpy.types.Operator):
         self.item_drag_has_movement = False
     
     def start(self, context):
-        cls = self.__class__
+        cls = self.class
         wm = context.window_manager
         wm.modal_handler_add(self)
         cls.handler = self
@@ -82,7 +226,7 @@ class MY_OT_Mouse(bpy.types.Operator):
         context.scene.uilist_walk_is_running = True
     
     def exit(self, context):
-        cls = self.__class__
+        cls = self.class
         cls.handler = None
         self.reset_props(context)
         context.scene.uilist_walk_is_running = True
@@ -251,6 +395,7 @@ class MY_OT_Mouse(bpy.types.Operator):
         if all([context.scene.item_drag_possible,
                 context.scene.item_drag_index != -1,
                 context.scene.dragged_item_new_index != -1]):
+
             #print(context.scene.item_drag_index, context.scene.dragged_item_new_index)
             if context.scene.dragged_item_new_index > context.scene.item_drag_index:
                 new_index = context.scene.dragged_item_new_index - 1
@@ -332,5 +477,7 @@ class MY_PT_Panel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         col = layout.column()
-        col.operator("myaddon.mouse_ot")
+        col.operator("myaddon.mouse_ot", text="", icon='MOUSE_LMB_DRAG')
+        col.row().prop(context.scene, "it", expand=True)
         col.template_list("MyList", "", context.scene, "my_collection", context.scene, "my_index")
+
