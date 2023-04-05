@@ -69,7 +69,6 @@ def BakeJob_drag_ticker_Update(self, context):
         bakemaster.bakejobs_active_index = self.index
         bakemaster.drag_from_index = self.index
         self.has_drag_prompt = True
-        bpy_ops.bakemaster.uilist_walk_drag('INVOKE_DEFAULT')
         return
 
     if bakemaster.drag_to_index != -1:
