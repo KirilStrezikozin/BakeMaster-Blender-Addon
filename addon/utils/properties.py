@@ -58,14 +58,19 @@ def BakeJob_drop_name_Update(self, _):
     if self.drop_name_old == self.drop_name:
         return
 
-    self.name_old = self.name
+    self.drop_name_old = self.drop_name
     bpy_ops.bakemaster.bakejobs_adddropped('INVOKE_DEFAULT', index=self.index)
 
 
 def BakeJob_drag_ticker_Update(self, context):
     bakemaster = context.scene.bakemaster
 
-    if not bakemaster.is_drag_possible or bakemaster.drag_from_index == -1:
+    if not bakemaster.allow_drag:
+        bakemaster.bakejobs_active_index = self.index
+        self.has_drag_prompt = False
+        return
+
+    if bakemaster.drag_from_index == -1:
         bakemaster.bakejobs_active_index = self.index
         bakemaster.drag_from_index = self.index
         self.has_drag_prompt = True
