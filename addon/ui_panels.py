@@ -90,7 +90,7 @@ class BM_UL_BakeJobs(UIList):
         col = layout.column(align=True)
 
         # draw a darker line when dragging a bake job
-        if item.is_drag_placeholder and bakemaster.is_drag_possible:
+        if item.is_drag_placeholder and bakemaster.allow_drag:
             drag_placeholder = col.row().box()
             drag_placeholder.label(text="")
             drag_placeholder.scale_y = 0.1
@@ -126,18 +126,22 @@ class BM_UL_BakeJobs(UIList):
         row.emboss = 'NONE'
 
         icon = 'RESTRICT_RENDER_OFF' if item.use_bake else 'RESTRICT_RENDER_ON'
-        row.prop(item, 'use_bake', text="", icon=icon)
+        subrow = row.row()
+        subrow.prop(item, 'use_bake', text="", icon=icon)
+        if bakemaster.allow_drag and bakemaster.drag_to_index != -1:
+            subrow.enabled = False
         row.active = item.use_bake
 
         row.prop(item, "drag_ticker", text=item.name, toggle=True)
 
         if all([item.index == bakemaster.bakejobs_active_index,
-                not bakemaster.is_drag_possible]):
+                not all([bakemaster.allow_drag,
+                         bakemaster.drag_to_index != -1])]):
             row.operator('bakemaster.bakejob_rename', text="",
                          icon='GREASEPENCIL').index = item.index
 
         # fade out row while dragging if item in it isn't dragged
-        if all([bakemaster.is_drag_possible, not item.has_drag_prompt,
+        if all([bakemaster.allow_drag, not item.has_drag_prompt,
                 bakemaster.drag_to_index != -1]):
             row.active = False
 
