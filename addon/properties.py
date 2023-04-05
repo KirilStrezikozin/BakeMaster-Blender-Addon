@@ -96,15 +96,15 @@ class BakeJob(PropertyGroup):
 
     # UIList Walk Handler Props
 
-    has_drop_prompt: BoolProperty(default=False)
-    has_drag_prompt: BoolProperty(default=False)
+    has_drop_prompt: BoolProperty(default=False, options={'SKIP_SAVE'})
+    has_drag_prompt: BoolProperty(default=False, options={'SKIP_SAVE'})
 
     drag_ticker: BoolProperty(
         default=False,
         update=bm_props_utils.BakeJob_drag_ticker_Update)
 
-    is_drag_empty: BoolProperty(default=False)
-    is_drag_placeholder: BoolProperty(default=False)
+    is_drag_empty: BoolProperty(default=False, options={'SKIP_SAVE'})
+    is_drag_placeholder: BoolProperty(default=False, options={'SKIP_SAVE'})
 
     # Helper Funcs
 
@@ -137,17 +137,21 @@ class Global(PropertyGroup):
 
     bakejobs_len: IntProperty(default=0)
 
-    # UIList WalkHandler Props
+    # UIList Walk Handler Props
 
     is_uilist_walk_handler_running: BoolProperty(
         default=False,
         options={'SKIP_SAVE'})
 
-    allow_drop_prompt: BoolProperty(default=False)
+    uilist_walk_handler_items_getter_name: StringProperty(
+        default="",
+        options={'SKIP_SAVE'})
 
-    is_drag_possible: BoolProperty(default=False)
-    drag_from_index: IntProperty(default=-1)
-    drag_to_index: IntProperty(default=-1)
+    allow_drop: BoolProperty(default=False, options={'SKIP_SAVE'})
+
+    allow_drag: BoolProperty(default=False, options={'SKIP_SAVE'})
+    drag_from_index: IntProperty(default=-1, options={'SKIP_SAVE'})
+    drag_to_index: IntProperty(default=-1, options={'SKIP_SAVE'})
 
     # Bake Props
 
