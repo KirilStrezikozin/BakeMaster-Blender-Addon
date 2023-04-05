@@ -27,12 +27,10 @@
 #
 # ##### END LICENSE BLOCK #####
 
-from bpy import context as bpy_context
 from bpy.utils import (
     register_class as bpy_utils_register_class,
     unregister_class as bpy_utils_unregister_class,
 )
-import bpy.utils.previews as bpy_utils_previews
 from bpy.types import Scene as bpy_types_Scene
 from bpy.props import PointerProperty
 from bpy import ops as bpy_ops
@@ -45,6 +43,7 @@ from . import ui_panels
 from . import properties
 from .operators import (
     ui as operators_ui,
+    reg as operators_reg,
 )
 
 
@@ -54,6 +53,7 @@ if "bpy_utils_register_class" in locals():
     module_reload(ui_panels)
     module_reload(properties)
     module_reload(operators_ui)
+    module_reload(operators_reg)
 
 bl_info = {
     "name": "BakeMaster",
@@ -84,7 +84,8 @@ classes = (
     ui_panels.BM_UL_BakeJobs,
     ui_panels.BM_UL_BakeHistory,
 
-    operators_ui.BM_OT_RemovePreviewCollections,
+    operators_reg.BM_OT_RemovePreviewCollections,
+
     operators_ui.BM_OT_Help,
     operators_ui.BM_OT_UIList_Walk_Handler,
     operators_ui.BM_OT_BakeJobs_AddRemove,
