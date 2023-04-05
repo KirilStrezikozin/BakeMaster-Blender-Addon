@@ -139,13 +139,9 @@ class Global(PropertyGroup):
 
     # UIList WalkHandler Props
 
-    is_uilist_walkhandler_running: BoolProperty(
-        name="Press to deactivate Drag & Drop functionality",
+    is_uilist_walk_handler_running: BoolProperty(
         default=False,
         options={'SKIP_SAVE'})
-
-    uilist_walkhandler_ticker: BoolProperty(default=False)
-    uilist_walkhandler_ticker_old: BoolProperty(default=False)
 
     allow_drop_prompt: BoolProperty(default=False)
 
