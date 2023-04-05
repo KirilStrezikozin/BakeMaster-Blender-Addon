@@ -84,7 +84,7 @@ classes = (
     ui_panels.BM_UL_BakeJobs,
     ui_panels.BM_UL_BakeHistory,
 
-    operators_reg.BM_OT_RemovePreviewCollections,
+    operators_reg.BM_OT_Remove_PreviewCollections,
 
     operators_ui.BM_OT_Help,
     operators_ui.BM_OT_UIList_Walk_Handler,
@@ -111,8 +111,8 @@ classes = (
 def BM_UIList_Walk_Handler_caller(scene):
     if scene.bakemaster.is_uilist_walk_handler_running:
         return
-    bpy_ops.bakemaster.uilist_walk_handler('INVOKE_DEFAULT')
     scene.bakemaster.is_uilist_walk_handler_running = True
+    bpy_ops.bakemaster.uilist_walk_handler('INVOKE_DEFAULT')
 
 
 def register():
