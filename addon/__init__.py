@@ -86,7 +86,7 @@ classes = (
 
     operators_ui.BM_OT_RemovePreviewCollections,
     operators_ui.BM_OT_Help,
-    operators_ui.BM_OT_UIList_Walk_Drag,
+    operators_ui.BM_OT_UIList_Walk_Handler,
     operators_ui.BM_OT_BakeJobs_AddRemove,
     operators_ui.BM_OT_BakeJobs_AddDropped,
     operators_ui.BM_OT_BakeJobs_Trash,
@@ -107,11 +107,11 @@ classes = (
 
 
 @persistent
-def BM_UIList_WalkHandler_callback(scene):
-    ticker = scene.bakemaster.uilist_walkhandler_ticker
-    scene.bakemaster.uilist_walkhandler_ticker = not ticker
-    # print("no")
-    # bpy_ops.bakemaster.uilist_walkhandler('INVOKE_DEFAULT')
+def BM_UIList_Walk_Handler_caller(scene):
+    if scene.bakemaster.is_uilist_walk_handler_running:
+        return
+    bpy_ops.bakemaster.uilist_walk_handler('INVOKE_DEFAULT')
+    scene.bakemaster.is_uilist_walk_handler_running = True
 
 
 def register():
@@ -119,19 +119,19 @@ def register():
         bpy_utils_register_class(cls)
     bpy_types_Scene.bakemaster = PointerProperty(type=properties.Global)
 
-    bpy_depsgraph_update_pre.append(BM_UIList_WalkHandler_callback)
+    bpy_depsgraph_update_pre.append(BM_UIList_Walk_Handler_caller)
 
 
 def unregister():
     # remove custom icons
-    bpy_ops.bakemaster.removepreviewcollections('EXEC_DEFAULT')
+    bpy_ops.bakemaster.remove_previewcollections('EXEC_DEFAULT')
 
     for cls in reversed(classes):
         bpy_utils_unregister_class(cls)
 
     # remove calls handlers
     for item in bpy_depsgraph_update_pre:
-        if item.__name__ != "BM_UIList_WalkHandler_callback":
+        if item.__name__ != "BM_UIList_Walk_Handler_caller":
             continue
         bpy_depsgraph_update_pre.remove(item)
 
