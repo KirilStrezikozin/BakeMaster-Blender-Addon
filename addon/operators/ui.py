@@ -597,17 +597,17 @@ class BM_OT_FileChooseDialog(Operator, ImportHelper):
 class BM_OT_Setup(Operator):
     bl_idname = 'bakemaster.setup'
     bl_label = "Configure the Setup"
-    bl_description = "Choose a filepath for presets, manage addon config (load/save all settings into a file)"  # noqa: E501
+    bl_description = "Choose a filepath for presets, manage the config (load/save all settings into a file)"  # noqa: E501
     bl_options = {'INTERNAL'}
 
     def config_instruction_update(self, _):
-        default = "Config: save/load all addon settings & setup:"
+        default = "Config: save/load all settings & setup:"
         self.config_instruction = default
 
     config_instruction: StringProperty(
         name="What is Config?",
-        description="Use config file as a super preset to save all addon settings, setup, presets, and tables items (e.g Bake Jobs, Objects, Maps...). BakeMaster Config file can be loaded in another .blend file, and it will still remember where to pick Objects from to bake",  # noqa: E501
-        default="Config: save/load all addon settings & setup:",
+        description="Use config file as a super preset to save all settings, setup, presets, and tables items (e.g Bake Jobs, Objects, Maps...). BakeMaster Config file can be loaded in another .blend file, and it will still remember where to pick Objects from to bake",  # noqa: E501
+        default="Config: save/load all settings & setup:",
         update=config_instruction_update)
 
     def execute(self, _):
@@ -910,8 +910,8 @@ class BM_OT_BakeHistory_Rebake(Operator):
         description="Choose how to rebake content of this bake in the history",  # noqa: E501
         default='NEW_BAKE',
         items=[('NEW_BAKE', "New Bake Output", "Rebake all content of this bake in the history without deleting its initially baked files"),  # noqa: E501
-               ('FULL_OVERWRITE', "Full Overwrite", "Rebake and overwrite all content of this bake in the history by the current addon setup and settings"),  # noqa: E501
-               ('SMART_OVERWRITE', "Smart Overwrite", "Rebake and overwrite only what differs from this bake in the history and the current addon setup and settings. Visit Pipeline for advanced controls")])  # noqa: E501
+               ('FULL_OVERWRITE', "Full Overwrite", "Rebake and overwrite all initially baked content of this bake in the history"),  # noqa: E501
+               ('SMART_OVERWRITE', "Smart Rebake", "Compare baked content of this bake in the history and the current setup and settings. Bake what's been added and rebake what's changed")])  # noqa: E501
 
     def rebake_poll(self, context):
         bakemaster = context.scene.bakemaster
@@ -948,16 +948,11 @@ class BM_OT_BakeHistory_Rebake(Operator):
 
 class BM_OT_BakeHistory_Config(Operator):
     bl_idname = 'bakemaster.bakehistory_config'
-    bl_label = "Load Config"
-    bl_description = "Load all settings of this bake into the addon (e.g. bake jobs, objects, maps, all settings)"  # noqa: E501
+    bl_label = "Load Settings"
+    bl_description = "Replace all current settings and setup (e.g. bake jobs, objects, maps, all settings) with the settings and setup of this bake in the history"  # noqa: E501
     bl_options = {'INTERNAL'}
 
     index: IntProperty(default=-1)
-
-    hard_load: BoolProperty(
-        name="Replace settings",
-        description="All current addon settings and setup will be replaced with the loaded config's",  # noqa: E501
-        default=True)
 
     def config_poll(self, context):
         bakemaster = context.scene.bakemaster
@@ -979,23 +974,26 @@ class BM_OT_BakeHistory_Config(Operator):
         if not self.config_poll(context):
             return {'CANCELLED'}
 
-        wm = context.window_manager
-        return wm.invoke_props_dialog(self, width=300)
-
-    def draw(self, _):
-        layout = self.layout
-        layout.use_property_split = False
-        layout.use_property_decorate = False
-        layout.prop(self, 'hard_load')
+        return self.execute(context)
 
 
 class BM_OT_BakeHistory_Remove(Operator):
     bl_idname = 'bakemaster.bakehistory_remove'
     bl_label = "Remove"
-    bl_description = "Remove this bake from the history (its baked content will remain)"  # noqa: E501
+    bl_description = "Remove this bake from the history (choose whether to leave its baked content)"  # noqa: E501
     bl_options = {'INTERNAL'}
 
     index: IntProperty(default=-1)
+
+    use_delete: BoolProperty(
+        name="Delete baked content",
+        description="Delete all baked content files of this bake (cannot be undone). If unchecked, just remove from the history",  # noqa: E501
+        default=False)
+
+    use_delete_blender_only: BoolProperty(
+        name="Blender only",
+        description="Leave baked files on the disk and only delete them from this .blend file",
+        default=False)
 
     def remove_poll(self, context):
         bakemaster = context.scene.bakemaster
@@ -1016,4 +1014,13 @@ class BM_OT_BakeHistory_Remove(Operator):
         if not self.remove_poll(context):
             return {'CANCELLED'}
 
-        return self.execute(context)
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def draw(self, _):
+        layout = self.layout
+        layout.use_property_split = False
+        layout.use_property_decorate = False
+        layout.prop(self, "use_delete")
+        if self.use_delete:
+            layout.prop(self, "use_delete_blender_only")
