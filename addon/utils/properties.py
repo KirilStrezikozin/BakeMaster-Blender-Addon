@@ -34,19 +34,29 @@ from os import (
 from bpy import ops as bpy_ops
 import bpy.utils.previews as bpy_utils_previews
 
+_ui_pcoll_open = {}
+
 
 def load_preview_collections():
     """
     Load custom icons into preview_collections.
-
-    Raises ResourceWarning(ImagePreviewCollection left open).
-    Warning is handled with bpy.ops.bakemaster.previewcollectionsremove()
-    by removing preview collections in unregister().
     """
 
-    pcoll = bpy_utils_previews.new()
     icons_dir = os_path.join(os_path.dirname(os_path.dirname(__file__)),
-                             "icons")  # no check if path doesn't exist
+                             "icons")
+
+    if not os_path.exists(icons_dir):
+        print("BakeMaster: Internal warning: custom icons weren't found")
+        return None
+
+    # To avoid ResourceWarning on loading previously initialized instance
+    pcoll = _ui_pcoll_open.get("main")
+    if pcoll is not None:
+        return pcoll
+
+    pcoll = bpy_utils_previews.new()
+    _ui_pcoll_open["main"] = pcoll
+
     for filename in os_listdir(icons_dir):
         filepath = os_path.join(icons_dir, filename)
         pcoll.load(filename, filepath, 'IMAGE')
