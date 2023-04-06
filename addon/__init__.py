@@ -89,6 +89,7 @@ classes = (
     operators_ui.BM_OT_Help,
     operators_ui.BM_OT_UIList_Walk_Handler,
     operators_ui.BM_OT_BakeJobs_AddRemove,
+    operators_ui.BM_OT_BakeJobs_Move,
     operators_ui.BM_OT_BakeJobs_AddDropped,
     operators_ui.BM_OT_BakeJobs_Trash,
     operators_ui.BM_OT_BakeJob_Rename,

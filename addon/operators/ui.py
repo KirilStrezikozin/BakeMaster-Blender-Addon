@@ -378,6 +378,42 @@ class BM_OT_BakeJobs_AddRemove(Operator):
             return {'FINISHED'}
 
 
+class BM_OT_BakeJobs_Move(Operator):
+    """
+    Internal Bake Jobs Move Operator to move a Bake Job Item inside Bake Jobs
+    Collection. Not used in the UI but called in BM_OT_UIList_Walk_Handler.
+    This Operator exists only for the sake of a Move Undo event.
+
+    Call with providing the index of the Bake Job and its new_index.
+    """
+
+    bl_idname = 'bakemaster.bakejobs_move'
+    bl_label = "Move a Bake Job (Internal)"
+    bl_description = "Move a Bake Job's bake order up or down"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    index: IntProperty(default=-1)
+    new_index: IntProperty(default=-1)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+
+        try:
+            if any([self.index == -1, self.new_index == -1]):
+                raise IndexError
+            bakemaster.bakejobs[self.index]
+            bakemaster.bakejobs[self.new_index]
+        except IndexError:
+            print("BakeMaster: Internal warning: cannot resolve Bake Job")
+            return {'CANCELLED'}
+
+        bakemaster.move(self.index, self.new_index)
+        return {'FINISHED'}
+
+    def invoke(self, context, _):
+        return self.execute(context)
+
+
 class BM_OT_BakeJobs_AddDropped(Operator):
     bl_idname = 'bakemaster.bakejobs_adddropped'
     bl_label = "New Bake Job.."
