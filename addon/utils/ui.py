@@ -39,9 +39,9 @@ def get_icon_id(bakemaster, icon_name: str):
         thumb = bakemaster.preview_collections["main"].get(icon_name)
         if thumb is None:
             raise AttributeError
-    except AttributeError:
+    except (KeyError, AttributeError):
         print("BakeMaster Internal Warning: icon %s not loaded" % icon_name)
-        return 'BLANK1'
+        return 0
     else:
         return thumb.icon_id
 
