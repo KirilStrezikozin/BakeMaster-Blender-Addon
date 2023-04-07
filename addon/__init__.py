@@ -107,12 +107,17 @@ classes = (
     operators_ui.BM_OT_BakeHistory_Remove,
 )
 
+_is_uilist_walk_handler_invoked = False
+
 
 @persistent
-def BM_UIList_Walk_Handler_caller(scene):
-    if scene.bakemaster.is_uilist_walk_handler_running:
+def BM_UIList_Walk_Handler_caller(_):
+    global _is_uilist_walk_handler_invoked
+
+    if _is_uilist_walk_handler_invoked:
         return
-    scene.bakemaster.is_uilist_walk_handler_running = True
+
+    _is_uilist_walk_handler_invoked = True
     bpy_ops.bakemaster.uilist_walk_handler('INVOKE_DEFAULT')
 
 
