@@ -67,7 +67,7 @@ class BakeJob(PropertyGroup):
     drop_name: StringProperty(
         name="New Bake Job",
         description="Drop objects here to create a new Bake Job with them",
-        default="New Bake Job...",
+        default="new Bake Job...",
         update=bm_props_utils.BakeJob_drop_name_Update)
 
     drop_name_old: StringProperty(default="Bake Job")
