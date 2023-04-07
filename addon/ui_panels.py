@@ -83,7 +83,40 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
         col.prop(bakemaster, "prefs_use_show_help")
 
 
-class BM_UL_BakeJobs(UIList):
+class BM_UIList_for_WalkHandler(UIList):
+    """
+    UIList for BM_OT_UIList_Walk_Handler for lower cyclomatic complexity of
+    UILists for walk handler that requires a bunch of checks.
+
+    UI representation for: drop from Outliner, drag items to new positions,
+    select multiple items.
+
+    Use draw_props() to draw all needed item's properties (aligned row on the
+    left). Default includes use_bake.
+    Use draw_operators() to draw all needed operators for the item (row on the
+    right). Default is emtpy.
+
+    Filtering options on item.name property is on by default. Overwrite
+    draw_filter() for custom.
+
+    Overwrite draw_item() method for custom UI.
+    """
+
+    def draw_props(self, context, row, bakemaster, item, icon, active_data,
+                   active_propname, index):
+        row.emboss = 'NONE'
+
+        icon = 'RESTRICT_RENDER_OFF' if item.use_bake else 'RESTRICT_RENDER_ON'
+        subrow = row.row()
+        subrow.prop(item, 'use_bake', text="", icon=icon)
+        if bakemaster.allow_drag and bakemaster.drag_to_index != -1:
+            subrow.enabled = False
+        row.active = item.use_bake
+
+    def draw_operators(self, context, row, bakemaster, item, icon, active_data,
+                       active_propname, index):
+        pass
+
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
         bakemaster = data
@@ -96,7 +129,7 @@ class BM_UL_BakeJobs(UIList):
             col_layout = layout
         col = col_layout.column(align=True)
 
-        # draw a darker line when dragging a bake job
+        # draw a darker line when dragging item
         if item.is_drag_placeholder and bakemaster.allow_drag:
             drag_placeholder = col.row().box()
             drag_placeholder.label(text="")
@@ -113,7 +146,7 @@ class BM_UL_BakeJobs(UIList):
                      toggle=True)
             return
 
-        # draw a drop prompt ("Add new Bake Job...")
+        # draw a drop prompt ("add new...")
         if item.has_drop_prompt:
             row.alignment = 'EXPAND'
             row.prop(item, "drop_name", text="", emboss=True)
@@ -122,38 +155,19 @@ class BM_UL_BakeJobs(UIList):
         if item.index != bakemaster.bakejobs_active_index:
             row.emboss = 'NONE'
 
-        # manage multiple selection
+        # for multiple selection
         if all([bakemaster.allow_multi_select,
                 not bakemaster.is_multi_selection_empty]):
             layout.active = item.is_selected
             row.emboss = 'NONE'
 
-        if item.type == 'OBJECTS':
-            type_icon = bm_ui_utils.get_icon_id(bakemaster,
-                                                "bakemaster_objects.png")
-            type_ot = row.operator('bakemaster.bakejob_toggletype',
-                                   text="", icon_value=type_icon)
-        else:
-            type_ot = row.operator('bakemaster.bakejob_toggletype',
-                                   text="", icon='RENDERLAYERS')
-        type_ot.index = item.index
-        row.emboss = 'NONE'
-
-        icon = 'RESTRICT_RENDER_OFF' if item.use_bake else 'RESTRICT_RENDER_ON'
-        subrow = row.row()
-        subrow.prop(item, 'use_bake', text="", icon=icon)
-        if bakemaster.allow_drag and bakemaster.drag_to_index != -1:
-            subrow.enabled = False
-        row.active = item.use_bake
+        self.draw_props(context, row, data, item, icon, active_data,
+                        active_propname, index)
 
         row.prop(item, "drag_ticker", text=item.name, toggle=True)
 
-        if all([item.index == bakemaster.bakejobs_active_index,
-                not all([bakemaster.allow_drop,
-                         bakemaster.allow_drag,
-                         bakemaster.drag_to_index != -1])]):
-            row.operator('bakemaster.bakejob_rename', text="",
-                         icon='GREASEPENCIL').index = item.index
+        self.draw_operators(context, row, data, item, icon, active_data,
+                            active_propname, index)
 
         # fade out row while dragging if item in it isn't dragged
         if all([bakemaster.allow_drag, not item.has_drag_prompt,
@@ -161,8 +175,9 @@ class BM_UL_BakeJobs(UIList):
             row.active = False
 
     def draw_filter(self, context, layout):
-        if all([context.scene.bakemaster.allow_drag,
-                context.scene.bakemaster.drag_to_index != -1]):
+        if any([all([context.scene.bakemaster.allow_drag,
+                     context.scene.bakemaster.drag_to_index != -1]),
+                not self.use_name_filter]):
             return
 
         row = layout.row()
@@ -184,6 +199,32 @@ class BM_UL_BakeJobs(UIList):
 
     def invoke(self, context, event):
         pass
+
+
+class BM_UL_BakeJobs(BM_UIList_for_WalkHandler):
+    def draw_props(self, context, row, bakemaster, item, icon, active_data,
+                   active_propname, index):
+        if item.type == 'OBJECTS':
+            type_icon = bm_ui_utils.get_icon_id(bakemaster,
+                                                "bakemaster_objects.png")
+            type_ot = row.operator('bakemaster.bakejob_toggletype',
+                                   text="", icon_value=type_icon)
+        else:
+            type_ot = row.operator('bakemaster.bakejob_toggletype',
+                                   text="", icon='RENDERLAYERS')
+        type_ot.index = item.index
+
+        super().draw_props(context, row, bakemaster, item, icon, active_data,
+                           active_propname, index)
+
+    def draw_operators(self, context, row, bakemaster, item, icon, active_data,
+                       active_propname, index):
+        if all([item.index == bakemaster.bakejobs_active_index,
+                not all([bakemaster.allow_drop,
+                         bakemaster.allow_drag,
+                         bakemaster.drag_to_index != -1])]):
+            row.operator('bakemaster.bakejob_rename', text="",
+                         icon='GREASEPENCIL').index = item.index
 
 
 class BM_UL_BakeHistory(UIList):
