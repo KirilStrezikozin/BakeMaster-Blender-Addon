@@ -87,7 +87,14 @@ class BM_UL_BakeJobs(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
         bakemaster = data
-        col = layout.column(align=True)
+
+        if all([bakemaster.allow_multi_select, item.is_selected,
+                not bakemaster.is_multi_selection_empty]):
+            col_layout = layout.box()
+            col_layout.scale_y = 0.45
+        else:
+            col_layout = layout
+        col = col_layout.column(align=True)
 
         # draw a darker line when dragging a bake job
         if item.is_drag_placeholder and bakemaster.allow_drag:
@@ -113,6 +120,12 @@ class BM_UL_BakeJobs(UIList):
             return
 
         if item.index != bakemaster.bakejobs_active_index:
+            row.emboss = 'NONE'
+
+        # manage multiple selection
+        if all([bakemaster.allow_multi_select,
+                not bakemaster.is_multi_selection_empty]):
+            layout.active = item.is_selected
             row.emboss = 'NONE'
 
         if item.type == 'OBJECTS':
