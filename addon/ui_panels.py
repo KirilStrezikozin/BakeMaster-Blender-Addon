@@ -108,6 +108,7 @@ class BM_UL_BakeJobs(UIList):
 
         # draw a drop prompt ("Add new Bake Job...")
         if item.has_drop_prompt:
+            row.alignment = 'EXPAND'
             row.prop(item, "drop_name", text="", emboss=True)
             return
 
@@ -135,7 +136,8 @@ class BM_UL_BakeJobs(UIList):
         row.prop(item, "drag_ticker", text=item.name, toggle=True)
 
         if all([item.index == bakemaster.bakejobs_active_index,
-                not all([bakemaster.allow_drag,
+                not all([bakemaster.allow_drop,
+                         bakemaster.allow_drag,
                          bakemaster.drag_to_index != -1])]):
             row.operator('bakemaster.bakejob_rename', text="",
                          icon='GREASEPENCIL').index = item.index
