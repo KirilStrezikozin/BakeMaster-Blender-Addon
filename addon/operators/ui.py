@@ -266,6 +266,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
         Start drag/drop events on Press,
         End on Click or Release.
         """
+
         if event.value == 'PRESS':
             self.events_init(bakemaster, is_drop_available, is_drag_available)
         elif event.value in ['CLICK', 'RELEASE']:
@@ -277,14 +278,28 @@ class BM_OT_UIList_Walk_Handler(Operator):
             self.wait_events_end = True
 
     def drag(self, bakemaster):
+        """
+        Invoke Collection Property Move.
+
+        Moving is carried out with bakemaster.drag_from_index and
+        bakemaster.drag_to_index, values of which are set in item.drag_ticker
+        Updates.
+        The Collection Property is determined by instancing self.get_items
+        """
+
         if bakemaster.drag_to_index > bakemaster.drag_from_index:
             new_index = bakemaster.drag_to_index - 1
         else:
             new_index = bakemaster.drag_to_index
 
         if self.get_items is not None:
-            data, items, attr = self.get_items(bakemaster)
-            items.move(bakemaster.drag_from_index, new_index)
+            data, _, attr = self.get_items(bakemaster)
+
+            move_ot = getattr(bpy_ops.bakemaster, "%s_move" % attr)
+            move_ot('INVOKE_DEFAULT', index=bakemaster.drag_from_index,
+                    new_index=new_index)
+            # items.move(bakemaster.drag_from_index, new_index) - no undo event
+
             setattr(data, "%s_active_index" % attr, new_index)
 
         self.drag_end(bakemaster)
