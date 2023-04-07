@@ -106,6 +106,8 @@ class BakeJob(PropertyGroup):
     is_drag_empty: BoolProperty(default=False, options={'SKIP_SAVE'})
     is_drag_placeholder: BoolProperty(default=False, options={'SKIP_SAVE'})
 
+    is_selected: BoolProperty(default=True, options={'SKIP_SAVE'})
+
     # Helper Funcs
 
     def get_items_names(self):
@@ -133,15 +135,12 @@ class Global(PropertyGroup):
     bakejobs_active_index: IntProperty(
         name="Bake Job",
         description="Active Bake Job",
-        default=-1)
+        default=-1,
+        update=bm_props_utils.Global_bakejobs_active_index_Update)
 
     bakejobs_len: IntProperty(default=0)
 
     # UIList Walk Handler Props
-
-    is_uilist_walk_handler_running: BoolProperty(
-        default=False,
-        options={'SKIP_SAVE'})
 
     uilist_walk_handler_items_getter_name: StringProperty(
         default="",
@@ -152,6 +151,10 @@ class Global(PropertyGroup):
     allow_drag: BoolProperty(default=False, options={'SKIP_SAVE'})
     drag_from_index: IntProperty(default=-1, options={'SKIP_SAVE'})
     drag_to_index: IntProperty(default=-1, options={'SKIP_SAVE'})
+
+    allow_multi_select: BoolProperty(default=False, options={'SKIP_SAVE'})
+    multi_select_event: StringProperty(default="", options={'SKIP_SAVE'})
+    is_multi_selection_empty: BoolProperty(default=True, options={'SKIP_SAVE'})
 
     # Bake Props
 
