@@ -325,7 +325,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
         is_drop_available = self.is_drop_available(context, event, bakemaster)
         is_drag_available = self.is_drag_available(context, event, bakemaster)
 
-        if not any([is_drop_available, is_drag_available]) and not bakemaster.allow_drag:
+        if not any([is_drop_available, is_drag_available]):
             return {'PASS_THROUGH'}
 
         if not self.wait_events_end:
