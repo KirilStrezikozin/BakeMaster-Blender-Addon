@@ -45,7 +45,7 @@ class BM_PT_Helper(Panel):
                     cls.panel_poll(context)])
 
     @classmethod
-    def panel_poll(cls, context):
+    def panel_poll(cls, _):
         # Default empty panel_poll for additional poll checks
         return True
 
@@ -100,7 +100,7 @@ class BM_PT_BakeBase(BM_PT_Helper):
     bl_label = " "
     bl_idname = 'BM_PT_Bake'
 
-    def draw_header(self, context):
+    def draw_header(self, _):
         label = "Bake"
         icon = 'RENDER_STILL'
         self.layout.label(text=label, icon=icon)
@@ -108,7 +108,7 @@ class BM_PT_BakeBase(BM_PT_Helper):
     def draw_header_preset(self, context):
         self.draw_header_layout(context, help_action='BAKE')
 
-    def draw(self, context):
+    def draw(self, _):
         pass
 
 
@@ -117,10 +117,10 @@ class BM_PT_BakeControlsBase(BM_PT_Helper):
     bl_idname = 'BM_PT_BakeControls'
     bl_options = {'HIDE_HEADER'}
 
-    def draw_header(self, context):
+    def draw_header(self, _):
         pass
 
-    def draw_header_preset(self, context):
+    def draw_header_preset(self, _):
         pass
 
     def draw(self, context):
@@ -164,7 +164,7 @@ class BM_PT_BakeHistoryBase(BM_PT_Helper):
     bl_idname = 'BM_PT_BakeHistory'
     bl_options = {'DEFAULT_CLOSED'}
 
-    def draw_header(self, context):
+    def draw_header(self, _):
         label = "Bake History"
         icon = 'TIME'
         self.layout.label(text=label, icon=icon)
