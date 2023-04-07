@@ -69,7 +69,8 @@ def BakeJob_drop_name_Update(self, _):
         return
 
     self.drop_name_old = self.drop_name
-    bpy_ops.bakemaster.bakejobs_adddropped('INVOKE_DEFAULT', index=self.index)
+    bpy_ops.bakemaster.bakejobs_adddropped('INVOKE_DEFAULT', index=self.index,
+                                           drop_name=self.drop_name)
 
 
 def BakeJob_drag_ticker_Update(self, context):
