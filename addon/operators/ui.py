@@ -113,6 +113,10 @@ class BM_OT_UIList_Walk_Handler(Operator):
         bakemaster.drag_from_index = -1
         bakemaster.drag_to_index = -1
 
+        bakemaster.allow_multi_select = False
+        bakemaster.multi_select_event = ''
+        bakemaster.is_multi_selection_empty = True
+
     def is_cursor_in_region(self, region, event):
         # area as region is acceptable
         if all([region.x <= event.mouse_x <= region.x + region.width,
@@ -273,6 +277,18 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
             self.wait_events_end = True
 
+    def evaluate_multi_select(self, event, bakemaster, is_drag_available):
+        if not is_drag_available:
+            return
+        if event.shift:
+            bakemaster.allow_multi_select = True
+            bakemaster.multi_select_event = 'SHIFT'
+        elif event.ctrl:
+            bakemaster.allow_multi_select = True
+            bakemaster.multi_select_event = 'CTRL'
+        elif event.type == 'LEFTMOUSE':
+            bakemaster.multi_select_event = ''
+
     def drag(self, bakemaster):
         """
         Invoke Collection Property Move.
@@ -321,7 +337,11 @@ class BM_OT_UIList_Walk_Handler(Operator):
         is_drop_available = self.is_drop_available(context, event, bakemaster)
         is_drag_available = self.is_drag_available(context, event, bakemaster)
 
-        if not any([is_drop_available, is_drag_available]):
+        self.evaluate_multi_select(event, bakemaster, is_drag_available)
+
+        if any([not any([is_drop_available, is_drag_available,
+                         bakemaster.allow_multi_select]),
+                bakemaster.allow_multi_select]):
             return {'PASS_THROUGH'}
 
         if not self.wait_events_end:
