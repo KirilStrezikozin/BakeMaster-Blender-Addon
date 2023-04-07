@@ -422,7 +422,7 @@ class BM_OT_BakeJobs_Move(Operator):
             print("BakeMaster: Internal warning: cannot resolve Bake Job")
             return {'CANCELLED'}
 
-        bakemaster.move(self.index, self.new_index)
+        bakemaster.bakejobs.move(self.index, self.new_index)
         return {'FINISHED'}
 
     def invoke(self, context, _):
