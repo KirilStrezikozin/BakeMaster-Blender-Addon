@@ -64,6 +64,15 @@ def load_preview_collections():
     return pcoll
 
 
+def Global_bakejobs_active_index_Update(self, _):
+    if self.bakejobs_active_index == -1 or not self.allow_multi_select:
+        return
+    try:
+        self.bakejobs[self.bakejobs_active_index].is_selected = True
+    except IndexError:
+        pass
+
+
 def BakeJob_drop_name_Update(self, _):
     if self.drop_name_old == self.drop_name:
         return
@@ -73,8 +82,45 @@ def BakeJob_drop_name_Update(self, _):
                                            drop_name=self.drop_name)
 
 
+def bakejobs_multi_select(self, bakemaster, event):
+    self.is_selected = True
+    bakemaster.is_multi_selection_empty = False
+
+    if event == 'CTRL':
+        if bakemaster.bakejobs_active_index == self.index:
+            self.is_selected = False
+            bakemaster.bakejobs_active_index = -1
+            return
+
+        bakemaster.bakejobs_active_index = self.index
+
+    elif event == 'SHIFT':
+        if bakemaster.bakejobs_active_index == -1:
+            bakemaster.bakejobs_active_index = self.index
+
+        if bakemaster.bakejobs_active_index < self.index:
+            selection_range = range(bakemaster.bakejobs_active_index,
+                                    self.index + 1, 1)
+        else:
+            selection_range = range(bakemaster.bakejobs_active_index,
+                                    self.index - 1, -1)
+
+        for bakejob in bakemaster.bakejobs:
+            bakejob.is_selected = bakejob.index in selection_range
+
+    else:
+        bakemaster.allow_multi_select = False
+        bakemaster.is_multi_selection_empty = True
+        bakemaster.bakejobs.foreach_set("is_selected",
+                                        [False] * bakemaster.bakejobs_len)
+
+
 def BakeJob_drag_ticker_Update(self, context):
     bakemaster = context.scene.bakemaster
+
+    if bakemaster.allow_multi_select:
+        bakejobs_multi_select(self, bakemaster, bakemaster.multi_select_event)
+        return
 
     if not bakemaster.allow_drag:
         bakemaster.bakejobs_active_index = self.index
