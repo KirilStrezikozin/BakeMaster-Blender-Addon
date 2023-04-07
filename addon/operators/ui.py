@@ -86,11 +86,8 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
     _handler = None
 
-    def __del__(self):
-        """
-        Called on class unregister.
-        """
-        pass
+    drop_new_label = "new Bake Job..."
+    drop_in_label = "+"
 
     def handler_poll(self):
         cls = self.__class__
@@ -176,8 +173,8 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
         new_item = items.add()
         new_item.index = items_len
-        new_item.drop_name_old = "Add new?"
-        new_item.drop_name = "Add new?"
+        new_item.drop_name_old = self.drop_new_label
+        new_item.drop_name = self.drop_new_label
         new_item.has_drop_prompt = True
 
         setattr(data, "%s_active_index" % attr, items_len)
@@ -211,7 +208,6 @@ class BM_OT_UIList_Walk_Handler(Operator):
         _, items, _ = self.get_items(bakemaster)
         to_remove = []
         for item in items:
-            #name_update(item, context)
             if not item.has_drop_prompt:
                 continue
             to_remove.append(item.index)
@@ -333,8 +329,9 @@ class BM_OT_UIList_Walk_Handler(Operator):
                                 is_drag_available)
             return {'PASS_THROUGH'}
 
-        if 'MOUSEMOVE' not in event.type and event.type != 'NONE':
-            print("not mousemove")
+        if all(['MOUSEMOVE' not in event.type,
+                event.type != 'EVT_TWEAK_L',
+                event.type != 'NONE']):
             self.events_end(bakemaster)
             return {'PASS_THROUGH'}
 
@@ -437,28 +434,24 @@ class BM_OT_BakeJobs_AddDropped(Operator):
 
     index: IntProperty(default=-1)
 
-    bakejob = None
+    drop_name: StringProperty(default="")
 
-    def remove_bakejob(self):
+    def remove(self):
         bpy_ops.bakemaster.bakejobs_addremove('INVOKE_DEFAULT',
                                               action='REMOVE',
                                               index=self.index)
 
-    def invoke(self, context, _):
-        if self.index == -1:
-            return {'CANCELLED'}
-
-        bakemaster = context.scene.bakemaster
-        self.bakejob = bakemaster.bakejobs[self.index]
-
-        if bakemaster.allow_drop_prompt:
-            self.remove_bakejob()
-            return {'FINISHED'}
-
-        return self.execute(context)
+    def add(self, bakemaster, add_names: list):
+        bpy_ops.bakemaster.bakejobs_addremove('INVOKE_DEFAULT',
+                                              action='ADD')
+        _ = bakemaster.bakejobs[bakemaster.bakejobs_len - 1]
+        print(f"adding {add_names}")
 
     def execute(self, context):
-        if self.bakejob is None:
+        bakemaster = context.scene.bakemaster
+
+        if bakemaster.allow_drop:
+            self.remove()
             return {'CANCELLED'}
 
         add_names = []
@@ -467,18 +460,26 @@ class BM_OT_BakeJobs_AddDropped(Operator):
         for object in context.selected_objects:
             if object.type == 'MESH':
                 add_names.append(object.name)
-            if object.name == self.bakejob.drop_name:
+            if object.name == self.drop_name:
                 proceed = True
 
         if not proceed:
-            self.remove_bakejob()
-            return {'FINISHED'}
+            self.remove()
+            return {'CANCELLED'}
 
-        for name in add_names:
-            print("adding %s" % name)
-
-        self.bakejob.has_drop_prompt = False
+        self.add(bakemaster, add_names)
         return {'FINISHED'}
+
+    def invoke(self, context, _):
+        try:
+            context.scene.bakemaster.bakejobs[self.index]
+            if self.index == -1:
+                raise IndexError
+        except IndexError:
+            return self.execute(context)
+        else:
+            self.remove()
+            return {'CANCELLED'}
 
 
 class BM_OT_BakeJobs_Trash(Operator):
