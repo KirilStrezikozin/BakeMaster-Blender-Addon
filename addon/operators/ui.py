@@ -283,7 +283,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
             self.wait_events_end = True
 
     def evaluate_double_click(self, event, bakemaster, is_drag_available):
-        if not is_drag_available:
+        if not is_drag_available or any([event.shift, event.ctrl]):
             return
 
         if event.type == 'LEFTMOUSE' and event.value in ['CLICK', 'PRESS']:
@@ -562,6 +562,7 @@ class BM_OT_BakeJob_Rename(Operator):
 
     name: StringProperty(
         name="New name",
+        description="Enter new name",
         default="",
         options={'SKIP_SAVE'})
 
