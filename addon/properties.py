@@ -100,6 +100,8 @@ class BakeJob(PropertyGroup):
     has_drag_prompt: BoolProperty(default=False, options={'SKIP_SAVE'})
 
     ticker: BoolProperty(
+        name="Bake Job",
+        description="Double click to rename.\nPress and drag to move.\nDrag objects from Outliner to make new",  # noqa: E501
         default=False,
         update=bm_props_utils.BakeJob_ticker_Update)
 
