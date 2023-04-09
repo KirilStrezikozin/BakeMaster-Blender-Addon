@@ -74,9 +74,25 @@ class BM_PT_BakeJobsBase(BM_PT_Helper):
 
         box = layout.box()
         row = box.row()
-        min_rows = 2 if bakemaster.bakejobs_len < 2 else 4
-        rows = bm_ui_utils.get_uilist_rows(bakemaster.bakejobs_len, min_rows,
-                                           4)
+
+        # check if tools for multi selection are available
+        ml_rows = 0
+        if all([bakemaster.allow_multi_select,
+                not bakemaster.is_multi_selection_empty]):
+            seq = bakemaster.get_seq("bakejobs", "is_selected",
+                                     bakemaster.bakejobs_len, bool)
+            if seq[seq].size > 0:
+                ml_rows = 1
+            else:
+                ml_rows = 0
+
+        if bakemaster.bakejobs_len < 2 + ml_rows:
+            min_rows = 2 + ml_rows
+        else:
+            min_rows = 4 + ml_rows
+        rows = bm_ui_utils.get_uilist_rows(bakemaster.bakejobs_len + ml_rows,
+                                           min_rows, 4 + ml_rows)
+
         row.template_list('BM_UL_BakeJobs', "", bakemaster,
                           'bakejobs', bakemaster,
                           'bakejobs_active_index', rows=rows)
@@ -92,8 +108,16 @@ class BM_PT_BakeJobsBase(BM_PT_Helper):
         if bakemaster.bakejobs_len > 1:
             col.separator(factor=1.0)
             col.operator('bakemaster.bakejobs_trash', text="", icon='TRASH')
+
         col.separator(factor=1.0)
         col.operator('bakemaster.setup', text="", icon='PREFERENCES')
+
+        if ml_rows == 0:
+            return
+        col.separator(factor=1.0)
+        col.emboss = 'NORMAL'
+        col.operator('bakemaster.bakejobs_merge', text="",
+                     icon='SELECT_EXTEND')
 
 
 class BM_PT_BakeBase(BM_PT_Helper):
