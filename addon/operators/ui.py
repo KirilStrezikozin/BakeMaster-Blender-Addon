@@ -43,6 +43,7 @@ from bpy_extras.io_utils import ImportHelper
 from ..utils import (
     get as bm_get,
     operators as bm_ots_utils,
+    set as bm_set,
 )
 from ..utils.ui import get_icon_id as bm_ui_utils_get_icon_id
 from ..labels import (
@@ -236,28 +237,13 @@ class BM_OT_UIList_Walk_Handler(Operator):
         self.wait_events_end = False
 
     def drag_end(self, bakemaster):
-        bakemaster.allow_drag = False
-        bakemaster.drag_from_index = -1
-        bakemaster.drag_to_index = -1
         self.is_dragging = False
 
         if self.get_items(bakemaster) is None:
             return
-
         _, items, _ = self.get_items(bakemaster)
-        to_remove = []
-        index = 0
-        for item in items:
-            item.has_drag_prompt = False
-            item.is_drag_placeholder = False
-            # item.is_drag_placeholder = False
-            if item.is_drag_empty:
-                to_remove.append(item.index)
-                continue
-            item.index = index
-            index += 1
-        for index in reversed(to_remove):
-            items.remove(index)
+
+        bm_set.disable_drag(bakemaster, items)
 
     def events_end(self, bakemaster):
         self.drop_end(bakemaster)
@@ -358,6 +344,10 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
         bakemaster = context.scene.bakemaster
 
+        # reswitch is_dragging after Add OT
+        if not bakemaster.allow_drag and self.is_dragging:
+            self.is_dragging = False
+
         if self.query_events_end:
             self.remove_drop_prompts(bakemaster)
             self.query_events_end = False
@@ -411,7 +401,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
 class BM_OT_BakeJobs_AddRemove(Operator):
     bl_idname = 'bakemaster.bakejobs_addremove'
     bl_label = "Add/Remove"
-    bl_description = "Add/Remove Bake Job from the list on the left"
+    bl_description = "Add a new Bake Job.\nRemove selected Bake Jobs from the list on the left"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     action: EnumProperty(
@@ -427,6 +417,9 @@ class BM_OT_BakeJobs_AddRemove(Operator):
         bakemaster = context.scene.bakemaster
 
         if self.action == 'ADD':
+            # reduce flicker and hidden items on add (uilist mess)
+            bm_set.disable_drag(bakemaster, bakemaster.bakejobs)
+
             new_bakejob = bakemaster.bakejobs.add()
             new_bakejob.index = bakemaster.bakejobs_len
             new_bakejob.name = "Bake Job %d" % (new_bakejob.index + 1)
@@ -439,8 +432,14 @@ class BM_OT_BakeJobs_AddRemove(Operator):
             return {'CANCELLED'}
 
         if self.action == 'REMOVE':
+            if any([bakejob.is_drag_empty, bakejob.has_drop_prompt]):
+                return {'CANCELLED'}
+
             for index in range(bakejob.index + 1, bakemaster.bakejobs_len):
-                bakemaster.bakejobs[index].index -= 1
+                try:
+                    bakemaster.bakejobs[index].index -= 1
+                except IndexError:
+                    continue
             bakemaster.bakejobs.remove(bakejob.index)
             bakemaster.bakejobs_len -= 1
             if not bakemaster.bakejobs_active_index < bakemaster.bakejobs_len:
@@ -603,7 +602,7 @@ class BM_OT_BakeJob_Rename(Operator):
 class BM_OT_BakeJob_ToggleType(Operator):
     bl_idname = 'bakemaster.bakejob_toggletype'
     bl_label = "Bake Job Type"
-    bl_description = "Click to choose the Bake Job type"  # noqa: E501
+    bl_description = "Click to choose the Bake Job type"
     bl_options = {'INTERNAL', 'UNDO'}
 
     def type_objects_update(self, _):
@@ -672,6 +671,62 @@ class BM_OT_BakeJob_ToggleType(Operator):
         col = layout.column(align=True)
         col.prop(self, "type_objects", icon_value=icon_objects)
         col.prop(self, "type_maps", icon='RENDERLAYERS')
+
+
+class BM_OT_BakeJobs_Merge(Operator):
+    bl_idname = 'bakemaster.bakejobs_merge'
+    bl_label = "Merge selected Bake Jobs"
+    bl_description = "Merge selected Bake Jobs into the active one to contain all their items"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+
+        to_remove = []
+        selection_seq = bakemaster.get_seq("bakejobs", "is_selected",
+                                           bakemaster.bakejobs_len, bool)
+
+        if selection_seq[selection_seq].size < 2:
+            self.report({'INFO'},
+                        "Merge requires two or more selected Bake Jobs")
+            return {'CANCELLED'}
+
+        for index, is_selected in enumerate(selection_seq):
+            if not is_selected:
+                continue
+            if index == bakemaster.bakejobs_active_index:
+                bakemaster.bakejobs[index].is_selected = False
+            else:
+                to_remove.append(index)
+
+        # turn off multi select
+        bakemaster.allow_multi_select = False
+        bakemaster.is_multi_selection_empty = True
+        bakemaster.multi_select_event = ''
+
+        bakemaster.bakejobs_active_index = -1
+        bakemaster.bakejobs_len -= len(to_remove)
+
+        for index in reversed(to_remove):
+            bakemaster.bakejobs.remove(index)
+
+        for index, bakejob in enumerate(bakemaster.bakejobs):
+            bakejob.index = index
+
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def invoke(self, context, _):
+        bakejob = bm_get.bakejob(context.scene.bakemaster)
+        if bakejob is None:
+            self.report({'WARNING', "Internal error: Cannot resolve Bake Job"})
+            return {'CANCELLED'}
+
+        if not bakejob.is_selected:
+            self.report({'INFO'},
+                        "No active Bake Job (select it with Ctrl)")
+            return {'CANCELLED'}
+        return self.execute(context)
 
 
 class BM_OT_FileChooseDialog(Operator, ImportHelper):

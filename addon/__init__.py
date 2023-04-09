@@ -94,6 +94,7 @@ classes = (
     operators_ui.BM_OT_BakeJobs_Trash,
     operators_ui.BM_OT_BakeJob_Rename,
     operators_ui.BM_OT_BakeJob_ToggleType,
+    operators_ui.BM_OT_BakeJobs_Merge,
     operators_ui.BM_OT_FileChooseDialog,
     operators_ui.BM_OT_Setup,
     operators_ui.BM_OT_Config,
