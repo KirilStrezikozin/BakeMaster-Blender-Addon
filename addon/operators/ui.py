@@ -198,7 +198,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
         drag_empty.is_drag_empty = True
 
         for item in items:
-            item.drag_ticker = False
+            item.ticker = False
 
         setattr(data, "%s_active_index" % attr, items_active_index)
 
@@ -294,7 +294,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
         Invoke Collection Property Move.
 
         Moving is carried out with bakemaster.drag_from_index and
-        bakemaster.drag_to_index, values of which are set in item.drag_ticker
+        bakemaster.drag_to_index, values of which are set in item.ticker
         Updates.
         The Collection Property is determined by instancing self.get_items
         """

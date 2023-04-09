@@ -99,9 +99,9 @@ class BakeJob(PropertyGroup):
     has_drop_prompt: BoolProperty(default=False, options={'SKIP_SAVE'})
     has_drag_prompt: BoolProperty(default=False, options={'SKIP_SAVE'})
 
-    drag_ticker: BoolProperty(
+    ticker: BoolProperty(
         default=False,
-        update=bm_props_utils.BakeJob_drag_ticker_Update)
+        update=bm_props_utils.BakeJob_ticker_Update)
 
     is_drag_empty: BoolProperty(default=False, options={'SKIP_SAVE'})
     is_drag_placeholder: BoolProperty(default=False, options={'SKIP_SAVE'})

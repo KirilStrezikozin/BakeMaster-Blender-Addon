@@ -115,7 +115,7 @@ def bakejobs_multi_select(self, bakemaster, event):
                                         [False] * bakemaster.bakejobs_len)
 
 
-def BakeJob_drag_ticker_Update(self, context):
+def BakeJob_ticker_Update(self, context):
     bakemaster = context.scene.bakemaster
 
     if bakemaster.allow_multi_select:
@@ -139,6 +139,6 @@ def BakeJob_drag_ticker_Update(self, context):
     bakemaster.drag_to_index = self.index
     self.is_drag_placeholder = True
 
-    ticker_old = bakemaster.bakejobs[bakemaster.drag_from_index].drag_ticker
-    if self.drag_ticker == ticker_old:
-        self.drag_ticker = not ticker_old
+    ticker_old = bakemaster.bakejobs[bakemaster.drag_from_index].ticker
+    if self.ticker == ticker_old:
+        self.ticker = not ticker_old

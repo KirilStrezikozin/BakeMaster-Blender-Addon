@@ -142,7 +142,7 @@ class BM_UIList_for_WalkHandler(UIList):
         if item.is_drag_empty:
             if bakemaster.drag_to_index == -1:
                 return
-            row.prop(item, "drag_ticker", text="...", emboss=False,
+            row.prop(item, "ticker", text="...", emboss=False,
                      toggle=True)
             return
 
@@ -164,7 +164,7 @@ class BM_UIList_for_WalkHandler(UIList):
         self.draw_props(context, row, data, item, icon, active_data,
                         active_propname, index)
 
-        row.prop(item, "drag_ticker", text=item.name, toggle=True)
+        row.prop(item, "ticker", text=item.name, toggle=True)
 
         self.draw_operators(context, row, data, item, icon, active_data,
                             active_propname, index)
