@@ -97,8 +97,8 @@ class BakeJob(PropertyGroup):
 
     # UIList Walk Handler Props
 
-    has_drop_prompt: BoolProperty(default=False, options={'SKIP_SAVE'})
-    has_drag_prompt: BoolProperty(default=False, options={'SKIP_SAVE'})
+    has_drop_prompt: BoolProperty(default=False)
+    has_drag_prompt: BoolProperty(default=False)
 
     ticker: BoolProperty(
         name="Bake Job",
@@ -106,10 +106,10 @@ class BakeJob(PropertyGroup):
         default=False,
         update=bm_props_utils.BakeJob_ticker_Update)
 
-    is_drag_empty: BoolProperty(default=False, options={'SKIP_SAVE'})
-    is_drag_placeholder: BoolProperty(default=False, options={'SKIP_SAVE'})
+    is_drag_empty: BoolProperty(default=False)
+    is_drag_placeholder: BoolProperty(default=False)
 
-    is_selected: BoolProperty(default=True, options={'SKIP_SAVE'})
+    is_selected: BoolProperty(default=True)
 
     # Helper Funcs
 
@@ -223,10 +223,11 @@ class Global(PropertyGroup):
 
     # Helper Funcs
 
-    def get_seq(self, attr: str, count: int, dtype: type):
+    def get_seq(self, data: str, attr: str, count: int, dtype: type):
         """
-        Get a numpy array of len count containing a sequence of attrs' values.
+        Get a numpy array of len count containing a sequence of attrs' values
+        in data.
         """
         seq = numpy_zeros(count, dtype=dtype)
-        self.foreach_get(attr, seq)
+        getattr(self, data).foreach_get(attr, seq)
         return seq
