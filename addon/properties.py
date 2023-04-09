@@ -27,6 +27,7 @@
 #
 # ##### END LICENSE BLOCK #####
 
+from numpy import zeros as numpy_zeros
 from bpy.types import (
     PropertyGroup,
 )
@@ -144,7 +145,7 @@ class Global(PropertyGroup):
 
     # UIList Walk Handler Props
 
-    uilist_walk_handler_items_getter_name: StringProperty(
+    walk_data_name: StringProperty(
         default="",
         options={'SKIP_SAVE'})
 
@@ -219,3 +220,13 @@ class Global(PropertyGroup):
     preview_collections = {
         "main": bm_props_utils.load_preview_collections(),
     }
+
+    # Helper Funcs
+
+    def get_seq(self, attr: str, count: int, dtype: type):
+        """
+        Get a numpy array of len count containing a sequence of attrs' values.
+        """
+        seq = numpy_zeros(count, dtype=dtype)
+        self.foreach_get(attr, seq)
+        return seq
