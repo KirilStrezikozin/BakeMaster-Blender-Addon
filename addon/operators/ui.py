@@ -97,16 +97,22 @@ class BM_OT_UIList_Walk_Handler(Operator):
         cls._handler = self
         return True
 
+    def get_items(self, bakemaster: not None):
+        if bakemaster.walk_data_name == "":
+            return None
+        else:
+            getter = getattr(bm_get,
+                             "walk_data_get_%s" % bakemaster.walk_data_name)
+            return getter(bakemaster)
+
     def reset_props(self, bakemaster):
         self.is_dropping = False
         self.is_dragging = False
 
         self.wait_events_end = False
         self.query_events_end = False
-        # self.get_items = None
-        self.get_items = bm_ots_utils.get_items_bakejobs  # no implement
 
-        bakemaster.uilist_walk_handler_items_getter_name = ""  # no implement
+        bakemaster.walk_data_name = ""
 
         bakemaster.allow_drop = False
         bakemaster.allow_drag = False
@@ -170,7 +176,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
         return False
 
     def drop_init(self, bakemaster):
-        if self.is_dropping or self.get_items is None:
+        if self.is_dropping or self.get_items(bakemaster) is None:
             return
 
         bakemaster.allow_drop = True
@@ -189,7 +195,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
         setattr(data, "%s_active_index" % attr, items_len)
 
     def drag_init(self, bakemaster):
-        if self.is_dragging or self.get_items is None:
+        if self.is_dragging or self.get_items(bakemaster) is None:
             return
 
         data, items, attr = self.get_items(bakemaster)
@@ -211,7 +217,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
         self.is_dragging = True
 
     def remove_drop_prompts(self, bakemaster):
-        if self.get_items is None:
+        if self.get_items(bakemaster) is None:
             return
 
         _, items, _ = self.get_items(bakemaster)
@@ -235,7 +241,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
         bakemaster.drag_to_index = -1
         self.is_dragging = False
 
-        if self.get_items is None:
+        if self.get_items(bakemaster) is None:
             return
 
         _, items, _ = self.get_items(bakemaster)
@@ -326,7 +332,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
         Moving is carried out with bakemaster.drag_from_index and
         bakemaster.drag_to_index, values of which are set in item.ticker
         Updates.
-        The Collection Property is determined by instancing self.get_items
+        The Collection Property is determined by calling self.get_items
         """
 
         if bakemaster.drag_to_index > bakemaster.drag_from_index:
@@ -334,7 +340,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
         else:
             new_index = bakemaster.drag_to_index
 
-        if self.get_items is not None:
+        if self.get_items(bakemaster) is not None:
             data, _, attr = self.get_items(bakemaster)
 
             move_ot = getattr(bpy_ops.bakemaster, "%s_move" % attr)

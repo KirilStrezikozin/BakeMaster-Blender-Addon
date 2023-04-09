@@ -117,6 +117,7 @@ def bakejobs_multi_select(self, bakemaster, event):
 
 def BakeJob_ticker_Update(self, context):
     bakemaster = context.scene.bakemaster
+    bakemaster.walk_data_name = "bakejobs"
 
     if all([bakemaster.is_double_click,
             self.index == bakemaster.bakejobs_active_index]):

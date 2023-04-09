@@ -27,6 +27,10 @@
 #
 # ##### END LICENSE BLOCK #####
 
+def walk_data_get_bakejobs(bakemaster):
+    return bakemaster, bakemaster.bakejobs, "bakejobs"
+
+
 def bakejob(bakemaster: not None, index=-1):
     if index == -1:
         index = bakemaster.bakejobs_active_index
