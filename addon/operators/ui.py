@@ -435,14 +435,14 @@ class BM_OT_BakeJobs_AddRemove(Operator):
         bakemaster = context.scene.bakemaster
 
         if self.action == 'ADD':
-            # reduce flicker and hidden items on add (uilist mess)
-            bm_set.disable_drag(bakemaster, bakemaster.bakejobs)
-
             new_bakejob = bakemaster.bakejobs.add()
             new_bakejob.index = bakemaster.bakejobs_len
             new_bakejob.name = "Bake Job %d" % (new_bakejob.index + 1)
             bakemaster.bakejobs_active_index = new_bakejob.index
             bakemaster.bakejobs_len += 1
+
+            # reduce flicker and hidden items on add (uilist mess)
+            bm_set.disable_drag(bakemaster, bakemaster.bakejobs)
             return {'FINISHED'}
 
         bakejob = bm_get.bakejob(bakemaster, self.index)
