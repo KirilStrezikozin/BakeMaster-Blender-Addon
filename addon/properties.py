@@ -156,6 +156,8 @@ class Global(PropertyGroup):
     multi_select_event: StringProperty(default="", options={'SKIP_SAVE'})
     is_multi_selection_empty: BoolProperty(default=True, options={'SKIP_SAVE'})
 
+    is_double_click: BoolProperty(default=False, options={'SKIP_SAVE'})
+
     # Bake Props
 
     bake_wait_user: BoolProperty(

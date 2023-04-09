@@ -28,6 +28,7 @@
 # ##### END LICENSE BLOCK #####
 
 from os import path as os_path
+from time import time
 from bpy import ops as bpy_ops
 from bpy.types import (
     Operator,
@@ -116,6 +117,10 @@ class BM_OT_UIList_Walk_Handler(Operator):
         bakemaster.allow_multi_select = False
         bakemaster.multi_select_event = ''
         bakemaster.is_multi_selection_empty = True
+
+        self.is_left_click = False
+        self.last_left_click_time = 0
+        bakemaster.is_double_click = False
 
     def is_cursor_in_region(self, region, event):
         # area as region is acceptable
@@ -277,6 +282,31 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
             self.wait_events_end = True
 
+    def evaluate_double_click(self, event, bakemaster, is_drag_available):
+        if not is_drag_available:
+            return
+
+        if event.type == 'LEFTMOUSE' and event.value in ['CLICK', 'PRESS']:
+            if self.is_left_click and time() - self.last_left_click_time < 1:
+                self.is_left_click = False
+                self.last_left_click_time = 0
+                bakemaster.is_double_click = True
+
+            elif self.is_left_click:
+                self.is_left_click = False
+                self.last_left_click_time = 0
+                bakemaster.is_double_click = False
+
+            else:
+                self.is_left_click = True
+                self.last_left_click_time = time()
+                bakemaster.is_double_click = False
+
+        else:
+            self.is_left_click = False
+            self.last_left_click_time = 0
+            bakemaster.is_double_click = False
+
     def evaluate_multi_select(self, event, bakemaster, is_drag_available):
         if not is_drag_available:
             return
@@ -336,6 +366,8 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
         is_drop_available = self.is_drop_available(context, event, bakemaster)
         is_drag_available = self.is_drag_available(context, event, bakemaster)
+
+        self.evaluate_double_click(event, bakemaster, is_drag_available)
 
         self.evaluate_multi_select(event, bakemaster, is_drag_available)
 

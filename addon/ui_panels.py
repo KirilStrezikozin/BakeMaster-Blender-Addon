@@ -217,14 +217,14 @@ class BM_UL_BakeJobs(BM_UIList_for_WalkHandler):
         super().draw_props(context, row, bakemaster, item, icon, active_data,
                            active_propname, index)
 
-    def draw_operators(self, context, row, bakemaster, item, icon, active_data,
-                       active_propname, index):
-        if all([item.index == bakemaster.bakejobs_active_index,
-                not all([bakemaster.allow_drop,
-                         bakemaster.allow_drag,
-                         bakemaster.drag_to_index != -1])]):
-            row.operator('bakemaster.bakejob_rename', text="",
-                         icon='GREASEPENCIL').index = item.index
+    # def draw_operators(self, context, row, bakemaster, item, icon,
+    #                    active_data, active_propname, index):
+    #     if all([item.index == bakemaster.bakejobs_active_index,
+    #             not all([bakemaster.allow_drop,
+    #                      bakemaster.allow_drag,
+    #                      bakemaster.drag_to_index != -1])]):
+    #         row.operator('bakemaster.bakejob_rename', text="",
+    #                      icon='GREASEPENCIL').index = item.index
 
 
 class BM_UL_BakeHistory(UIList):

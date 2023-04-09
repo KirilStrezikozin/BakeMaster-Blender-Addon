@@ -118,6 +118,12 @@ def bakejobs_multi_select(self, bakemaster, event):
 def BakeJob_ticker_Update(self, context):
     bakemaster = context.scene.bakemaster
 
+    if all([bakemaster.is_double_click,
+            self.index == bakemaster.bakejobs_active_index]):
+        bpy_ops.bakemaster.bakejob_rename('INVOKE_DEFAULT', index=self.index)
+        bakemaster.is_double_click = False
+        return
+
     if bakemaster.allow_multi_select:
         bakejobs_multi_select(self, bakemaster, bakemaster.multi_select_event)
         return
