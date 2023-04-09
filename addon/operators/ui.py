@@ -127,6 +127,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
         self.is_left_click = False
         self.last_left_click_time = 0
+        bakemaster.last_left_click_ticker = False
         bakemaster.is_double_click = False
 
     def is_cursor_in_region(self, region, event):
@@ -274,6 +275,20 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
             self.wait_events_end = True
 
+    def set_last_left_click_ticker(self, bakemaster):
+        if not all([self.is_left_click,
+                    self.get_items(bakemaster) is not None]):
+            return
+
+        data, items, attr = self.get_items(bakemaster)
+        try:
+            active_index = getattr(data, "%s_active_index" % attr)
+            if active_index == -1:
+                raise IndexError
+            bakemaster.last_left_click_ticker = items[active_index].ticker
+        except IndexError:
+            pass
+
     def evaluate_double_click(self, event, bakemaster, is_drag_available):
         if not is_drag_available or any([event.shift, event.ctrl]):
             return
@@ -291,6 +306,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
             else:
                 self.is_left_click = True
+                self.set_last_left_click_ticker(bakemaster)
                 self.last_left_click_time = time()
                 bakemaster.is_double_click = False
 
@@ -347,6 +363,8 @@ class BM_OT_UIList_Walk_Handler(Operator):
         # reswitch is_dragging after Add OT
         if not bakemaster.allow_drag and self.is_dragging:
             self.is_dragging = False
+
+        self.set_last_left_click_ticker(bakemaster)
 
         if self.query_events_end:
             self.remove_drop_prompts(bakemaster)

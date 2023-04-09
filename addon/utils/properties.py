@@ -122,7 +122,8 @@ def BakeJob_ticker_Update(self, context):
     if all([bakemaster.is_double_click,
             self.index == bakemaster.bakejobs_active_index,
             not self.is_drag_empty,
-            not self.has_drop_prompt]):
+            not self.has_drop_prompt,
+            bakemaster.last_left_click_ticker != self.ticker]):
         bpy_ops.bakemaster.bakejob_rename('INVOKE_DEFAULT', index=self.index)
         bakemaster.is_double_click = False
         return
