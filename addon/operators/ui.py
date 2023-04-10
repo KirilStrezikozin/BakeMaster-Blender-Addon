@@ -57,21 +57,10 @@ class BM_OT_Help(Operator):
     bl_description = "Press to visit the according BakeMaster's online documentation page"  # noqa: E501
     bl_options = {'INTERNAL'}
 
-    action: EnumProperty(
-        default='INDEX',
-        items=[('INDEX', "Index", ""),
-               ('BAKEJOBS', "Bake Jobs", ""),
-               ('PIPELINE', "Pipeline", ""),
-               ('MANAGER', "Manager", ""),
-               ('OBJECTS', "Objects", ""),
-               ('MAPS', "Maps", ""),
-               ('OUTPUT', "Output", ""),
-               ('TEXSETS', "Texture Sets", ""),
-               ('BAKE', "Bake", ""),
-               ('BAKEHISTORY', "Bake History", "")])
+    id: StringProperty(default="")
 
     def invoke(self, context, _):
-        self.url = BM_URLs("latest").get(self.action)
+        self.url = BM_URLs("latest").get(self.id)
         return self.execute(context)
 
     def execute(self, _):
