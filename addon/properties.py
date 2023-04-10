@@ -47,9 +47,37 @@ from .labels import BM_LABELS_Props
 # class F():
 
 
-class Item(PropertyGroup):
+class BM_PropertyGroup_Helper(PropertyGroup):
+    """
+    BakeMaster PropertyGroup Helper class providing PropertyGroup utilities.
+    """
+
+    def get_seq(self, data: str, attr: str, count: int, dtype: type):
+        """
+        Get a numpy array of len count containing a sequence of attrs' values
+        in data.
+        """
+        seq = numpy_zeros(count, dtype=dtype)
+        getattr(self, data).foreach_get(attr, seq)
+        return seq
+
+
+class SubItem(BM_PropertyGroup_Helper):
+    name: StringProperty(
+        default="Map")
+
+
+class Item(BM_PropertyGroup_Helper):
     name: StringProperty(
         default="Object")
+
+    drop_name: StringProperty(
+        name="New Object",
+        description="Drop objects here to put them into selected Bake Jobs",
+        default="new Object...",
+        update=bm_props_utils.Item_drop_name_Update)
+
+    drop_name_old: StringProperty(default="new Object...")
 
     index: IntProperty(default=-1)
     bakejob_index: IntProperty(default=-1)
@@ -58,8 +86,34 @@ class Item(PropertyGroup):
         name="Include/Exclude Item from bake",
         default=True)
 
+    subitems: CollectionProperty(type=SubItem)
 
-class BakeJob(PropertyGroup):
+    subitems_active_index: IntProperty(
+        name="Active item",
+        description="Click to configure settings",
+        default=-1,
+        update=bm_props_utils.Item_subitems_active_index_Update)
+
+    subitems_len: IntProperty(default=0)
+
+    # UIList Walk Handler Props
+
+    has_drop_prompt: BoolProperty(default=False)
+    has_drag_prompt: BoolProperty(default=False)
+
+    ticker: BoolProperty(
+        name="Item",
+        description="Double click to change.\nPress and drag to move.\nUse Shift, Ctrl to select multiple",  # noqa: E501
+        default=False,
+        update=bm_props_utils.Item_ticker_Update)
+
+    is_drag_empty: BoolProperty(default=False)
+    is_drag_placeholder: BoolProperty(default=False)
+
+    is_selected: BoolProperty(default=True)
+
+
+class BakeJob(BM_PropertyGroup_Helper):
     name: StringProperty(
         name="Bake Job",
         description="Double click to rename",
@@ -71,7 +125,7 @@ class BakeJob(PropertyGroup):
         default="new Bake Job...",
         update=bm_props_utils.BakeJob_drop_name_Update)
 
-    drop_name_old: StringProperty(default="Bake Job")
+    drop_name_old: StringProperty(default="new Bake Job...")
 
     index: IntProperty(default=-1)
 
@@ -91,7 +145,8 @@ class BakeJob(PropertyGroup):
     items_active_index: IntProperty(
         name="Active item",
         description="Click to configure settings",
-        default=0)
+        default=-1,
+        update=bm_props_utils.BakeJob_items_active_index_Update)
 
     items_len: IntProperty(default=0)
 
@@ -111,13 +166,8 @@ class BakeJob(PropertyGroup):
 
     is_selected: BoolProperty(default=True)
 
-    # Helper Funcs
 
-    def get_items_names(self):
-        return [item.name for item in self.items]
-
-
-class BakeHistory(PropertyGroup):
+class BakeHistory(BM_PropertyGroup_Helper):
     name: StringProperty(
         name="Name of this recent bake",
         description="Double click to rename",
@@ -130,7 +180,7 @@ class BakeHistory(PropertyGroup):
         default="")
 
 
-class Global(PropertyGroup):
+class Global(BM_PropertyGroup_Helper):
     # Bake Jobs Props
 
     bakejobs: CollectionProperty(type=BakeJob)
@@ -221,14 +271,3 @@ class Global(PropertyGroup):
     preview_collections = {
         "main": bm_props_utils.load_preview_collections(),
     }
-
-    # Helper Funcs
-
-    def get_seq(self, data: str, attr: str, count: int, dtype: type):
-        """
-        Get a numpy array of len count containing a sequence of attrs' values
-        in data.
-        """
-        seq = numpy_zeros(count, dtype=dtype)
-        getattr(self, data).foreach_get(attr, seq)
-        return seq
