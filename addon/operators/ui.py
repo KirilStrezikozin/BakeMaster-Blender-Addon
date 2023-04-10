@@ -405,15 +405,11 @@ class BM_OT_UIList_Walk_Handler(Operator):
         return {'RUNNING_MODAL'}
 
 
-class BM_OT_BakeJobs_AddRemove(Operator):
-    bl_idname = 'bakemaster.bakejobs_addremove'
-    bl_label = "Add/Remove"
-    bl_description = "Add a new Bake Job.\nRemove selected Bake Jobs from the list on the left"  # noqa: E501
+class BM_OT_BakeJobs_Add(Operator):
+    bl_idname = 'bakemaster.bakejobs_add'
+    bl_label = "Add"
+    bl_description = "Add a new Bake Job"
     bl_options = {'INTERNAL', 'UNDO'}
-
-    action: EnumProperty(
-        items=[('ADD', "Add", ""),
-               ('REMOVE', "Remove", "")])
 
     index: IntProperty(default=-1)
 
@@ -423,35 +419,48 @@ class BM_OT_BakeJobs_AddRemove(Operator):
     def execute(self, context):
         bakemaster = context.scene.bakemaster
 
-        if self.action == 'ADD':
-            new_bakejob = bakemaster.bakejobs.add()
-            new_bakejob.index = bakemaster.bakejobs_len
-            new_bakejob.name = "Bake Job %d" % (new_bakejob.index + 1)
-            bakemaster.bakejobs_active_index = new_bakejob.index
-            bakemaster.bakejobs_len += 1
+        new_bakejob = bakemaster.bakejobs.add()
+        new_bakejob.index = bakemaster.bakejobs_len
+        new_bakejob.name = "Bake Job %d" % (new_bakejob.index + 1)
+        bakemaster.bakejobs_active_index = new_bakejob.index
+        bakemaster.bakejobs_len += 1
 
-            # reduce flicker and hidden items on add (uilist mess)
-            bm_set.disable_drag(bakemaster, bakemaster.bakejobs)
-            return {'FINISHED'}
+        # reduce flicker and hidden items on add (uilist mess)
+        bm_set.disable_drag(bakemaster, bakemaster.bakejobs)
+        return {'FINISHED'}
+
+
+class BM_OT_BakeJobs_Remove(Operator):
+    bl_idname = 'bakemaster.bakejobs_remove'
+    bl_label = "Remove"
+    bl_description = "Remove selected Bake Jobs from the list on the left"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    index: IntProperty(default=-1)
+
+    def invoke(self, context, _):
+        return self.execute(context)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
 
         bakejob = bm_get.bakejob(bakemaster, self.index)
         if bakejob is None:
             return {'CANCELLED'}
 
-        if self.action == 'REMOVE':
-            if any([bakejob.is_drag_empty, bakejob.has_drop_prompt]):
-                return {'CANCELLED'}
+        if any([bakejob.is_drag_empty, bakejob.has_drop_prompt]):
+            return {'CANCELLED'}
 
-            for index in range(bakejob.index + 1, bakemaster.bakejobs_len):
-                try:
-                    bakemaster.bakejobs[index].index -= 1
-                except IndexError:
-                    continue
-            bakemaster.bakejobs.remove(bakejob.index)
-            bakemaster.bakejobs_len -= 1
-            if not bakemaster.bakejobs_active_index < bakemaster.bakejobs_len:
-                bakemaster.bakejobs_active_index = bakemaster.bakejobs_len - 1
-            return {'FINISHED'}
+        for index in range(bakejob.index + 1, bakemaster.bakejobs_len):
+            try:
+                bakemaster.bakejobs[index].index -= 1
+            except IndexError:
+                continue
+        bakemaster.bakejobs.remove(bakejob.index)
+        bakemaster.bakejobs_len -= 1
+        if not bakemaster.bakejobs_active_index < bakemaster.bakejobs_len:
+            bakemaster.bakejobs_active_index = bakemaster.bakejobs_len - 1
+        return {'FINISHED'}
 
 
 class BM_OT_BakeJobs_Move(Operator):
@@ -501,13 +510,10 @@ class BM_OT_BakeJobs_AddDropped(Operator):
     drop_name: StringProperty(default="")
 
     def remove(self):
-        bpy_ops.bakemaster.bakejobs_addremove('INVOKE_DEFAULT',
-                                              action='REMOVE',
-                                              index=self.index)
+        bpy_ops.bakemaster.bakejobs_remove('INVOKE_DEFAULT', index=self.index)
 
     def add(self, bakemaster, add_names: list):
-        bpy_ops.bakemaster.bakejobs_addremove('INVOKE_DEFAULT',
-                                              action='ADD')
+        bpy_ops.bakemaster.bakejobs_add('INVOKE_DEFAULT', index=self.index)
         _ = bakemaster.bakejobs[bakemaster.bakejobs_len - 1]
         print(f"adding {add_names}")
 
