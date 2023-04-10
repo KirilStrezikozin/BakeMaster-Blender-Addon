@@ -102,7 +102,7 @@ class BakeJob(PropertyGroup):
 
     ticker: BoolProperty(
         name="Bake Job",
-        description="Double click to rename.\nPress and drag to move.\nDrag objects from Outliner to make new",  # noqa: E501
+        description="Double click to rename.\nPress and drag to move.\nUse Shift, Ctrl to select multiple",  # noqa: E501
         default=False,
         update=bm_props_utils.BakeJob_ticker_Update)
 
