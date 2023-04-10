@@ -27,16 +27,15 @@
 #
 # ##### END LICENSE BLOCK #####
 
-def walk_data_get_bakejobs(bakemaster):
-    return bakemaster, bakemaster.bakejobs, "bakejobs"
-
-
 def bakejob(bakemaster: not None, index=-1):
     if index == -1:
         index = bakemaster.bakejobs_active_index
     try:
         bakejob = bakemaster.bakejobs[index]
     except IndexError:
+        return None
+
+    if any([bakejob.is_drag_empty, bakejob.has_drop_prompt]):
         return None
     else:
         return bakejob
@@ -51,6 +50,9 @@ def item(bakejob, index=-1):
         item = bakejob.items[index]
     except IndexError:
         return None
+
+    if any([item.is_drag_empty, item.has_drop_prompt]):
+        return None
     else:
         return item
 
@@ -64,5 +66,26 @@ def subitem(item, index=-1):
         subitem = item.subitems[index]
     except IndexError:
         return None
+
+    if any([subitem.is_drag_empty, subitem.has_drop_prompt]):
+        return None
     else:
         return subitem
+
+
+def walk_data_get_bakejobs(bakemaster):
+    return bakemaster, bakemaster.bakejobs, "bakejobs"
+
+
+def walk_data_get_items(bakemaster):
+    bj = bakejob(bakemaster)
+    if bj is None:
+        return None, [], "items"
+    return bj, bj.items, "items"
+
+
+def walk_data_get_subitems(bakemaster):
+    itm = item(bakejob(bakemaster))
+    if itm is None:
+        return None, [], "subitems"
+    return itm, itm.items, "subitems"
