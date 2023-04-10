@@ -32,11 +32,16 @@ from bpy.types import (
 )
 from .utils import (
     ui as bm_ui_utils,
+    get as bm_get,
+    status as bm_status,
 )
 
 
 class BM_PT_Helper(Panel):
     """BakeMaster UI Panel Helper class"""
+
+    bl_idname = ''
+    use_help = True  # draw help button
 
     @classmethod
     def poll(cls, context):
@@ -46,26 +51,24 @@ class BM_PT_Helper(Panel):
 
     @classmethod
     def panel_poll(cls, _):
-        # Default empty panel_poll for additional poll checks
+        # Default empty panel_poll for additional checks
         return True
 
-    def draw_header_layout(self, context, help_action='INDEX'):
+    def draw_header_preset(self, context):
         # Draw default header layout
 
         bakemaster = context.scene.bakemaster
         row = self.layout.row()
 
-        if bakemaster.prefs_use_show_help:
-            row.operator('bakemaster.help', text="",
-                         icon='HELP').action = help_action
+        if not all([self.use_help, bakemaster.prefs_use_show_help]):
+            return
+        row.operator('bakemaster.help', text="",
+                     icon='HELP').id = self.bl_idname
 
 
 class BM_PT_BakeJobsBase(BM_PT_Helper):
     bl_label = "Bake Jobs"
     bl_idname = 'BM_PT_BakeJobs'
-
-    def draw_header_preset(self, context):
-        self.draw_header_layout(context, help_action='BAKEJOBS')
 
     def draw(self, context):
         scene = context.scene
@@ -77,8 +80,7 @@ class BM_PT_BakeJobsBase(BM_PT_Helper):
 
         # check if tools for multi selection are available
         ml_rows = 0
-        if all([bakemaster.allow_multi_select,
-                not bakemaster.is_multi_selection_empty]):
+        if bm_status.multi_selection(bakemaster, "bakejobs"):
             seq = bakemaster.get_seq("bakejobs", "is_selected",
                                      bakemaster.bakejobs_len, bool)
             if seq[seq].size > 0:
@@ -97,12 +99,13 @@ class BM_PT_BakeJobsBase(BM_PT_Helper):
                           'bakejobs', bakemaster,
                           'bakejobs_active_index', rows=rows)
         col = row.column(align=True)
-        col.operator('bakemaster.bakejobs_addremove', text="",
-                     icon='ADD').action = 'ADD'
+        col.operator('bakemaster.bakejobs_add', text="",
+                     icon='ADD').index = bakemaster.bakejobs_active_index
 
         if bakemaster.bakejobs_len > 0:
-            col.operator('bakemaster.bakejobs_addremove', text="",
-                         icon='REMOVE').action = 'REMOVE'
+            remove_ot = col.operator('bakemaster.bakejobs_remove', text="",
+                                     icon='REMOVE')
+            remove_ot.index = bakemaster.bakejobs_active_index
 
         col.emboss = 'NONE'
         if bakemaster.bakejobs_len > 1:
@@ -120,6 +123,101 @@ class BM_PT_BakeJobsBase(BM_PT_Helper):
                      icon='SELECT_EXTEND')
 
 
+class BM_PT_ItemsBase(BM_PT_Helper):
+    bl_label = " "
+    bl_idname = 'BM_PT_Items'
+
+    @classmethod
+    def panel_poll(cls, context):
+        bakemaster = context.scene.bakemaster
+
+        bakejob = bm_get.bakejob(bakemaster)
+        if bakejob is None:
+            return False
+
+        if all([bm_status.multi_selection(bakemaster, "bakejobs"),
+                not bakejob.is_selected]):
+            return False
+
+        return True
+
+    def draw_header(self, context):
+        bakemaster = context.scene.bakemaster
+        bakejob = bm_get.bakejob(bakemaster)
+        if bakejob is None:
+            return
+
+        row = self.layout.row(align=True)
+        row.active = bakejob.use_bake
+
+        if bakejob.type == 'OBJECTS':
+            type_icon = bm_ui_utils.get_icon_id(bakemaster,
+                                                "bakemaster_objects.png")
+            type_ot = row.operator('bakemaster.bakejob_toggletype',
+                                   text="", icon_value=type_icon)
+        else:
+            type_ot = row.operator('bakemaster.bakejob_toggletype',
+                                   text="", icon='RENDERLAYERS')
+        type_ot.index = bakejob.index
+
+        label = "  %s" % bakejob.type.capitalize()
+        row.label(text=label)
+
+    def draw(self, context):
+        scene = context.scene
+        bakemaster = scene.bakemaster
+        layout = self.layout
+
+        bakejob = bm_get.bakejob(bakemaster)
+        if bakejob is None:
+            return
+
+        box = layout.box()
+        row = box.row()
+
+        # check if tools for multi selection are available
+        ml_rows = 0
+        if bm_status.multi_selection(bakemaster, "items"):
+            seq = bakemaster.get_seq("items", "is_selected",
+                                     bakejob.items_len, bool)
+            if seq[seq].size > 0:
+                ml_rows = 1
+            else:
+                ml_rows = 0
+
+        if bakejob.items_len < 2 + ml_rows:
+            min_rows = 2 + ml_rows
+        else:
+            min_rows = 4 + ml_rows
+        rows = bm_ui_utils.get_uilist_rows(bakejob.items_len + ml_rows,
+                                           min_rows, 4 + ml_rows)
+
+        row.template_list('BM_UL_Items', "", bakejob,
+                          'items', bakejob,
+                          'items_active_index', rows=rows)
+        col = row.column(align=True)
+        col.operator('bakemaster.items_add', text="",
+                     icon='ADD').bakejob_index = bakejob.index
+
+        if bakejob.items_len > 0:
+            remove_ot = col.operator('bakemaster.items_remove', text="",
+                                     icon='REMOVE')
+            remove_ot.bakejob_index = bakejob.index
+            remove_ot.index = bakejob.items_active_index
+
+        col.emboss = 'NONE'
+        if bakejob.items_len > 1:
+            col.separator(factor=1.0)
+            col.operator('bakemaster.items_trash', text="", icon='TRASH')
+
+        if ml_rows == 0:
+            return
+        col.separator(factor=1.0)
+        col.emboss = 'NORMAL'
+        # col.operator('bakemaster.items_group', text="",
+        #              icon='OUTLINER_COLLECTION')
+
+
 class BM_PT_BakeBase(BM_PT_Helper):
     bl_label = " "
     bl_idname = 'BM_PT_Bake'
@@ -128,9 +226,6 @@ class BM_PT_BakeBase(BM_PT_Helper):
         label = "Bake"
         icon = 'RENDER_STILL'
         self.layout.label(text=label, icon=icon)
-
-    def draw_header_preset(self, context):
-        self.draw_header_layout(context, help_action='BAKE')
 
     def draw(self, _):
         pass
@@ -192,9 +287,6 @@ class BM_PT_BakeHistoryBase(BM_PT_Helper):
         label = "Bake History"
         icon = 'TIME'
         self.layout.label(text=label, icon=icon)
-
-    def draw_header_preset(self, context):
-        self.draw_header_layout(context, help_action='BAKEHISTORY')
 
     def draw(self, context):
         scene = context.scene
