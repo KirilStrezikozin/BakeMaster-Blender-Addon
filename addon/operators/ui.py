@@ -366,7 +366,8 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
         if all([bakemaster.allow_drag,
                 bakemaster.drag_from_index != -1,
-                bakemaster.drag_to_index != -1]):
+                bakemaster.drag_to_index != -1,
+                event.type != 'NONE']):
             self.drag(bakemaster)
         elif bakemaster.allow_drag and bakemaster.drag_from_index == -1:
             self.drag_end(bakemaster)
@@ -452,9 +453,6 @@ class BM_OT_BakeJobs_Remove(Operator):
         if bakejob is None:
             return {'CANCELLED'}
 
-        if any([bakejob.is_drag_empty, bakejob.has_drop_prompt]):
-            return {'CANCELLED'}
-
         for index in range(bakejob.index + 1, bakemaster.bakejobs_len):
             try:
                 bakemaster.bakejobs[index].index -= 1
@@ -504,10 +502,14 @@ class BM_OT_BakeJobs_Move(Operator):
 
 
 class BM_OT_BakeJobs_AddDropped(Operator):
+    """
+    Internal, not used in the UI, invoked from drop_name_Update.
+    """
+
     bl_idname = 'bakemaster.bakejobs_adddropped'
     bl_label = "New Bake Job.."
     bl_description = "Add dropped objects into a new Bake Job"
-    bl_options = {'INTERNAL'}
+    bl_options = {'INTERNAL', 'UNDO'}
 
     index: IntProperty(default=-1)
 
@@ -518,8 +520,12 @@ class BM_OT_BakeJobs_AddDropped(Operator):
 
     def add(self, bakemaster, add_names: list):
         bpy_ops.bakemaster.bakejobs_add('INVOKE_DEFAULT', index=self.index)
-        _ = bakemaster.bakejobs[bakemaster.bakejobs_len - 1]
-        print(f"adding {add_names}")
+
+        new_bakejob = bakemaster.bakejobs[bakemaster.bakejobs_len - 1]
+        for name in add_names:
+            bpy_ops.bakemaster.items_add('INVOKE_DEFAULT',
+                                         bakejob_index=new_bakejob.index,
+                                         name=name)
 
     def execute(self, context):
         bakemaster = context.scene.bakemaster
@@ -744,6 +750,241 @@ class BM_OT_BakeJobs_Merge(Operator):
                         "No active Bake Job (select it with Ctrl)")
             return {'CANCELLED'}
         return self.execute(context)
+
+
+class BM_OT_Items_Add(Operator):
+    bl_idname = 'bakemaster.items_add'
+    bl_label = "Add"
+    bl_description = "Add new Item to selected Bake Jobs"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    bakejob_index: IntProperty(default=-1)
+    name: StringProperty(default="Object")
+
+    def invoke(self, context, _):
+        return self.execute(context)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+
+        bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
+        if bakejob is None:
+            return {'CANCELLED'}
+
+        new_item = bakejob.items.add()
+        new_item.index = bakejob.items_len
+        new_item.name = self.name
+        bakejob.items_active_index = new_item.index
+        bakejob.items_len += 1
+
+        # reduce flicker and hidden items on add (uilist mess)
+        bm_set.disable_drag(bakemaster, bakejob.items)
+        return {'FINISHED'}
+
+
+class BM_OT_Items_Remove(Operator):
+    bl_idname = 'bakemaster.items_remove'
+    bl_label = "Remove"
+    bl_description = "Remove selected Items from the list on the left"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    bakejob_index: IntProperty(default=-1)
+    index: IntProperty(default=-1)
+
+    def invoke(self, context, _):
+        return self.execute(context)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+
+        bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
+        item = bm_get.item(bakejob, self.index)
+        if item is None or bakejob is None:
+            return {'CANCELLED'}
+
+        for index in range(item.index + 1, bakejob.items_len):
+            try:
+                bakejob.items[index].index -= 1
+            except IndexError:
+                continue
+        bakejob.items.remove(item.index)
+        bakejob.items_len -= 1
+        if not bakejob.items_active_index < bakejob.items_len:
+            bakejob.items_active_index = bakejob.items_len - 1
+        return {'FINISHED'}
+
+
+class BM_OT_Items_Move(Operator):
+    """
+    Internal Items Move Operator to move an Item inside Bake Job's
+    items Collection. Not used in the UI but called in
+    BM_OT_UIList_Walk_Handler. This Operator exists only for the sake of a
+    Move Undo event.
+
+    Call with providing the index of the Item and its new_index.
+    """
+
+    bl_idname = 'bakemaster.items_move'
+    bl_label = "Move an Item (Internal)"
+    bl_description = "Move Item's bake order up or down"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    index: IntProperty(default=-1)
+    new_index: IntProperty(default=-1)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+
+        bakejob = bm_get.bakejob(bakemaster)
+        if bakejob is None:
+            return {'CANCELLED'}
+
+        try:
+            if any([self.index == -1, self.new_index == -1]):
+                raise IndexError
+            bakejob.items[self.index]
+            bakejob.items[self.new_index]
+        except IndexError:
+            print("BakeMaster: Internal warning: cannot resolve Bake Job")
+            return {'CANCELLED'}
+
+        bakejob.items.move(self.index, self.new_index)
+        return {'FINISHED'}
+
+    def invoke(self, context, _):
+        return self.execute(context)
+
+
+class BM_OT_Items_AddDropped(Operator):
+    """
+    Internal, not used in the UI, invoked from drop_name_Update.
+    """
+
+    bl_idname = 'bakemaster.items_adddropped'
+    bl_label = "New Object..."
+    bl_description = "Add dropped Objects into the table"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    index: IntProperty(default=-1)
+
+    drop_name: StringProperty(default="")
+
+    def remove(self, bakemaster):
+        remove_ot = bpy_ops.bakemaster.items_remove
+        remove_ot('INVOKE_DEFAULT',
+                  bakejob_index=bakemaster.bakejobs_active_index,
+                  index=self.index)
+
+    def add(self, bakemaster, add_names: list):
+        add_ot = bpy_ops.bakemaster.items_add
+        for name in add_names:
+            add_ot('INVOKE_DEFAULT',
+                   bakejob_index=bakemaster.bakejobs_active_index,
+                   name=name)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+
+        if bakemaster.allow_drop:
+            self.remove()
+            return {'CANCELLED'}
+
+        add_names = []
+        proceed = False
+
+        for object in context.selected_objects:
+            if object.type == 'MESH':
+                add_names.append(object.name)
+            if object.name == self.drop_name:
+                proceed = True
+
+        if not proceed:
+            self.remove()
+            return {'CANCELLED'}
+
+        self.add(bakemaster, add_names)
+        return {'FINISHED'}
+
+    def invoke(self, context, _):
+        bakemaster = context.scene.bakemaster
+
+        bakejob = bm_get.bakejob(bakemaster)
+        if bakejob is None:
+            return {'CANCELLED'}
+
+        try:
+            bakejob.items[self.index]
+            if self.index == -1:
+                raise IndexError
+        except IndexError:
+            return self.execute(context)
+        else:
+            self.remove()
+            return {'CANCELLED'}
+
+
+class BM_OT_Items_Trash(Operator):
+    bl_idname = 'bakemaster.items_trash'
+    bl_label = "Trash"
+    bl_description = "Remove all Items from the list on the left"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    def invoke(self, context, _):
+        return self.execute(context)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+
+        bakejob = bm_get.bakejob(bakemaster)
+        if bakejob is None:
+            return {'CANCELLED'}
+
+        [bakejob.items.remove(index) for index in
+         reversed(range(bakejob.items_len))]
+        bakejob.items_active_index = -1
+        bakejob.items_len = 0
+        return {'FINISHED'}
+
+
+class BM_OT_Item_Rename(Operator):
+    bl_idname = 'bakemaster.item_rename'
+    bl_label = "Relink the Object to the new one"
+    bl_description = "Click to rename the Object"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    index: IntProperty(default=-1)
+
+    name: StringProperty(
+        name="New name",
+        description="Enter new name",
+        default="",
+        options={'SKIP_SAVE'})
+
+    item = None
+
+    def execute(self, _):
+        if self.item is None:
+            return {'CANCELLED'}
+        self.item.name = self.name
+        return {'FINISHED'}
+
+    def invoke(self, context, _):
+        self.item = bm_get.item(bm_get.bakejob(context.scene.bakemater),
+                                self.index)
+        if self.item is None:
+            self.report({'WARNING', "Internal error: Cannot resolve Object"})
+            return {'CANCELLED'}
+
+        self.name = self.item.name
+
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def draw(self, _):
+        layout = self.layout
+        layout.use_property_split = False
+        layout.use_property_decorate = False
+        layout.prop(self, "name")
 
 
 class BM_OT_FileChooseDialog(Operator, ImportHelper):
