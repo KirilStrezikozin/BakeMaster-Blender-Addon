@@ -33,6 +33,7 @@ from os import (
 )
 from bpy import ops as bpy_ops
 import bpy.utils.previews as bpy_utils_previews
+from . import get as bm_get
 
 _ui_pcoll_open = {}
 
@@ -64,91 +65,175 @@ def load_preview_collections():
     return pcoll
 
 
-def Global_bakejobs_active_index_Update(self, _):
-    if self.bakejobs_active_index == -1 or not self.allow_multi_select:
-        return
-    try:
-        self.bakejobs[self.bakejobs_active_index].is_selected = True
-    except IndexError:
-        pass
+def Generic_ticker_Update(self, context: not None, walk_data: str,
+                          double_click_ot_idname=""):
+    """
+    Generic ticker property update.
 
+    walk_data is an attribute name of Collection Property that has uilist walk
+    features.
 
-def BakeJob_drop_name_Update(self, _):
-    if self.drop_name_old == self.drop_name:
-        return
+    double_click_ot is a bl_idname of an operator that will be called on
+    double click event caught.
+    """
 
-    self.drop_name_old = self.drop_name
-    bpy_ops.bakemaster.bakejobs_adddropped('INVOKE_DEFAULT', index=self.index,
-                                           drop_name=self.drop_name)
-
-
-def bakejobs_multi_select(self, bakemaster, event):
-    self.is_selected = True
-    bakemaster.is_multi_selection_empty = False
-
-    if event == 'CTRL':
-        if bakemaster.bakejobs_active_index == self.index:
-            self.is_selected = False
-            bakemaster.bakejobs_active_index = -1
-            return
-
-        bakemaster.bakejobs_active_index = self.index
-
-    elif event == 'SHIFT':
-        if bakemaster.bakejobs_active_index == -1:
-            bakemaster.bakejobs_active_index = self.index
-
-        if bakemaster.bakejobs_active_index < self.index:
-            selection_range = range(bakemaster.bakejobs_active_index,
-                                    self.index + 1, 1)
-        else:
-            selection_range = range(bakemaster.bakejobs_active_index,
-                                    self.index - 1, -1)
-
-        for bakejob in bakemaster.bakejobs:
-            bakejob.is_selected = bakejob.index in selection_range
-
-    else:
-        bakemaster.allow_multi_select = False
-        bakemaster.is_multi_selection_empty = True
-        bakemaster.bakejobs.foreach_set("is_selected",
-                                        [False] * bakemaster.bakejobs_len)
-
-
-def BakeJob_ticker_Update(self, context):
     bakemaster = context.scene.bakemaster
-    bakemaster.walk_data_name = "bakejobs"
+    bakemaster.walk_data_name = walk_data
+
+    walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
+    data, items, attr = walk_data_getter(bakemaster)
 
     if all([bakemaster.is_double_click,
             self.index == bakemaster.bakejobs_active_index,
             not self.is_drag_empty,
             not self.has_drop_prompt,
-            bakemaster.last_left_click_ticker != self.ticker]):
-        bpy_ops.bakemaster.bakejob_rename('INVOKE_DEFAULT', index=self.index)
+            bakemaster.last_left_click_ticker != self.ticker,
+            double_click_ot_idname != ""]):
+        double_click_ot = getattr(bpy_ops.bakemaster, double_click_ot_idname)
+        double_click_ot('INVOKE_DEFAULT', index=self.index)
         bakemaster.is_double_click = False
         return
 
     if bakemaster.allow_multi_select:
-        bakejobs_multi_select(self, bakemaster, bakemaster.multi_select_event)
+        Generic_multi_select(self, bakemaster, walk_data)
         return
 
     if not bakemaster.allow_drag:
-        bakemaster.bakejobs_active_index = self.index
+        setattr(data, "%s_active_index" % attr, self.index)
         self.has_drag_prompt = False
         return
 
     if bakemaster.drag_from_index == -1:
-        bakemaster.bakejobs_active_index = self.index
+        setattr(data, "%s_active_index" % attr, self.index)
         bakemaster.drag_from_index = self.index
         self.has_drag_prompt = True
         return
 
     if bakemaster.drag_to_index != -1:
-        bakemaster.bakejobs[bakemaster.drag_to_index
-                            ].is_drag_placeholder = False
+        items[bakemaster.drag_to_index].is_drag_placeholder = False
     bakemaster.drag_to_index = self.index
     self.is_drag_placeholder = True
 
-    ticker_old = bakemaster.bakejobs[bakemaster.drag_from_index].ticker
+    ticker_old = items[bakemaster.drag_from_index].ticker
     if self.ticker == ticker_old:
         self.ticker = not ticker_old
+
+
+def Generic_active_index_Update(_, context: not None, walk_data: str):
+    """
+    Generic active_index property update.
+
+    walk_data is an attribute name of Collection Property that has uilist walk
+    features.
+    """
+
+    bakemaster = context.scene.bakemaster
+    bakemaster.walk_data_name = walk_data
+
+    walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
+    data, items, attr = walk_data_getter(bakemaster)
+    active_index = getattr(data, "%s_active_index" % attr)
+
+    if active_index == -1 or not bakemaster.allow_multi_select:
+        return
+    try:
+        items[active_index].is_selected = True
+    except IndexError:
+        pass
+
+
+def Generic_drop_name_Update(self, context: not None, walk_data: str,
+                             adddropped_ot_idname: str):
+    """
+    Generic drop_name property update.
+
+    walk_data is an attribute name of Collection Property that has uilist walk
+    features.
+
+    adddropped_ot_idname is a bl_idname of an operator that will be called on
+    drop.
+    """
+
+    bakemaster = context.scene.bakemaster
+    bakemaster.walk_data_name = walk_data
+
+    if self.drop_name_old == self.drop_name:
+        return
+
+    self.drop_name_old = self.drop_name
+    adddropped_ot = getattr(bpy_ops.bakemaster, adddropped_ot_idname)
+    adddropped_ot('INVOKE_DEFAULT', index=self.index, drop_name=self.drop_name)
+
+
+def Generic_multi_select(self, bakemaster, walk_data: str):
+    """
+    Generic multiple selection manifestor.
+
+    walk_data is an attribute name of Collection Property that has uilist walk
+    features.
+    """
+
+    walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
+    data, items, attr = walk_data_getter(bakemaster)
+    active_index = getattr(data, "%s_active_index" % attr)
+
+    self.is_selected = True
+    bakemaster.is_multi_selection_empty = False
+
+    if bakemaster.multi_select_event == 'CTRL':
+        if active_index == self.index:
+            self.is_selected = False
+            setattr(data, "%s_active_index" % attr, -1)
+            return
+
+        setattr(data, "%s_active_index" % attr, self.index)
+
+    elif bakemaster.multi_select_event == 'SHIFT':
+        if active_index == -1:
+            setattr(data, "%s_active_index" % attr, self.index)
+
+        if active_index < self.index:
+            selection_range = range(active_index, self.index + 1, 1)
+        else:
+            selection_range = range(active_index, self.index - 1, -1)
+
+        for item in items:
+            item.is_selected = item.index in selection_range
+
+    else:
+        bakemaster.allow_multi_select = False
+        bakemaster.is_multi_selection_empty = True
+        items.foreach_set("is_selected",
+                          [False] * getattr(data, "%s_len" % attr))
+
+
+def Global_bakejobs_active_index_Update(self, context):
+    Generic_active_index_Update(self, context, "bakejobs")
+
+
+def BakeJob_drop_name_Update(self, context):
+    Generic_drop_name_Update(self, context, walk_data="bakejobs",
+                             adddropped_ot_idname="bakejobs_adddropped")
+
+
+def BakeJob_items_active_index_Update(self, context):
+    Generic_active_index_Update(self, context, "items")
+
+
+def BakeJob_ticker_Update(self, context):
+    Generic_ticker_Update(self, context, walk_data="bakejobs",
+                          double_click_ot_idname="bakejob_rename")
+
+
+def Item_drop_name_Update(self, context):
+    Generic_drop_name_Update(self, context, walk_data="items",
+                             adddropped_ot_idname="items_adddropped")
+
+
+def Item_subitems_active_index_Update(self, context):
+    Generic_active_index_Update(self, context, "subitems")
+
+
+def Item_ticker_Update(self, context):
+    Generic_ticker_Update(self, context, walk_data="items",
+                          double_click_ot_idname="item_rename")
