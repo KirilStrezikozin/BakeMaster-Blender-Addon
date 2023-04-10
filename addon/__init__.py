@@ -70,12 +70,14 @@ bl_info = {
 }
 
 classes = (
+    properties.SubItem,
     properties.Item,
     properties.BakeJob,
     properties.BakeHistory,
     properties.Global,
 
     ui_panels.BM_PT_BakeJobs,
+    ui_panels.BM_PT_Items,
     ui_panels.BM_PT_Bake,
     ui_panels.BM_PT_BakeControls,
     ui_panels.BM_PT_BakeHistory,
@@ -88,7 +90,8 @@ classes = (
 
     operators_ui.BM_OT_Help,
     operators_ui.BM_OT_UIList_Walk_Handler,
-    operators_ui.BM_OT_BakeJobs_AddRemove,
+    operators_ui.BM_OT_BakeJobs_Add,
+    operators_ui.BM_OT_BakeJobs_Remove,
     operators_ui.BM_OT_BakeJobs_Move,
     operators_ui.BM_OT_BakeJobs_AddDropped,
     operators_ui.BM_OT_BakeJobs_Trash,

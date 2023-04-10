@@ -29,6 +29,7 @@
 
 from .ui_base import (
     BM_PT_BakeJobsBase,
+    BM_PT_ItemsBase,
     BM_PT_BakeControlsBase,
     BM_PT_BakeHistoryBase,
     BM_PT_BakeBase,
@@ -46,6 +47,12 @@ bm_category = "BakeMaster"
 
 
 class BM_PT_BakeJobs(BM_PT_BakeJobsBase):
+    bl_space_type = bm_space_type
+    bl_region_type = bm_region_type
+    bl_category = bm_category
+
+
+class BM_PT_Items(BM_PT_ItemsBase):
     bl_space_type = bm_space_type
     bl_region_type = bm_region_type
     bl_category = bm_category
