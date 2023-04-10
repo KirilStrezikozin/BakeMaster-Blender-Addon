@@ -195,9 +195,13 @@ class BM_OT_UIList_Walk_Handler(Operator):
         items_active_index = getattr(data, "%s_active_index" % attr)
         self.drag_end(bakemaster)
 
-        drag_empty = items.add()
-        drag_empty.index = items_len
-        drag_empty.is_drag_empty = True
+        # ensure there's only one drag_empty
+        drag_empties = data.get_seq(attr, "is_drag_empty",
+                                    getattr(data, "%s_len" % attr), bool)
+        if drag_empties[drag_empties].size == 0:
+            drag_empty = items.add()
+            drag_empty.index = items_len
+            drag_empty.is_drag_empty = True
 
         for item in items:
             item.ticker = False
