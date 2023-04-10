@@ -109,8 +109,11 @@ class BM_UIList_for_WalkHandler(UIList):
     Overwrite draw_item() method for custom UI.
     """
 
-    def draw_props(self, context, row, bakemaster, item, icon, active_data,
+    use_name_filter = True
+
+    def draw_props(self, context, row, data, item, icon, active_data,
                    active_propname, index):
+        bakemaster = context.scene.bakemaster
         row.emboss = 'NONE'
 
         icon = 'RESTRICT_RENDER_OFF' if item.use_bake else 'RESTRICT_RENDER_ON'
@@ -120,13 +123,13 @@ class BM_UIList_for_WalkHandler(UIList):
             subrow.enabled = False
         row.active = item.use_bake
 
-    def draw_operators(self, context, row, bakemaster, item, icon, active_data,
+    def draw_operators(self, context, row, data, item, icon, active_data,
                        active_propname, index):
         pass
 
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
-        bakemaster = data
+        bakemaster = context.scene.bakemaster
 
         if all([bakemaster.allow_multi_select, item.is_selected,
                 not bakemaster.is_multi_selection_empty]):
@@ -209,8 +212,10 @@ class BM_UIList_for_WalkHandler(UIList):
 
 
 class BM_UL_BakeJobs(BM_UIList_for_WalkHandler):
-    def draw_props(self, context, row, bakemaster, item, icon, active_data,
+    def draw_props(self, context, row, data, item, icon, active_data,
                    active_propname, index):
+        bakemaster = context.scene.bakemaster
+
         if item.type == 'OBJECTS':
             type_icon = bm_ui_utils.get_icon_id(bakemaster,
                                                 "bakemaster_objects.png")
@@ -224,14 +229,9 @@ class BM_UL_BakeJobs(BM_UIList_for_WalkHandler):
         super().draw_props(context, row, bakemaster, item, icon, active_data,
                            active_propname, index)
 
-    # def draw_operators(self, context, row, bakemaster, item, icon,
-    #                    active_data, active_propname, index):
-    #     if all([item.index == bakemaster.bakejobs_active_index,
-    #             not all([bakemaster.allow_drop,
-    #                      bakemaster.allow_drag,
-    #                      bakemaster.drag_to_index != -1])]):
-    #         row.operator('bakemaster.bakejob_rename', text="",
-    #                      icon='GREASEPENCIL').index = item.index
+
+class BM_UL_Items(BM_UIList_for_WalkHandler):
+    pass
 
 
 class BM_UL_BakeHistory(UIList):
