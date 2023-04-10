@@ -84,12 +84,14 @@ classes = (
 
     ui_panels.BM_PREFS_AddonPreferences,
     ui_panels.BM_UL_BakeJobs,
+    ui_panels.BM_UL_Items,
     ui_panels.BM_UL_BakeHistory,
 
     operators_reg.BM_OT_Remove_PreviewCollections,
 
     operators_ui.BM_OT_Help,
     operators_ui.BM_OT_UIList_Walk_Handler,
+
     operators_ui.BM_OT_BakeJobs_Add,
     operators_ui.BM_OT_BakeJobs_Remove,
     operators_ui.BM_OT_BakeJobs_Move,
@@ -98,6 +100,14 @@ classes = (
     operators_ui.BM_OT_BakeJob_Rename,
     operators_ui.BM_OT_BakeJob_ToggleType,
     operators_ui.BM_OT_BakeJobs_Merge,
+
+    operators_ui.BM_OT_Items_Add,
+    operators_ui.BM_OT_Items_Remove,
+    operators_ui.BM_OT_Items_Move,
+    operators_ui.BM_OT_Items_AddDropped,
+    operators_ui.BM_OT_Items_Trash,
+    operators_ui.BM_OT_Item_Rename,
+
     operators_ui.BM_OT_FileChooseDialog,
     operators_ui.BM_OT_Setup,
     operators_ui.BM_OT_Config,
