@@ -80,19 +80,14 @@ class BM_URLs:
     def get(self, identifier: str):
         base = "https://bakemaster-blender-addon.readthedocs.io/en/"
         urls = {
-            'INDEX': r'%s/',
-            'BAKEJOBS': r'%s/',
-            'PIPELINE': r'%s/',
-            'MANAGER': r'%s/',
-            'OBJECTS': r'%s/',
-            'MAPS': r'%s/',
-            'OUTPUT': r'%s/',
-            'TEXSETS': r'%s/',
-            'BAKE': r'%s/',
-            'BAKEHISTORY': r'%s/',
+            '': r'%s/',
+            'BM_PT_BakeJobs': r'%s/',
+            'BM_PT_Items': r'%s/',
+            'BM_PT_Bake': r'%s/',
+            'BM_PT_BakeHistory': r'%s/',
         }
         try:
             url = urls[identifier]
         except KeyError:
-            url = "%s"
+            url = urls['']
         return url % (base + self.addon_version)
