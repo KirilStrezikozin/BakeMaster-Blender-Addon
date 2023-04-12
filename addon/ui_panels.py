@@ -126,9 +126,10 @@ class BM_UIList_for_WalkHandler(UIList):
 
     use_name_filter = True
 
-    def allow_multi_select_viz(self, bakemaster):
+    def allow_multi_select_viz(self, bakemaster, item):
         if not all([bakemaster.allow_multi_select,
-                    not bakemaster.is_multi_selection_empty]):
+                    not bakemaster.is_multi_selection_empty,
+                    not item.has_drop_prompt, not item.is_drag_empty]):
             return False
 
         walk_data_getter = getattr(bm_get, "walk_data_get_%s" % self.data_name)
@@ -161,7 +162,7 @@ class BM_UIList_for_WalkHandler(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
         bakemaster = context.scene.bakemaster
-        allow_multi_select_viz = self.allow_multi_select_viz(bakemaster)
+        allow_multi_select_viz = self.allow_multi_select_viz(bakemaster, item)
 
         if allow_multi_select_viz and item.is_selected:
             col_layout = layout.box()
