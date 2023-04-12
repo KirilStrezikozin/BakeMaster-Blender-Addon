@@ -955,7 +955,7 @@ class BM_OT_Item_Rename(Operator):
         return {'FINISHED'}
 
     def invoke(self, context, _):
-        self.item = bm_get.item(bm_get.bakejob(context.scene.bakemater),
+        self.item = bm_get.item(bm_get.bakejob(context.scene.bakemaster),
                                 self.index)
         if self.item is None:
             self.report({'WARNING', "Internal error: Cannot resolve Object"})

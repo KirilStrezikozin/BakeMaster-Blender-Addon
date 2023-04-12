@@ -84,13 +84,14 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
     data, items, attr = walk_data_getter(bakemaster)
 
     if all([bakemaster.is_double_click,
-            self.index == bakemaster.bakejobs_active_index,
-            not self.is_drag_empty,
-            not self.has_drop_prompt,
             bakemaster.last_left_click_ticker != self.ticker,
+            self.index == getattr(data, "%s_active_index" % attr),
+            not self.is_drag_empty, not self.has_drop_prompt,
             double_click_ot_idname != ""]):
+
         double_click_ot = getattr(bpy_ops.bakemaster, double_click_ot_idname)
         double_click_ot('INVOKE_DEFAULT', index=self.index)
+
         bakemaster.is_double_click = False
         return
 
