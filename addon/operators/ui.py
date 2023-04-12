@@ -410,6 +410,38 @@ class BM_OT_UIList_Walk_Handler(Operator):
         return {'RUNNING_MODAL'}
 
 
+class BM_OT_Generic_AddDropped(Operator):
+    """
+    Generic AddDropped Operator with an execute method for faster AddDropped
+    Operators.
+
+    Requires invoke, add, remove methods dependant on the data an
+    Operator is invoked on.
+    """
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+
+        if bakemaster.allow_drop:
+            self.remove()
+            return {'CANCELLED'}
+
+        add_names = []
+        proceed = False
+
+        for object in context.selected_objects:
+            add_names.append(object.name)
+            if object.name == self.drop_name:
+                proceed = True
+
+        if not proceed:
+            self.remove()
+            return {'CANCELLED'}
+
+        self.add(bakemaster, add_names)
+        return {'FINISHED'}
+
+
 class BM_OT_BakeJobs_Add(Operator):
     bl_idname = 'bakemaster.bakejobs_add'
     bl_label = "Add"
@@ -501,7 +533,7 @@ class BM_OT_BakeJobs_Move(Operator):
         return self.execute(context)
 
 
-class BM_OT_BakeJobs_AddDropped(Operator):
+class BM_OT_BakeJobs_AddDropped(BM_OT_Generic_AddDropped):
     """
     Internal, not used in the UI, invoked from drop_name_Update.
     """
@@ -526,29 +558,6 @@ class BM_OT_BakeJobs_AddDropped(Operator):
             bpy_ops.bakemaster.items_add('INVOKE_DEFAULT',
                                          bakejob_index=new_bakejob.index,
                                          name=name)
-
-    def execute(self, context):
-        bakemaster = context.scene.bakemaster
-
-        if bakemaster.allow_drop:
-            self.remove()
-            return {'CANCELLED'}
-
-        add_names = []
-        proceed = False
-
-        for object in context.selected_objects:
-            if object.type == 'MESH':
-                add_names.append(object.name)
-            if object.name == self.drop_name:
-                proceed = True
-
-        if not proceed:
-            self.remove()
-            return {'CANCELLED'}
-
-        self.add(bakemaster, add_names)
-        return {'FINISHED'}
 
     def invoke(self, context, _):
         try:
@@ -855,7 +864,7 @@ class BM_OT_Items_Move(Operator):
         return self.execute(context)
 
 
-class BM_OT_Items_AddDropped(Operator):
+class BM_OT_Items_AddDropped(BM_OT_Generic_AddDropped):
     """
     Internal, not used in the UI, invoked from drop_name_Update.
     """
@@ -881,29 +890,6 @@ class BM_OT_Items_AddDropped(Operator):
             add_ot('INVOKE_DEFAULT',
                    bakejob_index=bakemaster.bakejobs_active_index,
                    name=name)
-
-    def execute(self, context):
-        bakemaster = context.scene.bakemaster
-
-        if bakemaster.allow_drop:
-            self.remove()
-            return {'CANCELLED'}
-
-        add_names = []
-        proceed = False
-
-        for object in context.selected_objects:
-            if object.type == 'MESH':
-                add_names.append(object.name)
-            if object.name == self.drop_name:
-                proceed = True
-
-        if not proceed:
-            self.remove()
-            return {'CANCELLED'}
-
-        self.add(bakemaster, add_names)
-        return {'FINISHED'}
 
     def invoke(self, context, _):
         bakemaster = context.scene.bakemaster
