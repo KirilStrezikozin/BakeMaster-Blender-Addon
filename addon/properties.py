@@ -208,6 +208,7 @@ class Global(BM_PropertyGroup_Helper):
     allow_multi_select: BoolProperty(default=False, options={'SKIP_SAVE'})
     multi_select_event: StringProperty(default="", options={'SKIP_SAVE'})
     is_multi_selection_empty: BoolProperty(default=True, options={'SKIP_SAVE'})
+    multi_selection_data: StringProperty(default="", options={'SKIP_SAVE'})
 
     is_double_click: BoolProperty(default=False, options={'SKIP_SAVE'})
     last_left_click_ticker: BoolProperty(default=False, options={'SKIP_SAVE'})

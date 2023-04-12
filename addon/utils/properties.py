@@ -177,8 +177,24 @@ def Generic_multi_select(self, bakemaster, walk_data: str):
     data, items, attr = walk_data_getter(bakemaster)
     active_index = getattr(data, "%s_active_index" % attr)
 
+    # multi selection viz allowed in the walk_data only
+    # limited to only one parent (if one bakejob has multi selected items,
+    # other bakejobs may not have them visualized)
+    if hasattr(data, "index"):
+        parent_index = data.index
+    else:
+        parent_index = ""
+    our_multi_selection_data = f"{walk_data}_{parent_index}"
+
+    # do not visualize multi selection if the previous one is not cleared
+    if all([bakemaster.multi_selection_data != "",
+            bakemaster.multi_selection_data != our_multi_selection_data]):
+        setattr(data, "%s_active_index" % attr, self.index)
+        return
+
     self.is_selected = True
     bakemaster.is_multi_selection_empty = False
+    bakemaster.multi_selection_data = our_multi_selection_data  # reserve
 
     if bakemaster.multi_select_event == 'CTRL':
         if active_index == self.index:
@@ -203,6 +219,7 @@ def Generic_multi_select(self, bakemaster, walk_data: str):
     else:
         bakemaster.allow_multi_select = False
         bakemaster.is_multi_selection_empty = True
+        bakemaster.multi_selection_data = ""  # free reserve
         items.foreach_set("is_selected",
                           [False] * getattr(data, "%s_len" % attr))
 

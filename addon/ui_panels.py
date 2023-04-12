@@ -34,6 +34,7 @@ from .ui_base import (
     BM_PT_BakeHistoryBase,
     BM_PT_BakeBase,
     bm_ui_utils,
+    bm_get,
 )
 from bpy.types import (
     UIList,
@@ -108,6 +109,8 @@ class BM_UIList_for_WalkHandler(UIList):
     UI representation for: drop from Outliner, drag items to new positions,
     select multiple items.
 
+    data_name is an identifier of walk_data_name for this UIList instance.
+
     Use draw_props() to draw all needed item's properties (aligned row on the
     left). Default includes use_bake.
     Use draw_operators() to draw all needed operators for the item (row on the
@@ -119,7 +122,25 @@ class BM_UIList_for_WalkHandler(UIList):
     Overwrite draw_item() method for custom UI.
     """
 
+    data_name = ""
+
     use_name_filter = True
+
+    def allow_multi_select_viz(self, bakemaster):
+        if not all([bakemaster.allow_multi_select,
+                    not bakemaster.is_multi_selection_empty]):
+            return False
+
+        walk_data_getter = getattr(bm_get, "walk_data_get_%s" % self.data_name)
+        data, _, _ = walk_data_getter(bakemaster)
+
+        if hasattr(data, "index"):
+            parent_index = data.index
+        else:
+            parent_index = ""
+        our_multi_selection_data = f"{self.data_name}_{parent_index}"
+
+        return bakemaster.multi_selection_data == our_multi_selection_data
 
     def draw_props(self, context, row, data, item, icon, active_data,
                    active_propname, index):
@@ -140,9 +161,9 @@ class BM_UIList_for_WalkHandler(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
         bakemaster = context.scene.bakemaster
+        allow_multi_select_viz = self.allow_multi_select_viz(bakemaster)
 
-        if all([bakemaster.allow_multi_select, item.is_selected,
-                not bakemaster.is_multi_selection_empty]):
+        if allow_multi_select_viz and item.is_selected:
             col_layout = layout.box()
             col_layout.scale_y = 0.45
         else:
@@ -176,8 +197,7 @@ class BM_UIList_for_WalkHandler(UIList):
             row.emboss = 'NONE'
 
         # for multiple selection
-        if all([bakemaster.allow_multi_select,
-                not bakemaster.is_multi_selection_empty]):
+        if allow_multi_select_viz:
             layout.active = item.is_selected
             row.emboss = 'NONE'
 
@@ -222,6 +242,8 @@ class BM_UIList_for_WalkHandler(UIList):
 
 
 class BM_UL_BakeJobs(BM_UIList_for_WalkHandler):
+    data_name = "bakejobs"
+
     def draw_props(self, context, row, data, item, icon, active_data,
                    active_propname, index):
         bakemaster = context.scene.bakemaster
@@ -241,7 +263,7 @@ class BM_UL_BakeJobs(BM_UIList_for_WalkHandler):
 
 
 class BM_UL_Items(BM_UIList_for_WalkHandler):
-    pass
+    data_name = "items"
 
 
 class BM_UL_BakeHistory(UIList):
