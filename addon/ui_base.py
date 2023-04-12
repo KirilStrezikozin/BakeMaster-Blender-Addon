@@ -33,15 +33,18 @@ from bpy.types import (
 from .utils import (
     ui as bm_ui_utils,
     get as bm_get,
-    status as bm_status,
 )
 
 
 class BM_PT_Helper(Panel):
-    """BakeMaster UI Panel Helper class"""
+    """
+    BakeMaster UI Panel Helper class.
 
-    bl_idname = ''
+    data_name is an identifier of walk_data_name for this Panel instance.
+    """
+
     use_help = True  # draw help button
+    data_name = ""
 
     @classmethod
     def poll(cls, context):
@@ -65,10 +68,36 @@ class BM_PT_Helper(Panel):
         row.operator('bakemaster.help', text="",
                      icon='HELP').id = self.bl_idname
 
+    def has_multi_selection(self, bakemaster: not None, data: not None,
+                            data_name=""):
+        """
+        Return True if there is a visualized multi selection
+        in the iterable attribute of data_name name inside the given data.
+
+        If data_name is not given (empty), self.data_name will be used.
+        """
+
+        if not all([bakemaster.allow_multi_select,
+                    not bakemaster.is_multi_selection_empty]):
+            return False
+
+        if data_name == "":
+            data_name = self.data_name
+
+        if hasattr(data, "index"):
+            parent_index = data.index
+        else:
+            parent_index = ""
+        our_multi_selection_data = f"{data_name}_{parent_index}"
+
+        return bakemaster.multi_selection_data == our_multi_selection_data
+
 
 class BM_PT_BakeJobsBase(BM_PT_Helper):
     bl_label = "Bake Jobs"
     bl_idname = 'BM_PT_BakeJobs'
+
+    data_name = "bakejobs"
 
     def draw(self, context):
         scene = context.scene
@@ -80,7 +109,7 @@ class BM_PT_BakeJobsBase(BM_PT_Helper):
 
         # check if tools for multi selection are available
         ml_rows = 0
-        if bm_status.multi_selection(bakemaster, "bakejobs"):
+        if self.has_multi_selection(bakemaster, bakemaster):
             seq = bakemaster.get_seq("bakejobs", "is_selected",
                                      bakemaster.bakejobs_len, bool)
             if seq[seq].size > 0:
@@ -127,6 +156,8 @@ class BM_PT_ItemsBase(BM_PT_Helper):
     bl_label = " "
     bl_idname = 'BM_PT_Items'
 
+    data_name = "items"
+
     @classmethod
     def panel_poll(cls, context):
         bakemaster = context.scene.bakemaster
@@ -135,7 +166,8 @@ class BM_PT_ItemsBase(BM_PT_Helper):
         if bakejob is None:
             return False
 
-        if all([bm_status.multi_selection(bakemaster, "bakejobs"),
+        if all([cls.has_multi_selection(cls, bakemaster, bakemaster,
+                                        "bakejobs"),
                 not bakejob.is_selected]):
             return False
 
@@ -177,7 +209,7 @@ class BM_PT_ItemsBase(BM_PT_Helper):
 
         # check if tools for multi selection are available
         ml_rows = 0
-        if bm_status.multi_selection(bakemaster, "items"):
+        if self.has_multi_selection(bakemaster, bakejob):
             seq = bakejob.get_seq("items", "is_selected",
                                   bakejob.items_len, bool)
             if seq[seq].size > 0:
