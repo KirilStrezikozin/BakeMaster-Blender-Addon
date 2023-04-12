@@ -79,14 +79,24 @@ class BM_PT_BakeHistory(BM_PT_BakeHistoryBase):
 
 
 class BM_PREFS_AddonPreferences(AddonPreferences):
-    bl_idname = __package__
+    # dev: __package__ is 'BakeMaster.addon'
+    # end user: __package__ is 'BakeMaster'
+    bl_idname = __package__.split(".")[0]
 
     def poll(self, context):
         return hasattr(context.scene, "bakemaster")
 
     def draw(self, context):
         bakemaster = context.scene.bakemaster
-        col = self.layout.column(align=True)
+        layout = self.layout
+
+        split = layout.split(factor=0.4)
+
+        col_heading = split.column()
+        col_heading.alignment = 'RIGHT'
+        col_heading.label(text="Help")
+
+        col = split.column(align=True)
         col.prop(bakemaster, "prefs_use_show_help")
 
 
