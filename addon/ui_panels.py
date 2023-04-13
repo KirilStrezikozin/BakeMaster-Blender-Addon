@@ -129,7 +129,8 @@ class BM_UIList_for_WalkHandler(UIList):
     use_name_filter = True
 
     def ticker_icon(self, context, bakemaster, item):
-        return None, ''
+        custom_value = None
+        return None, '', custom_value
 
     def allow_multi_select_viz(self, bakemaster, item):
         has_selection, _ = bm_get.walk_data_multi_selection_data(
@@ -199,8 +200,8 @@ class BM_UIList_for_WalkHandler(UIList):
         self.draw_props(context, row, data, item, icon, active_data,
                         active_propname, index)
 
-        ticker_icon_type, ticker_icon = self.ticker_icon(context, bakemaster,
-                                                         item)
+        ticker_icon_type, ticker_icon, _ = self.ticker_icon(
+            context, bakemaster, item)
         if ticker_icon_type == 'ICON':
             row.prop(item, "ticker", text=item.name, toggle=True,
                      icon=ticker_icon)
@@ -275,31 +276,30 @@ class BM_UL_Items(BM_UIList_for_WalkHandler):
                                              "bakemaster_rederror.png")
 
         if bakejob is None:
-            return 'ICON_VALUE', error_icon
+            return 'ICON_VALUE', error_icon, False
 
         elif bakejob.type == 'MAPS':
-            return 'ICON_VALUE', error_icon
+            return '', '', True
 
         elif bakejob.type == 'OBJECTS':
             object, _, obj_icon, _, _ = bm_get.object_ui_info(
                     context.scene.objects, item.name)
 
             if object is None:
-                return 'ICON_VALUE', error_icon
+                return 'ICON_VALUE', error_icon, False
 
-            return 'ICON', obj_icon
+            return 'ICON', obj_icon, True
 
-        return 'ICON_VALUE', error_icon
+        return 'ICON_VALUE', error_icon, False
 
     def draw_props(self, context, row, data, item, icon, active_data,
                    active_propname, index):
         bakemaster = context.scene.bakemaster
         row.emboss = 'NONE'
 
-        # obj_icon_type is 'ICON_VALUE' when object is invalid
-        obj_icon_type, _ = self.ticker_icon(context, bakemaster, item)
-        if obj_icon_type == 'ICON_VALUE':
-            row.active = False
+        # unpack third ticker_icon() return value -> item_exists
+        _, _, item_exists = self.ticker_icon(context, bakemaster, item)
+        row.active = item_exists
 
         if item.use_bake:
             icon = 'RESTRICT_RENDER_OFF'
