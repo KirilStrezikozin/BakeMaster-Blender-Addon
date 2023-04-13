@@ -757,7 +757,7 @@ class BM_OT_BakeJobs_Merge(Operator):
 class BM_OT_Items_Add(Operator):
     bl_idname = 'bakemaster.items_add'
     bl_label = "Add"
-    bl_description = "Add new Item to selected Bake Jobs"
+    bl_description = "Add new Item to selected Bake Jobs.\nIf active Bake Job type is Objects, pressing this button will add all valid selected Objects in the scene to the list"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
 
     bakejob_index: IntProperty(default=-1)
