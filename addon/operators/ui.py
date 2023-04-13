@@ -429,9 +429,9 @@ class BM_OT_Generic_AddDropped(Operator):
         add_names = []
         proceed = False
 
-        for object in context.selected_objects:
-            add_names.append(object.name)
-            if object.name == self.drop_name:
+        for selected_object in context.selected_objects:
+            add_names.append(selected_object.name)
+            if selected_object.name == self.drop_name:
                 proceed = True
 
         if not proceed:
@@ -768,7 +768,15 @@ class BM_OT_Items_Add(Operator):
     bl_options = {'INTERNAL', 'UNDO'}
 
     bakejob_index: IntProperty(default=-1)
-    name: StringProperty(default="Object")
+    name: StringProperty(default="")
+
+    def add(self, bakejob, name: str):
+        new_item = bakejob.items.add()
+        new_item.index = bakejob.items_len
+        new_item.name = name
+
+        bakejob.items_active_index = new_item.index
+        bakejob.items_len += 1
 
     def invoke(self, context, _):
         return self.execute(context)
@@ -780,11 +788,27 @@ class BM_OT_Items_Add(Operator):
         if bakejob is None:
             return {'CANCELLED'}
 
-        new_item = bakejob.items.add()
-        new_item.index = bakejob.items_len
-        new_item.name = self.name
-        bakejob.items_active_index = new_item.index
-        bakejob.items_len += 1
+        errors = 0
+
+        if self.name == "":
+            names = context.selected_objects
+        else:
+            names = [self]
+
+        for name_holder in names:
+            object, _, _, _, error_message = bm_get.object_ui_info(
+                context.scene.objects, name_holder.name)
+
+            if object is None:
+                print("BakeMaster Object Add Error: %s" % error_message)
+                errors += 1
+                continue
+
+            self.add(bakejob, name_holder.name)
+
+        if errors:
+            self.report({'WARNING'},
+                        f"{errors} Object(s) could not be added (see Console)")
 
         # reduce flicker and hidden items on add (uilist mess)
         bm_set.disable_drag(bakemaster, bakejob.items)
@@ -947,21 +971,38 @@ class BM_OT_Item_Rename(Operator):
         options={'SKIP_SAVE'})
 
     item = None
+    bakejob_type = ''
 
-    def execute(self, _):
+    def execute(self, context):
         if self.item is None:
             return {'CANCELLED'}
+
+        if self.bakejob_type == 'OBJECTS':
+            object, _, _, _, error_message = bm_get.object_ui_info(
+                context.scene.objects, self.name)
+
+            if object is None:
+                self.report({'ERROR'}, error_message)
+                return {'CANCELLED'}
+
+            self.item.obj_name = self.name
+
+        elif self.bakejob_type == 'MAPS':
+            pass
+
         self.item.name = self.name
         return {'FINISHED'}
 
     def invoke(self, context, _):
-        self.item = bm_get.item(bm_get.bakejob(context.scene.bakemaster),
-                                self.index)
-        if self.item is None:
-            self.report({'WARNING', "Internal error: Cannot resolve Object"})
+        bakejob = bm_get.bakejob(context.scene.bakemaster)
+        self.item = bm_get.item(bakejob, self.index)
+
+        if self.item is None or bakejob is None:
+            self.report({'WARNING', "Internal error: Cannot resolve Item"})
             return {'CANCELLED'}
 
         self.name = self.item.name
+        self.bakejob_type = bakejob.type
 
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
