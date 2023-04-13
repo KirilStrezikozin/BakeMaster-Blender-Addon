@@ -50,6 +50,9 @@ from .labels import BM_LABELS_Props
 class BM_PropertyGroup_Helper(PropertyGroup):
     """
     BakeMaster PropertyGroup Helper class providing PropertyGroup utilities.
+
+    If PropertyGroup has iterable data for UIList Walk Handler,
+    add active_index_old property alongside active_index.
     """
 
     def get_seq(self, data: str, attr: str, count: int, dtype: type):
@@ -93,6 +96,8 @@ class Item(BM_PropertyGroup_Helper):
         description="Click to configure settings",
         default=-1,
         update=bm_props_utils.Item_subitems_active_index_Update)
+
+    subitems_active_index_old: IntProperty(default=-1)
 
     subitems_len: IntProperty(default=0)
 
@@ -148,6 +153,8 @@ class BakeJob(BM_PropertyGroup_Helper):
         default=-1,
         update=bm_props_utils.BakeJob_items_active_index_Update)
 
+    items_active_index_old: IntProperty(default=-1)
+
     items_len: IntProperty(default=0)
 
     # UIList Walk Handler Props
@@ -190,6 +197,8 @@ class Global(BM_PropertyGroup_Helper):
         description="Active Bake Job",
         default=-1,
         update=bm_props_utils.Global_bakejobs_active_index_Update)
+
+    bakejobs_active_index_old: IntProperty(default=-1)
 
     bakejobs_len: IntProperty(default=0)
 

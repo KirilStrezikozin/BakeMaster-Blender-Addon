@@ -123,6 +123,8 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
 def Generic_active_index_Update(_, context: not None, walk_data: str):
     """
     Generic active_index property update.
+    Revert to active_index_old when setting onto drag_emtpy and drop_prompt
+    items.
 
     walk_data is an attribute name of Collection Property that has uilist walk
     features.
@@ -135,12 +137,26 @@ def Generic_active_index_Update(_, context: not None, walk_data: str):
     data, items, attr = walk_data_getter(bakemaster)
     active_index = getattr(data, "%s_active_index" % attr)
 
-    if active_index == -1 or not bakemaster.allow_multi_select:
+    if active_index == -1:
         return
     try:
-        items[active_index].is_selected = True
+        items[active_index]
     except IndexError:
-        pass
+        setattr(data, "%s_active_index" % attr,
+                getattr(data, "%s_active_index_old" % attr))
+        return
+    if any([items[active_index].is_drag_empty,
+            items[active_index].has_drop_prompt]):
+        setattr(data, "%s_active_index" % attr,
+                getattr(data, "%s_active_index_old" % attr))
+        return
+
+    setattr(data, "%s_active_index_old" % attr, active_index)
+
+    has_selection, _ = bm_get.walk_data_multi_selection_data(
+        bakemaster, walk_data)
+    if has_selection:
+        items[active_index].is_selected = True
 
 
 def Generic_drop_name_Update(self, context: not None, walk_data: str,
