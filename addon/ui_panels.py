@@ -119,12 +119,17 @@ class BM_UIList_for_WalkHandler(UIList):
     Filtering options on item.name property is on by default. Overwrite
     draw_filter() for custom.
 
+    Define icon or icon_value for ticker prop in ticker_icon().
+
     Overwrite draw_item() method for custom UI.
     """
 
     data_name = ""
 
     use_name_filter = True
+
+    def ticker_icon(self, context, bakemaster, item):
+        return None, ''
 
     def allow_multi_select_viz(self, bakemaster, item):
         if not all([bakemaster.allow_multi_select,
@@ -205,7 +210,16 @@ class BM_UIList_for_WalkHandler(UIList):
         self.draw_props(context, row, data, item, icon, active_data,
                         active_propname, index)
 
-        row.prop(item, "ticker", text=item.name, toggle=True)
+        ticker_icon_type, ticker_icon = self.ticker_icon(context, bakemaster,
+                                                         item)
+        if ticker_icon_type == 'ICON':
+            row.prop(item, "ticker", text=item.name, toggle=True,
+                     icon=ticker_icon)
+        elif ticker_icon_type == 'ICON_VALUE':
+            row.prop(item, "ticker", text=item.name, toggle=True,
+                     icon_value=ticker_icon)
+        else:
+            row.prop(item, "ticker", text=item.name, toggle=True)
 
         self.draw_operators(context, row, data, item, icon, active_data,
                             active_propname, index)
@@ -265,6 +279,49 @@ class BM_UL_BakeJobs(BM_UIList_for_WalkHandler):
 
 class BM_UL_Items(BM_UIList_for_WalkHandler):
     data_name = "items"
+
+    def ticker_icon(self, context, bakemaster, item):
+        bakejob = bm_get.bakejob(bakemaster, item.bakejob_index)
+        error_icon = bm_ui_utils.get_icon_id(bakemaster,
+                                             "bakemaster_rederror.png")
+
+        if bakejob is None:
+            return 'ICON_VALUE', error_icon
+
+        elif bakejob.type == 'MAPS':
+            return 'ICON_VALUE', error_icon
+
+        elif bakejob.type == 'OBJECTS':
+            object, _, obj_icon, _, _ = bm_get.object_ui_info(
+                    context.scene.objects, item.name)
+
+            if object is None:
+                return 'ICON_VALUE', error_icon
+
+            return 'ICON', obj_icon
+
+        return 'ICON_VALUE', error_icon
+
+    def draw_props(self, context, row, data, item, icon, active_data,
+                   active_propname, index):
+        bakemaster = context.scene.bakemaster
+        row.emboss = 'NONE'
+
+        # obj_icon_type is 'ICON_VALUE' when object is invalid
+        obj_icon_type, _ = self.ticker_icon(context, bakemaster, item)
+        if obj_icon_type == 'ICON_VALUE':
+            row.active = False
+
+        if item.use_bake:
+            icon = 'RESTRICT_RENDER_OFF'
+        else:
+            icon = 'RESTRICT_RENDER_ON'
+            row.active = False
+
+        subrow = row.row()
+        subrow.prop(item, 'use_bake', text="", icon=icon)
+        if bakemaster.allow_drag and bakemaster.drag_to_index != -1:
+            subrow.enabled = False
 
 
 class BM_UL_BakeHistory(UIList):
