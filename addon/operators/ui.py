@@ -77,9 +77,6 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
     _handler = None
 
-    drop_new_label = "new Bake Job..."
-    drop_in_label = "+"
-
     def handler_poll(self):
         cls = self.__class__
         if cls._handler is not None:
@@ -179,11 +176,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
         new_item = items.add()
         new_item.index = items_len
-        new_item.drop_name_old = self.drop_new_label
-        new_item.drop_name = self.drop_new_label
         new_item.has_drop_prompt = True
-
-        setattr(data, "%s_active_index" % attr, items_len)
 
     def drag_init(self, bakemaster):
         if self.is_dragging or self.get_items(bakemaster) is None:
