@@ -213,6 +213,8 @@ class Global(BM_PropertyGroup_Helper):
     allow_drag: BoolProperty(default=False, options={'SKIP_SAVE'})
     drag_from_index: IntProperty(default=-1, options={'SKIP_SAVE'})
     drag_to_index: IntProperty(default=-1, options={'SKIP_SAVE'})
+    drag_data_from: StringProperty(default="", options={'SKIP_SAVE'})
+    drag_data_to: StringProperty(default="", options={'SKIP_SAVE'})
 
     allow_multi_select: BoolProperty(default=False, options={'SKIP_SAVE'})
     multi_select_event: StringProperty(default="", options={'SKIP_SAVE'})

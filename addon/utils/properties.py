@@ -106,14 +106,16 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
 
     if bakemaster.drag_from_index == -1:
         setattr(data, "%s_active_index" % attr, self.index)
-        bakemaster.drag_from_index = self.index
         self.has_drag_prompt = True
+        bakemaster.drag_from_index = self.index
+        bakemaster.drag_data_from = walk_data
         return
 
     if bakemaster.drag_to_index != -1:
         items[bakemaster.drag_to_index].is_drag_placeholder = False
-    bakemaster.drag_to_index = self.index
     self.is_drag_placeholder = True
+    bakemaster.drag_to_index = self.index
+    bakemaster.drag_data_to = walk_data
 
     ticker_old = items[bakemaster.drag_from_index].ticker
     if self.ticker == ticker_old:
