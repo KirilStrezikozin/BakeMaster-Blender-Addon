@@ -89,3 +89,44 @@ def walk_data_get_subitems(bakemaster):
     if itm is None:
         return None, [], "subitems"
     return itm, itm.items, "subitems"
+
+
+def object_ui_info(objects, name: str):
+    """
+    Get object info given its name.
+
+    Return values are:
+    object, obj_type, obj_icon, error_id, error_message.
+    """
+
+    errors = {
+        'NOTFOUND': f"{name} Object wasn't found",
+        'INVALID': "Allowed Objects are: Mesh, Curve, Metaball, Text, Image",
+        'NOIMAGE': f"{name} Image has no image attached",
+    }
+
+    try:
+        object = objects[name]
+    except KeyError:
+        return None, '', '', 'NOTFOUND', errors['NOTFOUND']
+
+    info = {
+        'MESH': 'OUTLINER_OB_MESH',
+        'CURVE': 'OUTLINER_OB_CURVE',
+        'META': 'OUTLINER_OB_META',
+        'FONT': 'OUTLINER_OB_FONT',
+        'EMPTY': 'OUTLINER_OB_IMAGE'
+    }
+
+    try:
+        info[object.type]
+    except KeyError:
+        return None, '', '', 'INVALID', errors['INVALID']
+
+    if object.type == 'EMPTY':
+        if object.empty_display_type != 'IMAGE':
+            return None, '', '', 'INVALID', errors['INVALID']
+        elif object.data is None:
+            return None, '', '', 'NOIMAGE', errors['NOIMAGE']
+
+    return object, object.type, info[object.type], None, ""
