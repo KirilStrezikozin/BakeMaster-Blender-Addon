@@ -132,21 +132,10 @@ class BM_UIList_for_WalkHandler(UIList):
         return None, ''
 
     def allow_multi_select_viz(self, bakemaster, item):
-        if not all([bakemaster.allow_multi_select,
-                    not bakemaster.is_multi_selection_empty,
-                    not item.has_drop_prompt, not item.is_drag_empty]):
-            return False
-
-        walk_data_getter = getattr(bm_get, "walk_data_get_%s" % self.data_name)
-        data, _, _ = walk_data_getter(bakemaster)
-
-        if hasattr(data, "index"):
-            parent_index = data.index
-        else:
-            parent_index = ""
-        our_multi_selection_data = f"{self.data_name}_{parent_index}"
-
-        return bakemaster.multi_selection_data == our_multi_selection_data
+        has_selection, _ = bm_get.walk_data_multi_selection_data(
+            bakemaster, self.data_name)
+        return has_selection and all([not item.has_drop_prompt,
+                                      not item.is_drag_empty])
 
     def draw_props(self, context, row, data, item, icon, active_data,
                    active_propname, index):
