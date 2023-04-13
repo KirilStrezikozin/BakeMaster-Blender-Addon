@@ -102,19 +102,22 @@ class BM_OT_UIList_Walk_Handler(Operator):
         bakemaster.walk_data_name = ""
 
         bakemaster.allow_drop = False
-        bakemaster.allow_drag = False
 
+        bakemaster.allow_drag = False
         bakemaster.drag_from_index = -1
         bakemaster.drag_to_index = -1
+        bakemaster.drad_data_from = ""
+        bakemaster.drad_data_to = ""
 
         bakemaster.allow_multi_select = False
         bakemaster.multi_select_event = ''
         bakemaster.is_multi_selection_empty = True
+        bakemaster.multi_selection_data = ""
 
         self.is_left_click = False
         self.last_left_click_time = 0
-        bakemaster.last_left_click_ticker = False
         bakemaster.is_double_click = False
+        bakemaster.last_left_click_ticker = False
 
     def is_cursor_in_region(self, region, event):
         # area as region is acceptable
@@ -196,6 +199,16 @@ class BM_OT_UIList_Walk_Handler(Operator):
             drag_empty.index = items_len
             drag_empty.is_drag_empty = True
 
+        # TODO:
+        # 1. reset tickers in all walk_data = drag to other data with no errors
+        # 2. If current data has multi selection:
+        #       -> check if (multi_selection_allow_walk_data_transition)
+        #       --> set all tickers of current data to True
+        #           (disallow drag inside drag_data_from),
+        #           will need to cope with that in the ui too (no dimming or
+        #           maybe dimming).
+        #       -> somehow check that in the ui and draw (bake jobs for ex) "move here..." near each (uilist)
+        #       -> on drag() here, we know drag_data_from, drag_data_to, indexes. so make a move!)
         for item in items:
             item.ticker = False
 
