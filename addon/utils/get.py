@@ -91,6 +91,26 @@ def walk_data_get_subitems(bakemaster):
     return itm, itm.items, "subitems"
 
 
+def walk_data_multi_selection_data(bakemaster, data_name: str):
+    if not all([bakemaster.allow_multi_select,
+                not bakemaster.is_multi_selection_empty]):
+        multi_selection_exists = False
+    else:
+        multi_selection_exists = True
+
+    walk_data_getter = globals()["walk_data_get_%s" % data_name]
+    data, _, _ = walk_data_getter(bakemaster)
+
+    if hasattr(data, "index"):
+        parent_index = data.index
+    else:
+        parent_index = ""
+    our_multi_selection_data = f"{data_name}_{parent_index}"
+
+    return all([bakemaster.multi_selection_data == our_multi_selection_data,
+                multi_selection_exists]), our_multi_selection_data
+
+
 def object_ui_info(objects, name: str):
     """
     Get object info given its name.
