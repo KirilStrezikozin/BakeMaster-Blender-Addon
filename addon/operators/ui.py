@@ -207,6 +207,15 @@ class BM_OT_UIList_Walk_Handler(Operator):
         # containers.foreach_set("ticker",
         #                   [True] * getattr(data, "%s_len" % attr))
 
+    def add_drag_empty(self, data, containers, attr):
+        # ensure there's only one drag_empty
+        drag_empties = data.get_seq(attr, "is_drag_empty", bool)
+        if drag_empties[drag_empties].size == 0:
+            drag_empty = containers.add()
+            drag_empty.index = getattr(data, "%s_len" % attr)
+            print(drag_empty.index)
+            drag_empty.is_drag_empty = True
+
     def drop_init(self, bakemaster):
         if self.is_dropping or self.get_containers(bakemaster) is None:
             return
@@ -228,15 +237,22 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
         data, containers, attr = self.get_containers(bakemaster)
 
+        # Add drag_empty to parent walk_data
+        try:
+            parent_data, parent_containers, parent_attr = getattr(
+                bm_get, "walk_data_get_%s" % bm_get.walk_data_parent(
+                    bakemaster.walk_data_name))(bakemaster)
+        except (AttributeError, KeyError):
+            parent_data = None
+            parent_containers = None
+            parent_attr = None
+
         containers_active_index = getattr(data, "%s_active_index" % attr)
         self.drag_end(bakemaster)
 
-        # ensure there's only one drag_empty
-        drag_empties = data.get_seq(attr, "is_drag_empty", bool)
-        if drag_empties[drag_empties].size == 0:
-            drag_empty = containers.add()
-            drag_empty.index = getattr(data, "%s_len" % attr)
-            drag_empty.is_drag_empty = True
+        self.add_drag_empty(data, containers, attr)
+        if parent_data is not None:
+            self.add_drag_empty(parent_data, parent_containers, parent_attr)
 
         self.reset_all_tickers(bakemaster)
         self.evaluate_data_trans(bakemaster, data, containers, attr)
@@ -580,16 +596,35 @@ class BM_OT_WalkData_Trans(Operator):
 
         destination_containers = getattr(destination_data, attr_from)
 
+        # add_ot = getattr(bpy_ops.bakemaster,
+        #                  "%s_add" % bakemaster.drag_data_from)
+        setattr(destination_data,
+                "%s_active_index" % bakemaster.drag_data_to,
+                self.drag_from_index)
+
         to_remove = []
         for index in selected_indexes:
-            new_container = destination_containers.add()
             container_from = containers_from[index]
+            if any([container_from.is_drag_empty,
+                    container_from.has_drop_prompt]):
+                continue
+
+            new_container = destination_containers.add()
+            # add_ot('INVOKE_DEFAULT')
+            # new_container = destination_containers[:-1]
+            setattr(destination_data, "%s_len" % bakemaster.drag_data_from,
+                    getattr(destination_data,
+                            "%s_len" % bakemaster.drag_data_from) + 1)
+
             attrs = bm_get.data_attrs(container_from)
             for attr in attrs:
                 try:
                     setattr(new_container, attr, getattr(container_from, attr))
                 except (AttributeError, IndexError, TypeError, ValueError):
                     pass
+
+            new_container.is_drag_empty = False
+            new_container.has_drop_prompt = False
 
             if not self.use_copy:
                 to_remove.append(index)
@@ -598,6 +633,8 @@ class BM_OT_WalkData_Trans(Operator):
             remove_ot = getattr(bpy_ops.bakemaster,
                                 "%s_remove" % bakemaster.drag_data_from)
             remove_ot('INVOKE_DEFAULT', index=index)
+
+        bm_ots_utils.indexes_recalc(bakemaster, "bakejobs")
 
         return {'FINISHED'}
 
@@ -634,6 +671,8 @@ class BM_OT_BakeJobs_Add(Operator):
         new_bakejob.name = "Bake Job %d" % (new_bakejob.index + 1)
         bakemaster.bakejobs_active_index = new_bakejob.index
         bakemaster.bakejobs_len += 1
+
+        bm_ots_utils.indexes_recalc(bakemaster, "bakejobs")
 
         # reduce flicker and hidden containers on add (uilist mess)
         bm_set.disable_drag(bakemaster, bakemaster.bakejobs, "bakejobs")
@@ -971,8 +1010,8 @@ class BM_OT_Containers_Add(Operator):
     def invoke(self, context, _):
         bakemaster = context.scene.bakemaster
 
-        if self.bakejobs_index == -1:
-            self.bakejobs_index = bakemaster.bakejobs_active_index
+        if self.bakejob_index == -1:
+            self.bakejob_index = bakemaster.bakejobs_active_index
         return self.execute(context)
 
     def execute(self, context):
@@ -1007,6 +1046,8 @@ class BM_OT_Containers_Add(Operator):
         if errors:
             self.report({'WARNING'},
                         f"{errors} Object(s) could not be added (see Console)")
+
+        bm_ots_utils.indexes_recalc(bakejob, "items")
 
         # reduce flicker and hidden containers on add (uilist mess)
         bm_set.disable_drag(bakemaster, bakejob.containers, "containers")
