@@ -29,7 +29,6 @@
 
 from os import path as os_path
 from time import time
-from numpy import array as numpy_array
 from bpy import ops as bpy_ops
 from bpy.types import (
     Operator,
@@ -365,7 +364,8 @@ class BM_OT_UIList_Walk_Handler(Operator):
         Updates.
         The Collection Property is determined by calling self.get_containers.
 
-        Walk Data Transition is possible for moving containers to another datas.
+        Walk Data Transition is responsible for moving containers to another
+        datas.
         """
 
         if bakemaster.drag_to_index > bakemaster.drag_from_index:
@@ -378,7 +378,10 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
             if bakemaster.allow_drag_trans:
                 # move across walk_datas
-                bpy_ops.bakemaster.walk_data_move_trans('INVOKE_DEFAULT')
+                bpy_ops.bakemaster.walk_data_move_trans(
+                    'INVOKE_DEFAULT',
+                    drag_from_index=bakemaster.drag_from_index,
+                    drag_to_index=bakemaster.drag_to_index)
 
             else:
                 move_ot = getattr(bpy_ops.bakemaster, "%s_move" % attr)
@@ -501,17 +504,58 @@ class BM_OT_WalkData_Trans(Operator):
         description="Copy moved items here instead of moving",
         default=False)
 
+    drag_from_index: IntProperty(default=-1)
+    drag_to_index: IntProperty(default=-1)
+
     def trans_poll(self, bakemaster):
+        if any([self.drag_from_index == -1, self.drag_to_index == -1]):
+            return False, ""
+
+        if self.get_destination_data(bakemaster) is None:
+            return False, "Drag was cancelled"
+
         if not bakemaster.drag_data_from == bm_get.walk_data_child(
                 bakemaster.drag_data_to):
-            return False
-        has_selection, _ = bm_get.walk_data_multi_selection_data(
-            bakemaster, bakemaster.drag_data_from)
-        return has_selection and bakemaster.allow_drag_trans
+            return False, ""
 
-    def execute(self, context):
-        bakemaster = context.scene.bakemaster
+        # Reset in disable_drag()
+        # has_selection, _ = bm_get.walk_data_multi_selection_data(
+        #     bakemaster, bakemaster.drag_data_from)
+        # return has_selection and bakemaster.allow_drag_trans, ""
+        return True, ""
 
+    def get_destination_data(self, bakemaster):
+        drag_data_to_getter = getattr(
+            bm_get, "walk_data_get_%s" % bakemaster.drag_data_to)
+        data_to, containers_to, _ = drag_data_to_getter(bakemaster)
+
+        destination_data = containers_to[self.drag_to_index]
+        if destination_data.has_drop_prompt:
+            destination_data = None
+        elif destination_data.index == getattr(
+                data_to, "%s_active_index" % bakemaster.drag_data_to):
+            destination_data = None
+
+        elif destination_data.is_drag_empty:
+            add_ot = getattr(bpy_ops.bakemaster,
+                             "%s_add" % bakemaster.drag_data_to)
+            add_ot('INVOKE_DEFAULT')
+
+            parent_data, parent_containers, parent_attr = getattr(
+                bm_get, "walk_data_get_%s" % bakemaster.drag_data_to)(
+                    bakemaster)
+            active_index = getattr(parent_data,
+                                   "%s_active_index" % parent_attr)
+            try:
+                if active_index == -1:
+                    raise IndexError
+                destination_data = parent_containers[-1]
+            except IndexError:
+                destination_data = None
+
+        return destination_data
+
+    def get_source(self, bakemaster):
         drag_data_from_getter = getattr(
             bm_get, "walk_data_get_%s" % bakemaster.drag_data_from)
         data_from, containers_from, attr_from = drag_data_from_getter(
@@ -522,16 +566,21 @@ class BM_OT_WalkData_Trans(Operator):
 
         selected_indexes = all_indexes[:selection_mask.size][selection_mask]
 
-        drag_data_to_getter = getattr(
-            bm_get, "walk_data_get_%s" % bakemaster.drag_data_to)
-        _, containers_to, _ = drag_data_to_getter(bakemaster)
+        return containers_from, attr_from, selected_indexes
 
-        destination_data = containers_to[bakemaster.drag_to_index]
-        if any([destination_data.is_drag_empty,
-                destination_data.has_drop_prompt]):
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+
+        containers_from, attr_from, selected_indexes = self.get_source(
+            bakemaster)
+
+        destination_data = self.get_destination_data(bakemaster)
+        if destination_data is None:
             return {'CANCELLED'}
+
         destination_containers = getattr(destination_data, attr_from)
 
+        to_remove = []
         for index in selected_indexes:
             new_container = destination_containers.add()
             container_from = containers_from[index]
@@ -542,10 +591,21 @@ class BM_OT_WalkData_Trans(Operator):
                 except (AttributeError, IndexError, TypeError, ValueError):
                     pass
 
+            if not self.use_copy:
+                to_remove.append(index)
+
+        for index in reversed(to_remove):
+            remove_ot = getattr(bpy_ops.bakemaster,
+                                "%s_remove" % bakemaster.drag_data_from)
+            remove_ot('INVOKE_DEFAULT', index=index)
+
         return {'FINISHED'}
 
     def invoke(self, context, _):
-        if not self.trans_poll(context.scene.bakemaster):
+        ok, message = self.trans_poll(context.scene.bakemaster)
+        if not ok:
+            if message != "":
+                self.report({'INFO'}, message)
             return {'CANCELLED'}
 
         wm = context.window_manager
@@ -589,6 +649,8 @@ class BM_OT_BakeJobs_Remove(Operator):
     index: IntProperty(default=-1)
 
     def invoke(self, context, _):
+        if self.index == -1:
+            self.index = context.scene.bakemaster.bakejobs_active_index
         return self.execute(context)
 
     def execute(self, context):
@@ -619,8 +681,9 @@ class BM_OT_BakeJobs_Remove(Operator):
 
 class BM_OT_BakeJobs_Move(Operator):
     """
-    Internal Bake Jobs Move Operator to move a Bake Job container inside Bake Jobs
-    Collection. Not used in the UI but called in BM_OT_UIList_Walk_Handler.
+    Internal Bake Jobs Move Operator to move a Bake Job container inside Bake
+    Jobs Collection. Not used in the UI but called in
+    BM_OT_UIList_Walk_Handler.
     This Operator exists only for the sake of a Move Undo event.
 
     Call with providing the index of the Bake Job and its new_index.
@@ -906,6 +969,10 @@ class BM_OT_Containers_Add(Operator):
         bakejob.containers_len += 1
 
     def invoke(self, context, _):
+        bakemaster = context.scene.bakemaster
+
+        if self.bakejobs_index == -1:
+            self.bakejobs_index = bakemaster.bakejobs_active_index
         return self.execute(context)
 
     def execute(self, context):
@@ -956,6 +1023,15 @@ class BM_OT_Containers_Remove(Operator):
     index: IntProperty(default=-1)
 
     def invoke(self, context, _):
+        bakemaster = context.scene.bakemaster
+        if self.bakejob_index == -1:
+            self.bakejob_index = bakemaster.bakejobs_active_index
+
+        if self.index == -1:
+            container = bm_get.container(bm_get.bakejob(bakemaster))
+            if container is not None:
+                self.index = container.index
+
         return self.execute(context)
 
     def execute(self, context):
