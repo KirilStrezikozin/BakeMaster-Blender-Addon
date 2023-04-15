@@ -138,12 +138,30 @@ class BM_UIList_for_WalkHandler(UIList):
         return has_selection and all([not item.has_drop_prompt,
                                       not item.is_drag_empty])
 
+    def allow_drag_viz(self, bakemaster, _):
+        if not bakemaster.allow_drag:
+            return False, ''
+
+        if not bakemaster.allow_drag_trans:
+            if self.data_name == bakemaster.drag_data_from:
+                return True, 'DEFAULT'
+            else:
+                return False, ''
+
+        if self.data_name == bakemaster.drag_data_from:
+            return True, 'TRANS_FROM'
+        if bm_get.walk_data_child(self.data_name) == bakemaster.drag_data_from:
+            return True, 'TRANS_TO'
+
+        return False, ''
+
     def draw_props(self, context, row, data, item, icon, active_data,
-                   active_propname, index):
+                   active_propname, index, allow_drag_viz, drag_layout):
         bakemaster = context.scene.bakemaster
         row.emboss = 'NONE'
 
         icon = 'RESTRICT_RENDER_OFF' if item.use_bake else 'RESTRICT_RENDER_ON'
+
         subrow = row.row()
         subrow.prop(item, 'use_bake', text="", icon=icon)
         if bakemaster.allow_drag and bakemaster.drag_to_index != -1:
@@ -151,13 +169,67 @@ class BM_UIList_for_WalkHandler(UIList):
         row.active = item.use_bake
 
     def draw_operators(self, context, row, data, item, icon, active_data,
-                       active_propname, index):
+                       active_propname, index, allow_drag_viz, drag_layout):
         pass
+
+    def draw_drag_empty(self, context, row, data, item, icon, active_data,
+                        active_propname, index, allow_drag_viz, drag_layout):
+        bakemaster = context.scene.bakemaster
+
+        if drag_layout == 'DEFAULT':
+            text = "..."
+            if bakemaster.drag_to_index == -1:
+                return
+        elif drag_layout == 'TRANS_TO':
+            if item.is_drag_placeholder:
+                row = row.box()
+                row.scale_y = 0.4
+                row.alignment = 'LEFT'
+            text = "Move into new..."
+        else:
+            return
+
+        row.prop(item, "ticker", text=text, emboss=False,
+                 toggle=True)
+
+    def draw_trans_to_prompts(self, context, row, data, item, icon,
+                              active_data, active_propname, index,
+                              allow_drag_viz, drag_layout):
+        bakemaster = context.scene.bakemaster
+        if not all([allow_drag_viz, drag_layout == 'TRANS_TO']):
+            return False
+
+        if item.index == getattr(data, active_propname):
+            if not item.is_drag_placeholder:
+                row.label(text="", icon='FORWARD')
+                return True
+            self.draw_box_prompt(row, "Discard move")
+            return True
+
+        elif all([item.index == bakemaster.drag_to_index,
+                  item.is_drag_placeholder]):
+            self.draw_box_prompt(row, "Move here...")
+            return True
+
+        return False
+
+    def draw_box_prompt(self, layout, text: str):
+        old_emboss = layout.emboss
+        layout.emboss = 'NORMAL'
+
+        placeholder_box = layout.box()
+        placeholder_box.scale_y = 0.4
+        placeholder_box.alignment = 'LEFT'
+        placeholder_box.label(text=text)
+
+        layout.emboss = old_emboss
 
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
         bakemaster = context.scene.bakemaster
+
         allow_multi_select_viz = self.allow_multi_select_viz(bakemaster, item)
+        allow_drag_viz, drag_layout = self.allow_drag_viz(bakemaster, item)
 
         if allow_multi_select_viz and item.is_selected:
             col_layout = layout.box()
@@ -167,7 +239,8 @@ class BM_UIList_for_WalkHandler(UIList):
         col = col_layout.column(align=True)
 
         # draw a darker line when dragging item
-        if item.is_drag_placeholder and bakemaster.allow_drag:
+        if all([allow_drag_viz, item.is_drag_placeholder,
+                drag_layout == 'DEFAULT']):
             drag_placeholder = col.row().box()
             drag_placeholder.label(text="")
             drag_placeholder.scale_y = 0.1
@@ -177,10 +250,11 @@ class BM_UIList_for_WalkHandler(UIList):
 
         # draw an empty item at the end
         if item.is_drag_empty:
-            if bakemaster.drag_to_index == -1:
+            if not allow_drag_viz:
                 return
-            row.prop(item, "ticker", text="...", emboss=False,
-                     toggle=True)
+            self.draw_drag_empty(context, row, data, item, icon, active_data,
+                                 active_propname, index,
+                                 allow_drag_viz, drag_layout)
             return
 
         # draw a drop prompt ("add new...")
@@ -198,7 +272,8 @@ class BM_UIList_for_WalkHandler(UIList):
             row.emboss = 'NONE'
 
         self.draw_props(context, row, data, item, icon, active_data,
-                        active_propname, index)
+                        active_propname, index,
+                        allow_drag_viz, drag_layout)
 
         ticker_icon_type, ticker_icon, _ = self.ticker_icon(
             context, bakemaster, item)
@@ -211,13 +286,20 @@ class BM_UIList_for_WalkHandler(UIList):
         else:
             row.prop(item, "ticker", text=item.name, toggle=True)
 
+        drag_to_row_active = self.draw_trans_to_prompts(
+            context, row, data, item, icon, active_data, active_propname,
+            index, allow_drag_viz, drag_layout)
+
         self.draw_operators(context, row, data, item, icon, active_data,
-                            active_propname, index)
+                            active_propname, index,
+                            allow_drag_viz, drag_layout)
 
         # fade out row while dragging if item in it isn't dragged
-        if all([bakemaster.allow_drag, not item.has_drag_prompt,
-                bakemaster.drag_to_index != -1]):
-            row.active = False
+        if all([allow_drag_viz,
+                bakemaster.allow_drag, not item.has_drag_prompt,
+                bakemaster.drag_to_index != -1,
+                drag_layout in ['DEFAULT', 'TRANS_TO']]):
+            row.active = drag_to_row_active
 
     def draw_filter(self, context, layout):
         if any([all([context.scene.bakemaster.allow_drag,
@@ -250,7 +332,7 @@ class BM_UL_BakeJobs(BM_UIList_for_WalkHandler):
     data_name = "bakejobs"
 
     def draw_props(self, context, row, data, item, icon, active_data,
-                   active_propname, index):
+                   active_propname, index, allow_drag_viz, drag_layout):
         bakemaster = context.scene.bakemaster
 
         if item.type == 'OBJECTS':
@@ -264,7 +346,7 @@ class BM_UL_BakeJobs(BM_UIList_for_WalkHandler):
         type_ot.index = item.index
 
         super().draw_props(context, row, bakemaster, item, icon, active_data,
-                           active_propname, index)
+                           active_propname, index, allow_drag_viz, drag_layout)
 
 
 class BM_UL_Items(BM_UIList_for_WalkHandler):
@@ -293,7 +375,7 @@ class BM_UL_Items(BM_UIList_for_WalkHandler):
         return 'ICON_VALUE', error_icon, False
 
     def draw_props(self, context, row, data, item, icon, active_data,
-                   active_propname, index):
+                   active_propname, index, allow_drag_viz, drag_layout):
         bakemaster = context.scene.bakemaster
         row.emboss = 'NONE'
 
