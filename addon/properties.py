@@ -55,13 +55,15 @@ class BM_PropertyGroup_Helper(PropertyGroup):
     add active_index_old property alongside active_index.
     """
 
-    def get_seq(self, data: str, attr: str, count: int, dtype: type):
+    def get_seq(self, data, attr, dtype: type):
         """
         Get a numpy array of len count containing a sequence of attrs' values
         in data.
         """
-        seq = numpy_zeros(count, dtype=dtype)
-        getattr(self, data).foreach_get(attr, seq)
+
+        data_prop = getattr(self, data)
+        seq = numpy_zeros(len(data_prop), dtype=dtype)
+        data_prop.foreach_get(attr, seq)
         return seq
 
 
@@ -215,6 +217,8 @@ class Global(BM_PropertyGroup_Helper):
     drag_to_index: IntProperty(default=-1, options={'SKIP_SAVE'})
     drag_data_from: StringProperty(default="", options={'SKIP_SAVE'})
     drag_data_to: StringProperty(default="", options={'SKIP_SAVE'})
+    allow_drag_trans: BoolProperty(default=False, options={'SKIP_SAVE'})
+    drag_from_ticker: BoolProperty(default=False, options={'SKIP_SAVE'})
 
     allow_multi_select: BoolProperty(default=False, options={'SKIP_SAVE'})
     multi_select_event: StringProperty(default="", options={'SKIP_SAVE'})
