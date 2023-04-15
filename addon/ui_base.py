@@ -100,8 +100,7 @@ class BM_PT_BakeJobsBase(BM_PT_Helper):
         # check if tools for multi selection are available
         ml_rows = 0
         if self.has_multi_selection(bakemaster):
-            seq = bakemaster.get_seq("bakejobs", "is_selected",
-                                     bakemaster.bakejobs_len, bool)
+            seq = bakemaster.get_seq("bakejobs", "is_selected", bool)
             if seq[seq].size > 0:
                 ml_rows = 1
             else:
@@ -199,8 +198,7 @@ class BM_PT_ItemsBase(BM_PT_Helper):
         # check if tools for multi selection are available
         ml_rows = 0
         if self.has_multi_selection(bakemaster):
-            seq = bakejob.get_seq("items", "is_selected",
-                                  bakejob.items_len, bool)
+            seq = bakejob.get_seq("items", "is_selected", bool)
             if seq[seq].size > 0:
                 ml_rows = 1
             else:
