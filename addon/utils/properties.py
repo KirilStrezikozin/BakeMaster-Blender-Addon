@@ -82,6 +82,9 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
 
     walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
     data, items, attr = walk_data_getter(bakemaster)
+    if data is None:
+        print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")
+        return
 
     if all([bakemaster.is_double_click,
             bakemaster.last_left_click_ticker != self.ticker,
@@ -95,7 +98,11 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
         bakemaster.is_double_click = False
         return
 
-    if bakemaster.allow_multi_select:
+    # Do not manage multi_select on drag transition.
+    # But do manage if there's a multi_select_event.
+    if all([bakemaster.allow_multi_select,
+            any([not bakemaster.allow_drag_trans,
+                 bakemaster.multi_select_event != ''])]):
         Generic_multi_select(self, bakemaster, walk_data)
         return
 
@@ -109,7 +116,21 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
         self.has_drag_prompt = True
         bakemaster.drag_from_index = self.index
         bakemaster.drag_data_from = walk_data
+        bakemaster.drag_from_ticker = self.ticker
         return
+
+    # Skip when dragging to other datas
+    if any([all([not bakemaster.allow_drag_trans,
+                 walk_data != bakemaster.drag_data_from]),
+            all([bakemaster.allow_drag_trans,
+                 bm_get.walk_data_child(walk_data) != bakemaster.drag_data_from
+                 ])]):
+        return
+
+    # Skip trans drag to the item the items were dragged from
+    # if all([bm_get.walk_data_child(walk_data) == bakemaster.drag_data_from,
+    #         self.index == getattr(data, "%s_active_index" % attr)]):
+    #     return
 
     if bakemaster.drag_to_index != -1:
         items[bakemaster.drag_to_index].is_drag_placeholder = False
@@ -117,12 +138,12 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
     bakemaster.drag_to_index = self.index
     bakemaster.drag_data_to = walk_data
 
-    ticker_old = items[bakemaster.drag_from_index].ticker
+    ticker_old = bakemaster.drag_from_ticker
     if self.ticker == ticker_old:
         self.ticker = not ticker_old
 
 
-def Generic_active_index_Update(_, context: not None, walk_data: str):
+def Generic_active_index_Update(self, context: not None, walk_data: str):
     """
     Generic active_index property update.
     Revert to active_index_old when setting onto drag_emtpy and drop_prompt
@@ -137,6 +158,9 @@ def Generic_active_index_Update(_, context: not None, walk_data: str):
 
     walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
     data, items, attr = walk_data_getter(bakemaster)
+    if data is None:
+        print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")
+        return
     active_index = getattr(data, "%s_active_index" % attr)
 
     if active_index == -1:
@@ -190,10 +214,15 @@ def Generic_multi_select(self, bakemaster, walk_data: str):
 
     walk_data is an attribute name of Collection Property that has uilist walk
     features.
+
+    If called in drag_end() to clear selection, self is None.
     """
 
     walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
     data, items, attr = walk_data_getter(bakemaster)
+    if data is None:
+        print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")
+        return
     active_index = getattr(data, "%s_active_index" % attr)
 
     # multi selection viz allowed in the walk_data only
@@ -207,10 +236,22 @@ def Generic_multi_select(self, bakemaster, walk_data: str):
 
     # do not visualize multi selection if the previous one is not cleared
     if all([bakemaster.multi_selection_data != "",
-            bakemaster.multi_selection_data != our_multi_selection_data]):
+            bakemaster.multi_selection_data != our_multi_selection_data,
+            self is not None]):
         setattr(data, "%s_active_index" % attr, self.index)
         return
 
+    if all([bakemaster.multi_select_event != 'CTRL',
+            bakemaster.multi_select_event != 'SHIFT']):
+
+        bakemaster.allow_multi_select = False
+        bakemaster.is_multi_selection_empty = True
+        bakemaster.multi_selection_data = ""  # free reserve
+        items.foreach_set("is_selected",
+                          [False] * getattr(data, "%s_len" % attr))
+
+    if self is None:
+        return
     self.is_selected = True
     bakemaster.is_multi_selection_empty = False
     bakemaster.multi_selection_data = our_multi_selection_data  # reserve
@@ -234,13 +275,6 @@ def Generic_multi_select(self, bakemaster, walk_data: str):
 
         for item in items:
             item.is_selected = item.index in selection_range
-
-    else:
-        bakemaster.allow_multi_select = False
-        bakemaster.is_multi_selection_empty = True
-        bakemaster.multi_selection_data = ""  # free reserve
-        items.foreach_set("is_selected",
-                          [False] * getattr(data, "%s_len" % attr))
 
 
 def Global_bakejobs_active_index_Update(self, context):
