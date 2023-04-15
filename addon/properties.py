@@ -101,7 +101,7 @@ class Container(BM_PropertyGroup_Helper):
     bakejob_index: IntProperty(default=-1)
 
     use_bake: BoolProperty(
-        name="Include/Exclude Container from bake",
+        name="Include/Exclude Item from bake",
         default=True)
 
     subcontainers: CollectionProperty(type=Subcontainer)
