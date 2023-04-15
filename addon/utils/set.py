@@ -27,14 +27,22 @@
 #
 # ##### END LICENSE BLOCK #####
 
-def disable_drag(bakemaster, data):
+from .properties import Generic_multi_select as clear_multi_selection
+
+
+def disable_drag(bakemaster, items, data_name: str):
     bakemaster.allow_drag = False
     bakemaster.drag_from_index = -1
     bakemaster.drag_to_index = -1
+    bakemaster.drag_from_ticker = False
+
+    if bakemaster.allow_drag_trans:
+        clear_multi_selection(None, bakemaster, data_name)
+    bakemaster.allow_drag_trans = False
 
     to_remove = []
     index = 0
-    for item in data:
+    for item in items:
         item.has_drag_prompt = False
         item.is_drag_placeholder = False
         if item.is_drag_empty:
@@ -43,4 +51,4 @@ def disable_drag(bakemaster, data):
         item.index = index
         index += 1
     for index in reversed(to_remove):
-        data.remove(index)
+        items.remove(index)
