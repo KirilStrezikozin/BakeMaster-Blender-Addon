@@ -29,6 +29,7 @@
 
 from os import path as os_path
 from time import time
+from numpy import array as numpy_array
 from bpy import ops as bpy_ops
 from bpy.types import (
     Operator,
@@ -87,10 +88,13 @@ class BM_OT_UIList_Walk_Handler(Operator):
     def get_items(self, bakemaster: not None):
         if bakemaster.walk_data_name == "":
             return None
-        else:
-            getter = getattr(bm_get,
-                             "walk_data_get_%s" % bakemaster.walk_data_name)
-            return getter(bakemaster)
+
+        data, items, attr = getattr(
+            bm_get, "walk_data_get_%s" % bakemaster.walk_data_name)(
+                bakemaster)
+        if data is None:
+            return None
+        return data, items, attr
 
     def reset_props(self, bakemaster):
         self.is_dropping = False
@@ -108,6 +112,8 @@ class BM_OT_UIList_Walk_Handler(Operator):
         bakemaster.drag_to_index = -1
         bakemaster.drad_data_from = ""
         bakemaster.drad_data_to = ""
+        bakemaster.allow_drag_trans = False
+        bakemaster.drag_from_ticker = False
 
         bakemaster.allow_multi_select = False
         bakemaster.multi_select_event = ''
@@ -166,6 +172,40 @@ class BM_OT_UIList_Walk_Handler(Operator):
             return self.is_cursor_in_region(region, event)
         return False
 
+    def reset_all_tickers(self, bakemaster):
+        # Reset tickers in every walk_data -> drag to other data with no errors
+
+        datas = ["bakejobs", "items"]
+
+        for data_name in datas:
+            walk_data_getter = getattr(bm_get, "walk_data_get_%s" % data_name)
+            data, items, _ = walk_data_getter(bakemaster)
+            if data is None:
+                # print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")  # noqa: E501
+                return
+
+            # len(items) is used because items_len doesn't cover drag_empty
+            items.foreach_set("ticker", [False] * len(items))
+            items.foreach_set("is_drag_placeholder", [False] * len(items))
+
+    def evaluate_data_trans(self, bakemaster, data, items, attr):
+        """
+        Set bakemaster.allow_drag_trans to True if dragged data has a multi
+        selection. Subsequently allow drag to parent walk_data.
+
+        In the UI can check for bakemaster.allow_drag_trans value and
+        'child of drawn data == drag_data_from' to draw "move here..." label.
+        """
+
+        bakemaster.allow_drag_trans, _ = bm_get.walk_data_multi_selection_data(
+            bakemaster, attr)
+        if not bakemaster.allow_drag_trans:
+            return
+
+        # disallow drag (ticker update) inside data
+        # items.foreach_set("ticker",
+        #                   [True] * getattr(data, "%s_len" % attr))
+
     def drop_init(self, bakemaster):
         if self.is_dropping or self.get_items(bakemaster) is None:
             return
@@ -186,31 +226,19 @@ class BM_OT_UIList_Walk_Handler(Operator):
             return
 
         data, items, attr = self.get_items(bakemaster)
-        items_len = getattr(data, "%s_len" % attr)
 
         items_active_index = getattr(data, "%s_active_index" % attr)
         self.drag_end(bakemaster)
 
         # ensure there's only one drag_empty
-        drag_empties = data.get_seq(attr, "is_drag_empty",
-                                    getattr(data, "%s_len" % attr), bool)
+        drag_empties = data.get_seq(attr, "is_drag_empty", bool)
         if drag_empties[drag_empties].size == 0:
-            drag_empty = items.add()
-            drag_empty.index = items_len
+            drag_empty = items.add()  # memleak with bakejob.items
+            drag_empty.index = getattr(data, "%s_len" % attr)
             drag_empty.is_drag_empty = True
 
-        # TODO:
-        # 1. reset tickers in all walk_data = drag to other data with no errors
-        # 2. If current data has multi selection:
-        #       -> check if (multi_selection_allow_walk_data_transition)
-        #       --> set all tickers of current data to True
-        #           (disallow drag inside drag_data_from),
-        #           will need to cope with that in the ui too (no dimming or
-        #           maybe dimming).
-        #       -> somehow check that in the ui and draw (bake jobs for ex) "move here..." near each (uilist)
-        #       -> on drag() here, we know drag_data_from, drag_data_to, indexes. so make a move!)
-        for item in items:
-            item.ticker = False
+        self.reset_all_tickers(bakemaster)
+        self.evaluate_data_trans(bakemaster, data, items, attr)
 
         setattr(data, "%s_active_index" % attr, items_active_index)
 
@@ -243,7 +271,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
             return
         _, items, _ = self.get_items(bakemaster)
 
-        bm_set.disable_drag(bakemaster, items)
+        bm_set.disable_drag(bakemaster, items, bakemaster.walk_data_name)
 
     def events_end(self, bakemaster):
         self.drop_end(bakemaster)
@@ -333,7 +361,9 @@ class BM_OT_UIList_Walk_Handler(Operator):
         Moving is carried out with bakemaster.drag_from_index and
         bakemaster.drag_to_index, values of which are set in item.ticker
         Updates.
-        The Collection Property is determined by calling self.get_items
+        The Collection Property is determined by calling self.get_items.
+
+        Walk Data Transition is possible for moving items to another datas.
         """
 
         if bakemaster.drag_to_index > bakemaster.drag_from_index:
@@ -344,12 +374,19 @@ class BM_OT_UIList_Walk_Handler(Operator):
         if self.get_items(bakemaster) is not None:
             data, _, attr = self.get_items(bakemaster)
 
-            move_ot = getattr(bpy_ops.bakemaster, "%s_move" % attr)
-            move_ot('INVOKE_DEFAULT', index=bakemaster.drag_from_index,
-                    new_index=new_index)
-            # items.move(bakemaster.drag_from_index, new_index) - no undo event
+            if bakemaster.allow_drag_trans:
+                # move across walk_datas
+                bpy_ops.bakemaster.walk_data_move_trans('INVOKE_DEFAULT')
 
-            setattr(data, "%s_active_index" % attr, new_index)
+            else:
+                move_ot = getattr(bpy_ops.bakemaster, "%s_move" % attr)
+                move_ot('INVOKE_DEFAULT', index=bakemaster.drag_from_index,
+                        new_index=new_index)
+
+                # no undo event:
+                # items.move(bakemaster.drag_from_index, new_index)
+
+                setattr(data, "%s_active_index" % attr, new_index)
 
         self.drag_end(bakemaster)
 
@@ -385,9 +422,8 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
         self.evaluate_multi_select(event, bakemaster, is_drag_available)
 
-        if any([not any([is_drop_available, is_drag_available,
-                         bakemaster.allow_multi_select]),
-                bakemaster.allow_multi_select]):
+        if not any([is_drop_available, is_drag_available,
+                    bakemaster.allow_multi_select]):
             return {'PASS_THROUGH'}
 
         if not self.wait_events_end:
@@ -448,6 +484,74 @@ class BM_OT_Generic_AddDropped(Operator):
         return {'FINISHED'}
 
 
+class BM_OT_WalkData_Trans(Operator):
+    """
+    Move multi selection across walk_datas.
+    """
+
+    bl_idname = 'bakemaster.walk_data_move_trans'
+    bl_label = "Move or copy"
+    bl_description = "Move or copy items to another place"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    use_copy: BoolProperty(
+        name="Copy",
+        description="Copy moved items here instead of moving",
+        default=False)
+
+    def trans_poll(self, bakemaster):
+        if not bakemaster.drag_data_from == bm_get.walk_data_child(
+                bakemaster.drag_data_to):
+            return False
+        has_selection, _ = bm_get.walk_data_multi_selection_data(
+            bakemaster, bakemaster.drag_data_from)
+        return has_selection and bakemaster.allow_drag_trans
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+
+        drag_data_from_getter = getattr(
+            bm_get, "walk_data_get_%s" % bakemaster.drag_data_from)
+        data_from, items_from, attr_from = drag_data_from_getter(bakemaster)
+
+        all_indexes = data_from.get_seq(attr_from, "index", int)
+        selection_mask = data_from.get_seq(attr_from, "is_selected", bool)
+
+        selected_indexes = all_indexes[:selection_mask.size][selection_mask]
+
+        drag_data_to_getter = getattr(
+            bm_get, "walk_data_get_%s" % bakemaster.drag_data_to)
+        _, items_to, _ = drag_data_to_getter(bakemaster)
+
+        destination_data = items_to[bakemaster.drag_to_index]
+        if any([destination_data.is_drag_empty,
+                destination_data.has_drop_prompt]):
+            return {'CANCELLED'}
+        destination_items = getattr(destination_data, attr_from)
+
+        for index in selected_indexes:
+            new_item = destination_items.add()
+            item_from = items_from[index]
+            attrs = bm_get.data_attrs(item_from)
+            for attr in attrs:
+                try:
+                    setattr(new_item, attr, getattr(item_from, attr))
+                except (AttributeError, IndexError, TypeError, ValueError):
+                    pass
+
+        return {'FINISHED'}
+
+    def invoke(self, context, _):
+        if not self.trans_poll(context.scene.bakemaster):
+            return {'CANCELLED'}
+
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=100)
+
+    def draw(self, _):
+        self.layout.prop(self, "use_copy")
+
+
 class BM_OT_BakeJobs_Add(Operator):
     bl_idname = 'bakemaster.bakejobs_add'
     bl_label = "Add"
@@ -469,7 +573,7 @@ class BM_OT_BakeJobs_Add(Operator):
         bakemaster.bakejobs_len += 1
 
         # reduce flicker and hidden items on add (uilist mess)
-        bm_set.disable_drag(bakemaster, bakemaster.bakejobs)
+        bm_set.disable_drag(bakemaster, bakemaster.bakejobs, "bakejobs")
         return {'FINISHED'}
 
 
@@ -721,8 +825,7 @@ class BM_OT_BakeJobs_Merge(Operator):
         bakemaster = context.scene.bakemaster
 
         to_remove = []
-        selection_seq = bakemaster.get_seq("bakejobs", "is_selected",
-                                           bakemaster.bakejobs_len, bool)
+        selection_seq = bakemaster.get_seq("bakejobs", "is_selected", bool)
 
         if selection_seq[selection_seq].size < 2:
             self.report({'INFO'},
@@ -779,6 +882,7 @@ class BM_OT_Items_Add(Operator):
     def add(self, bakejob, name: str):
         new_item = bakejob.items.add()
         new_item.index = bakejob.items_len
+        new_item.bakejob_index = bakejob.index
         new_item.name = name
 
         bakejob.items_active_index = new_item.index
@@ -801,6 +905,10 @@ class BM_OT_Items_Add(Operator):
         else:
             names = [self]
 
+        if len(names) == 0:
+            self.report({'INFO'}, "Nothing is selected to add")
+            return {'CANCELLED'}
+
         for name_holder in names:
             object, _, _, _, error_message = bm_get.object_ui_info(
                 context.scene.objects, name_holder.name)
@@ -817,7 +925,7 @@ class BM_OT_Items_Add(Operator):
                         f"{errors} Object(s) could not be added (see Console)")
 
         # reduce flicker and hidden items on add (uilist mess)
-        bm_set.disable_drag(bakemaster, bakejob.items)
+        bm_set.disable_drag(bakemaster, bakejob.items, "items")
         return {'FINISHED'}
 
 
