@@ -70,21 +70,21 @@ bl_info = {
 }
 
 classes = (
-    properties.SubItem,
-    properties.Item,
+    properties.Subcontainer,
+    properties.Container,
     properties.BakeJob,
     properties.BakeHistory,
     properties.Global,
 
     ui_panels.BM_PT_BakeJobs,
-    ui_panels.BM_PT_Items,
+    ui_panels.BM_PT_Containers,
     ui_panels.BM_PT_Bake,
     ui_panels.BM_PT_BakeControls,
     ui_panels.BM_PT_BakeHistory,
 
     ui_panels.BM_PREFS_AddonPreferences,
     ui_panels.BM_UL_BakeJobs,
-    ui_panels.BM_UL_Items,
+    ui_panels.BM_UL_Containers,
     ui_panels.BM_UL_BakeHistory,
 
     operators_reg.BM_OT_Remove_PreviewCollections,
@@ -102,12 +102,12 @@ classes = (
     operators_ui.BM_OT_BakeJob_ToggleType,
     operators_ui.BM_OT_BakeJobs_Merge,
 
-    operators_ui.BM_OT_Items_Add,
-    operators_ui.BM_OT_Items_Remove,
-    operators_ui.BM_OT_Items_Move,
-    operators_ui.BM_OT_Items_AddDropped,
-    operators_ui.BM_OT_Items_Trash,
-    operators_ui.BM_OT_Item_Rename,
+    operators_ui.BM_OT_Containers_Add,
+    operators_ui.BM_OT_Containers_Remove,
+    operators_ui.BM_OT_Containers_Move,
+    operators_ui.BM_OT_Containers_AddDropped,
+    operators_ui.BM_OT_Containers_Trash,
+    operators_ui.BM_OT_Container_Rename,
 
     operators_ui.BM_OT_FileChooseDialog,
     operators_ui.BM_OT_Setup,

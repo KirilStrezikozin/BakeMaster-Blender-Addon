@@ -67,12 +67,12 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         return seq
 
 
-class SubItem(BM_PropertyGroup_Helper):
+class Subcontainer(BM_PropertyGroup_Helper):
     name: StringProperty(
         default="Map")
 
 
-class Item(BM_PropertyGroup_Helper):
+class Container(BM_PropertyGroup_Helper):
     name: StringProperty(
         default="Object")
 
@@ -80,7 +80,7 @@ class Item(BM_PropertyGroup_Helper):
         name="New Object",
         description="Drop objects here to put them into selected Bake Jobs",
         default="new Object...",
-        update=bm_props_utils.Item_drop_name_Update)
+        update=bm_props_utils.Container_drop_name_Update)
 
     drop_name_old: StringProperty(default="new Object...")
 
@@ -88,20 +88,20 @@ class Item(BM_PropertyGroup_Helper):
     bakejob_index: IntProperty(default=-1)
 
     use_bake: BoolProperty(
-        name="Include/Exclude Item from bake",
+        name="Include/Exclude Container from bake",
         default=True)
 
-    subitems: CollectionProperty(type=SubItem)
+    subcontainers: CollectionProperty(type=Subcontainer)
 
-    subitems_active_index: IntProperty(
+    subcontainers_active_index: IntProperty(
         name="Active item",
         description="Click to configure settings",
         default=-1,
-        update=bm_props_utils.Item_subitems_active_index_Update)
+        update=bm_props_utils.Container_subcontainers_active_index_Update)
 
-    subitems_active_index_old: IntProperty(default=-1)
+    subcontainers_active_index_old: IntProperty(default=-1)
 
-    subitems_len: IntProperty(default=0)
+    subcontainers_len: IntProperty(default=0)
 
     # UIList Walk Handler Props
 
@@ -112,7 +112,7 @@ class Item(BM_PropertyGroup_Helper):
         name="Item",
         description="Double click to change.\nPress and drag to move.\nUse Shift, Ctrl to select multiple",  # noqa: E501
         default=False,
-        update=bm_props_utils.Item_ticker_Update)
+        update=bm_props_utils.Container_ticker_Update)
 
     is_drag_empty: BoolProperty(default=False)
     is_drag_placeholder: BoolProperty(default=False)
@@ -147,17 +147,17 @@ class BakeJob(BM_PropertyGroup_Helper):
         name="Include/Exclude Bake Job from bake",
         default=True)
 
-    items: CollectionProperty(type=Item)
+    containers: CollectionProperty(type=Container)
 
-    items_active_index: IntProperty(
+    containers_active_index: IntProperty(
         name="Active item",
         description="Click to configure settings",
         default=-1,
-        update=bm_props_utils.BakeJob_items_active_index_Update)
+        update=bm_props_utils.BakeJob_containers_active_index_Update)
 
-    items_active_index_old: IntProperty(default=-1)
+    containers_active_index_old: IntProperty(default=-1)
 
-    items_len: IntProperty(default=0)
+    containers_len: IntProperty(default=0)
 
     # UIList Walk Handler Props
 

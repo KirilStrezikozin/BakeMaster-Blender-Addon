@@ -47,36 +47,36 @@ def bakejob(bakemaster: not None, index=-1):
         return bj
 
 
-def item(bj, index=-1):
+def container(bj, index=-1):
     if bj is None:
         return None
     if index == -1:
-        index = bj.items_active_index
+        index = bj.containers_active_index
     try:
-        itm = bj.items[index]
+        ctnr = bj.containers[index]
     except IndexError:
         return None
 
-    if any([itm.is_drag_empty, itm.has_drop_prompt]):
+    if any([ctnr.is_drag_empty, ctnr.has_drop_prompt]):
         return None
     else:
-        return itm
+        return ctnr
 
 
-def subitem(itm, index=-1):
-    if item is None:
+def subcontainer(ctnr, index=-1):
+    if container is None:
         return None
     if index == -1:
-        index = itm.subitems_active_index
+        index = ctnr.subcontainers_active_index
     try:
-        subitm = itm.subitems[index]
+        subctnr = ctnr.subcontainers[index]
     except IndexError:
         return None
 
-    if any([subitm.is_drag_empty, subitm.has_drop_prompt]):
+    if any([subctnr.is_drag_empty, subctnr.has_drop_prompt]):
         return None
     else:
-        return subitm
+        return subctnr
 
 
 def walk_data_get_bakejobs(bakemaster):
@@ -84,18 +84,18 @@ def walk_data_get_bakejobs(bakemaster):
 
 
 # memleak
-def walk_data_get_items(bakemaster):
+def walk_data_get_containers(bakemaster):
     bj = bakejob(bakemaster)
     if bj is None:
-        return None, [], "items"
-    return bj, bj.items, "items"
+        return None, [], "containers"
+    return bj, bj.containers, "containers"
 
 
-def walk_data_get_subitems(bakemaster):
-    itm = item(bakejob(bakemaster))
-    if itm is None:
-        return None, [], "subitems"
-    return itm, itm.subitems, "subitems"
+def walk_data_get_subcontainers(bakemaster):
+    ctnr = container(bakejob(bakemaster))
+    if ctnr is None:
+        return None, [], "subcontainers"
+    return ctnr, ctnr.subcontainers, "subcontainers"
 
 
 def walk_data_multi_selection_data(bakemaster, data_name: str):
@@ -123,8 +123,9 @@ def walk_data_multi_selection_data(bakemaster, data_name: str):
 
 def walk_data_child(data_name: str):
     datas = {
-        "bakejobs": "items",
-        "items": -1,
+        "bakejobs": "containers",
+        "containers": "subcontainers",
+        "subcontainers": -1
     }
     return datas[data_name]
 

@@ -30,7 +30,7 @@
 from .properties import Generic_multi_select as clear_multi_selection
 
 
-def disable_drag(bakemaster, items, data_name: str):
+def disable_drag(bakemaster, containers, data_name: str):
     bakemaster.allow_drag = False
     bakemaster.drag_from_index = -1
     bakemaster.drag_to_index = -1
@@ -42,13 +42,13 @@ def disable_drag(bakemaster, items, data_name: str):
 
     to_remove = []
     index = 0
-    for item in items:
-        item.has_drag_prompt = False
-        item.is_drag_placeholder = False
-        if item.is_drag_empty:
-            to_remove.append(item.index)
+    for container in containers:
+        container.has_drag_prompt = False
+        container.is_drag_placeholder = False
+        if container.is_drag_empty:
+            to_remove.append(container.index)
             continue
-        item.index = index
+        container.index = index
         index += 1
     for index in reversed(to_remove):
-        items.remove(index)
+        containers.remove(index)

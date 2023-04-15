@@ -141,11 +141,11 @@ class BM_PT_BakeJobsBase(BM_PT_Helper):
                      icon='SELECT_EXTEND')
 
 
-class BM_PT_ItemsBase(BM_PT_Helper):
+class BM_PT_ContainersBase(BM_PT_Helper):
     bl_label = " "
-    bl_idname = 'BM_PT_Items'
+    bl_idname = 'BM_PT_Containers'
 
-    data_name = "items"
+    data_name = "containers"
 
     @classmethod
     def panel_poll(cls, context):
@@ -198,42 +198,42 @@ class BM_PT_ItemsBase(BM_PT_Helper):
         # check if tools for multi selection are available
         ml_rows = 0
         if self.has_multi_selection(bakemaster):
-            seq = bakejob.get_seq("items", "is_selected", bool)
+            seq = bakejob.get_seq("containers", "is_selected", bool)
             if seq[seq].size > 0:
                 ml_rows = 1
             else:
                 ml_rows = 0
 
-        if bakejob.items_len < 2 + ml_rows:
+        if bakejob.containers_len < 2 + ml_rows:
             min_rows = 2 + ml_rows
         else:
             min_rows = 4 + ml_rows
-        rows = bm_ui_utils.get_uilist_rows(bakejob.items_len + ml_rows,
+        rows = bm_ui_utils.get_uilist_rows(bakejob.containers_len + ml_rows,
                                            min_rows, 4 + ml_rows)
 
-        row.template_list('BM_UL_Items', "", bakejob,
-                          'items', bakejob,
-                          'items_active_index', rows=rows)
+        row.template_list('BM_UL_Containers', "", bakejob,
+                          'containers', bakejob,
+                          'containers_active_index', rows=rows)
         col = row.column(align=True)
-        col.operator('bakemaster.items_add', text="",
+        col.operator('bakemaster.containers_add', text="",
                      icon='ADD').bakejob_index = bakejob.index
 
-        if bakejob.items_len > 0:
-            remove_ot = col.operator('bakemaster.items_remove', text="",
+        if bakejob.containers_len > 0:
+            remove_ot = col.operator('bakemaster.containers_remove', text="",
                                      icon='REMOVE')
             remove_ot.bakejob_index = bakejob.index
-            remove_ot.index = bakejob.items_active_index
+            remove_ot.index = bakejob.containers_active_index
 
         col.emboss = 'NONE'
-        if bakejob.items_len > 1:
+        if bakejob.containers_len > 1:
             col.separator(factor=1.0)
-            col.operator('bakemaster.items_trash', text="", icon='TRASH')
+            col.operator('bakemaster.containers_trash', text="", icon='TRASH')
 
         if ml_rows == 0:
             return
         col.separator(factor=1.0)
         col.emboss = 'NORMAL'
-        # col.operator('bakemaster.items_group', text="",
+        # col.operator('bakemaster.containers_group', text="",
         #              icon='OUTLINER_COLLECTION')
 
 

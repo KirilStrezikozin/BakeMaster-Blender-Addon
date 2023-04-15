@@ -81,7 +81,7 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
     bakemaster.walk_data_name = walk_data
 
     walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
-    data, items, attr = walk_data_getter(bakemaster)
+    data, containers, attr = walk_data_getter(bakemaster)
     if data is None:
         print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")
         return
@@ -127,13 +127,13 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
                  ])]):
         return
 
-    # Skip trans drag to the item the items were dragged from
+    # Skip trans drag to the container the containers were dragged from
     # if all([bm_get.walk_data_child(walk_data) == bakemaster.drag_data_from,
     #         self.index == getattr(data, "%s_active_index" % attr)]):
     #     return
 
     if bakemaster.drag_to_index != -1:
-        items[bakemaster.drag_to_index].is_drag_placeholder = False
+        containers[bakemaster.drag_to_index].is_drag_placeholder = False
     self.is_drag_placeholder = True
     bakemaster.drag_to_index = self.index
     bakemaster.drag_data_to = walk_data
@@ -147,7 +147,7 @@ def Generic_active_index_Update(self, context: not None, walk_data: str):
     """
     Generic active_index property update.
     Revert to active_index_old when setting onto drag_emtpy and drop_prompt
-    items.
+    containers.
 
     walk_data is an attribute name of Collection Property that has uilist walk
     features.
@@ -157,22 +157,25 @@ def Generic_active_index_Update(self, context: not None, walk_data: str):
     bakemaster.walk_data_name = walk_data
 
     walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
-    data, items, attr = walk_data_getter(bakemaster)
+    data, containers, attr = walk_data_getter(bakemaster)
     if data is None:
         print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")
         return
     active_index = getattr(data, "%s_active_index" % attr)
 
+    if active_index == getattr(data, "%s_active_index_old" % attr):
+        return
+
     if active_index == -1:
         return
     try:
-        items[active_index]
+        containers[active_index]
     except IndexError:
         setattr(data, "%s_active_index" % attr,
                 getattr(data, "%s_active_index_old" % attr))
         return
-    if any([items[active_index].is_drag_empty,
-            items[active_index].has_drop_prompt]):
+    if any([containers[active_index].is_drag_empty,
+            containers[active_index].has_drop_prompt]):
         setattr(data, "%s_active_index" % attr,
                 getattr(data, "%s_active_index_old" % attr))
         return
@@ -182,7 +185,7 @@ def Generic_active_index_Update(self, context: not None, walk_data: str):
     has_selection, _ = bm_get.walk_data_multi_selection_data(
         bakemaster, walk_data)
     if has_selection:
-        items[active_index].is_selected = True
+        containers[active_index].is_selected = True
 
 
 def Generic_drop_name_Update(self, context: not None, walk_data: str,
@@ -219,14 +222,14 @@ def Generic_multi_select(self, bakemaster, walk_data: str):
     """
 
     walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
-    data, items, attr = walk_data_getter(bakemaster)
+    data, containers, attr = walk_data_getter(bakemaster)
     if data is None:
         print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")
         return
     active_index = getattr(data, "%s_active_index" % attr)
 
     # multi selection viz allowed in the walk_data only
-    # limited to only one parent (if one bakejob has multi selected items,
+    # limited to only one parent (if one bakejob has multi selected containers,
     # other bakejobs may not have them visualized)
     if hasattr(data, "index"):
         parent_index = data.index
@@ -247,8 +250,8 @@ def Generic_multi_select(self, bakemaster, walk_data: str):
         bakemaster.allow_multi_select = False
         bakemaster.is_multi_selection_empty = True
         bakemaster.multi_selection_data = ""  # free reserve
-        items.foreach_set("is_selected",
-                          [False] * getattr(data, "%s_len" % attr))
+        containers.foreach_set("is_selected",
+                               [False] * getattr(data, "%s_len" % attr))
 
     if self is None:
         return
@@ -273,8 +276,8 @@ def Generic_multi_select(self, bakemaster, walk_data: str):
         else:
             selection_range = range(active_index, self.index - 1, -1)
 
-        for item in items:
-            item.is_selected = item.index in selection_range
+        for container in containers:
+            container.is_selected = container.index in selection_range
 
 
 def Global_bakejobs_active_index_Update(self, context):
@@ -286,8 +289,8 @@ def BakeJob_drop_name_Update(self, context):
                              adddropped_ot_idname="bakejobs_adddropped")
 
 
-def BakeJob_items_active_index_Update(self, context):
-    Generic_active_index_Update(self, context, "items")
+def BakeJob_containers_active_index_Update(self, context):
+    Generic_active_index_Update(self, context, "containers")
 
 
 def BakeJob_ticker_Update(self, context):
@@ -295,15 +298,15 @@ def BakeJob_ticker_Update(self, context):
                           double_click_ot_idname="bakejob_rename")
 
 
-def Item_drop_name_Update(self, context):
-    Generic_drop_name_Update(self, context, walk_data="items",
-                             adddropped_ot_idname="items_adddropped")
+def Container_drop_name_Update(self, context):
+    Generic_drop_name_Update(self, context, walk_data="containers",
+                             adddropped_ot_idname="containers_adddropped")
 
 
-def Item_subitems_active_index_Update(self, context):
-    Generic_active_index_Update(self, context, "subitems")
+def Container_subcontainers_active_index_Update(self, context):
+    Generic_active_index_Update(self, context, "subcontainers")
 
 
-def Item_ticker_Update(self, context):
-    Generic_ticker_Update(self, context, walk_data="items",
-                          double_click_ot_idname="item_rename")
+def Container_ticker_Update(self, context):
+    Generic_ticker_Update(self, context, walk_data="containers",
+                          double_click_ot_idname="container_rename")

@@ -82,7 +82,7 @@ class BM_URLs:
         urls = {
             '': r'%s/',
             'BM_PT_BakeJobs': r'%s/',
-            'BM_PT_Items': r'%s/',
+            'BM_PT_Containers': r'%s/',
             'BM_PT_Bake': r'%s/',
             'BM_PT_BakeHistory': r'%s/',
         }

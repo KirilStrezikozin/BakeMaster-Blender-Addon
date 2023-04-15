@@ -29,7 +29,7 @@
 
 from .ui_base import (
     BM_PT_BakeJobsBase,
-    BM_PT_ItemsBase,
+    BM_PT_ContainersBase,
     BM_PT_BakeControlsBase,
     BM_PT_BakeHistoryBase,
     BM_PT_BakeBase,
@@ -53,7 +53,7 @@ class BM_PT_BakeJobs(BM_PT_BakeJobsBase):
     bl_category = bm_category
 
 
-class BM_PT_Items(BM_PT_ItemsBase):
+class BM_PT_Containers(BM_PT_ContainersBase):
     bl_space_type = bm_space_type
     bl_region_type = bm_region_type
     bl_category = bm_category
@@ -106,17 +106,17 @@ class BM_UIList_for_WalkHandler(UIList):
     UIList for BM_OT_UIList_Walk_Handler for lower cyclomatic complexity of
     UILists for walk handler that requires a bunch of checks.
 
-    UI representation for: drop from Outliner, drag items to new positions,
-    select multiple items.
+    UI representation for: drop from Outliner, drag containers to new
+    positions, select multiple containers.
 
     data_name is an identifier of walk_data_name for this UIList instance.
 
-    Use draw_props() to draw all needed item's properties (aligned row on the
-    left). Default includes use_bake.
-    Use draw_operators() to draw all needed operators for the item (row on the
-    right). Default is emtpy.
+    Use draw_props() to draw all needed container's properties (aligned row on
+    the left). Default includes use_bake.
+    Use draw_operators() to draw all needed operators for the container (row on
+    the right). Default is emtpy.
 
-    Filtering options on item.name property is on by default. Overwrite
+    Filtering options on container.name property is on by default. Overwrite
     draw_filter() for custom.
 
     Define icon or icon_value for ticker prop in ticker_icon().
@@ -128,15 +128,15 @@ class BM_UIList_for_WalkHandler(UIList):
 
     use_name_filter = True
 
-    def ticker_icon(self, context, bakemaster, item):
+    def ticker_icon(self, context, bakemaster, container):
         custom_value = None
         return None, '', custom_value
 
-    def allow_multi_select_viz(self, bakemaster, item):
+    def allow_multi_select_viz(self, bakemaster, container):
         has_selection, _ = bm_get.walk_data_multi_selection_data(
             bakemaster, self.data_name)
-        return has_selection and all([not item.has_drop_prompt,
-                                      not item.is_drag_empty])
+        return has_selection and all([not container.has_drop_prompt,
+                                      not container.is_drag_empty])
 
     def allow_drag_viz(self, bakemaster, _):
         if not bakemaster.allow_drag:
@@ -155,24 +155,27 @@ class BM_UIList_for_WalkHandler(UIList):
 
         return False, ''
 
-    def draw_props(self, context, row, data, item, icon, active_data,
+    def draw_props(self, context, row, data, container, icon, active_data,
                    active_propname, index, allow_drag_viz, drag_layout):
         bakemaster = context.scene.bakemaster
         row.emboss = 'NONE'
 
-        icon = 'RESTRICT_RENDER_OFF' if item.use_bake else 'RESTRICT_RENDER_ON'
+        if container.use_bake:
+            icon = 'RESTRICT_RENDER_OFF'
+        else:
+            icon = 'RESTRICT_RENDER_ON'
 
         subrow = row.row()
-        subrow.prop(item, 'use_bake', text="", icon=icon)
+        subrow.prop(container, 'use_bake', text="", icon=icon)
         if bakemaster.allow_drag and bakemaster.drag_to_index != -1:
             subrow.enabled = False
-        row.active = item.use_bake
+        row.active = container.use_bake
 
-    def draw_operators(self, context, row, data, item, icon, active_data,
+    def draw_operators(self, context, row, data, container, icon, active_data,
                        active_propname, index, allow_drag_viz, drag_layout):
         pass
 
-    def draw_drag_empty(self, context, row, data, item, icon, active_data,
+    def draw_drag_empty(self, context, row, data, container, icon, active_data,
                         active_propname, index, allow_drag_viz, drag_layout):
         bakemaster = context.scene.bakemaster
 
@@ -181,7 +184,7 @@ class BM_UIList_for_WalkHandler(UIList):
             if bakemaster.drag_to_index == -1:
                 return
         elif drag_layout == 'TRANS_TO':
-            if item.is_drag_placeholder:
+            if container.is_drag_placeholder:
                 row = row.box()
                 row.scale_y = 0.4
                 row.alignment = 'LEFT'
@@ -189,25 +192,25 @@ class BM_UIList_for_WalkHandler(UIList):
         else:
             return
 
-        row.prop(item, "ticker", text=text, emboss=False,
+        row.prop(container, "ticker", text=text, emboss=False,
                  toggle=True)
 
-    def draw_trans_to_prompts(self, context, row, data, item, icon,
+    def draw_trans_to_prompts(self, context, row, data, container, icon,
                               active_data, active_propname, index,
                               allow_drag_viz, drag_layout):
         bakemaster = context.scene.bakemaster
         if not all([allow_drag_viz, drag_layout == 'TRANS_TO']):
             return False
 
-        if item.index == getattr(data, active_propname):
-            if not item.is_drag_placeholder:
+        if container.index == getattr(data, active_propname):
+            if not container.is_drag_placeholder:
                 row.label(text="", icon='FORWARD')
                 return True
             self.draw_box_prompt(row, "Discard move")
             return True
 
-        elif all([item.index == bakemaster.drag_to_index,
-                  item.is_drag_placeholder]):
+        elif all([container.index == bakemaster.drag_to_index,
+                  container.is_drag_placeholder]):
             self.draw_box_prompt(row, "Move here...")
             return True
 
@@ -224,22 +227,24 @@ class BM_UIList_for_WalkHandler(UIList):
 
         layout.emboss = old_emboss
 
-    def draw_item(self, context, layout, data, item, icon, active_data,
+    def draw_item(self, context, layout, data, container, icon, active_data,
                   active_propname, index):
         bakemaster = context.scene.bakemaster
 
-        allow_multi_select_viz = self.allow_multi_select_viz(bakemaster, item)
-        allow_drag_viz, drag_layout = self.allow_drag_viz(bakemaster, item)
+        allow_multi_select_viz = self.allow_multi_select_viz(
+            bakemaster, container)
+        allow_drag_viz, drag_layout = self.allow_drag_viz(
+            bakemaster, container)
 
-        if allow_multi_select_viz and item.is_selected:
+        if allow_multi_select_viz and container.is_selected:
             col_layout = layout.box()
             col_layout.scale_y = 0.45
         else:
             col_layout = layout
         col = col_layout.column(align=True)
 
-        # draw a darker line when dragging item
-        if all([allow_drag_viz, item.is_drag_placeholder,
+        # draw a darker line when dragging container
+        if all([allow_drag_viz, container.is_drag_placeholder,
                 drag_layout == 'DEFAULT']):
             drag_placeholder = col.row().box()
             drag_placeholder.label(text="")
@@ -248,55 +253,55 @@ class BM_UIList_for_WalkHandler(UIList):
         row = col.row(align=True)
         row.alignment = 'LEFT'
 
-        # draw an empty item at the end
-        if item.is_drag_empty:
+        # draw an empty container at the end
+        if container.is_drag_empty:
             if not allow_drag_viz:
                 return
-            self.draw_drag_empty(context, row, data, item, icon, active_data,
-                                 active_propname, index,
+            self.draw_drag_empty(context, row, data, container, icon,
+                                 active_data, active_propname, index,
                                  allow_drag_viz, drag_layout)
             return
 
         # draw a drop prompt ("add new...")
-        if item.has_drop_prompt:
+        if container.has_drop_prompt:
             row.alignment = 'EXPAND'
-            row.prop(item, "drop_name", text="", emboss=True)
+            row.prop(container, "drop_name", text="", emboss=True)
             return
 
-        if item.index != bakemaster.bakejobs_active_index:
+        if container.index != bakemaster.bakejobs_active_index:
             row.emboss = 'NONE'
 
         # for multiple selection
         if allow_multi_select_viz:
-            layout.active = item.is_selected
+            layout.active = container.is_selected
             row.emboss = 'NONE'
 
-        self.draw_props(context, row, data, item, icon, active_data,
+        self.draw_props(context, row, data, container, icon, active_data,
                         active_propname, index,
                         allow_drag_viz, drag_layout)
 
         ticker_icon_type, ticker_icon, _ = self.ticker_icon(
-            context, bakemaster, item)
+            context, bakemaster, container)
         if ticker_icon_type == 'ICON':
-            row.prop(item, "ticker", text=item.name, toggle=True,
+            row.prop(container, "ticker", text=container.name, toggle=True,
                      icon=ticker_icon)
         elif ticker_icon_type == 'ICON_VALUE':
-            row.prop(item, "ticker", text=item.name, toggle=True,
+            row.prop(container, "ticker", text=container.name, toggle=True,
                      icon_value=ticker_icon)
         else:
-            row.prop(item, "ticker", text=item.name, toggle=True)
+            row.prop(container, "ticker", text=container.name, toggle=True)
 
         drag_to_row_active = self.draw_trans_to_prompts(
-            context, row, data, item, icon, active_data, active_propname,
+            context, row, data, container, icon, active_data, active_propname,
             index, allow_drag_viz, drag_layout)
 
-        self.draw_operators(context, row, data, item, icon, active_data,
+        self.draw_operators(context, row, data, container, icon, active_data,
                             active_propname, index,
                             allow_drag_viz, drag_layout)
 
-        # fade out row while dragging if item in it isn't dragged
+        # fade out row while dragging if container in it isn't dragged
         if all([allow_drag_viz,
-                bakemaster.allow_drag, not item.has_drag_prompt,
+                bakemaster.allow_drag, not container.has_drag_prompt,
                 bakemaster.drag_to_index != -1,
                 drag_layout in ['DEFAULT', 'TRANS_TO']]):
             row.active = drag_to_row_active
@@ -331,11 +336,11 @@ class BM_UIList_for_WalkHandler(UIList):
 class BM_UL_BakeJobs(BM_UIList_for_WalkHandler):
     data_name = "bakejobs"
 
-    def draw_props(self, context, row, data, item, icon, active_data,
+    def draw_props(self, context, row, data, container, icon, active_data,
                    active_propname, index, allow_drag_viz, drag_layout):
         bakemaster = context.scene.bakemaster
 
-        if item.type == 'OBJECTS':
+        if container.type == 'OBJECTS':
             type_icon = bm_ui_utils.get_icon_id(bakemaster,
                                                 "bakemaster_objects.png")
             type_ot = row.operator('bakemaster.bakejob_toggletype',
@@ -343,17 +348,18 @@ class BM_UL_BakeJobs(BM_UIList_for_WalkHandler):
         else:
             type_ot = row.operator('bakemaster.bakejob_toggletype',
                                    text="", icon='RENDERLAYERS')
-        type_ot.index = item.index
+        type_ot.index = container.index
 
-        super().draw_props(context, row, bakemaster, item, icon, active_data,
-                           active_propname, index, allow_drag_viz, drag_layout)
+        super().draw_props(context, row, bakemaster, container, icon,
+                           active_data, active_propname, index,
+                           allow_drag_viz, drag_layout)
 
 
-class BM_UL_Items(BM_UIList_for_WalkHandler):
-    data_name = "items"
+class BM_UL_Containers(BM_UIList_for_WalkHandler):
+    data_name = "containers"
 
-    def ticker_icon(self, context, bakemaster, item):
-        bakejob = bm_get.bakejob(bakemaster, item.bakejob_index)
+    def ticker_icon(self, context, bakemaster, container):
+        bakejob = bm_get.bakejob(bakemaster, container.bakejob_index)
         error_icon = bm_ui_utils.get_icon_id(bakemaster,
                                              "bakemaster_rederror.png")
 
@@ -365,7 +371,7 @@ class BM_UL_Items(BM_UIList_for_WalkHandler):
 
         elif bakejob.type == 'OBJECTS':
             object, _, obj_icon, _, _ = bm_get.object_ui_info(
-                    context.scene.objects, item.name)
+                    context.scene.objects, container.name)
 
             if object is None:
                 return 'ICON_VALUE', error_icon, False
@@ -374,48 +380,49 @@ class BM_UL_Items(BM_UIList_for_WalkHandler):
 
         return 'ICON_VALUE', error_icon, False
 
-    def draw_props(self, context, row, data, item, icon, active_data,
+    def draw_props(self, context, row, data, container, icon, active_data,
                    active_propname, index, allow_drag_viz, drag_layout):
         bakemaster = context.scene.bakemaster
         row.emboss = 'NONE'
 
-        # unpack third ticker_icon() return value -> item_exists
-        _, _, item_exists = self.ticker_icon(context, bakemaster, item)
-        row.active = item_exists
+        # unpack third ticker_icon() return value -> container_exists
+        _, _, container_exists = self.ticker_icon(context, bakemaster,
+                                                  container)
+        row.active = container_exists
 
-        if item.use_bake:
+        if container.use_bake:
             icon = 'RESTRICT_RENDER_OFF'
         else:
             icon = 'RESTRICT_RENDER_ON'
             row.active = False
 
         subrow = row.row()
-        subrow.prop(item, 'use_bake', text="", icon=icon)
+        subrow.prop(container, 'use_bake', text="", icon=icon)
         if bakemaster.allow_drag and bakemaster.drag_to_index != -1:
             subrow.enabled = False
 
 
 class BM_UL_BakeHistory(UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data,
+    def draw_item(self, context, layout, data, container, icon, active_data,
                   active_propname, index):
         self.use_filter_sort_reverse = True
 
         bakemaster = data
         timestamp = bm_ui_utils.bakehistory_timestamp_get_label(bakemaster,
-                                                                item)
+                                                                container)
 
         row = layout.row()
-        row.prop(item, 'name', text="", emboss=False, icon='RENDER_STILL')
+        row.prop(container, 'name', text="", emboss=False, icon='RENDER_STILL')
         row.label(text=timestamp)
 
         row.operator('bakemaster.bakehistory_rebake', text="",
-                     icon='RECOVER_LAST').index = item.index
+                     icon='RECOVER_LAST').index = container.index
         row.operator('bakemaster.bakehistory_config', text="",
-                     icon='FOLDER_REDIRECT').index = item.index
+                     icon='FOLDER_REDIRECT').index = container.index
         row.operator('bakemaster.bakehistory_remove', text="",
-                     icon='TRASH').index = item.index
+                     icon='TRASH').index = container.index
 
-        if bakemaster.bakehistory_reserved_index == item.index:
+        if bakemaster.bakehistory_reserved_index == container.index:
             row.active = False
 
     def draw_filter(self, _, layout):
@@ -424,18 +431,18 @@ class BM_UL_BakeHistory(UIList):
         row.prop(self, "use_filter_invert", text="", toggle=True,
                  icon='ARROW_LEFTRIGHT')
 
-    def item_get_name(self, data, item):
+    def container_get_name(self, data, container):
         timestamp = bm_ui_utils.bakehistory_timestamp_get_label(data,
-                                                                item)
-        return "%s%s" % (item.name, timestamp)
+                                                                container)
+        return "%s%s" % (container.name, timestamp)
 
-    def filter_by_name(self, data, pattern, bitflag, items, propname_getter,
-                       reverse=False):
+    def filter_by_name(self, data, pattern, bitflag, containers,
+                       propname_getter, reverse=False):
         flt_flags = []
         pattern = "*%s*" % pattern
 
-        for item in items:
-            name = propname_getter(data, item)
+        for container in containers:
+            name = propname_getter(data, container)
             if fnmatch(name, pattern):
                 flt_flags.append(bitflag)
             else:
@@ -446,8 +453,9 @@ class BM_UL_BakeHistory(UIList):
 
         return flt_flags
 
-    def filter_items(self, _, data, propname):
-        # Sort items by filter_name on item.name + item.timestamp combined
+    def filter_containers(self, _, data, propname):
+        # Sort containers by filter_name on
+        # container.name + container.timestamp combined
 
         # Default return values
         flt_flags = []
@@ -457,7 +465,7 @@ class BM_UL_BakeHistory(UIList):
             flt_flags = self.filter_by_name(data, self.filter_name,
                                             self.bitflag_filter_item,
                                             getattr(data, propname),
-                                            self.item_get_name,
+                                            self.container_get_name,
                                             reverse=self.use_filter_invert)
         if not flt_flags:
             flt_flags = [self.bitflag_filter_item] * data.bakehistory_len
