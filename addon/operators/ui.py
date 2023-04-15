@@ -606,7 +606,11 @@ class BM_OT_BakeJobs_Remove(Operator):
                 bakemaster.bakejobs[index].index -= 1
             except IndexError:
                 continue
+
         bakemaster.bakejobs.remove(bakejob.index)
+
+        bm_ots_utils.indexes_recalc(bakemaster, "bakejobs")
+
         bakemaster.bakejobs_len -= 1
         if not bakemaster.bakejobs_active_index < bakemaster.bakejobs_len:
             bakemaster.bakejobs_active_index = bakemaster.bakejobs_len - 1
@@ -643,6 +647,8 @@ class BM_OT_BakeJobs_Move(Operator):
             return {'CANCELLED'}
 
         bakemaster.bakejobs.move(self.index, self.new_index)
+
+        bm_ots_utils.indexes_recalc(bakemaster, "bakejobs")
         return {'FINISHED'}
 
     def invoke(self, context, _):
@@ -706,6 +712,8 @@ class BM_OT_BakeJobs_Trash(Operator):
          reversed(range(bakemaster.bakejobs_len))]
         bakemaster.bakejobs_active_index = -1
         bakemaster.bakejobs_len = 0
+
+        bm_ots_utils.indexes_recalc(bakemaster, "bakejobs")
         return {'FINISHED'}
 
 
@@ -861,8 +869,7 @@ class BM_OT_BakeJobs_Merge(Operator):
         for index in reversed(to_remove):
             bakemaster.bakejobs.remove(index)
 
-        for index, bakejob in enumerate(bakemaster.bakejobs):
-            bakejob.index = index
+        bm_ots_utils.indexes_recalc(bakemaster, "bakejobs")
 
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
@@ -968,6 +975,9 @@ class BM_OT_Containers_Remove(Operator):
             except IndexError:
                 continue
         bakejob.containers.remove(container.index)
+
+        bm_ots_utils.indexes_recalc(bakejob, "containers")
+
         bakejob.containers_len -= 1
         if not bakejob.containers_active_index < bakejob.containers_len:
             bakejob.containers_active_index = bakejob.containers_len - 1
@@ -1009,6 +1019,8 @@ class BM_OT_Containers_Move(Operator):
             return {'CANCELLED'}
 
         bakejob.containers.move(self.index, self.new_index)
+
+        bm_ots_utils.indexes_recalc(bakejob, "containers")
         return {'FINISHED'}
 
     def invoke(self, context, _):
@@ -1083,6 +1095,8 @@ class BM_OT_Containers_Trash(Operator):
          reversed(range(bakejob.containers_len))]
         bakejob.containers_active_index = -1
         bakejob.containers_len = 0
+
+        bm_ots_utils.indexes_recalc(bakejob, "containers")
         return {'FINISHED'}
 
 

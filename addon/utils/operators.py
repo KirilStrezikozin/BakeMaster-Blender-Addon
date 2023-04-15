@@ -80,3 +80,22 @@ def bakehistory_unreserve(bakemaster):
     if bakehistory is not None:
         bakehistory.time_stamp = str(datetime.now())
     bakemaster.bakehistory_reserved_index = -1
+
+
+def indexes_recalc(data, items_name: str, childs_recursive=True):
+    child = {
+        "bakejobs": "containers",
+        "containers": "subcontainers",
+        "subcontainers": ""
+    }
+    index = 0
+    for item in getattr(data, items_name):
+        item.index = index
+        index += 1
+
+        if hasattr(item, child[items_name]):
+            item.set_seq(child[items_name], "%s_index" % items_name[:-1],
+                         item.index)
+
+        if childs_recursive:
+            indexes_recalc(item, child[items_name], childs_recursive)
