@@ -27,56 +27,63 @@
 #
 # ##### END LICENSE BLOCK #####
 
+from numpy import (
+    array as numpy_array,
+    isin as numpy_isin,
+)
+
+
 def bakejob(bakemaster: not None, index=-1):
     if index == -1:
         index = bakemaster.bakejobs_active_index
     try:
-        bakejob = bakemaster.bakejobs[index]
+        bj = bakemaster.bakejobs[index]
     except IndexError:
         return None
 
-    if any([bakejob.is_drag_empty, bakejob.has_drop_prompt]):
+    if any([bj.is_drag_empty, bj.has_drop_prompt]):
         return None
     else:
-        return bakejob
+        return bj
 
 
-def item(bakejob, index=-1):
-    if bakejob is None:
+def item(bj, index=-1):
+    if bj is None:
         return None
     if index == -1:
-        index = bakejob.items_active_index
+        index = bj.items_active_index
     try:
-        item = bakejob.items[index]
+        itm = bj.items[index]
     except IndexError:
         return None
 
-    if any([item.is_drag_empty, item.has_drop_prompt]):
+    if any([itm.is_drag_empty, itm.has_drop_prompt]):
         return None
     else:
-        return item
+        return itm
 
 
-def subitem(item, index=-1):
+def subitem(itm, index=-1):
     if item is None:
         return None
     if index == -1:
-        index = item.subitems_active_index
+        index = itm.subitems_active_index
     try:
-        subitem = item.subitems[index]
+        subitm = itm.subitems[index]
     except IndexError:
         return None
 
-    if any([subitem.is_drag_empty, subitem.has_drop_prompt]):
+    if any([subitm.is_drag_empty, subitm.has_drop_prompt]):
         return None
     else:
-        return subitem
+        return subitm
 
 
 def walk_data_get_bakejobs(bakemaster):
     return bakemaster, bakemaster.bakejobs, "bakejobs"
 
 
+# memleak
 def walk_data_get_items(bakemaster):
     bj = bakejob(bakemaster)
     if bj is None:
@@ -88,7 +95,7 @@ def walk_data_get_subitems(bakemaster):
     itm = item(bakejob(bakemaster))
     if itm is None:
         return None, [], "subitems"
-    return itm, itm.items, "subitems"
+    return itm, itm.subitems, "subitems"
 
 
 def walk_data_multi_selection_data(bakemaster, data_name: str):
@@ -100,6 +107,9 @@ def walk_data_multi_selection_data(bakemaster, data_name: str):
 
     walk_data_getter = globals()["walk_data_get_%s" % data_name]
     data, _, _ = walk_data_getter(bakemaster)
+    if data is None:
+        # print(f"BakeMaster Internal Error: cannot resolve walk data at {walk_data_multi_selection_data}")  # noqa: E501
+        return False, ""
 
     if hasattr(data, "index"):
         parent_index = data.index
@@ -109,6 +119,14 @@ def walk_data_multi_selection_data(bakemaster, data_name: str):
 
     return all([bakemaster.multi_selection_data == our_multi_selection_data,
                 multi_selection_exists]), our_multi_selection_data
+
+
+def walk_data_child(data_name: str):
+    datas = {
+        "bakejobs": "items",
+        "items": -1,
+    }
+    return datas[data_name]
 
 
 def object_ui_info(objects, name: str):
@@ -150,3 +168,19 @@ def object_ui_info(objects, name: str):
             return None, '', '', 'NOIMAGE', errors['NOIMAGE']
 
     return object, object.type, info[object.type], None, ""
+
+
+def data_attrs(data, exclude=None):
+    if exclude is None:
+        exclude = [
+            "__annotations__",
+            "__doc__",
+            "__module__",
+            "bl_rna",
+            "rna_type",
+            "id_data"
+        ]
+    mask = numpy_array(exclude)
+    attrs = numpy_array(dir(data))
+
+    return attrs[~numpy_isin(attrs, mask)]
