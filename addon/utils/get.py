@@ -125,7 +125,16 @@ def walk_data_child(data_name: str):
     datas = {
         "bakejobs": "containers",
         "containers": "subcontainers",
-        "subcontainers": -1
+        "subcontainers": ""
+    }
+    return datas[data_name]
+
+
+def walk_data_parent(data_name: str):
+    datas = {
+        "bakejobs": "",
+        "containers": "bakejobs",
+        "subcontainers": "containers"
     }
     return datas[data_name]
 
