@@ -27,7 +27,10 @@
 #
 # ##### END LICENSE BLOCK #####
 
-from numpy import zeros as numpy_zeros
+from numpy import (
+    zeros as numpy_zeros,
+    array as numpy_array,
+)
 from bpy.types import (
     PropertyGroup,
 )
@@ -65,6 +68,16 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         seq = numpy_zeros(len(data_prop), dtype=dtype)
         data_prop.foreach_get(attr, seq)
         return seq
+
+    def set_seq(self, data, attr, value):
+        """
+        Set each item's property of name attr to the given value
+        (items are in iterable data property).
+        """
+
+        data_prop = getattr(self, data)
+        seq = numpy_array([value] * len(data_prop))
+        data_prop.foreach_set(attr, seq)
 
 
 class Subcontainer(BM_PropertyGroup_Helper):
