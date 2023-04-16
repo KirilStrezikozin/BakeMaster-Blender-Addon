@@ -43,6 +43,7 @@ from bpy.props import (
 )
 from .utils import (
     properties as bm_props_utils,
+    get as bm_get,
 )
 from .labels import BM_LABELS_Props
 
@@ -78,6 +79,30 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         data_prop = getattr(self, data)
         seq = numpy_array([value] * len(data_prop))
         data_prop.foreach_set(attr, seq)
+
+    def get_bm_name(self, bakemaster, data_name):
+        """
+        Get bm_name representing the UI name of the iterable walk data in the
+        data_name.
+        """
+
+        if data_name == "bakejobs":
+            return "bakejobs"
+
+        if data_name == "containers":
+            bakejob = bm_get.bakejob(bakemaster, self.index)
+            if bakejob is None:
+                return "none"
+            return bakejob.type
+
+        elif data_name == "subcontainers":
+            bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
+            if bakejob is None:
+                return "none"
+            if bakejob.type == 'OBJECTS':
+                return "maps"
+            else:
+                return "objects"
 
 
 class Subcontainer(BM_PropertyGroup_Helper):
@@ -294,6 +319,13 @@ class Global(BM_PropertyGroup_Helper):
         name="Show Help buttons",
         description="Allow help buttons in panels' headers",
         default=True)
+
+    prefs_default_bakejob_type: EnumProperty(
+        name="Default type",
+        description="Choose BakeJob's default type. Hover over values to see descriptions",
+        default='OBJECTS',
+        items=[('OBJECTS', "Objects", "Bake Job will contain Objects, where each of them will contain Maps to bake"),  # noqa: E501
+               ('MAPS', "Maps", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for")])  # noqa: E501
 
     # Preview Collections - Custom Icons Props
 
