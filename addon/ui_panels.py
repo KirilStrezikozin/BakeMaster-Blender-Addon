@@ -100,6 +100,14 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
         col = split.column(align=True)
         col.prop(bakemaster, "prefs_use_show_help")
 
+        split = layout.split(factor=0.4)
+
+        col_heading = split.column()
+        col_heading.alignment = 'RIGHT'
+        col_heading.label(text="BakeJob")
+        col = split.column(align=True)
+        col.prop(bakemaster, "prefs_default_bakejob_type", text="type")
+
 
 class BM_UIList_for_WalkHandler(UIList):
     """
