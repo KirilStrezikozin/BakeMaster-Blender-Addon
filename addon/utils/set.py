@@ -30,25 +30,21 @@
 from .properties import Generic_multi_select as clear_multi_selection
 
 
-def disable_drag(bakemaster, containers, data_name: str):
+def disable_drag(bakemaster, data, containers, attr):
     bakemaster.allow_drag = False
     bakemaster.drag_from_index = -1
     bakemaster.drag_to_index = -1
     bakemaster.drag_from_ticker = False
 
     if bakemaster.allow_drag_trans:
-        clear_multi_selection(None, bakemaster, data_name)
+        clear_multi_selection(None, bakemaster, attr)
     bakemaster.allow_drag_trans = False
 
-    to_remove = []
-    index = 0
-    for container in containers:
-        container.has_drag_prompt = False
-        container.is_drag_placeholder = False
-        if container.is_drag_empty:
-            to_remove.append(container.index)
-            continue
-        container.index = index
-        index += 1
+    mask = data.get_seq(attr, "is_drag_empty", bool)
+    to_remove = data.get_seq(attr, "index", int)[mask]
+
+    data.set_seq(attr, "has_drag_prompt", False)
+    data.set_seq(attr, "is_drag_placeholder", False)
+
     for index in reversed(to_remove):
         containers.remove(index)
