@@ -265,6 +265,8 @@ class BM_OT_UIList_Walk_Handler(Operator):
         if self.is_dragging or self.get_containers(bakemaster) is None:
             return
 
+        self.remove_drop_prompts(bakemaster)
+
         data, containers, attr = self.get_containers(bakemaster)
 
         # Add drag_empty to parent walk_data
