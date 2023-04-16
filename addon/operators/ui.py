@@ -51,6 +51,10 @@ from ..labels import (
 )
 
 
+_walk_handler_invoked = False
+_walk_handler_invoke_time = 0
+
+
 class BM_OT_Help(Operator):
     bl_idname = 'bakemaster.help'
     bl_label = "Help"
@@ -77,12 +81,21 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
     _handler = None
 
+    def cancel(self, _):
+        cls = self.__class__
+        cls._handler = None
+
+        global _walk_handler_invoked
+        _walk_handler_invoked = False
+
     def handler_poll(self):
         cls = self.__class__
         if cls._handler is not None:
             return False
         cls._handler = self
-        return True
+
+        global _walk_handler_invoked
+        return not _walk_handler_invoked
 
     def get_containers(self, bakemaster: not None):
         if bakemaster.walk_data_name == "":
@@ -174,14 +187,14 @@ class BM_OT_UIList_Walk_Handler(Operator):
     def reset_all_tickers(self, bakemaster):
         # Reset tickers in every walk_data -> drag to other data with no errors
 
-        datas = ["bakejobs", "containers"]
+        datas = ["bakejobs", "containers", "subcontainers"]
 
         for data_name in datas:
             walk_data_getter = getattr(bm_get, "walk_data_get_%s" % data_name)
             data, containers, _ = walk_data_getter(bakemaster)
             if data is None:
                 # print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")  # noqa: E501
-                return
+                continue
 
             # len(containers) is used because containers_len doesn't
             # cover drag_empty
@@ -213,23 +226,40 @@ class BM_OT_UIList_Walk_Handler(Operator):
         if drag_empties[drag_empties].size == 0:
             drag_empty = containers.add()
             drag_empty.index = getattr(data, "%s_len" % attr)
-            print(drag_empty.index)
             drag_empty.is_drag_empty = True
+
+    def add_drop_prompt(self, data, containers, attr):
+        # ensure there's only one drop_prompt
+        drop_prompts = data.get_seq(attr, "has_drop_prompt", bool)
+        if drop_prompts[drop_prompts].size == 0:
+            drop_prompt = containers.add()
+            drop_prompt.index = getattr(data, "%s_len" % attr)
+            drop_prompt.has_drop_prompt = True
 
     def drop_init(self, bakemaster):
         if self.is_dropping or self.get_containers(bakemaster) is None:
             return
 
+        datas = ["bakejobs", "containers", "subcontainers"]
+
+        for data_name in datas:
+            walk_data_getter = getattr(bm_get, "walk_data_get_%s" % data_name)
+            data, containers, attr = walk_data_getter(bakemaster)
+            if data is None:
+                # print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")  # noqa: E501
+                continue
+
+            # remove drag_empties
+            bm_set.disable_drag(bakemaster, data, containers, attr)
+
+            if data.get_bm_name(bakemaster, attr) == "maps":
+                continue
+
+            self.add_drop_prompt(data, containers, attr)
+
         bakemaster.allow_drop = True
         self.is_dropping = True
         self.wait_events_end = False
-
-        data, containers, attr = self.get_containers(bakemaster)
-        containers_len = getattr(data, "%s_len" % attr)
-
-        new_container = containers.add()
-        new_container.index = containers_len
-        new_container.has_drop_prompt = True
 
     def drag_init(self, bakemaster):
         if self.is_dragging or self.get_containers(bakemaster) is None:
@@ -266,14 +296,22 @@ class BM_OT_UIList_Walk_Handler(Operator):
         if self.get_containers(bakemaster) is None:
             return
 
-        _, containers, _ = self.get_containers(bakemaster)
-        to_remove = []
-        for container in containers:
-            if not container.has_drop_prompt:
+        datas = ["bakejobs", "containers", "subcontainers"]
+
+        for data_name in datas:
+            walk_data_getter = getattr(bm_get, "walk_data_get_%s" % data_name)
+            data, containers, attr = walk_data_getter(bakemaster)
+            if data is None:
+                # print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")  # noqa: E501
                 continue
-            to_remove.append(container.index)
-        for index in reversed(to_remove):
-            containers.remove(index)
+            if data.get_bm_name(bakemaster, attr) == "maps":
+                continue
+
+            mask = data.get_seq(attr, "has_drop_prompt", bool)
+            to_remove = data.get_seq(attr, "index", int)[mask]
+
+            for index in reversed(to_remove):
+                containers.remove(index)
 
     def drop_end(self, _):
         if self.is_dropping:
@@ -286,9 +324,9 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
         if self.get_containers(bakemaster) is None:
             return
-        _, containers, _ = self.get_containers(bakemaster)
+        data, containers, attr = self.get_containers(bakemaster)
 
-        bm_set.disable_drag(bakemaster, containers, bakemaster.walk_data_name)
+        bm_set.disable_drag(bakemaster, data, containers, attr)
 
     def events_end(self, bakemaster):
         self.drop_end(bakemaster)
@@ -466,6 +504,11 @@ class BM_OT_UIList_Walk_Handler(Operator):
     def invoke(self, context, _):
         if not self.handler_poll():
             return {'CANCELLED'}
+
+        global _walk_handler_invoked
+        _walk_handler_invoked = True
+        global _walk_handler_invoke_time
+        _walk_handler_invoke_time = time()
 
         wm = context.window_manager
         wm.modal_handler_add(self)
@@ -666,16 +709,23 @@ class BM_OT_BakeJobs_Add(Operator):
     def execute(self, context):
         bakemaster = context.scene.bakemaster
 
+        # reduce flicker and hidden containers on add (uilist mess)
+        bm_set.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
+                            "bakejobs")
+
         new_bakejob = bakemaster.bakejobs.add()
         new_bakejob.index = bakemaster.bakejobs_len
         new_bakejob.name = "Bake Job %d" % (new_bakejob.index + 1)
+        new_bakejob.type = bakemaster.prefs_default_bakejob_type
+
         bakemaster.bakejobs_active_index = new_bakejob.index
         bakemaster.bakejobs_len += 1
 
         bm_ots_utils.indexes_recalc(bakemaster, "bakejobs")
 
         # reduce flicker and hidden containers on add (uilist mess)
-        bm_set.disable_drag(bakemaster, bakemaster.bakejobs, "bakejobs")
+        bm_set.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
+                            "bakejobs")
         return {'FINISHED'}
 
 
@@ -696,7 +746,8 @@ class BM_OT_BakeJobs_Remove(Operator):
         bakemaster = context.scene.bakemaster
 
         # reduce flicker and hidden containers on add (uilist mess)
-        bm_set.disable_drag(bakemaster, bakemaster.bakejobs, "bakejobs")
+        bm_set.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
+                            "bakejobs")
 
         bakejob = bm_get.bakejob(bakemaster, self.index)
         if bakejob is None:
@@ -808,7 +859,8 @@ class BM_OT_BakeJobs_Trash(Operator):
         bakemaster = context.scene.bakemaster
 
         # reduce flicker and hidden containers on add (uilist mess)
-        bm_set.disable_drag(bakemaster, bakemaster.bakejobs, "bakejobs")
+        bm_set.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
+                            "bakejobs")
 
         [bakemaster.bakejobs.remove(index) for index in
          reversed(range(bakemaster.bakejobs_len))]
@@ -1021,6 +1073,10 @@ class BM_OT_Containers_Add(Operator):
         if bakejob is None:
             return {'CANCELLED'}
 
+        # reduce flicker and hidden containers on add (uilist mess)
+        bm_set.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
+                            "bakejobs")
+
         errors = 0
 
         if self.name == "":
@@ -1047,10 +1103,11 @@ class BM_OT_Containers_Add(Operator):
             self.report({'WARNING'},
                         f"{errors} Object(s) could not be added (see Console)")
 
-        bm_ots_utils.indexes_recalc(bakejob, "items")
+        bm_ots_utils.indexes_recalc(bakejob, "containers")
 
         # reduce flicker and hidden containers on add (uilist mess)
-        bm_set.disable_drag(bakemaster, bakejob.containers, "containers")
+        bm_set.disable_drag(bakemaster, bakejob, bakejob.containers,
+                            "containers")
         return {'FINISHED'}
 
 
@@ -1084,7 +1141,8 @@ class BM_OT_Containers_Remove(Operator):
             return {'CANCELLED'}
 
         # reduce flicker and hidden containers on add (uilist mess)
-        bm_set.disable_drag(bakemaster, bakejob.containers, "containers")
+        bm_set.disable_drag(bakemaster, bakejob, bakejob.containers,
+                            "containers")
 
         for index in range(container.index + 1, bakejob.containers_len):
             try:
@@ -1206,7 +1264,8 @@ class BM_OT_Containers_Trash(Operator):
             return {'CANCELLED'}
 
         # reduce flicker and hidden containers on add (uilist mess)
-        bm_set.disable_drag(bakemaster, bakejob.containers, "containers")
+        bm_set.disable_drag(bakemaster, bakejob, bakejob.containers,
+                            "containers")
 
         [bakejob.containers.remove(index) for index in
          reversed(range(bakejob.containers_len))]

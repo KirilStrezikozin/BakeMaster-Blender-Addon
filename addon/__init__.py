@@ -122,17 +122,28 @@ classes = (
     operators_ui.BM_OT_BakeHistory_Remove,
 )
 
-_is_uilist_walk_handler_invoked = False
+_is_walk_handler_timer_started = False
 
 
 @persistent
 def BM_UIList_Walk_Handler_caller(_):
-    global _is_uilist_walk_handler_invoked
+    """
+    Walk Handler caller. After first invoke, if the Handler was cancelled,
+    try reinvoking every 5 seconds.
+    """
 
-    if _is_uilist_walk_handler_invoked:
+    if operators_ui._walk_handler_invoked:
         return
 
-    _is_uilist_walk_handler_invoked = True
+    global _is_walk_handler_timer_started
+
+    time_diff = operators_ui.time() - operators_ui._walk_handler_invoke_time
+    if not any([time_diff > 5,
+                not _is_walk_handler_timer_started]):
+        return
+
+    _is_walk_handler_timer_started = True
+    operators_ui._walk_handler_invoke_time = operators_ui.time()
     bpy_ops.bakemaster.uilist_walk_handler('INVOKE_DEFAULT')
 
 
