@@ -597,9 +597,15 @@ class BM_OT_WalkData_Trans(Operator):
             destination_data = None
 
         elif destination_data.is_drag_empty:
+            old_active_index = getattr(
+                data_to, "%s_active_index" % bakemaster.drag_data_to)
+
             add_ot = getattr(bpy_ops.bakemaster,
                              "%s_add" % bakemaster.drag_data_to)
             add_ot('INVOKE_DEFAULT')
+
+            setattr(data_to, "%s_active_index" % bakemaster.drag_data_to,
+                    old_active_index)
 
             parent_data, parent_containers, parent_attr = getattr(
                 bm_get, "walk_data_get_%s" % bakemaster.drag_data_to)(
@@ -613,6 +619,9 @@ class BM_OT_WalkData_Trans(Operator):
             except IndexError:
                 destination_data = None
 
+        # bm_ots_utils.disable_drag(bakemaster, data_to, containers_to,
+        #                           bakemaster.drag_data_to)
+
         return destination_data
 
     def get_source(self, bakemaster):
@@ -620,6 +629,9 @@ class BM_OT_WalkData_Trans(Operator):
             bm_get, "walk_data_get_%s" % bakemaster.drag_data_from)
         data_from, containers_from, attr_from = drag_data_from_getter(
             bakemaster)
+
+        bm_ots_utils.disable_drag(bakemaster, data_from, containers_from,
+                                  attr_from)
 
         all_indexes = data_from.get_seq(attr_from, "index", int)
         selection_mask = data_from.get_seq(attr_from, "is_selected", bool)
@@ -678,6 +690,9 @@ class BM_OT_WalkData_Trans(Operator):
                                 "%s_remove" % bakemaster.drag_data_from)
             remove_ot('INVOKE_DEFAULT', index=index)
 
+        bm_ots_utils.disable_drag(bakemaster, destination_data,
+                                  destination_containers,
+                                  bakemaster.drag_data_from)
         bm_ots_utils.indexes_recalc(bakemaster, "bakejobs")
 
         return {'FINISHED'}
