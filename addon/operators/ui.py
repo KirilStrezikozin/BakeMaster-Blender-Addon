@@ -769,12 +769,6 @@ class BM_OT_BakeJobs_Remove(Operator):
         if bakejob is None:
             return {'CANCELLED'}
 
-        for index in range(bakejob.index + 1, bakemaster.bakejobs_len):
-            try:
-                bakemaster.bakejobs[index].index -= 1
-            except IndexError:
-                continue
-
         bakemaster.bakejobs.remove(bakejob.index)
 
         bm_ots_utils.indexes_recalc(bakemaster, "bakejobs")
@@ -1160,11 +1154,6 @@ class BM_OT_Containers_Remove(Operator):
         bm_ots_utils.disable_drag(bakemaster, bakejob, bakejob.containers,
                                   "containers")
 
-        for index in range(container.index + 1, bakejob.containers_len):
-            try:
-                bakejob.containers[index].index -= 1
-            except IndexError:
-                continue
         bakejob.containers.remove(container.index)
 
         bm_ots_utils.indexes_recalc(bakejob, "containers")
@@ -1795,6 +1784,7 @@ class BM_OT_BakeHistory_Remove(Operator):
     def execute(self, context):
         bakemaster = context.scene.bakemaster
         bm_ots_utils.bakehistory_remove(bakemaster, self.index)
+        bm_ots_utils.indexes_recalc(bakemaster, "bakehistory", False)
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 

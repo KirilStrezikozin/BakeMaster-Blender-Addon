@@ -107,7 +107,8 @@ def indexes_recalc(data, items_name: str, childs_recursive=True):
     child = {
         "bakejobs": "containers",
         "containers": "subcontainers",
-        "subcontainers": ""
+        "subcontainers": "",
+        "bakehistory": ""
     }
     index = 0
     for item in getattr(data, items_name):
