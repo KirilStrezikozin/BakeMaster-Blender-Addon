@@ -43,7 +43,6 @@ from bpy_extras.io_utils import ImportHelper
 from ..utils import (
     get as bm_get,
     operators as bm_ots_utils,
-    set as bm_set,
 )
 from ..utils.ui import get_icon_id as bm_ui_utils_get_icon_id
 from ..labels import (
@@ -250,7 +249,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
                 continue
 
             # remove drag_empties
-            bm_set.disable_drag(bakemaster, data, containers, attr)
+            bm_ots_utils.disable_drag(bakemaster, data, containers, attr)
 
             if data.get_bm_name(bakemaster, attr) == "maps":
                 continue
@@ -328,7 +327,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
             return
         data, containers, attr = self.get_containers(bakemaster)
 
-        bm_set.disable_drag(bakemaster, data, containers, attr)
+        bm_ots_utils.disable_drag(bakemaster, data, containers, attr)
 
     def events_end(self, bakemaster):
         self.drop_end(bakemaster)
@@ -712,8 +711,8 @@ class BM_OT_BakeJobs_Add(Operator):
         bakemaster = context.scene.bakemaster
 
         # reduce flicker and hidden containers on add (uilist mess)
-        bm_set.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
-                            "bakejobs")
+        bm_ots_utils.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
+                                  "bakejobs")
 
         new_bakejob = bakemaster.bakejobs.add()
         new_bakejob.index = bakemaster.bakejobs_len
@@ -726,8 +725,8 @@ class BM_OT_BakeJobs_Add(Operator):
         bm_ots_utils.indexes_recalc(bakemaster, "bakejobs")
 
         # reduce flicker and hidden containers on add (uilist mess)
-        bm_set.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
-                            "bakejobs")
+        bm_ots_utils.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
+                                  "bakejobs")
         return {'FINISHED'}
 
 
@@ -748,8 +747,8 @@ class BM_OT_BakeJobs_Remove(Operator):
         bakemaster = context.scene.bakemaster
 
         # reduce flicker and hidden containers on add (uilist mess)
-        bm_set.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
-                            "bakejobs")
+        bm_ots_utils.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
+                                  "bakejobs")
 
         bakejob = bm_get.bakejob(bakemaster, self.index)
         if bakejob is None:
@@ -861,8 +860,8 @@ class BM_OT_BakeJobs_Trash(Operator):
         bakemaster = context.scene.bakemaster
 
         # reduce flicker and hidden containers on add (uilist mess)
-        bm_set.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
-                            "bakejobs")
+        bm_ots_utils.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
+                                  "bakejobs")
 
         [bakemaster.bakejobs.remove(index) for index in
          reversed(range(bakemaster.bakejobs_len))]
@@ -1076,8 +1075,8 @@ class BM_OT_Containers_Add(Operator):
             return {'CANCELLED'}
 
         # reduce flicker and hidden containers on add (uilist mess)
-        bm_set.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
-                            "bakejobs")
+        bm_ots_utils.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
+                                  "bakejobs")
 
         errors = 0
 
@@ -1108,8 +1107,8 @@ class BM_OT_Containers_Add(Operator):
         bm_ots_utils.indexes_recalc(bakejob, "containers")
 
         # reduce flicker and hidden containers on add (uilist mess)
-        bm_set.disable_drag(bakemaster, bakejob, bakejob.containers,
-                            "containers")
+        bm_ots_utils.disable_drag(bakemaster, bakejob, bakejob.containers,
+                                  "containers")
         return {'FINISHED'}
 
 
@@ -1143,8 +1142,8 @@ class BM_OT_Containers_Remove(Operator):
             return {'CANCELLED'}
 
         # reduce flicker and hidden containers on add (uilist mess)
-        bm_set.disable_drag(bakemaster, bakejob, bakejob.containers,
-                            "containers")
+        bm_ots_utils.disable_drag(bakemaster, bakejob, bakejob.containers,
+                                  "containers")
 
         for index in range(container.index + 1, bakejob.containers_len):
             try:
@@ -1266,8 +1265,8 @@ class BM_OT_Containers_Trash(Operator):
             return {'CANCELLED'}
 
         # reduce flicker and hidden containers on add (uilist mess)
-        bm_set.disable_drag(bakemaster, bakejob, bakejob.containers,
-                            "containers")
+        bm_ots_utils.disable_drag(bakemaster, bakejob, bakejob.containers,
+                                  "containers")
 
         [bakejob.containers.remove(index) for index in
          reversed(range(bakejob.containers_len))]

@@ -28,6 +28,7 @@
 # ##### END LICENSE BLOCK #####
 
 from datetime import datetime
+from .properties import Generic_multi_select as clear_multi_selection
 
 
 def ui_bake_poll(bakemaster, bake_is_running):
@@ -80,6 +81,26 @@ def bakehistory_unreserve(bakemaster):
     if bakehistory is not None:
         bakehistory.time_stamp = str(datetime.now())
     bakemaster.bakehistory_reserved_index = -1
+
+
+def disable_drag(bakemaster, data, containers, attr):
+    bakemaster.allow_drag = False
+    bakemaster.drag_from_index = -1
+    bakemaster.drag_to_index = -1
+    bakemaster.drag_from_ticker = False
+
+    if bakemaster.allow_drag_trans:
+        clear_multi_selection(None, bakemaster, attr)
+    bakemaster.allow_drag_trans = False
+
+    mask = data.get_seq(attr, "is_drag_empty", bool)
+    to_remove = data.get_seq(attr, "index", int)[mask]
+
+    data.set_seq(attr, "has_drag_prompt", False)
+    data.set_seq(attr, "is_drag_placeholder", False)
+
+    for index in reversed(to_remove):
+        containers.remove(index)
 
 
 def indexes_recalc(data, items_name: str, childs_recursive=True):
