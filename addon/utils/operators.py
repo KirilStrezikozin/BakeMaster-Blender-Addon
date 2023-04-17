@@ -83,13 +83,13 @@ def bakehistory_unreserve(bakemaster):
     bakemaster.bakehistory_reserved_index = -1
 
 
-def disable_drag(bakemaster, data, containers, attr):
+def disable_drag(bakemaster, data, containers, attr, clear_selection=True):
     bakemaster.allow_drag = False
     bakemaster.drag_from_index = -1
     bakemaster.drag_to_index = -1
     bakemaster.drag_from_ticker = False
 
-    if bakemaster.allow_drag_trans:
+    if bakemaster.allow_drag_trans and clear_selection:
         clear_multi_selection(None, bakemaster, attr)
     bakemaster.allow_drag_trans = False
 
