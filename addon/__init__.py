@@ -108,6 +108,7 @@ classes = (
     operators_ui.BM_OT_Containers_AddDropped,
     operators_ui.BM_OT_Containers_Trash,
     operators_ui.BM_OT_Container_Rename,
+    operators_ui.BM_OT_Containers_Group,
 
     operators_ui.BM_OT_FileChooseDialog,
     operators_ui.BM_OT_Setup,

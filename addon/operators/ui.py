@@ -1170,10 +1170,6 @@ class BM_OT_Containers_Remove(Operator):
         bm_ots_utils.disable_drag(bakemaster, bakejob, bakejob.containers,
                                   "containers", clear_selection=False)
 
-        bakejob.containers_len -= 1
-        if not bakejob.containers_active_index < bakejob.containers_len:
-            bakejob.containers_active_index = bakejob.containers_len - 1
-
         has_selection, _ = bm_get.walk_data_multi_selection_data(
             bakemaster, "containers")
 
@@ -1378,6 +1374,35 @@ class BM_OT_Container_Rename(Operator):
         layout.use_property_split = False
         layout.use_property_decorate = False
         layout.prop(self, "name")
+
+
+class BM_OT_Containers_Group(Operator):
+    bl_idname = "bakemaster.containers_group"
+    bl_label = "Group"
+    bl_description = "Group selected items"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    bakejob_index: IntProperty(default=-1)
+
+    def invoke(self, context, _):
+        return self.execute(context)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+
+        bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
+        if bakejob is None:
+            return {'CANCELLED'}
+
+        has_selection, _ = bm_get.walk_data_multi_selection_data(
+            bakemaster, "containers")
+
+        if not has_selection:
+            self.report({'INFO'}, "Select items with Shift, Ctrl to group")
+            return {'CANCELLED'}
+
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
 
 
 class BM_OT_FileChooseDialog(Operator, ImportHelper):

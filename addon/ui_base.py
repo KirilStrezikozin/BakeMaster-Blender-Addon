@@ -27,6 +27,7 @@
 #
 # ##### END LICENSE BLOCK #####
 
+from bpy.app import version as bpy_version
 from bpy.types import (
     Panel,
 )
@@ -233,8 +234,12 @@ class BM_PT_ContainersBase(BM_PT_Helper):
             return
         col.separator(factor=1.0)
         col.emboss = 'NORMAL'
-        # col.operator('bakemaster.containers_group', text="",
-        #              icon='OUTLINER_COLLECTION')
+
+        if bpy_version > (2, 91, 0):
+            icon = 'OUTLINER_COLLECTION'
+        else:
+            icon = 'GROUP'
+        col.operator('bakemaster.containers_group', text="", icon=icon)
 
 
 class BM_PT_BakeBase(BM_PT_Helper):
