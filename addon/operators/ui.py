@@ -763,17 +763,33 @@ class BM_OT_BakeJobs_Remove(Operator):
 
         # reduce flicker and hidden containers on add (uilist mess)
         bm_ots_utils.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
-                                  "bakejobs")
+                                  "bakejobs", clear_selection=False)
 
-        bakejob = bm_get.bakejob(bakemaster, self.index)
-        if bakejob is None:
+        has_selection, _ = bm_get.walk_data_multi_selection_data(
+            bakemaster, "bakejobs")
+
+        if has_selection:
+            mask = bakemaster.get_seq("bakejobs", "is_selected", bool)
+            to_remove = bakemaster.get_seq("bakejobs", "index", int)[mask]
+            size = to_remove.size
+        else:
+            bakejob = bm_get.bakejob(bakemaster, self.index)
+            if bakejob is None:
+                return {'CANCELLED'}
+            to_remove = [bakejob.index]
+            size = 1
+
+        if size < 1:
+            self.report({'INFO'}, "Nothing to remove")
             return {'CANCELLED'}
 
-        bakemaster.bakejobs.remove(bakejob.index)
+        for index in reversed(to_remove):
+            bakemaster.bakejobs.remove(index)
 
         bm_ots_utils.indexes_recalc(bakemaster, "bakejobs")
+        bm_ots_utils.clear_multi_selection(None, bakemaster, "bakejobs")
 
-        bakemaster.bakejobs_len -= 1
+        bakemaster.bakejobs_len -= size
         if not bakemaster.bakejobs_active_index < bakemaster.bakejobs_len:
             bakemaster.bakejobs_active_index = bakemaster.bakejobs_len - 1
         return {'FINISHED'}
@@ -1136,7 +1152,8 @@ class BM_OT_Containers_Remove(Operator):
             self.bakejob_index = bakemaster.bakejobs_active_index
 
         if self.index == -1:
-            container = bm_get.container(bm_get.bakejob(bakemaster))
+            container = bm_get.container(bm_get.bakejob(bakemaster,
+                                                        self.bakejob_index))
             if container is not None:
                 self.index = container.index
 
@@ -1146,19 +1163,42 @@ class BM_OT_Containers_Remove(Operator):
         bakemaster = context.scene.bakemaster
 
         bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
-        container = bm_get.container(bakejob, self.index)
-        if container is None or bakejob is None:
+        if bakejob is None:
             return {'CANCELLED'}
 
         # reduce flicker and hidden containers on add (uilist mess)
         bm_ots_utils.disable_drag(bakemaster, bakejob, bakejob.containers,
-                                  "containers")
-
-        bakejob.containers.remove(container.index)
-
-        bm_ots_utils.indexes_recalc(bakejob, "containers")
+                                  "containers", clear_selection=False)
 
         bakejob.containers_len -= 1
+        if not bakejob.containers_active_index < bakejob.containers_len:
+            bakejob.containers_active_index = bakejob.containers_len - 1
+
+        has_selection, _ = bm_get.walk_data_multi_selection_data(
+            bakemaster, "containers")
+
+        if has_selection:
+            mask = bakejob.get_seq("containers", "is_selected", bool)
+            to_remove = bakejob.get_seq("containers", "index", int)[mask]
+            size = to_remove.size
+        else:
+            container = bm_get.container(bakejob, self.index)
+            if container is None:
+                return {'CANCELLED'}
+            to_remove = [container.index]
+            size = 1
+
+        if size < 1:
+            self.report({'INFO'}, "Nothing to remove")
+            return {'CANCELLED'}
+
+        for index in reversed(to_remove):
+            bakejob.containers.remove(index)
+
+        bm_ots_utils.indexes_recalc(bakejob, "containers")
+        bm_ots_utils.clear_multi_selection(None, bakemaster, "containers")
+
+        bakejob.containers_len -= size
         if not bakejob.containers_active_index < bakejob.containers_len:
             bakejob.containers_active_index = bakejob.containers_len - 1
         return {'FINISHED'}
