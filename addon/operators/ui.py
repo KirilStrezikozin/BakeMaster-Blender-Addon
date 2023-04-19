@@ -1023,32 +1023,35 @@ class BM_OT_BakeJobs_Merge(Operator):
     def execute(self, context):
         bakemaster = context.scene.bakemaster
 
-        to_remove = []
-        selection_seq = bakemaster.get_seq("bakejobs", "is_selected", bool)
+        # reduce flicker and hidden containers on add (uilist mess)
+        bm_ots_utils.disable_drag(bakemaster, bakemaster, bakemaster.bakejobs,
+                                  "bakejobs", clear_selection=False)
 
-        if selection_seq[selection_seq].size < 2:
+        to_remove = []
+        new_active_index = -1
+        for bakejob in bakemaster.bakejobs:
+            if not bakejob.is_selected:
+                continue
+            if bakejob.index == bakemaster.bakejobs_active_index:
+                new_active_index = bakejob.index
+                continue
+            to_remove.append(bakejob.index)
+
+        if len(to_remove) < 2:
             self.report({'INFO'},
                         "Merge requires two or more selected Bake Jobs")
             return {'CANCELLED'}
 
-        for index, is_selected in enumerate(selection_seq):
-            if not is_selected:
-                continue
-            if index == bakemaster.bakejobs_active_index:
-                bakemaster.bakejobs[index].is_selected = False
-            else:
-                to_remove.append(index)
+        for index in reversed(to_remove):
+            bakemaster.bakejobs.remove(index)
+
+        bakemaster.bakejobs_active_index = new_active_index
+        bakemaster.bakejobs_len = len(bakemaster.bakejobs)
 
         # turn off multi select
         bakemaster.allow_multi_select = False
         bakemaster.is_multi_selection_empty = True
         bakemaster.multi_select_event = ''
-
-        bakemaster.bakejobs_active_index = -1
-        bakemaster.bakejobs_len -= len(to_remove)
-
-        for index in reversed(to_remove):
-            bakemaster.bakejobs.remove(index)
 
         bm_ots_utils.indexes_recalc(bakemaster, "bakejobs")
 
