@@ -125,9 +125,14 @@ class Container(BM_PropertyGroup_Helper):
     index: IntProperty(default=-1)
     bakejob_index: IntProperty(default=-1)
 
+    # UI Props
+
     use_bake: BoolProperty(
         name="Include/Exclude Item from bake",
-        default=True)
+        default=True,
+        update=bm_props_utils.Container_use_bake_Update)
+
+    ###
 
     subcontainers: CollectionProperty(type=Subcontainer)
 
@@ -174,16 +179,22 @@ class BakeJob(BM_PropertyGroup_Helper):
 
     index: IntProperty(default=-1)
 
+    # UI Props
+
     type: EnumProperty(
         name="Bake Job Type",
         description="Choose a Bake Job type. Hover over type values to see descriptions",  # noqa: E501
         default='OBJECTS',
         items=[('OBJECTS', "Objects", "Bake Job will contain Objects, where each of them will contain Maps to bake"),  # noqa: E501
-               ('MAPS', "Maps", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for")])  # noqa: E501
+               ('MAPS', "Maps", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for")],  # noqa: E501
+        update=bm_props_utils.BakeJob_type_Update)
 
     use_bake: BoolProperty(
         name="Include/Exclude Bake Job from bake",
-        default=True)
+        default=True,
+        update=bm_props_utils.BakeJob_use_bake_Update)
+
+    ###
 
     containers: CollectionProperty(type=Container)
 
@@ -262,6 +273,7 @@ class Global(BM_PropertyGroup_Helper):
     multi_select_event: StringProperty(default="", options={'SKIP_SAVE'})
     is_multi_selection_empty: BoolProperty(default=True, options={'SKIP_SAVE'})
     multi_selection_data: StringProperty(default="", options={'SKIP_SAVE'})
+    allow_prop_in_multi_selection_update: BoolProperty(default=True, options={'SKIP_SAVE'})
 
     is_double_click: BoolProperty(default=False, options={'SKIP_SAVE'})
     last_left_click_ticker: BoolProperty(default=False, options={'SKIP_SAVE'})

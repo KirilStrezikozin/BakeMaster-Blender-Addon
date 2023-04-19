@@ -280,6 +280,51 @@ def Generic_multi_select(self, bakemaster, walk_data: str):
             container.is_selected = container.index in selection_range
 
 
+def Generic_property_in_multi_selection_Update(self, context, walk_data: str,
+                                               prop_name: str):
+    """
+    Generic property in multi selection update function. Lets set prop_name's
+    property values in data's containers that are in multi selection.
+
+    walk_data is an attribute name of Collection Property that has uilist walk
+    features.
+    """
+
+    bakemaster = context.scene.bakemaster
+    bakemaster.walk_data_name = walk_data
+
+    if not bakemaster.allow_prop_in_multi_selection_update:
+        return
+
+    has_selection, _ = bm_get.walk_data_multi_selection_data(
+        bakemaster, walk_data)
+    if not has_selection:
+        return
+
+    # no recursive updates
+    bakemaster.allow_prop_in_multi_selection_update = False
+
+    walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
+    _, containers, _ = walk_data_getter(bakemaster)
+
+    # foreach_get/set does not work for enum
+    # see https://projects.blender.org/blender/blender/issues/92621
+    #
+    # values = data.get_seq(attr, prop_name, prop_type)
+    # mask = data.get_seq(attr, "is_selected", bool)
+    # values[mask] = getattr(self, prop_name)
+    # containers.foreach_set(prop_name, values)
+    #
+    # simple loop is faster than several numpy arrays
+    prop_val = getattr(self, prop_name)
+    for container in containers:
+        if not container.is_selected:
+            continue
+        setattr(container, prop_name, prop_val)
+
+    bakemaster.allow_prop_in_multi_selection_update = True
+
+
 def Global_bakejobs_active_index_Update(self, context):
     Generic_active_index_Update(self, context, "bakejobs")
 
@@ -310,3 +355,20 @@ def Container_subcontainers_active_index_Update(self, context):
 def Container_ticker_Update(self, context):
     Generic_ticker_Update(self, context, walk_data="containers",
                           double_click_ot_idname="container_rename")
+
+# UI Props' Updates
+
+
+def BakeJob_use_bake_Update(self, context):
+    Generic_property_in_multi_selection_Update(
+        self, context, "bakejobs", "use_bake")
+
+
+def BakeJob_type_Update(self, context):
+    Generic_property_in_multi_selection_Update(
+        self, context, "bakejobs", "type")
+
+
+def Container_use_bake_Update(self, context):
+    Generic_property_in_multi_selection_Update(
+        self, context, "containers", "use_bake")

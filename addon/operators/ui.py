@@ -130,6 +130,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
         bakemaster.multi_select_event = ''
         bakemaster.is_multi_selection_empty = True
         bakemaster.multi_selection_data = ""
+        bakemaster.allow_prop_in_multi_selection_update = True
 
         self.is_left_click = False
         self.last_left_click_time = 0
