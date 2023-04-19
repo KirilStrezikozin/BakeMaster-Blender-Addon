@@ -291,7 +291,6 @@ def Generic_property_in_multi_selection_Update(self, context, walk_data: str,
     """
 
     bakemaster = context.scene.bakemaster
-    bakemaster.walk_data_name = walk_data
 
     if not bakemaster.allow_prop_in_multi_selection_update:
         return
@@ -300,6 +299,9 @@ def Generic_property_in_multi_selection_Update(self, context, walk_data: str,
         bakemaster, walk_data)
     if not has_selection:
         return
+
+    bakemaster.walk_data_name = walk_data
+    bakemaster.multi_select_event = 'CTRL'
 
     # no recursive updates
     bakemaster.allow_prop_in_multi_selection_update = False
