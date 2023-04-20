@@ -87,7 +87,9 @@ def disable_drag(bakemaster, data, containers, attr, clear_selection=True):
     bakemaster.allow_drag = False
     bakemaster.drag_from_index = -1
     bakemaster.drag_to_index = -1
+    bakemaster.drag_to_index_temp = -1
     bakemaster.drag_from_ticker = False
+    bakemaster.allow_multi_selection_drag = False
 
     if bakemaster.allow_drag_trans and clear_selection:
         clear_multi_selection(None, bakemaster, attr)
@@ -103,21 +105,30 @@ def disable_drag(bakemaster, data, containers, attr, clear_selection=True):
         containers.remove(index)
 
 
-def indexes_recalc(data, items_name: str, childs_recursive=True):
+def indexes_recalc(data, items_name: str, childs_recursive=True,
+                   parent_props=[]):
     child = {
         "bakejobs": "containers",
         "containers": "subcontainers",
         "subcontainers": "",
         "bakehistory": ""
     }
+
+    if not hasattr(data, items_name):
+        return
+
     index = 0
     for item in getattr(data, items_name):
         item.index = index
-        index += 1
 
-        if hasattr(item, child[items_name]):
-            item.set_seq(child[items_name], "%s_index" % items_name[:-1],
-                         item.index)
+        for prop_name, prop_val in parent_props:
+            if hasattr(item, prop_name):
+                setattr(item, prop_name, prop_val)
+            else:
+                print(f"BakeMaster Internal AttributeError: {item} has no {prop_name} attribute")  # noqa: E501
 
         if childs_recursive:
-            indexes_recalc(item, child[items_name], childs_recursive)
+            indexes_recalc(
+                item, child[items_name], childs_recursive,
+                parent_props + [["%s_index" % items_name[:-1], item.index]])
+        index += 1
