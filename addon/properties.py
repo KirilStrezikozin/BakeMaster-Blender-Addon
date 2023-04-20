@@ -109,6 +109,11 @@ class Subcontainer(BM_PropertyGroup_Helper):
     name: StringProperty(
         default="Map")
 
+    ticker: BoolProperty(default=False)
+    is_drag_placeholder: BoolProperty(default=False)
+    is_drag_empty: BoolProperty(default=False)
+    has_drop_prompt: BoolProperty(default=False)
+
 
 class Container(BM_PropertyGroup_Helper):
     name: StringProperty(
@@ -264,10 +269,12 @@ class Global(BM_PropertyGroup_Helper):
     allow_drag: BoolProperty(default=False, options={'SKIP_SAVE'})
     drag_from_index: IntProperty(default=-1, options={'SKIP_SAVE'})
     drag_to_index: IntProperty(default=-1, options={'SKIP_SAVE'})
+    drag_to_index_temp: IntProperty(default=-1, options={'SKIP_SAVE'})
     drag_data_from: StringProperty(default="", options={'SKIP_SAVE'})
     drag_data_to: StringProperty(default="", options={'SKIP_SAVE'})
     allow_drag_trans: BoolProperty(default=False, options={'SKIP_SAVE'})
     drag_from_ticker: BoolProperty(default=False, options={'SKIP_SAVE'})
+    allow_multi_selection_drag: BoolProperty(default=False, options={'SKIP_SAVE'})
 
     allow_multi_select: BoolProperty(default=False, options={'SKIP_SAVE'})
     multi_select_event: StringProperty(default="", options={'SKIP_SAVE'})
@@ -344,3 +351,29 @@ class Global(BM_PropertyGroup_Helper):
     preview_collections = {
         "main": bm_props_utils.load_preview_collections(),
     }
+
+    # Helper Funcs
+
+    def get_drag_to_index(self, walk_data: str, get_name=False):
+        """
+        Get drag_to_index value and name based of currently dragged walk_data.
+        """
+
+        drag_to_index_name = "drag_to_index"
+
+        if all([self.allow_drag_trans,
+                walk_data == self.drag_data_from]):
+            drag_to_index_name = "drag_to_index_temp"
+
+        if not get_name:
+            return getattr(self, drag_to_index_name)
+        return getattr(self, drag_to_index_name), drag_to_index_name
+
+    def set_drag_to_index(self, walk_data: str, value: int):
+        """
+        Set drag_to_index value name based of currently dragged walk_data.
+        """
+
+        _, drag_to_index_name = self.get_drag_to_index(
+            walk_data, get_name=True)
+        setattr(self, drag_to_index_name, value)

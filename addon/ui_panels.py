@@ -150,6 +150,9 @@ class BM_UIList_for_WalkHandler(UIList):
         if not bakemaster.allow_drag:
             return False, ''
 
+        if self.data_name != bakemaster.walk_data_name:
+            return False, ''
+
         if not bakemaster.allow_drag_trans:
             if self.data_name == bakemaster.drag_data_from:
                 return True, 'DEFAULT'
@@ -175,7 +178,8 @@ class BM_UIList_for_WalkHandler(UIList):
 
         subrow = row.row()
         subrow.prop(container, 'use_bake', text="", icon=icon)
-        if bakemaster.allow_drag and bakemaster.drag_to_index != -1:
+        if bakemaster.allow_drag and bakemaster.get_drag_to_index(
+                self.data_name) != -1:
             subrow.enabled = False
         row.active = container.use_bake
 
@@ -187,9 +191,11 @@ class BM_UIList_for_WalkHandler(UIList):
                         active_propname, index, allow_drag_viz, drag_layout):
         bakemaster = context.scene.bakemaster
 
-        if drag_layout == 'DEFAULT':
+        if any([drag_layout == 'DEFAULT',
+                all([drag_layout == 'TRANS_FROM',
+                     bakemaster.allow_multi_selection_drag])]):
             text = "..."
-            if bakemaster.drag_to_index == -1:
+            if bakemaster.get_drag_to_index(self.data_name) == -1:
                 return
         elif drag_layout == 'TRANS_TO':
             if container.is_drag_placeholder:
@@ -207,6 +213,7 @@ class BM_UIList_for_WalkHandler(UIList):
                               active_data, active_propname, index,
                               allow_drag_viz, drag_layout):
         bakemaster = context.scene.bakemaster
+
         if not all([allow_drag_viz, drag_layout == 'TRANS_TO']):
             return False
 
@@ -217,7 +224,8 @@ class BM_UIList_for_WalkHandler(UIList):
             self.draw_box_prompt(row, "Discard move")
             return True
 
-        elif all([container.index == bakemaster.drag_to_index,
+        elif all([container.index == bakemaster.get_drag_to_index(
+                      self.data_name),
                   container.is_drag_placeholder]):
             self.draw_box_prompt(row, "Move here...")
             return True
@@ -253,7 +261,10 @@ class BM_UIList_for_WalkHandler(UIList):
 
         # draw a darker line when dragging container
         if all([allow_drag_viz, container.is_drag_placeholder,
-                drag_layout == 'DEFAULT']):
+                any([drag_layout == 'DEFAULT',
+                     drag_layout == 'TRANS_FROM' and any([
+                         not container.is_selected,
+                         container.is_drag_empty])])]):
             drag_placeholder = col.row().box()
             drag_placeholder.label(text="")
             drag_placeholder.scale_y = 0.1
@@ -310,13 +321,14 @@ class BM_UIList_for_WalkHandler(UIList):
         # fade out row while dragging if container in it isn't dragged
         if all([allow_drag_viz,
                 bakemaster.allow_drag, not container.has_drag_prompt,
-                bakemaster.drag_to_index != -1,
+                bakemaster.get_drag_to_index(self.data_name) != -1,
                 drag_layout in ['DEFAULT', 'TRANS_TO']]):
             row.active = drag_to_row_active
 
     def draw_filter(self, context, layout):
-        if any([all([context.scene.bakemaster.allow_drag,
-                     context.scene.bakemaster.drag_to_index != -1]),
+        bakemaster = context.scene.bakemaster
+        if any([all([bakemaster.allow_drag,
+                     bakemaster.get_drag_to_index(self.data_name) != -1]),
                 not self.use_name_filter]):
             return
 
@@ -406,7 +418,8 @@ class BM_UL_Containers(BM_UIList_for_WalkHandler):
 
         subrow = row.row()
         subrow.prop(container, 'use_bake', text="", icon=icon)
-        if bakemaster.allow_drag and bakemaster.drag_to_index != -1:
+        if bakemaster.allow_drag and bakemaster.get_drag_to_index(
+                self.data_name) != -1:
             subrow.enabled = False
 
 

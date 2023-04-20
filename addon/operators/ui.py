@@ -121,10 +121,12 @@ class BM_OT_UIList_Walk_Handler(Operator):
         bakemaster.allow_drag = False
         bakemaster.drag_from_index = -1
         bakemaster.drag_to_index = -1
+        bakemaster.drag_to_index_temp = -1
         bakemaster.drad_data_from = ""
         bakemaster.drad_data_to = ""
         bakemaster.allow_drag_trans = False
         bakemaster.drag_from_ticker = False
+        bakemaster.allow_multi_selection_drag = False
 
         bakemaster.allow_multi_select = False
         bakemaster.multi_select_event = ''
@@ -416,38 +418,37 @@ class BM_OT_UIList_Walk_Handler(Operator):
         Invoke Collection Property Move.
 
         Moving is carried out with bakemaster.drag_from_index and
-        bakemaster.drag_to_index, values of which are set in container.ticker
-        Updates.
+        bakemaster.get_drag_to_index(), values of which are set in
+        container.ticker Updates.
         The Collection Property is determined by calling self.get_containers.
 
         Walk Data Transition is responsible for moving containers to another
         datas.
         """
 
-        if bakemaster.drag_to_index > bakemaster.drag_from_index:
-            new_index = bakemaster.drag_to_index - 1
+        data, _, attr = self.get_containers(bakemaster)
+
+        if data is None:
+            print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")  # noqa: E501
+            self.drag_end(bakemaster)
+            return
+
+        drag_to_index = bakemaster.get_drag_to_index(attr)
+
+        # move across walk_datas
+        if bakemaster.allow_drag_trans and attr != bakemaster.drag_data_from:
+            bpy_ops.bakemaster.walk_data_move_trans(
+                'INVOKE_DEFAULT',
+                drag_from_index=bakemaster.drag_from_index,
+                drag_to_index=bakemaster.drag_to_index)
+
+        # default move, multi selection move
         else:
-            new_index = bakemaster.drag_to_index
-
-        if self.get_containers(bakemaster) is not None:
-            data, _, attr = self.get_containers(bakemaster)
-
-            if bakemaster.allow_drag_trans:
-                # move across walk_datas
-                bpy_ops.bakemaster.walk_data_move_trans(
+            bpy_ops.bakemaster.walk_data_move(
                     'INVOKE_DEFAULT',
-                    drag_from_index=bakemaster.drag_from_index,
-                    drag_to_index=bakemaster.drag_to_index)
-
-            else:
-                move_ot = getattr(bpy_ops.bakemaster, "%s_move" % attr)
-                move_ot('INVOKE_DEFAULT', index=bakemaster.drag_from_index,
-                        new_index=new_index)
-
-                # no undo event:
-                # containers.move(bakemaster.drag_from_index, new_index)
-
-                setattr(data, "%s_active_index" % attr, new_index)
+                    index=bakemaster.drag_from_index, new_index=drag_to_index,
+                    data_name=attr,
+                    ml_drag=bakemaster.allow_multi_selection_drag)
 
         self.drag_end(bakemaster)
 
@@ -470,7 +471,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
         if all([bakemaster.allow_drag,
                 bakemaster.drag_from_index != -1,
-                bakemaster.drag_to_index != -1,
+                bakemaster.get_drag_to_index(bakemaster.walk_data_name) != -1,
                 event.type != 'NONE']):
             self.drag(bakemaster)
         elif bakemaster.allow_drag and bakemaster.drag_from_index == -1:
@@ -710,6 +711,109 @@ class BM_OT_WalkData_Trans(Operator):
 
     def draw(self, _):
         self.layout.prop(self, "use_copy")
+
+
+class BM_OT_WalkData_Move(Operator):
+    """
+    Mmove container(s) inside data. Gets called in BM_OT_UIList_Walk_Handler
+    based on walk_data identifier.
+    Exists only for the sake of a Move Undo event.
+
+    ml_drag equals to bakemaster.allow_multi_selection_drag (given to be safe
+    from event handler calls).
+
+    data_name is an identifier of walk_data with uilist walk features.
+    """
+
+    bl_idname = 'bakemaster.walk_data_move'
+    bl_label = "Move"
+    bl_description = "Move item(s) bake order up or down"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    index: IntProperty(default=-1)
+    new_index: IntProperty(default=-1)
+    data_name: StringProperty(default="")
+    ml_drag: BoolProperty(default=False)
+
+    def after_execute(self, bakemaster, data, containers, attr):
+        """
+        If inherited, overwrite this method for custom operations after
+        execute.
+        """
+
+        setattr(data, "%s_active_index" % attr, self.new_index)
+        bm_ots_utils.indexes_recalc(data, attr)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+
+        data, containers, attr = getattr(
+            bm_get, "walk_data_get_%s" % self.data_name)(bakemaster)
+
+        if data is None or any([self.index == -1, self.new_index == -1]):
+            print(f"BakeMaster Internal Error: not enough data at {self}")  # noqa: E501
+            return {'CANCELLED'}
+
+        # remove drag_empties for correct reindex
+        bm_ots_utils.disable_drag(bakemaster, data, containers, attr,
+                                  clear_selection=False)
+
+        # default one-item drag
+        if not self.ml_drag:
+            try:
+                containers[self.index]
+                containers[self.new_index]
+            except IndexError:
+                print(f"BakeMaster: Internal warning: cannot resolve container at {self}")  # noqa: E501
+                return {'CANCELLED'}
+
+            containers.move(self.index, self.new_index)
+            self.after_execute(bakemaster, data, containers, attr)
+            return {'FINISHED'}
+
+        # multi selection drag
+        active_container = getattr(bm_get, attr[:-1])(data, self.new_index)
+        if active_container is None:
+            print(f"BakeMaster: Internal warning: cannot resolve container at {self}")  # noqa: E501
+            return {'CANCELLED'}
+
+        # skip if dragged onto selection itself
+        if all([active_container.is_selected,
+                not active_container.is_drag_empty]):
+            return {'CANCELLED'}
+
+        containers_len = getattr(data, "%s_len" % attr)
+        is_index_set = False
+        step = 0
+
+        for container in containers:
+            if any([container.index == containers_len,
+                    container.is_drag_empty,
+                    container.has_drop_prompt,
+                    not container.is_selected]):
+                continue
+
+            # up
+            if self.new_index <= self.index:
+                containers.move(container.index, self.new_index + step)
+                step += 1
+                continue
+
+            # down
+            if not is_index_set:
+                self.index = container.index
+                is_index_set = True
+            elif not containers[self.index].is_selected:
+                continue
+            containers.move(self.index, self.new_index)
+
+        self.after_execute(bakemaster, data, containers, attr)
+        return {'FINISHED'}
+
+    def invoke(self, context, _):
+        if self.new_index > self.index:
+            self.new_index -= 1
+        return self.execute(context)
 
 
 class BM_OT_BakeJobs_Add(Operator):

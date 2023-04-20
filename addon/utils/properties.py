@@ -117,25 +117,55 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
         bakemaster.drag_from_index = self.index
         bakemaster.drag_data_from = walk_data
         bakemaster.drag_from_ticker = self.ticker
+
+        # Define bakemaster.allow_multi_selection_drag
+        # (if one-block selection)
+        has_selection, _ = bm_get.walk_data_multi_selection_data(
+            bakemaster, attr)
+        bakemaster.allow_multi_selection_drag = has_selection
+
+        if not has_selection:
+            return
+
+        old_selected_index = -1
+        for container in containers:
+            if any([not container.is_selected,
+                    container.is_drag_empty, container.has_drop_prompt]):
+                continue
+            if old_selected_index == -1:
+                old_selected_index = container.index
+                continue
+            if container.index != old_selected_index + 1:
+                bakemaster.allow_multi_selection_drag = False
+                break
+            old_selected_index = container.index
+
         return
 
-    # Skip when dragging to other datas
+    # Skip when dragging to invalid datas
     if any([all([not bakemaster.allow_drag_trans,
                  walk_data != bakemaster.drag_data_from]),
-            all([bakemaster.allow_drag_trans,
-                 bm_get.walk_data_child(walk_data) != bakemaster.drag_data_from
-                 ])]):
+            all([
+                bakemaster.allow_drag_trans,
+                bm_get.walk_data_child(walk_data) != bakemaster.drag_data_from,
+                not bakemaster.allow_multi_selection_drag,
+                ])]):
         return
+
+    # Skip one-block multi selection drag
+    # if bakemaster.allow_multi_selection_drag:
+    #     return
 
     # Skip trans drag to the container the containers were dragged from
     # if all([bm_get.walk_data_child(walk_data) == bakemaster.drag_data_from,
     #         self.index == getattr(data, "%s_active_index" % attr)]):
     #     return
 
-    if bakemaster.drag_to_index != -1:
-        containers[bakemaster.drag_to_index].is_drag_placeholder = False
+    drag_to_index = bakemaster.get_drag_to_index(walk_data)
+    if drag_to_index != -1:
+        containers[drag_to_index].is_drag_placeholder = False
     self.is_drag_placeholder = True
-    bakemaster.drag_to_index = self.index
+    bakemaster.set_drag_to_index(walk_data, self.index)
     bakemaster.drag_data_to = walk_data
 
     ticker_old = bakemaster.drag_from_ticker
