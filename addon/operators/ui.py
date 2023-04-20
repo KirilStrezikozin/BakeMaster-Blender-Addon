@@ -900,45 +900,6 @@ class BM_OT_BakeJobs_Remove(Operator):
         return {'FINISHED'}
 
 
-class BM_OT_BakeJobs_Move(Operator):
-    """
-    Internal Bake Jobs Move Operator to move a Bake Job container inside Bake
-    Jobs Collection. Not used in the UI but called in
-    BM_OT_UIList_Walk_Handler.
-    This Operator exists only for the sake of a Move Undo event.
-
-    Call with providing the index of the Bake Job and its new_index.
-    """
-
-    bl_idname = 'bakemaster.bakejobs_move'
-    bl_label = "Move a Bake Job (Internal)"
-    bl_description = "Move a Bake Job's bake order up or down"
-    bl_options = {'INTERNAL', 'UNDO'}
-
-    index: IntProperty(default=-1)
-    new_index: IntProperty(default=-1)
-
-    def execute(self, context):
-        bakemaster = context.scene.bakemaster
-
-        try:
-            if any([self.index == -1, self.new_index == -1]):
-                raise IndexError
-            bakemaster.bakejobs[self.index]
-            bakemaster.bakejobs[self.new_index]
-        except IndexError:
-            print("BakeMaster: Internal warning: cannot resolve Bake Job")
-            return {'CANCELLED'}
-
-        bakemaster.bakejobs.move(self.index, self.new_index)
-
-        bm_ots_utils.indexes_recalc(bakemaster, "bakejobs")
-        return {'FINISHED'}
-
-    def invoke(self, context, _):
-        return self.execute(context)
-
-
 class BM_OT_BakeJobs_AddDropped(BM_OT_Generic_AddDropped):
     """
     Internal, not used in the UI, invoked from drop_name_Update.
@@ -1306,49 +1267,6 @@ class BM_OT_Containers_Remove(Operator):
         if not bakejob.containers_active_index < bakejob.containers_len:
             bakejob.containers_active_index = bakejob.containers_len - 1
         return {'FINISHED'}
-
-
-class BM_OT_Containers_Move(Operator):
-    """
-    Internal Containers Move Operator to move an Container inside Bake Job's
-    Containers Collection. Not used in the UI but called in
-    BM_OT_UIList_Walk_Handler. This Operator exists only for the sake of a
-    Move Undo event.
-
-    Call with providing the index of the Container and its new_index.
-    """
-
-    bl_idname = 'bakemaster.containers_move'
-    bl_label = "Move an Item (Internal)"
-    bl_description = "Move Item's bake order up or down"
-    bl_options = {'INTERNAL', 'UNDO'}
-
-    index: IntProperty(default=-1)
-    new_index: IntProperty(default=-1)
-
-    def execute(self, context):
-        bakemaster = context.scene.bakemaster
-
-        bakejob = bm_get.bakejob(bakemaster)
-        if bakejob is None:
-            return {'CANCELLED'}
-
-        try:
-            if any([self.index == -1, self.new_index == -1]):
-                raise IndexError
-            bakejob.containers[self.index]
-            bakejob.containers[self.new_index]
-        except IndexError:
-            print("BakeMaster: Internal warning: cannot resolve Bake Job")
-            return {'CANCELLED'}
-
-        bakejob.containers.move(self.index, self.new_index)
-
-        bm_ots_utils.indexes_recalc(bakejob, "containers")
-        return {'FINISHED'}
-
-    def invoke(self, context, _):
-        return self.execute(context)
 
 
 class BM_OT_Containers_AddDropped(BM_OT_Generic_AddDropped):

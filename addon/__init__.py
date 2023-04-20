@@ -96,7 +96,6 @@ classes = (
 
     operators_ui.BM_OT_BakeJobs_Add,
     operators_ui.BM_OT_BakeJobs_Remove,
-    operators_ui.BM_OT_BakeJobs_Move,
     operators_ui.BM_OT_BakeJobs_AddDropped,
     operators_ui.BM_OT_BakeJobs_Trash,
     operators_ui.BM_OT_BakeJob_Rename,
@@ -105,7 +104,6 @@ classes = (
 
     operators_ui.BM_OT_Containers_Add,
     operators_ui.BM_OT_Containers_Remove,
-    operators_ui.BM_OT_Containers_Move,
     operators_ui.BM_OT_Containers_AddDropped,
     operators_ui.BM_OT_Containers_Trash,
     operators_ui.BM_OT_Container_Rename,
