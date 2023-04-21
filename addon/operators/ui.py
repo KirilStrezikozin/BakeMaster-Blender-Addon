@@ -816,6 +816,32 @@ class BM_OT_WalkData_Move(Operator):
         return self.execute(context)
 
 
+class BM_OT_UI_Prop_Relinquish(Operator):
+    bl_idname = 'bakemaster.ui_prop_relinquish'
+    bl_label = "Set similar values"
+    bl_description = "Each selected item will have the same value of this property"  # noqa: E501
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    data_name: StringProperty(default="")
+    prop_name: StringProperty(default="")
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+
+        data, _, attr = getattr(
+            bm_get, "walk_data_get_%s" % self.data_name)(bakemaster)
+        if data is None:
+            print(f"BakeMaster Internal Error: not enough data at {self}")  # noqa: E501
+            return {'CANCELLED'}
+
+        container = getattr(bm_get, attr[:-1])(data)
+        setattr(container, self.prop_name, getattr(container, self.prop_name))
+        return {'FINISHED'}
+
+    def invoke(self, context, _):
+        return self.execute(context)
+
+
 class BM_OT_BakeJobs_Add(Operator):
     bl_idname = 'bakemaster.bakejobs_add'
     bl_label = "Add"

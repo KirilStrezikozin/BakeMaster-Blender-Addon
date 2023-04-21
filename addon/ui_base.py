@@ -37,11 +37,117 @@ from .utils import (
 )
 
 
+class BM_UI_ml_draw():
+    """
+    BakeMaster custom UI props draw methods specifically for drawing props of
+    items in a multi selection.
+
+    Case 1. If no valid multi selection, default prop draw is used.
+
+    Case 2. If props of propname are equal in a multi selection, default prop
+    draw is used.
+
+    Case 3. If props of prop_name aren't equal in a multi selection, a custom
+    draw is used depending on a prop_type with an operator to
+    'relinquish' the props = make them equal as such the default
+    prop draw will be used.
+
+    Use by inheriting.
+
+    data_name is an identifier of walk_data_name for an instance.
+
+    Example:
+    ...
+
+    self.draw_prop(bakemaster, layout, "IntProperty", container, "use_bake",
+                   None, text="Bake Visibility", icon='RENDER_STILL',
+                   emboss=False)
+
+    self.draw_prop(bakemaster, layout, "Operator", None, None,
+                   "bakemaster.bakejobs_add", text="Add", icon='ADD')
+
+    ...
+    """
+
+    def draw_prop(self, bakemaster, data_name, layout, prop_type,
+                  data, property, operator, *args, **kwargs):
+
+        if data_name == "":
+            data_name = self.data_name
+
+        # Case 1
+        if data is None or any([not self.has_multi_selection(bakemaster,
+                                                             data_name),
+                                not data.is_selected]):
+            return self.default_draw_prop(layout, prop_type, data, property,
+                                          operator, *args, **kwargs)
+
+        _, containers, _ = getattr(
+            bm_get, "walk_data_get_%s" % data_name)(bakemaster)
+
+        props_equal = True
+        old_prop_val = getattr(data, property)
+        for container in containers:
+            if any([not container.is_selected, container.is_drag_empty,
+                    container.has_drop_prompt]):
+                continue
+            if getattr(container, property) != old_prop_val:
+                props_equal = False
+                break
+
+        # Case 2
+        if props_equal:
+            print("case 2")
+            return self.default_draw_prop(layout, prop_type, data, property,
+                                          operator, *args, **kwargs)
+
+        # Case 3
+        icon_value = bm_ui_utils.get_icon_id(
+            bakemaster, "bakemaster_floatingvalue.png")
+
+        if prop_type != "Operator":
+            relinquish_operator = layout.operator(
+                'bakemaster.ui_prop_relinquish', text=kwargs.get("text", ""),
+                icon_value=icon_value)
+            relinquish_operator.data_name = data_name
+            relinquish_operator.prop_name = property
+            return
+
+        if kwargs.get("icon") is not None:
+            _ = kwargs.pop("icon")
+        kwargs["icon_value"] = icon_value
+        return layout.operator(operator, *args, **kwargs)
+
+    def default_draw_prop(self, layout, prop_type, data, property, operator,
+                          *args, **kwargs):
+        if prop_type == "Operator":
+            return layout.operator(operator, *args, **kwargs)
+
+        layout.prop(data, property, *args, **kwargs)
+
+    def has_multi_selection(self, bakemaster: not None, data_name=""):
+        """
+        Return True if there is a visualized multi selection
+        in the iterable attribute of data_name name inside the given data.
+
+        If data_name is not given (empty), self.data_name will be used.
+        """
+        if data_name == "":
+            data_name = self.data_name
+
+        has_selection, _ = bm_get.walk_data_multi_selection_data(
+            bakemaster, data_name)
+        return has_selection
+
+
 class BM_PT_Helper(Panel):
     """
     BakeMaster UI Panel Helper class.
 
     data_name is an identifier of walk_data_name for this Panel instance.
+    Mandatory if a Panel will have walk_datas drawn.
+
+    Use by inheriting.
     """
 
     use_help = True  # draw help button
@@ -69,22 +175,8 @@ class BM_PT_Helper(Panel):
         row.operator('bakemaster.help', text="",
                      icon='HELP').id = self.bl_idname
 
-    def has_multi_selection(self, bakemaster: not None, data_name=""):
-        """
-        Return True if there is a visualized multi selection
-        in the iterable attribute of data_name name inside the given data.
 
-        If data_name is not given (empty), self.data_name will be used.
-        """
-        if data_name == "":
-            data_name = self.data_name
-
-        has_selection, _ = bm_get.walk_data_multi_selection_data(
-            bakemaster, data_name)
-        return has_selection
-
-
-class BM_PT_BakeJobsBase(BM_PT_Helper):
+class BM_PT_BakeJobsBase(BM_PT_Helper, BM_UI_ml_draw):
     bl_label = "Bake Jobs"
     bl_idname = 'BM_PT_BakeJobs'
 
@@ -142,7 +234,7 @@ class BM_PT_BakeJobsBase(BM_PT_Helper):
                      icon='SELECT_EXTEND')
 
 
-class BM_PT_ContainersBase(BM_PT_Helper):
+class BM_PT_ContainersBase(BM_PT_Helper, BM_UI_ml_draw):
     bl_label = " "
     bl_idname = 'BM_PT_Containers'
 
@@ -174,12 +266,15 @@ class BM_PT_ContainersBase(BM_PT_Helper):
         if bakejob.type == 'OBJECTS':
             type_icon = bm_ui_utils.get_icon_id(bakemaster,
                                                 "bakemaster_objects.png")
-            type_ot = row.operator('bakemaster.bakejob_toggletype',
-                                   text="", icon_value=type_icon)
+            type_ot = self.draw_prop(
+                bakemaster, "bakejobs", row, "Operator", bakejob, "type",
+                'bakemaster.bakejob_toggletype', text="", icon_value=type_icon)
         else:
-            type_ot = row.operator('bakemaster.bakejob_toggletype',
-                                   text="", icon='RENDERLAYERS')
-        type_ot.index = bakejob.index
+            type_ot = self.draw_prop(
+                bakemaster, "bakejobs", row, "Operator", bakejob, "type",
+                'bakemaster.bakejob_toggletype', text="", icon='RENDERLAYERS')
+        if type_ot is not None:
+            type_ot.index = bakejob.index
 
         label = "  %s" % bakejob.type.capitalize()
         row.label(text=label)
