@@ -109,7 +109,7 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
         col.prop(bakemaster, "prefs_default_bakejob_type", text="type")
 
 
-class BM_UIList_for_WalkHandler(UIList):
+class BM_WalkHandler_UIList(UIList):
     """
     UIList for BM_OT_UIList_Walk_Handler for lower cyclomatic complexity of
     UILists for walk handler that requires a bunch of checks.
@@ -353,7 +353,7 @@ class BM_UIList_for_WalkHandler(UIList):
         pass
 
 
-class BM_UL_BakeJobs(BM_UIList_for_WalkHandler):
+class BM_UL_BakeJobs(BM_WalkHandler_UIList):
     data_name = "bakejobs"
 
     def draw_props(self, context, row, data, container, icon, active_data,
@@ -375,7 +375,7 @@ class BM_UL_BakeJobs(BM_UIList_for_WalkHandler):
                            allow_drag_viz, drag_layout)
 
 
-class BM_UL_Containers(BM_UIList_for_WalkHandler):
+class BM_UL_Containers(BM_WalkHandler_UIList):
     data_name = "containers"
 
     def ticker_icon(self, context, bakemaster, container):
