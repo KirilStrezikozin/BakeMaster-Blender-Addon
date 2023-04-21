@@ -1481,23 +1481,29 @@ class BM_OT_Containers_Group(Operator):
             self.report({'INFO'}, "Select items with Shift, Ctrl to group")
             return {'CANCELLED'}
 
-        message = ""
-
         group_level = -1
         self.group_insert_index = -1
         group_continue_selection = False
         parent_group_index = -1
+        last_selected_index = -1
 
-        # TODO:
-        # cancel grouping if data hasn't got one-block selection
+        to_group = []
 
         for container in bakejob.containers:
             if container.is_drag_empty or container.has_drop_prompt:
                 continue
 
-            if container.is_selected and group_level == -1:
-                group_level = container.ui_indent_level
-                self.group_insert_index = container.index
+            if container.is_selected:
+                if group_level == -1:
+                    group_level = container.ui_indent_level
+                    self.group_insert_index = container.index
+
+                if all([container.index != last_selected_index + 1,
+                        last_selected_index != -1]):
+                    self.report({'INFO'}, "Cancelled. One-block selection in required to make a group")  # noqa: E501
+                    return {'CANCELLED'}
+
+                last_selected_index = container.index
 
             # group's selection on the initial group_level determines
             # grouping of child items
@@ -1507,20 +1513,20 @@ class BM_OT_Containers_Group(Operator):
 
             # items outside of groups are grouped if they are selected
             if container.parent_group_index == -1 and container.is_selected:
-                self.group(container, parent_group_index)
+                to_group.append([container, parent_group_index])
                 continue
             # items in groups are grouped if parent_group (on group_level)
             # is selected
             if container.parent_group_index != -1 and group_continue_selection:
-                self.group(container, parent_group_index)
+                to_group.append([container, parent_group_index])
             elif container.is_selected and parent_group_index != -1:
-                message = "To group items that are already in a group, select the group item itself"  # noqa: E501
-                # TODO: cancel grouping here completely
+                self.report({'INFO'}, "Cancelled. Select items' groups to group items on different levels")  # noqa: E501
+                return {'CANCELLED'}
+
+        [self.group(container, parent_group_index) for container,
+         parent_group_index in to_group]
 
         self.add_group_item(bakejob, group_level, parent_group_index)
-
-        if message != "":
-            self.report({'INFO'}, message)
         return {'FINISHED'}
 
 
