@@ -28,6 +28,7 @@
 # ##### END LICENSE BLOCK #####
 
 from .ui_base import (
+    BM_UI_ml_draw,
     BM_PT_BakeJobsBase,
     BM_PT_ContainersBase,
     BM_PT_BakeControlsBase,
@@ -109,7 +110,7 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
         col.prop(bakemaster, "prefs_default_bakejob_type", text="type")
 
 
-class BM_WalkHandler_UIList(UIList):
+class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
     """
     UIList for BM_OT_UIList_Walk_Handler for lower cyclomatic complexity of
     UILists for walk handler that requires a bunch of checks.
@@ -177,7 +178,8 @@ class BM_WalkHandler_UIList(UIList):
             icon = 'RESTRICT_RENDER_ON'
 
         subrow = row.row()
-        subrow.prop(container, 'use_bake', text="", icon=icon)
+        self.draw_prop(bakemaster, self.data_name, subrow, "BoolProperty",
+                       container, "use_bake", None, text="", icon=icon)
         if bakemaster.allow_drag and bakemaster.get_drag_to_index(
                 self.data_name) != -1:
             subrow.enabled = False
@@ -363,12 +365,15 @@ class BM_UL_BakeJobs(BM_WalkHandler_UIList):
         if container.type == 'OBJECTS':
             type_icon = bm_ui_utils.get_icon_id(bakemaster,
                                                 "bakemaster_objects.png")
-            type_ot = row.operator('bakemaster.bakejob_toggletype',
-                                   text="", icon_value=type_icon)
+            type_ot = self.draw_prop(
+                bakemaster, self.data_name, row, "Operator", container, "type",
+                'bakemaster.bakejob_toggletype', text="", icon_value=type_icon)
         else:
-            type_ot = row.operator('bakemaster.bakejob_toggletype',
-                                   text="", icon='RENDERLAYERS')
-        type_ot.index = container.index
+            type_ot = self.draw_prop(
+                bakemaster, self.data_name, row, "Operator", container, "type",
+                'bakemaster.bakejob_toggletype', text="", icon='RENDERLAYERS')
+        if type_ot is not None:
+            type_ot.index = container.index
 
         super().draw_props(context, row, bakemaster, container, icon,
                            active_data, active_propname, index,
@@ -417,7 +422,8 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
             row.active = False
 
         subrow = row.row()
-        subrow.prop(container, 'use_bake', text="", icon=icon)
+        self.draw_prop(bakemaster, self.data_name, subrow, "BoolProperty",
+                       container, "use_bake", None, text="", icon=icon)
         if bakemaster.allow_drag and bakemaster.get_drag_to_index(
                 self.data_name) != -1:
             subrow.enabled = False
