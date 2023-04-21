@@ -97,7 +97,6 @@ class BM_UI_ml_draw():
 
         # Case 2
         if props_equal:
-            print("case 2")
             return self.default_draw_prop(layout, prop_type, data, property,
                                           operator, *args, **kwargs)
 
