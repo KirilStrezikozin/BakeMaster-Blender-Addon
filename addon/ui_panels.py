@@ -36,6 +36,7 @@ from .ui_base import (
     BM_PT_BakeBase,
     bm_ui_utils,
     bm_get,
+    bpy_version,
 )
 from bpy.types import (
     UIList,
@@ -301,6 +302,11 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
                         active_propname, index,
                         allow_drag_viz, drag_layout)
 
+        # TODO:
+        # Group and indent visualization
+        if container.parent_group_index != -1:
+            row.label(text="      "*container.ui_indent_level + str(container.parent_group_index))
+
         ticker_icon_type, ticker_icon, _ = self.ticker_icon(
             context, bakemaster, container)
         if ticker_icon_type == 'ICON':
@@ -387,6 +393,13 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
         bakejob = bm_get.bakejob(bakemaster, container.bakejob_index)
         error_icon = bm_ui_utils.get_icon_id(bakemaster,
                                              "bakemaster_rederror.png")
+
+        if container.is_group:
+            if bpy_version > (2, 91, 0):
+                group_icon = 'OUTLINER_COLLECTION'
+            else:
+                group_icon = 'GROUP'
+            return 'ICON', group_icon, True
 
         if bakejob is None:
             return 'ICON_VALUE', error_icon, False
