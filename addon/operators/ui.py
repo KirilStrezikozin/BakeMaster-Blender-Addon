@@ -1435,9 +1435,37 @@ class BM_OT_Containers_Group(Operator):
     bl_options = {'INTERNAL', 'UNDO'}
 
     bakejob_index: IntProperty(default=-1)
+    group_insert_index = -1
 
     def invoke(self, context, _):
         return self.execute(context)
+
+    def group(self, container, parent_group_index):
+        if self.group_insert_index == -1:
+            print(f"BakeMaster Internal Warning: group_insert_index is not defined at {self}")  # noqa: E501
+            return
+
+        if parent_group_index == -1:
+            container.parent_group_index = self.group_insert_index
+        else:
+            container.parent_group_index = parent_group_index
+        container.ui_indent_level += 1
+
+    def add_group_item(self, bakejob, group_level, parent_group_index):
+        name = "Group"
+
+        new_group = bakejob.containers.add()
+        new_group.name = name
+        new_group.is_group = True
+        new_group.parent_group_index = parent_group_index
+        new_group.ui_indent_level = group_level
+
+        bakejob.containers_len += 1
+        bakejob.containers_active_index = self.group_insert_index
+
+        bakejob.containers.move(bakejob.containers_len,
+                                self.group_insert_index)
+        bm_ots_utils.indexes_recalc(bakejob, "containers")
 
     def execute(self, context):
         bakemaster = context.scene.bakemaster
@@ -1453,7 +1481,46 @@ class BM_OT_Containers_Group(Operator):
             self.report({'INFO'}, "Select items with Shift, Ctrl to group")
             return {'CANCELLED'}
 
-        self.report({'WARNING'}, "Not implemented")
+        message = ""
+
+        group_level = -1
+        self.group_insert_index = -1
+        group_continue_selection = False
+        parent_group_index = -1
+
+        # TODO:
+        # cancel grouping if data hasn't got one-block selection
+
+        for container in bakejob.containers:
+            if container.is_drag_empty or container.has_drop_prompt:
+                continue
+
+            if container.is_selected and group_level == -1:
+                group_level = container.ui_indent_level
+                self.group_insert_index = container.index
+
+            # group's selection on the initial group_level determines
+            # grouping of child items
+            if container.is_group and container.ui_indent_level == group_level:
+                group_continue_selection = container.is_selected
+                parent_group_index = container.index
+
+            # items outside of groups are grouped if they are selected
+            if container.parent_group_index == -1 and container.is_selected:
+                self.group(container, parent_group_index)
+                continue
+            # items in groups are grouped if parent_group (on group_level)
+            # is selected
+            if container.parent_group_index != -1 and group_continue_selection:
+                self.group(container, parent_group_index)
+            elif container.is_selected and parent_group_index != -1:
+                message = "To group items that are already in a group, select the group item itself"  # noqa: E501
+                # TODO: cancel grouping here completely
+
+        self.add_group_item(bakejob, group_level, parent_group_index)
+
+        if message != "":
+            self.report({'INFO'}, message)
         return {'FINISHED'}
 
 
