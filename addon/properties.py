@@ -109,6 +109,10 @@ class Subcontainer(BM_PropertyGroup_Helper):
     name: StringProperty(
         default="Map")
 
+    is_group: BoolProperty(default=False)
+    parent_group_index: IntProperty(default=-1)
+    ui_indent_level: IntProperty(default=0)
+
     ticker: BoolProperty(default=False)
     is_drag_placeholder: BoolProperty(default=False)
     is_drag_empty: BoolProperty(default=False)
@@ -129,6 +133,10 @@ class Container(BM_PropertyGroup_Helper):
 
     index: IntProperty(default=-1)
     bakejob_index: IntProperty(default=-1)
+
+    is_group: BoolProperty(default=False)
+    parent_group_index: IntProperty(default=-1)
+    ui_indent_level: IntProperty(default=0)
 
     # UI Props
 
@@ -183,6 +191,10 @@ class BakeJob(BM_PropertyGroup_Helper):
     drop_name_old: StringProperty(default="new Bake Job...")
 
     index: IntProperty(default=-1)
+
+    is_group: BoolProperty(default=False)
+    parent_group_index: IntProperty(default=-1)
+    ui_indent_level: IntProperty(default=0)
 
     # UI Props
 
