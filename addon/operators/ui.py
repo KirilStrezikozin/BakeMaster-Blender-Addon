@@ -1435,19 +1435,40 @@ class BM_OT_Containers_Group(Operator):
     bl_options = {'INTERNAL', 'UNDO'}
 
     bakejob_index: IntProperty(default=-1)
+
     group_insert_index = -1
+    last_selected_index = -1
 
     def invoke(self, context, _):
         self.group_insert_index = -1
+        self.last_selected_index = -1
         return self.execute(context)
 
-    def eval_group(self, container, s_group_level, curr_group_level,
-                   p_continue_selection):
+    def eval_group(self, bakemaster, container, s_group_level,
+                   curr_group_level, p_continue_selection):
+        if all([not container.ui_indent_level >= s_group_level,
+                container.is_selected]):
+            # don't clear selection on error
+            bakemaster.allow_drag_trans = False
+            return False, 'LEVEL_ERROR'
+
+        if container.is_selected:
+            if self.last_selected_index == -1:
+                self.last_selected_index = container.index
+            elif container.index != self.last_selected_index + 1:
+                # don't clear selection on error
+                bakemaster.allow_drag_trans = False
+                return False, 'ONEBLOCK_ERROR'
+            else:
+                self.last_selected_index = container.index
+
         if container.ui_indent_level == s_group_level:
-            return container.is_selected
+            return container.is_selected, ''
         elif all([container.ui_indent_level >= curr_group_level,
                   container.ui_indent_level >= s_group_level]):
-            return p_continue_selection
+            return p_continue_selection, ''
+
+        return False, ''
 
     def add_group_item(self, bakejob, group_level):
         name = "Group"
@@ -1498,6 +1519,11 @@ class BM_OT_Containers_Group(Operator):
             self.report({'INFO'}, "Select items with Shift, Ctrl to group")
             return {'CANCELLED'}
 
+        errors = {
+            'LEVEL_ERROR': "Cannot group with items from levels above first selected",  # noqa: E501
+            'ONEBLOCK_ERROR': "One-block selection is required to group"  # noqa: E501
+        }
+
         to_group = []
 
         s_group_level = -1  # inital grouping level
@@ -1516,15 +1542,6 @@ class BM_OT_Containers_Group(Operator):
             elif any([s_group_level == -1, self.group_insert_index == -1]):
                 continue
 
-            if all([not container.ui_indent_level >= s_group_level,
-                    container.is_selected]):
-                # don't clear selection on error
-                bakemaster.allow_drag_trans = False
-                self.report(
-                    {'INFO'},
-                    "Cannot group with items from levels above first selected")
-                return {'CANCELLED'}
-
             if container.is_group:
                 # p_group_index = container.index
                 curr_group_level = container.ui_indent_level
@@ -1536,8 +1553,13 @@ class BM_OT_Containers_Group(Operator):
                 if curr_group_level == s_group_level:
                     p_continue_selection = False
 
-            if self.eval_group(container, s_group_level, curr_group_level,
-                               p_continue_selection):
+            allow_group, error_id = self.eval_group(
+                bakemaster, container, s_group_level, curr_group_level,
+                p_continue_selection)
+            if error_id:
+                self.report({'INFO'}, errors[error_id])
+                return {'CANCELLED'}
+            elif allow_group:
                 to_group.append(container)
 
         # if self.group_insert_index == -1:
