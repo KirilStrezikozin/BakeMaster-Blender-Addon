@@ -1438,26 +1438,23 @@ class BM_OT_Containers_Group(Operator):
     group_insert_index = -1
 
     def invoke(self, context, _):
+        self.group_insert_index = -1
         return self.execute(context)
 
-    def group(self, container, parent_group_index):
-        if self.group_insert_index == -1:
-            print(f"BakeMaster Internal Warning: group_insert_index is not defined at {self}")  # noqa: E501
-            return
+    def eval_group(self, container, s_group_level, curr_group_level,
+                   p_continue_selection):
+        if container.ui_indent_level == s_group_level:
+            return container.is_selected
+        elif all([container.ui_indent_level >= curr_group_level,
+                  container.ui_indent_level >= s_group_level]):
+            return p_continue_selection
 
-        if parent_group_index == -1:
-            container.parent_group_index = self.group_insert_index
-        else:
-            container.parent_group_index = parent_group_index
-        container.ui_indent_level += 1
-
-    def add_group_item(self, bakejob, group_level, parent_group_index):
+    def add_group_item(self, bakejob, group_level):
         name = "Group"
 
         new_group = bakejob.containers.add()
         new_group.name = name
         new_group.is_group = True
-        new_group.parent_group_index = parent_group_index
         new_group.ui_indent_level = group_level
 
         bakejob.containers_len += 1
@@ -1465,7 +1462,27 @@ class BM_OT_Containers_Group(Operator):
 
         bakejob.containers.move(bakejob.containers_len,
                                 self.group_insert_index)
+
+    def group_indexes_recalc(self, bakejob, containers):
         bm_ots_utils.indexes_recalc(bakejob, "containers")
+
+        group_index = -1
+        group_level = -1
+
+        for container in containers:
+            if any([container.is_drag_empty, container.has_drop_prompt]):
+                continue
+
+            if not container.ui_indent_level >= group_level:
+                group_index, group_level = bakejob.resolve_mutual_group(
+                    containers, group_index, group_level, container.index,
+                    container.ui_indent_level)
+
+            container.parent_group_index = group_index
+            group_level = container.ui_indent_level
+
+            if container.is_group:
+                group_index = container.index
 
     def execute(self, context):
         bakemaster = context.scene.bakemaster
@@ -1481,52 +1498,57 @@ class BM_OT_Containers_Group(Operator):
             self.report({'INFO'}, "Select items with Shift, Ctrl to group")
             return {'CANCELLED'}
 
-        group_level = -1
-        self.group_insert_index = -1
-        group_continue_selection = False
-        parent_group_index = -1
-        last_selected_index = -1
-
         to_group = []
+
+        s_group_level = -1  # inital grouping level
+        # p_group_index = -1  # index of item's parent group item
+        curr_group_level = 0  # level of item's parent group item
+        p_continue_selection = False  # continue grouping child items
 
         for container in bakejob.containers:
             if container.is_drag_empty or container.has_drop_prompt:
                 continue
 
-            if container.is_selected:
-                if group_level == -1:
-                    group_level = container.ui_indent_level
-                    self.group_insert_index = container.index
-
-                if all([container.index != last_selected_index + 1,
-                        last_selected_index != -1]):
-                    self.report({'INFO'}, "Cancelled. One-block selection in required to make a group")  # noqa: E501
-                    return {'CANCELLED'}
-
-                last_selected_index = container.index
-
-            # group's selection on the initial group_level determines
-            # grouping of child items
-            if container.is_group and container.ui_indent_level == group_level:
-                group_continue_selection = container.is_selected
-                parent_group_index = container.index
-
-            # items outside of groups are grouped if they are selected
-            if container.parent_group_index == -1 and container.is_selected:
-                to_group.append([container, parent_group_index])
+            if container.is_selected and s_group_level == -1:
+                s_group_level = container.ui_indent_level
+                curr_group_level = container.ui_indent_level
+                self.group_insert_index = container.index
+            elif any([s_group_level == -1, self.group_insert_index == -1]):
                 continue
-            # items in groups are grouped if parent_group (on group_level)
-            # is selected
-            if container.parent_group_index != -1 and group_continue_selection:
-                to_group.append([container, parent_group_index])
-            elif container.is_selected and parent_group_index != -1:
-                self.report({'INFO'}, "Cancelled. Select items' groups to group items on different levels")  # noqa: E501
+
+            if all([not container.ui_indent_level >= s_group_level,
+                    container.is_selected]):
+                # don't clear selection on error
+                bakemaster.allow_drag_trans = False
+                self.report(
+                    {'INFO'},
+                    "Cannot group with items from levels above first selected")
                 return {'CANCELLED'}
 
-        [self.group(container, parent_group_index) for container,
-         parent_group_index in to_group]
+            if container.is_group:
+                # p_group_index = container.index
+                curr_group_level = container.ui_indent_level
+                if curr_group_level == s_group_level:
+                    p_continue_selection = container.is_selected
+            elif container.ui_indent_level <= curr_group_level:
+                # p_group_index = container.parent_group_index
+                curr_group_level = container.ui_indent_level
+                if curr_group_level == s_group_level:
+                    p_continue_selection = False
 
-        self.add_group_item(bakejob, group_level, parent_group_index)
+            if self.eval_group(container, s_group_level, curr_group_level,
+                               p_continue_selection):
+                to_group.append(container)
+
+        # if self.group_insert_index == -1:
+        #     print(f"BakeMaster Internal Warning: group_insert_index is not defined at {self}")  # noqa: E501
+        #     return {'CANCELLED'}
+
+        for container in to_group:
+            container.ui_indent_level += 1
+        self.add_group_item(bakejob, s_group_level)
+        self.group_indexes_recalc(bakejob, bakejob.containers)
+
         return {'FINISHED'}
 
 

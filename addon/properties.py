@@ -104,6 +104,18 @@ class BM_PropertyGroup_Helper(PropertyGroup):
             else:
                 return "objects"
 
+    def resolve_mutual_group(self, containers, gi_group_index, gi_group_level,
+                             i_index, i_group_level):
+        level_diff = abs(gi_group_level - i_group_level)
+
+        mutual = containers[gi_group_index]
+        for _ in range(level_diff - 1):
+            if mutual.parent_group_index == -1:
+                break
+            mutual = containers[mutual.parent_group_index]
+
+        return mutual.parent_group_index, mutual.ui_indent_level
+
 
 class Subcontainer(BM_PropertyGroup_Helper):
     name: StringProperty(
