@@ -93,6 +93,7 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
         bakemaster = context.scene.bakemaster
         layout = self.layout
 
+        # Help
         split = layout.split(factor=0.4)
 
         col_heading = split.column()
@@ -101,7 +102,9 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
 
         col = split.column(align=True)
         col.prop(bakemaster, "prefs_use_show_help")
+        ###
 
+        # BakeJob
         split = layout.split(factor=0.4)
 
         col_heading = split.column()
@@ -109,6 +112,22 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
         col_heading.label(text="BakeJob")
         col = split.column(align=True)
         col.prop(bakemaster, "prefs_default_bakejob_type", text="type")
+        ###
+
+        # BakeJob
+        split = layout.split(factor=0.4)
+
+        col_heading = split.column()
+        col_heading.alignment = 'RIGHT'
+        col_heading.label(text="Developer")
+        col = split.column(align=True)
+        col.prop(bakemaster, "prefs_use_developer_mode")
+        if bakemaster.prefs_use_developer_mode:
+            col.prop(bakemaster, "prefs_developer_use_console_debug")
+            col.prop(bakemaster, "prefs_developer_use_show_groups_indexes")
+            col.prop(bakemaster, "prefs_developer_ui_indent_width")
+            col.prop(bakemaster, "prefs_developer_use_prop_relinquish")
+        ###
 
 
 class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):

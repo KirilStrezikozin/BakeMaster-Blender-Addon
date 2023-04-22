@@ -370,6 +370,28 @@ class Global(BM_PropertyGroup_Helper):
         items=[('OBJECTS', "Objects", "Bake Job will contain Objects, where each of them will contain Maps to bake"),  # noqa: E501
                ('MAPS', "Maps", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for")])  # noqa: E501
 
+    prefs_use_developer_mode: BoolProperty(
+        name="Developer mode",
+        description="Toggle debugging and developer UI controls and features",
+        default=False)
+
+    prefs_developer_use_console_debug: BoolProperty(
+        name="Debug to Console",
+        description="Debug statuses, process progress, and error codes to the Console",
+        default=True)
+
+    prefs_developer_use_show_groups_indexes: BoolProperty(
+        name="Show groups indexes",
+        default=False)
+
+    prefs_developer_ui_indent_width: IntProperty(
+        name="Indent width",
+        default=8)
+
+    prefs_developer_use_prop_relinquish: BoolProperty(
+        name="'~' sign for props in multi selection",
+        default=True)
+
     # Preview Collections - Custom Icons Props
 
     preview_collections = {
