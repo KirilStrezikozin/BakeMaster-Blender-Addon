@@ -125,6 +125,15 @@ class Subcontainer(BM_PropertyGroup_Helper):
     parent_group_index: IntProperty(default=-1)
     ui_indent_level: IntProperty(default=0)
 
+    group_is_expanded: BoolProperty(
+        name="Expand/Collapse the group",
+        default=True)
+
+    group_is_dictator: BoolProperty(
+        name="Toggle Dictator Group",
+        description="If disabled, Group will be for beauty only, it won't dictate settings to its childs",
+        default=True)
+
     ticker: BoolProperty(default=False)
     is_drag_placeholder: BoolProperty(default=False)
     is_drag_empty: BoolProperty(default=False)
@@ -149,6 +158,15 @@ class Container(BM_PropertyGroup_Helper):
     is_group: BoolProperty(default=False)
     parent_group_index: IntProperty(default=-1)
     ui_indent_level: IntProperty(default=0)
+
+    group_is_expanded: BoolProperty(
+        name="Expand/Collapse the group",
+        default=True)
+
+    group_is_dictator: BoolProperty(
+        name="Toggle Dictator Group",
+        description="If disabled, Group will be for beauty only, it won't dictate settings to its childs",
+        default=True)
 
     # UI Props
 
@@ -207,6 +225,15 @@ class BakeJob(BM_PropertyGroup_Helper):
     is_group: BoolProperty(default=False)
     parent_group_index: IntProperty(default=-1)
     ui_indent_level: IntProperty(default=0)
+
+    group_is_expanded: BoolProperty(
+        name="Expand/Collapse the group",
+        default=True)
+
+    group_is_dictator: BoolProperty(
+        name="Toggle Dictator Group",
+        description="If disabled, Group will be for beauty only, it won't dictate settings to its childs",
+        default=True)
 
     # UI Props
 
@@ -386,7 +413,7 @@ class Global(BM_PropertyGroup_Helper):
 
     prefs_developer_ui_indent_width: IntProperty(
         name="Indent width",
-        default=8)
+        default=7)
 
     prefs_developer_use_prop_relinquish: BoolProperty(
         name="'~' sign for props in multi selection",
