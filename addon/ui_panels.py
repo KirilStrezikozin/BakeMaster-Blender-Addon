@@ -157,7 +157,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
 
     use_name_filter = True
 
-    def ticker_icon(self, context, bakemaster, container):
+    def ticker_icon(self, context, bakemaster, data, container):
         custom_value = None
         return None, '', custom_value
 
@@ -209,6 +209,12 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
                        active_propname, index, allow_drag_viz, drag_layout):
         pass
 
+    def draw_group_props(self, context, row, data, container, icon,
+                         active_data, active_propname, index, allow_drag_viz,
+                         drag_layout):
+        if not container.is_group:
+            return
+
     def draw_drag_empty(self, context, row, data, container, icon, active_data,
                         active_propname, index, allow_drag_viz, drag_layout):
         bakemaster = context.scene.bakemaster
@@ -253,6 +259,19 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             return True
 
         return False
+
+    def draw_indent(self, row, bakemaster, container):
+        if container.parent_group_index == -1:
+            return
+
+        native_indent = " "*bakemaster.prefs_developer_ui_indent_width
+        if bakemaster.prefs_developer_use_show_groups_indexes:
+            indent_ad_text = container.parent_group_index
+        else:
+            indent_ad_text = ""
+
+        row.label(text="%s%s" % (native_indent*container.ui_indent_level,
+                                 indent_ad_text))
 
     def draw_box_prompt(self, layout, text: str):
         old_emboss = layout.emboss
@@ -317,17 +336,27 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             layout.active = container.is_selected
             row.emboss = 'NONE'
 
-        self.draw_props(context, row, data, container, icon, active_data,
-                        active_propname, index,
-                        allow_drag_viz, drag_layout)
+        self.draw_indent(row, bakemaster, container)
 
-        # TODO:
-        # Group and indent visualization
-        if container.parent_group_index != -1:
-            row.label(text="      "*container.ui_indent_level + str(container.parent_group_index))
+        # toggle group's expand
+        if container.is_group:
+            old_emboss = row.emboss
+            row.emboss = 'NONE'
+
+            if container.group_is_expanded:
+                icon = 'DISCLOSURE_TRI_DOWN'
+            else:
+                icon = 'DISCLOSURE_TRI_RIGHT'
+
+            row.prop(container, "group_is_expanded", text="", icon=icon)
+
+            row.emboss = old_emboss
+
+        self.draw_props(context, row, data, container, icon, active_data,
+                        active_propname, index, allow_drag_viz, drag_layout)
 
         ticker_icon_type, ticker_icon, _ = self.ticker_icon(
-            context, bakemaster, container)
+            context, bakemaster, data, container)
         if ticker_icon_type == 'ICON':
             row.prop(container, "ticker", text=container.name, toggle=True,
                      icon=ticker_icon)
@@ -340,6 +369,10 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         drag_to_row_active = self.draw_trans_to_prompts(
             context, row, data, container, icon, active_data, active_propname,
             index, allow_drag_viz, drag_layout)
+
+        self.draw_group_props(context, row, data, container, icon, active_data,
+                              active_propname, index, allow_drag_viz,
+                              drag_layout)
 
         self.draw_operators(context, row, data, container, icon, active_data,
                             active_propname, index,
@@ -408,25 +441,28 @@ class BM_UL_BakeJobs(BM_WalkHandler_UIList):
 class BM_UL_Containers(BM_WalkHandler_UIList):
     data_name = "containers"
 
-    def ticker_icon(self, context, bakemaster, container):
-        bakejob = bm_get.bakejob(bakemaster, container.bakejob_index)
+    def ticker_icon(self, context, bakemaster, data, container):
         error_icon = bm_ui_utils.get_icon_id(bakemaster,
                                              "bakemaster_rederror.png")
 
         if container.is_group:
+            if any([getattr(
+                data, "%s_active_index" % self.data_name) == container.index,
+                    not container.group_is_dictator]):
+                return '', '', True
             if bpy_version > (2, 91, 0):
                 group_icon = 'OUTLINER_COLLECTION'
             else:
                 group_icon = 'GROUP'
             return 'ICON', group_icon, True
 
-        if bakejob is None:
+        if data is None:
             return 'ICON_VALUE', error_icon, False
 
-        elif bakejob.type == 'MAPS':
+        elif data.type == 'MAPS':
             return '', '', True
 
-        elif bakejob.type == 'OBJECTS':
+        elif data.type == 'OBJECTS':
             object, _, obj_icon, _, _ = bm_get.object_ui_info(
                     context.scene.objects, container.name)
 
@@ -444,7 +480,7 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
 
         # unpack third ticker_icon() return value -> container_exists
         _, _, container_exists = self.ticker_icon(context, bakemaster,
-                                                  container)
+                                                  data, container)
         row.active = container_exists
 
         if container.use_bake:
@@ -453,12 +489,27 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
             icon = 'RESTRICT_RENDER_ON'
             row.active = False
 
-        subrow = row.row()
-        self.draw_prop(bakemaster, self.data_name, subrow, "BoolProperty",
-                       container, "use_bake", None, text="", icon=icon)
-        if bakemaster.allow_drag and bakemaster.get_drag_to_index(
-                self.data_name) != -1:
-            subrow.enabled = False
+        if not container.is_group or container.group_is_dictator:
+            subrow = row.row()
+            self.draw_prop(bakemaster, self.data_name, subrow, "BoolProperty",
+                           container, "use_bake", None, text="", icon=icon)
+            if bakemaster.allow_drag and bakemaster.get_drag_to_index(
+                    self.data_name) != -1:
+                subrow.enabled = False
+
+        if container.is_group:
+            if bpy_version > (2, 91, 0):
+                group_icon = 'OUTLINER_COLLECTION'
+            else:
+                group_icon = 'GROUP'
+
+            if getattr(data,
+                       "%s_active_index" % self.data_name) == container.index:
+                subrow = row.row()
+                subrow.emboss = 'NORMAL'
+                subrow.prop(container, "group_is_dictator", text="",
+                            icon=group_icon)
+                subrow.active = row.active and container.group_is_dictator
 
 
 class BM_UL_BakeHistory(UIList):
