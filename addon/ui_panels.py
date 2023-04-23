@@ -129,6 +129,7 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
         if bakemaster.prefs_use_developer_mode:
             col.prop(bakemaster, "prefs_developer_use_console_debug")
             col.prop(bakemaster, "prefs_developer_use_show_groups_indexes")
+            col.prop(bakemaster, "prefs_use_group_descenting_lines")
             col.prop(bakemaster, "prefs_developer_ui_indent_width")
             col.prop(bakemaster, "prefs_developer_use_prop_relinquish")
         ###
@@ -277,19 +278,28 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
 
     def draw_indent(self, row, bakemaster, container):
         if container.parent_group_index == -1:
+            row.label(text=" ")
             return
-
-        spaces_before = " "*bakemaster.prefs_developer_ui_indent_width
-        spaces_after = " "*(bakemaster.prefs_developer_ui_indent_width - 3)
-        native_indent = "%s|%s " % (spaces_before, spaces_after)
 
         if bakemaster.prefs_developer_use_show_groups_indexes:
             indent_ad_text = container.parent_group_index
         else:
             indent_ad_text = ""
 
-        row.label(text="  |  %s%s" % (
-            native_indent*(container.ui_indent_level - 3),
+        if not bakemaster.prefs_use_group_descenting_lines:
+            native_indent = " "*(
+                bakemaster.prefs_developer_ui_indent_width + 6)
+
+            row.label(text=" %s%s" % (
+                native_indent*container.ui_indent_level,
+                indent_ad_text))
+            return
+
+        spaces_after = " "*bakemaster.prefs_developer_ui_indent_width
+        native_indent = "%s|%s " % ("     ", spaces_after)
+
+        row.label(text=" %s%s" % (
+            native_indent*container.ui_indent_level,
             indent_ad_text))
 
     def draw_box_prompt(self, layout, text: str):
