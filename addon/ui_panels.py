@@ -42,6 +42,10 @@ from bpy.types import (
     UIList,
     AddonPreferences,
 )
+from bpy.props import (
+    StringProperty,
+    BoolProperty,
+)
 from fnmatch import fnmatch as fnmatch
 
 bm_space_type = 'VIEW_3D'
@@ -155,7 +159,18 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
 
     data_name = ""
 
-    use_name_filter = True
+    use_filter = True
+    filter_propname = "name"
+
+    filter_name: StringProperty(
+        name="Filter by Name",
+        description="Only show items matching this name (use '*' as wildcard)",
+        default="")
+
+    use_filter_invert: BoolProperty(
+        name="Invert",
+        description="Invert filtering (show hidden items, and vice versa)",
+        default=False)
 
     def ticker_icon(self, context, bakemaster, data, container):
         custom_value = None
@@ -338,7 +353,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
 
         self.draw_indent(row, bakemaster, container)
 
-        # toggle group's expand
+        # draw group's group_is_expanded toggle
         if container.is_group:
             old_emboss = row.emboss
             row.emboss = 'NONE'
@@ -348,7 +363,11 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             else:
                 icon = 'DISCLOSURE_TRI_RIGHT'
 
-            row.prop(container, "group_is_expanded", text="", icon=icon)
+            # Groups are shown expanded when filtering on name
+            if not self.filter_name:
+                row.prop(container, "group_is_expanded", text="", icon=icon)
+            else:
+                row.label(text="", icon='DISCLOSURE_TRI_DOWN')
 
             row.emboss = old_emboss
 
@@ -389,25 +408,113 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         bakemaster = context.scene.bakemaster
         if any([all([bakemaster.allow_drag,
                      bakemaster.get_drag_to_index(self.data_name) != -1]),
-                not self.use_name_filter]):
+                not self.use_filter]):
             return
 
-        row = layout.row()
+        row = layout.row(align=True)
+        row.prop(self, "filter_name", text="")
+        row.prop(self, "use_filter_invert", text="", toggle=True,
+                 icon='ARROW_LEFTRIGHT')
 
-        subrow = row.row(align=True)
-        subrow.prop(self, "filter_name", text="")
-        subrow.prop(self, "use_filter_invert", text="", toggle=True,
-                    icon='ARROW_LEFTRIGHT')
-
-        subrow = row.row(align=True)
-        subrow.prop(self, "use_filter_sort_alpha", text="", toggle=True,
-                    icon='SORTALPHA')
-        if self.use_filter_sort_reverse:
-            icon = 'SORT_DESC'
+    def is_pattern_match(self, name, pattern, reverse=False):
+        if not reverse:
+            return fnmatch(name, "*%s*" % pattern)
         else:
-            icon = 'SORT_ASC'
-        subrow.prop(self, "use_filter_sort_reverse", text="", toggle=True,
-                    icon=icon)
+            return not fnmatch(name, "*%s*" % pattern)
+
+    def filter_items_name(self, flt_flags, containers, pattern, reverse=False):
+
+        path_cache = {}
+
+        for container in reversed(containers):
+            if any([container.is_drag_empty, container.has_drop_prompt]):
+                continue
+
+            is_match = self.is_pattern_match(
+                getattr(container, self.filter_propname), pattern, reverse)
+
+            if not any([is_match,
+                        path_cache.get(str(container.index), False)]):
+                flt_flags[container.index] &= ~self.bitflag_filter_item
+                continue
+
+            path_cache[str(container.index)] = True
+            if container.parent_group_index != -1:
+                path_cache[str(container.parent_group_index)] = True
+
+        return flt_flags
+
+    def filter_itmes_groups(self, flt_flags, containers):
+        """
+        Get flt_flags based of groups' group_is_expanded value.
+        """
+
+        last_group_is_expanded = True
+        last_ui_indent = 0
+
+        # to not resolve top parent group recursively each time
+        groups_cache = {}
+
+        # visible if parent groups are expanded
+        for container in containers:
+            if any([container.is_drag_empty, container.has_drop_prompt]):
+                continue
+
+            if container.ui_indent_level >= last_ui_indent:
+                last_ui_indent = container.ui_indent_level
+
+                if not last_group_is_expanded:
+                    flt_flags[container.index] &= ~self.bitflag_filter_item
+
+                if container.is_group:
+                    last_group_is_expanded = all([last_group_is_expanded,
+                                                  container.group_is_expanded])
+                    groups_cache[str(container.index)] = last_group_is_expanded
+                continue
+
+            last_ui_indent = container.ui_indent_level
+
+            if container.parent_group_index == -1:
+                last_group_is_expanded = True
+            else:
+                last_group_is_expanded = groups_cache[str(
+                    container.parent_group_index)]
+
+            if not last_group_is_expanded:
+                flt_flags[container.index] &= ~self.bitflag_filter_item
+
+            if container.is_group:
+                last_group_is_expanded = all([last_group_is_expanded,
+                                              container.group_is_expanded])
+                groups_cache[str(container.index)] = last_group_is_expanded
+
+        return flt_flags
+
+    def filter_items_get_flt_flags(self, data, propname, pattern,
+                                   reverse=False):
+        containers = getattr(data, propname)
+        flt_flags = [self.bitflag_filter_item] * len(containers)
+
+        if self.filter_name:
+            return self.filter_items_name(flt_flags, containers, pattern,
+                                          reverse)
+
+        return self.filter_itmes_groups(flt_flags, containers)
+
+    def filter_items(self, _, data, propname):
+        flt_flags = []
+        flt_neworder = []
+
+        if self.use_filter:
+            flt_flags = self.filter_items_get_flt_flags(
+                data, propname, self.filter_name,
+                reverse=self.use_filter_invert)
+
+        if not flt_flags:
+            flt_flags = [self.bitflag_filter_item] * getattr(
+                data, "%s_len" % propname)
+
+        return flt_flags, flt_neworder
 
     def invoke(self, context, event):
         pass
@@ -497,22 +604,39 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
                     self.data_name) != -1:
                 subrow.enabled = False
 
-        if container.is_group:
-            if bpy_version > (2, 91, 0):
-                group_icon = 'OUTLINER_COLLECTION'
-            else:
-                group_icon = 'GROUP'
+        if not container.is_group:
+            return
 
-            if getattr(data,
-                       "%s_active_index" % self.data_name) == container.index:
-                subrow = row.row()
-                subrow.emboss = 'NORMAL'
-                subrow.prop(container, "group_is_dictator", text="",
-                            icon=group_icon)
-                subrow.active = row.active and container.group_is_dictator
+        # fade out groups when filtering on name
+        if self.filter_name:
+            row.active = False or self.is_pattern_match(
+                container.name, self.filter_name, self.use_filter_invert)
+
+        if bpy_version > (2, 91, 0):
+            group_icon = 'OUTLINER_COLLECTION'
+        else:
+            group_icon = 'GROUP'
+
+        if getattr(data,
+                   "%s_active_index" % self.data_name) == container.index:
+            subrow = row.row()
+            subrow.emboss = 'NORMAL'
+            subrow.prop(container, "group_is_dictator", text="",
+                        icon=group_icon)
+            subrow.active = row.active and container.group_is_dictator
 
 
 class BM_UL_BakeHistory(UIList):
+    filter_name: StringProperty(
+        name="Filter by Name",
+        description="Only show items matching this name (use '*' as wildcard)",
+        default="")
+
+    use_filter_invert: BoolProperty(
+        name="Invert",
+        description="Invert filtering (show hidden items, and vice versa)",
+        default=False)
+
     def draw_item(self, context, layout, data, container, icon, active_data,
                   active_propname, index):
         self.use_filter_sort_reverse = True
@@ -563,7 +687,7 @@ class BM_UL_BakeHistory(UIList):
 
         return flt_flags
 
-    def filter_containers(self, _, data, propname):
+    def filter_items(self, _, data, propname):
         # Sort containers by filter_name on
         # container.name + container.timestamp combined
 
