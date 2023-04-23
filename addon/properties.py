@@ -116,6 +116,20 @@ class BM_PropertyGroup_Helper(PropertyGroup):
 
         return mutual.parent_group_index, mutual.ui_indent_level
 
+    def resolve_top_group(self, containers: not None, container=None):
+        if container is None:
+            return self.resolve_top_group(self, containers, self)
+
+        if not hasattr(self, "parent_group_index"):
+            return self
+
+        if self.parent_group_index == -1:
+            return self
+        try:
+            return containers[self.parent_group_index]
+        except IndexError:
+            return self
+
 
 class Subcontainer(BM_PropertyGroup_Helper):
     name: StringProperty(
