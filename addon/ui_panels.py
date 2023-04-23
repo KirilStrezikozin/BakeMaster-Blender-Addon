@@ -124,14 +124,19 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
         col_heading = split.column()
         col_heading.alignment = 'RIGHT'
         col_heading.label(text="Developer")
-        col = split.column(align=True)
+        col = split.column()
         col.prop(bakemaster, "prefs_use_developer_mode")
         if bakemaster.prefs_use_developer_mode:
-            col.prop(bakemaster, "prefs_developer_use_console_debug")
-            col.prop(bakemaster, "prefs_developer_use_show_groups_indexes")
-            col.prop(bakemaster, "prefs_use_group_descenting_lines")
-            col.prop(bakemaster, "prefs_developer_ui_indent_width")
+            col_aligned = col.column(align=True)
+            col_aligned.prop(
+                bakemaster, "prefs_developer_use_group_descenting_lines")
+            col_aligned.prop(
+                bakemaster, "prefs_developer_groups_descenting_lines_symbol")
+            col_aligned.prop(bakemaster, "prefs_developer_ui_indent_width")
+
             col.prop(bakemaster, "prefs_developer_use_prop_relinquish")
+            col.prop(bakemaster, "prefs_developer_use_show_groups_indexes")
+            col.prop(bakemaster, "prefs_developer_use_console_debug")
         ###
 
 
@@ -286,7 +291,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         else:
             indent_ad_text = ""
 
-        if not bakemaster.prefs_use_group_descenting_lines:
+        if not bakemaster.prefs_developer_use_group_descenting_lines:
             native_indent = " "*(
                 bakemaster.prefs_developer_ui_indent_width + 6)
 
@@ -296,7 +301,10 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             return
 
         spaces_after = " "*bakemaster.prefs_developer_ui_indent_width
-        native_indent = "%s|%s " % ("     ", spaces_after)
+        native_indent = "%s%s%s " % (
+                "     ",
+                bakemaster.prefs_developer_groups_descenting_lines_symbol,
+                spaces_after)
 
         row.label(text=" %s%s" % (
             native_indent*container.ui_indent_level,

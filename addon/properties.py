@@ -427,12 +427,17 @@ class Global(BM_PropertyGroup_Helper):
 
     prefs_developer_ui_indent_width: IntProperty(
         name="Indent width",
-        description="Indent width for items in groups. Recommended: from 1 to 4",
-        default=1)
+        description="Indent width for items in groups. Recommended: from 0 to 4",
+        default=0)
 
-    prefs_use_group_descenting_lines: BoolProperty(
+    prefs_developer_use_group_descenting_lines: BoolProperty(
         name="Descenting lines for Groups",
         default=True)
+
+    prefs_developer_groups_descenting_lines_symbol: StringProperty(
+        name="Descenting lines symbol",
+        description="Recommended: | ˙ . -",
+        default="˙")
 
     prefs_developer_use_prop_relinquish: BoolProperty(
         name="'~' sign for props in multi selection",
