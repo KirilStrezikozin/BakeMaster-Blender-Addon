@@ -427,7 +427,7 @@ class Global(BM_PropertyGroup_Helper):
 
     prefs_developer_ui_indent_width: IntProperty(
         name="Indent width",
-        default=7)
+        default=4)
 
     prefs_developer_use_prop_relinquish: BoolProperty(
         name="'~' sign for props in multi selection",

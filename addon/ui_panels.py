@@ -279,14 +279,18 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         if container.parent_group_index == -1:
             return
 
-        native_indent = " "*bakemaster.prefs_developer_ui_indent_width
+        spaces_before = " "*bakemaster.prefs_developer_ui_indent_width
+        spaces_after = " "*(bakemaster.prefs_developer_ui_indent_width - 3)
+        native_indent = "%s|%s " % (spaces_before, spaces_after)
+
         if bakemaster.prefs_developer_use_show_groups_indexes:
             indent_ad_text = container.parent_group_index
         else:
             indent_ad_text = ""
 
-        row.label(text="%s%s" % (native_indent*container.ui_indent_level,
-                                 indent_ad_text))
+        row.label(text="  |  %s%s" % (
+            native_indent*(container.ui_indent_level - 3),
+            indent_ad_text))
 
     def draw_box_prompt(self, layout, text: str):
         old_emboss = layout.emboss
@@ -370,6 +374,9 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
                 row.label(text="", icon='DISCLOSURE_TRI_DOWN')
 
             row.emboss = old_emboss
+
+        row = row.row()
+        row.alignment = 'LEFT'
 
         self.draw_props(context, row, data, container, icon, active_data,
                         active_propname, index, allow_drag_viz, drag_layout)
