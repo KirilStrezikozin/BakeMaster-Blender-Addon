@@ -1574,6 +1574,110 @@ class BM_OT_Containers_Group(Operator):
         return {'FINISHED'}
 
 
+class BM_OT_Containers_Ungroup(Operator):
+    bl_idname = "bakemaster.containers_ungroup"
+    bl_label = "Ungroup"
+    bl_description = "Ungroup selected items"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    bakejob_index: IntProperty(default=-1)
+    container_index: IntProperty(default=-1)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+
+        bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
+        active_container = bm_get.container(bakejob, self.container_index)
+        if bakejob is None or active_container is None:
+            return {'CANCELLED'}
+
+        has_selection, _ = bm_get.walk_data_multi_selection_data(
+            bakemaster, "containers")
+
+        if not has_selection and not active_container.is_group:
+            self.report({'INFO'}, "Select at least one group to ungroup")
+            return {'CANCELLED'}
+
+        errors = {
+            'LEVEL_ERROR': "Cannot ungroup items from levels above first selected",  # noqa: E501
+            'ONEBLOCK_ERROR': "One-block selection is required to ungroup"  # noqa: E501
+        }
+
+        s_ungroup_level = -1  # inital ungrouping level
+        s_group_index = -1  # parent group index on s_ungroup_level level
+        last_selected_index = -1
+
+        to_ungroup = []
+        to_remove = []
+
+        for container in bakejob.containers:
+            if container.is_drag_empty or container.has_drop_prompt:
+                continue
+
+            if all([s_ungroup_level == -1,
+                    has_selection, container.is_selected]):
+                s_ungroup_level = container.ui_indent_level
+            elif all([s_ungroup_level == -1, not has_selection,
+                      container.index == self.container_index]):
+                s_ungroup_level = container.ui_indent_level
+                s_group_index = container.index
+            elif s_ungroup_level == -1:
+                continue
+
+            # check one-block selection
+            if has_selection and container.is_selected:
+                if all([last_selected_index != -1,
+                        container.index != last_selected_index + 1]):
+                    self.report({'INFO'}, errors['ONEBLOCK_ERROR'])
+                    return {'CANCELLED'}
+                elif container.ui_indent_level < s_ungroup_level:
+                    self.report({'INFO'}, errors['LEVEL_ERROR'])
+                    return {'CANCELLED'}
+                last_selected_index = container.index
+
+            # check no more to ungroup
+            selection_passed = all(
+                [has_selection, not container.is_selected,
+                 container.ui_indent_level <= s_ungroup_level])
+            active_container_passed = all(
+                [not has_selection,
+                 container.ui_indent_level <= s_ungroup_level,
+                 any([
+                     all([container.is_group,
+                          container.index != s_group_index]),
+                     all([not container.is_group,
+                          container.parent_group_index != s_group_index])
+                     ])
+                 ])
+            if selection_passed or active_container_passed:
+                break
+
+            if container.is_group:
+                to_remove.append(container.index)
+                continue
+            to_ungroup.append(container)
+
+        for container in to_ungroup:
+            container.ui_indent_level = s_ungroup_level
+
+        bakejob.containers_len -= len(to_remove)
+
+        for index in reversed(to_remove):
+            bakejob.containers.remove(index)
+
+        bm_ots_utils.indexes_recalc(bakejob, "containers")
+
+        if not bakejob.containers_active_index < bakejob.containers_len:
+            bakejob.containers_active_index = bakejob.containers_len - 1
+
+        self.report({'WARNING'},
+                    "Not implemented copy settings, set parent_group_index")
+        return {'FINISHED'}
+
+    def invoke(self, context, _):
+        return self.execute(context)
+
+
 class BM_OT_FileChooseDialog(Operator, ImportHelper):
     bl_idname = 'bakemaster.filechoosedialog'
     bl_label = "Choose a filepath"
