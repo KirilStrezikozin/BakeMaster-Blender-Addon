@@ -1428,6 +1428,32 @@ class BM_OT_Container_Rename(Operator):
         layout.prop(self, "name")
 
 
+class BM_OT_Containers_GroupToggleExpand(Operator):
+    """
+    For no Undo event when group_is_expanded value has changed.
+    """
+
+    bl_idname = "bakemaster.containers_grouptoggleexpand"
+    bl_label = "Expand/Collapse"
+    bl_options = {'INTERNAL'}
+
+    bakejob_index: IntProperty(default=-1)
+    container_index: IntProperty(default=-1)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+        bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
+        container = bm_get.container(bakejob, self.container_index)
+        if bakejob is None or container is None:
+            return {'CANCELLED'}
+
+        container.group_is_expanded = not container.group_is_expanded
+        return {'FINISHED'}
+
+    def invoke(self, context, _):
+        return self.execute(context)
+
+
 class BM_OT_Containers_Group(Operator):
     bl_idname = "bakemaster.containers_group"
     bl_label = "Group"
@@ -1583,6 +1609,7 @@ class BM_OT_Containers_Ungroup(Operator):
     bakejob_index: IntProperty(default=-1)
     container_index: IntProperty(default=-1)
 
+    # TODOs in commit 84fdd746ab085bd87c6e689d76370d58a45fa34d
     def execute(self, context):
         bakemaster = context.scene.bakemaster
 

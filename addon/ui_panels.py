@@ -388,7 +388,16 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
 
             # Groups are shown expanded when filtering on name
             if not self.filter_name:
-                row.prop(container, "group_is_expanded", text="", icon=icon)
+                group_toggle_expand_ot = row.operator(
+                    "bakemaster.containers_grouptoggleexpand", text="",
+                    icon=icon)
+                parent_index_name = "%s_index" % bm_get.walk_data_parent(
+                    self.data_name)[:-1]
+                container_index_name = "%s_index" % self.data_name[:-1]
+                setattr(group_toggle_expand_ot, parent_index_name,
+                        getattr(container, parent_index_name))
+                setattr(group_toggle_expand_ot, container_index_name,
+                        container.index)
             else:
                 row.label(text="", icon='DISCLOSURE_TRI_DOWN')
 
