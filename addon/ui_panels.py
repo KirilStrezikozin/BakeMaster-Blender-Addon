@@ -27,6 +27,7 @@
 #
 # ##### END LICENSE BLOCK #####
 
+from bpy.app import version as bpy_version
 from .ui_base import (
     BM_UI_ml_draw,
     BM_PT_BakeJobsBase,
@@ -36,7 +37,6 @@ from .ui_base import (
     BM_PT_BakeBase,
     bm_ui_utils,
     bm_get,
-    bpy_version,
 )
 from bpy.types import (
     UIList,
@@ -209,7 +209,8 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         return False, ''
 
     def draw_props(self, context, row, data, container, icon, active_data,
-                   active_propname, index, allow_drag_viz, drag_layout):
+                   active_propname, index, allow_multi_select_viz,
+                   allow_drag_viz, drag_layout):
         bakemaster = context.scene.bakemaster
         row.emboss = 'NONE'
 
@@ -283,7 +284,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
 
     def draw_indent(self, row, bakemaster, container):
         if container.parent_group_index == -1:
-            row.label(text=" ")
+            row.label(text=" ")
             return
 
         if bakemaster.prefs_developer_use_show_groups_indexes:
@@ -397,7 +398,8 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         row.alignment = 'LEFT'
 
         self.draw_props(context, row, data, container, icon, active_data,
-                        active_propname, index, allow_drag_viz, drag_layout)
+                        active_propname, index, allow_multi_select_viz,
+                        allow_drag_viz, drag_layout)
 
         ticker_icon_type, ticker_icon, _ = self.ticker_icon(
             context, bakemaster, data, container)
@@ -549,7 +551,8 @@ class BM_UL_BakeJobs(BM_WalkHandler_UIList):
     data_name = "bakejobs"
 
     def draw_props(self, context, row, data, container, icon, active_data,
-                   active_propname, index, allow_drag_viz, drag_layout):
+                   active_propname, index, allow_multi_select_viz,
+                   allow_drag_viz, drag_layout):
         bakemaster = context.scene.bakemaster
 
         if container.type == 'OBJECTS':
@@ -567,7 +570,7 @@ class BM_UL_BakeJobs(BM_WalkHandler_UIList):
 
         super().draw_props(context, row, bakemaster, container, icon,
                            active_data, active_propname, index,
-                           allow_drag_viz, drag_layout)
+                           allow_multi_select_viz, allow_drag_viz, drag_layout)
 
 
 class BM_UL_Containers(BM_WalkHandler_UIList):
@@ -606,7 +609,8 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
         return 'ICON_VALUE', error_icon, False
 
     def draw_props(self, context, row, data, container, icon, active_data,
-                   active_propname, index, allow_drag_viz, drag_layout):
+                   active_propname, index, allow_multi_select_viz,
+                   allow_drag_viz, drag_layout):
         bakemaster = context.scene.bakemaster
         row.emboss = 'NONE'
 
@@ -645,7 +649,11 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
         if getattr(data,
                    "%s_active_index" % self.data_name) == container.index:
             subrow = row.row()
-            subrow.emboss = 'NORMAL'
+
+            if allow_multi_select_viz:
+                subrow.emboss = 'NONE'
+            else:
+                subrow.emboss = 'NORMAL'
             subrow.prop(container, "group_is_dictator", text="",
                         icon=group_icon)
             subrow.active = row.active and container.group_is_dictator
