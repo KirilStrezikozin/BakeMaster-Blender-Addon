@@ -27,7 +27,6 @@
 #
 # ##### END LICENSE BLOCK #####
 
-from bpy.app import version as bpy_version
 from bpy.types import (
     Panel,
 )
@@ -324,16 +323,29 @@ class BM_PT_ContainersBase(BM_PT_Helper, BM_UI_ml_draw):
             col.separator(factor=1.0)
             col.operator('bakemaster.containers_trash', text="", icon='TRASH')
 
-        if ml_rows == 0:
+        container = bm_get.container(bakejob)
+        if container is None:
             return
-        col.separator(factor=1.0)
-        col.emboss = 'NORMAL'
 
-        if bpy_version > (2, 91, 0):
-            icon = 'OUTLINER_COLLECTION'
-        else:
-            icon = 'GROUP'
-        col.operator('bakemaster.containers_group', text="", icon=icon)
+        if ml_rows != 0 or container.is_group:
+            col.separator(factor=1.0)
+            subcol = col.column(align=True)
+            subcol.emboss = 'NORMAL'
+
+            if ml_rows != 0:
+                icon_value = bm_ui_utils.get_icon_id(bakemaster,
+                                                     "bakemaster_group.png")
+                group_ot = subcol.operator('bakemaster.containers_group',
+                                           text="", icon_value=icon_value)
+                group_ot.bakejob_index = bakejob.index
+
+            if container.is_group or ml_rows != 0:
+                icon_value = bm_ui_utils.get_icon_id(bakemaster,
+                                                     "bakemaster_ungroup.png")
+                ungroup_ot = subcol.operator('bakemaster.containers_ungroup',
+                                             text="", icon_value=icon_value)
+                ungroup_ot.bakejob_index = bakejob.index
+                ungroup_ot.container_index = bakejob.containers_active_index
 
 
 class BM_PT_BakeBase(BM_PT_Helper):
