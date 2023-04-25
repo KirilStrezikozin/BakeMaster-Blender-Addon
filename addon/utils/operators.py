@@ -109,6 +109,12 @@ def disable_drag(bakemaster, data, containers, attr, clear_selection=True):
 
 def indexes_recalc(data, items_name: str, childs_recursive=True,
                    parent_props=[]):
+    """
+    Recalculate items' indexes.
+    Continues recalculating childs' indexes recursively and updating childs'
+    pointers to parent indexes.
+    """
+
     child = {
         "bakejobs": "containers",
         "containers": "subcontainers",
@@ -136,10 +142,67 @@ def indexes_recalc(data, items_name: str, childs_recursive=True,
         index += 1
 
 
-def copy(item_from, data_to, to_index=-1):
+def group_indexes_recalc(data, items_name):
+    """
+    Recalculate items' p_group_index property value based on
+    items' ui_indent_level.
+    """
+
+    group_index = -1
+    group_level = -1
+    containers = getattr(data, items_name)
+
+    for container in containers:
+        if any([container.is_drag_empty, container.has_drop_prompt]):
+            continue
+
+        if not container.ui_indent_level >= group_level:
+            group_index, group_level = data.resolve_mutual_group(
+                containers, group_index, group_level, container.index,
+                container.ui_indent_level)
+
+        container.parent_group_index = group_index
+        group_level = container.ui_indent_level
+
+        if container.is_group:
+            group_index = container.index
+
+
+def copy(item_from, data_to, to_index=-1, exclude={}):
     """
     Copy item_from data-block to item of to_index in iterable data_to.
     If to_index is not given, a new data-block will be instanced.
+
+    Provide exclude{} dictionary with names of attrs to exclude.
+    Example (use when copying settings from parent group,
+    parent_group_index and ui_indent_level excluded by default):
+        {
+            "name": True,
+            "index": True,
+            "bakejob_index": True,
+            "is_group": True,
+            "group_is_expanded": True,
+            "group_is_dictator": True
+        }
+    Default exlude{} is:
+        {
+            "__annotations__": True,
+            "__doc__": True,
+            "__module__": True,
+            "bl_rna": True,
+            "id_data": True,
+            "rna_type": True,
+            "drop_name": True,
+            "drop_name_old": True,
+            "parent_group_index": True,
+            "ui_indent_level": True,
+            "has_drag_prompt": True,
+            "has_drop_prompt": True,
+            "is_drag_empty": True,
+            "is_drag_placeholder": True,
+            "ticker": True,
+            "is_selected": True
+        }
 
     Used with containers, subcontainers.
     """
@@ -150,16 +213,17 @@ def copy(item_from, data_to, to_index=-1):
         "__module__": True,
         "bl_rna": True,
         "id_data": True,
+        "rna_type": True,
         "drop_name": True,
         "drop_name_old": True,
+        "parent_group_index": True,
+        "ui_indent_level": True,
         "has_drag_prompt": True,
         "has_drop_prompt": True,
+        "is_drag_empty": True,
         "is_drag_placeholder": True,
-        "is_selected": True,
-        "parent_group_index": True,
-        "rna_type": True,
         "ticker": True,
-        "ui_indent_level": True
+        "is_selected": True
     }
 
     data_attrs = {
@@ -174,7 +238,7 @@ def copy(item_from, data_to, to_index=-1):
         item_to = data_to.add()
 
     for attr in dir(item_from):
-        if exclude_attrs.get(attr, False):
+        if exclude_attrs.get(attr, False) or exclude.get(attr, False):
             continue
 
         if not data_attrs.get(attr, False):

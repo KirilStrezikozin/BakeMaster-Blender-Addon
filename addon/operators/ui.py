@@ -1456,6 +1456,12 @@ class BM_OT_Containers_Group(Operator):
     bl_description = "Group selected items"
     bl_options = {'INTERNAL', 'UNDO'}
 
+    # NOTE:
+    # Added group item has no copy attrs call. Settings viz is carried out in
+    # the UI. If group is dictator, draw its settings, else draw nothing.
+    # For items in groups, if item is in dictator group, draw group's settings,
+    # else draw item's settings.
+
     bakejob_index: IntProperty(default=-1)
 
     group_insert_index = -1
@@ -1509,27 +1515,6 @@ class BM_OT_Containers_Group(Operator):
 
         bakejob.containers.move(bakejob.containers_len,
                                 self.group_insert_index)
-
-    def group_indexes_recalc(self, bakejob, containers):
-        bm_ots_utils.indexes_recalc(bakejob, "containers")
-
-        group_index = -1
-        group_level = -1
-
-        for container in containers:
-            if any([container.is_drag_empty, container.has_drop_prompt]):
-                continue
-
-            if not container.ui_indent_level >= group_level:
-                group_index, group_level = bakejob.resolve_mutual_group(
-                    containers, group_index, group_level, container.index,
-                    container.ui_indent_level)
-
-            container.parent_group_index = group_index
-            group_level = container.ui_indent_level
-
-            if container.is_group:
-                group_index = container.index
 
     def execute(self, context):
         bakemaster = context.scene.bakemaster
@@ -1592,8 +1577,9 @@ class BM_OT_Containers_Group(Operator):
         for container in to_group:
             container.ui_indent_level += 1
         self.add_group_item(bakejob, s_group_level)
-        self.group_indexes_recalc(bakejob, bakejob.containers)
 
+        bm_ots_utils.indexes_recalc(bakejob, "containers")
+        bm_ots_utils.group_indexes_recalc(bakejob, "containers")
         return {'FINISHED'}
 
 
@@ -1606,7 +1592,66 @@ class BM_OT_Containers_Ungroup(Operator):
     bakejob_index: IntProperty(default=-1)
     container_index: IntProperty(default=-1)
 
-    # TODOs in commit 84fdd746ab085bd87c6e689d76370d58a45fa34d
+    s_ungroup_level = -1  # inital ungrouping level
+    is_new_active_index_set = False  # assign active_index to first ungrouped
+
+    def ungroup(self, bakejob, container):
+        if self.s_ungroup_level == -1:
+            print(f"BakeMaster Internal Error: self.s_ungroup_level isn't assigned at {self}")  # noqa: E501
+        container.ui_indent_level = self.s_ungroup_level
+
+        if not self.is_new_active_index_set:
+            bakejob.containers_active_index = container.index
+            self.is_new_active_index_set = True
+
+        if container.parent_group_index == -1:
+            return
+
+        # if parent group is dictator, copy settings from it,
+        # else do not copy anything.
+        parent_container = bakejob.containers[container.parent_group_index]
+        if not parent_container.group_is_dictator:
+            return
+
+        exclude_copy = {
+            "name": True,
+            "index": True,
+            "bakejob_index": True,
+            "is_group": True,
+            "group_is_expanded": True,
+            "group_is_dictator": True
+        }
+        _ = bm_ots_utils.copy(parent_container, bakejob.containers,
+                              container.index, exclude_copy)
+
+    def ungroup_has_selection_errors(self, has_selection, container,
+                                     last_selected_index):
+        if not all([has_selection and container.is_selected]):
+            return last_selected_index, ''
+
+        if all([last_selected_index != -1,
+                container.index != last_selected_index + 1]):
+            return last_selected_index, 'ONEBLOCK_ERROR'
+        elif container.ui_indent_level < self.s_ungroup_level:
+            return last_selected_index, 'LEVEL_ERROR'
+        return container.index, False
+
+    def ungroup_is_finished(self, has_selection, container, f_group_index):
+        selection_passed = all(
+            [has_selection, not container.is_selected,
+             container.ui_indent_level <= self.s_ungroup_level])
+        active_container_passed = all(
+            [not has_selection,
+             container.ui_indent_level <= self.s_ungroup_level,
+             any([
+                 all([container.is_group,
+                      container.index != f_group_index]),
+                 all([not container.is_group,
+                      container.parent_group_index != f_group_index])
+                 ])
+             ])
+        return selection_passed or active_container_passed
+
     def execute(self, context):
         bakemaster = context.scene.bakemaster
 
@@ -1627,8 +1672,8 @@ class BM_OT_Containers_Ungroup(Operator):
             'ONEBLOCK_ERROR': "One-block selection is required to ungroup"  # noqa: E501
         }
 
-        s_ungroup_level = -1  # inital ungrouping level
-        s_group_index = -1  # parent group index on s_ungroup_level level
+        # when not has_selection, index of first group on self.s_ungroup_level:
+        f_group_index = -1
         last_selected_index = -1
 
         to_ungroup = []
@@ -1638,42 +1683,26 @@ class BM_OT_Containers_Ungroup(Operator):
             if container.is_drag_empty or container.has_drop_prompt:
                 continue
 
-            if all([s_ungroup_level == -1,
+            if all([self.s_ungroup_level == -1,
                     has_selection, container.is_selected]):
-                s_ungroup_level = container.ui_indent_level
-            elif all([s_ungroup_level == -1, not has_selection,
+                self.s_ungroup_level = container.ui_indent_level
+            elif all([self.s_ungroup_level == -1, not has_selection,
                       container.index == self.container_index]):
-                s_ungroup_level = container.ui_indent_level
-                s_group_index = container.index
-            elif s_ungroup_level == -1:
+                self.s_ungroup_level = container.ui_indent_level
+                f_group_index = container.index
+            elif self.s_ungroup_level == -1:
                 continue
 
-            # check one-block selection
-            if has_selection and container.is_selected:
-                if all([last_selected_index != -1,
-                        container.index != last_selected_index + 1]):
-                    self.report({'INFO'}, errors['ONEBLOCK_ERROR'])
-                    return {'CANCELLED'}
-                elif container.ui_indent_level < s_ungroup_level:
-                    self.report({'INFO'}, errors['LEVEL_ERROR'])
-                    return {'CANCELLED'}
-                last_selected_index = container.index
+            # check oselection
+            last_selected_index, error_id = self.ungroup_has_selection_errors(
+                has_selection, container, last_selected_index)
+            if error_id != '':
+                self.report({'INFO'}, errors[error_id])
+                return {'CANCELLED'}
 
             # check no more to ungroup
-            selection_passed = all(
-                [has_selection, not container.is_selected,
-                 container.ui_indent_level <= s_ungroup_level])
-            active_container_passed = all(
-                [not has_selection,
-                 container.ui_indent_level <= s_ungroup_level,
-                 any([
-                     all([container.is_group,
-                          container.index != s_group_index]),
-                     all([not container.is_group,
-                          container.parent_group_index != s_group_index])
-                     ])
-                 ])
-            if selection_passed or active_container_passed:
+            if self.ungroup_is_finished(has_selection, container,
+                                        f_group_index):
                 break
 
             if container.is_group:
@@ -1682,23 +1711,18 @@ class BM_OT_Containers_Ungroup(Operator):
             to_ungroup.append(container)
 
         for container in to_ungroup:
-            container.ui_indent_level = s_ungroup_level
-
-        bakejob.containers_len -= len(to_remove)
+            self.ungroup(bakejob, container)
 
         for index in reversed(to_remove):
             bakejob.containers.remove(index)
+        bakejob.containers_len -= len(to_remove)
 
         bm_ots_utils.indexes_recalc(bakejob, "containers")
-
-        if not bakejob.containers_active_index < bakejob.containers_len:
-            bakejob.containers_active_index = bakejob.containers_len - 1
-
-        self.report({'WARNING'},
-                    "Not implemented copy settings, set parent_group_index")
+        bm_ots_utils.group_indexes_recalc(bakejob, "containers")
         return {'FINISHED'}
 
     def invoke(self, context, _):
+        self.s_ungroup_level = -1
         return self.execute(context)
 
 
