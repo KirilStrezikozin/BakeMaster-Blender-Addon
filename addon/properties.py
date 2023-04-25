@@ -89,16 +89,17 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         if data_name == "bakejobs":
             return "bakejobs"
 
-        if data_name == "containers":
+        if hasattr(self, "bakejob_index"):
+            bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
+        else:
             bakejob = bm_get.bakejob(bakemaster, self.index)
-            if bakejob is None:
-                return "none"
-            return bakejob.type
+        if bakejob is None:
+            return "none"
+
+        if data_name == "containers":
+            return bakejob.type.lower()
 
         elif data_name == "subcontainers":
-            bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
-            if bakejob is None:
-                return "none"
             if bakejob.type == 'OBJECTS':
                 return "maps"
             else:
