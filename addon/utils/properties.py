@@ -388,6 +388,10 @@ def Container_ticker_Update(self, context):
     Generic_ticker_Update(self, context, walk_data="containers",
                           double_click_ot_idname="container_rename")
 
+
+def Subcontainer_ticker_Update(self, context):
+    Generic_ticker_Update(self, context, walk_data="subcontainers")
+
 # UI Props' Updates
 
 

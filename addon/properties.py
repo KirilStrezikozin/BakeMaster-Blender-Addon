@@ -153,10 +153,21 @@ class Subcontainer(BM_PropertyGroup_Helper):
         description="If disabled, Group will be for beauty only, it won't dictate settings to its childs",
         default=True)
 
-    ticker: BoolProperty(default=False)
-    is_drag_placeholder: BoolProperty(default=False)
-    is_drag_empty: BoolProperty(default=False)
+    # UIList Walk Handler Props
+
     has_drop_prompt: BoolProperty(default=False)
+    has_drag_prompt: BoolProperty(default=False)
+
+    ticker: BoolProperty(
+        name="Item",
+        description="Double click to change.\nPress and drag to move.\nUse Shift, Ctrl to select multiple",  # noqa: E501
+        default=False,
+        update=bm_props_utils.Subcontainer_ticker_Update)
+
+    is_drag_empty: BoolProperty(default=False)
+    is_drag_placeholder: BoolProperty(default=False)
+
+    is_selected: BoolProperty(default=True)
 
 
 class Container(BM_PropertyGroup_Helper):
