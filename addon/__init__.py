@@ -112,6 +112,8 @@ classes = (
     operators_ui.BM_OT_Containers_Group,
     operators_ui.BM_OT_Containers_Ungroup,
 
+    operators_ui.BM_OT_Subcontainers_Trash,
+
     operators_ui.BM_OT_FileChooseDialog,
     operators_ui.BM_OT_Setup,
     operators_ui.BM_OT_Config,

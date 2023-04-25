@@ -136,6 +136,10 @@ class Subcontainer(BM_PropertyGroup_Helper):
     name: StringProperty(
         default="Map")
 
+    index: IntProperty(default=-1)
+    container_index: IntProperty(default=-1)
+    bakejob_index: IntProperty(default=-1)
+
     is_group: BoolProperty(default=False)
     parent_group_index: IntProperty(default=-1)
     ui_indent_level: IntProperty(default=0)

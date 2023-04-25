@@ -27,6 +27,7 @@
 #
 # ##### END LICENSE BLOCK #####
 
+from bpy import ops as bpy_ops
 from numpy import (
     array as numpy_array,
     isin as numpy_isin,
@@ -178,19 +179,3 @@ def object_ui_info(objects, name: str):
             return None, '', '', 'NOIMAGE', errors['NOIMAGE']
 
     return object, object.type, info[object.type], None, ""
-
-
-def data_attrs(data, exclude=None):
-    if exclude is None:
-        exclude = [
-            "__annotations__",
-            "__doc__",
-            "__module__",
-            "bl_rna",
-            "rna_type",
-            "id_data"
-        ]
-    mask = numpy_array(exclude)
-    attrs = numpy_array(dir(data))
-
-    return attrs[~numpy_isin(attrs, mask)]

@@ -321,7 +321,9 @@ class BM_PT_ContainersBase(BM_PT_Helper, BM_UI_ml_draw):
         col.emboss = 'NONE'
         if bakejob.containers_len > 1:
             col.separator(factor=1.0)
-            col.operator('bakemaster.containers_trash', text="", icon='TRASH')
+            trash_ot = col.operator('bakemaster.containers_trash', text="",
+                                    icon='TRASH')
+            trash_ot.bakejob_index = bakejob.index
 
         container = bm_get.container(bakejob)
         if container is None:

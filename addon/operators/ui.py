@@ -667,19 +667,13 @@ class BM_OT_WalkData_Trans(Operator):
                     container_from.has_drop_prompt]):
                 continue
 
-            new_container = destination_containers.add()
             # add_ot('INVOKE_DEFAULT')
             # new_container = destination_containers[:-1]
+            new_container = bm_ots_utils.copy(container_from,
+                                              destination_containers)
             setattr(destination_data, "%s_len" % bakemaster.drag_data_from,
                     getattr(destination_data,
                             "%s_len" % bakemaster.drag_data_from) + 1)
-
-            attrs = bm_get.data_attrs(container_from)
-            for attr in attrs:
-                try:
-                    setattr(new_container, attr, getattr(container_from, attr))
-                except (AttributeError, IndexError, TypeError, ValueError):
-                    pass
 
             new_container.is_drag_empty = False
             new_container.has_drop_prompt = False
@@ -687,9 +681,9 @@ class BM_OT_WalkData_Trans(Operator):
             if not self.use_copy:
                 to_remove.append(index)
 
+        remove_ot = getattr(bpy_ops.bakemaster,
+                            "%s_remove" % bakemaster.drag_data_from)
         for index in reversed(to_remove):
-            remove_ot = getattr(bpy_ops.bakemaster,
-                                "%s_remove" % bakemaster.drag_data_from)
             remove_ot('INVOKE_DEFAULT', index=index)
 
         bm_ots_utils.disable_drag(bakemaster, destination_data,
@@ -1346,13 +1340,15 @@ class BM_OT_Containers_Trash(Operator):
     bl_description = "Remove all Items from the list on the left"
     bl_options = {'INTERNAL', 'UNDO'}
 
+    bakejob_index: IntProperty(default=-1)
+
     def invoke(self, context, _):
         return self.execute(context)
 
     def execute(self, context):
         bakemaster = context.scene.bakemaster
 
-        bakejob = bm_get.bakejob(bakemaster)
+        bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
         if bakejob is None:
             return {'CANCELLED'}
 
@@ -1703,6 +1699,39 @@ class BM_OT_Containers_Ungroup(Operator):
 
     def invoke(self, context, _):
         return self.execute(context)
+
+
+class BM_OT_Subcontainers_Trash(Operator):
+    bl_idname = 'bakemaster.subcontainers_trash'
+    bl_label = "Trash"
+    bl_description = "Remove all Items from the list on the left"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    bakejob_index: IntProperty(default=-1)
+    container_index: IntProperty(default=-1)
+
+    def invoke(self, context, _):
+        return self.execute(context)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+
+        bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
+        container = bm_get.container(bakejob, self.container_index)
+        if bakejob is None or container is None:
+            return {'CANCELLED'}
+
+        # reduce flicker and hidden containers on add (uilist mess)
+        bm_ots_utils.disable_drag(bakemaster, container,
+                                  container.subcontainers, "subcontainers")
+
+        [container.subcontainers.remove(index) for index in
+         reversed(range(container.subcontainers_len))]
+        container.subcontainers_active_index = -1
+        container.subcontainers_len = 0
+
+        bm_ots_utils.indexes_recalc(container, "subcontainers")
+        return {'FINISHED'}
 
 
 class BM_OT_FileChooseDialog(Operator, ImportHelper):

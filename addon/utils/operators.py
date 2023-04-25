@@ -29,6 +29,8 @@
 
 from datetime import datetime
 from .properties import Generic_multi_select as clear_multi_selection
+from .get import walk_data_parent
+from bpy import ops as bpy_ops
 
 
 def ui_bake_poll(bakemaster, bake_is_running):
@@ -132,3 +134,75 @@ def indexes_recalc(data, items_name: str, childs_recursive=True,
                 item, child[items_name], childs_recursive,
                 parent_props + [["%s_index" % items_name[:-1], item.index]])
         index += 1
+
+
+def copy(item_from, data_to, to_index=-1):
+    """
+    Copy item_from data-block to item of to_index in iterable data_to.
+    If to_index is not given, a new data-block will be instanced.
+
+    Used with containers, subcontainers.
+    """
+
+    exclude_attrs = {
+        "__annotations__": True,
+        "__doc__": True,
+        "__module__": True,
+        "bl_rna": True,
+        "id_data": True,
+        "drop_name": True,
+        "drop_name_old": True,
+        "has_drag_prompt": True,
+        "has_drop_prompt": True,
+        "is_drag_placeholder": True,
+        "is_selected": True,
+        "parent_group_index": True,
+        "rna_type": True,
+        "ticker": True,
+        "ui_indent_level": True
+    }
+
+    data_attrs = {
+        "bakejobs": True,
+        "containers": True,
+        "subcontainers": True
+    }
+
+    if to_index != -1:
+        item_to = data_to[to_index]
+    else:
+        item_to = data_to.add()
+
+    for attr in dir(item_from):
+        if exclude_attrs.get(attr, False):
+            continue
+
+        if not data_attrs.get(attr, False):
+            try:
+                setattr(item_to, attr, getattr(item_from, attr))
+            except (AttributeError, IndexError, TypeError,
+                    ValueError) as error:
+                print(f"BakeMaster Internal Warning at {copy}: {error} while setting {attr} attribute for {item_to}")  # noqa: E501
+
+            continue
+
+        # for containers only (attr == subcontainers)
+        # still, some safety adressed
+        try:
+            trash_ot = getattr(bpy_ops.bakemaster, '%s_trash' % attr)
+        except AttributeError:
+            continue
+        kwargs = {}
+        data_attr_parent = walk_data_parent(attr)
+        if data_attr_parent != "":
+            kwargs["%s_index" % data_attr_parent[:-1]] = item_from.index
+            kwargs["bakejob_index"] = item_from.bakejob_index
+        trash_ot('INVOKE_DEFAULT', **kwargs)
+        print(attr, "trashed with", kwargs)
+
+        # recursive copy to copy subcontainers from container
+        containers = getattr(item_from, attr)
+        for container in containers:
+            _ = copy(container, containers)
+
+    return item_to
