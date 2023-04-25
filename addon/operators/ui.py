@@ -1593,16 +1593,15 @@ class BM_OT_Containers_Ungroup(Operator):
     container_index: IntProperty(default=-1)
 
     s_ungroup_level = -1  # inital ungrouping level
-    is_new_active_index_set = False  # assign active_index to first ungrouped
+    new_active_index = -1
 
     def ungroup(self, bakejob, container):
         if self.s_ungroup_level == -1:
             print(f"BakeMaster Internal Error: self.s_ungroup_level isn't assigned at {self}")  # noqa: E501
         container.ui_indent_level = self.s_ungroup_level
 
-        if not self.is_new_active_index_set:
-            bakejob.containers_active_index = container.index
-            self.is_new_active_index_set = True
+        if bakejob.containers_active_index != self.new_active_index:
+            bakejob.containers_active_index = self.new_active_index
 
         if container.parent_group_index == -1:
             return
@@ -1686,9 +1685,11 @@ class BM_OT_Containers_Ungroup(Operator):
             if all([self.s_ungroup_level == -1,
                     has_selection, container.is_selected]):
                 self.s_ungroup_level = container.ui_indent_level
+                self.new_active_index = container.index
             elif all([self.s_ungroup_level == -1, not has_selection,
                       container.index == self.container_index]):
                 self.s_ungroup_level = container.ui_indent_level
+                self.new_active_index = container.index
                 f_group_index = container.index
             elif self.s_ungroup_level == -1:
                 continue
@@ -1723,6 +1724,7 @@ class BM_OT_Containers_Ungroup(Operator):
 
     def invoke(self, context, _):
         self.s_ungroup_level = -1
+        self.new_active_index = -1
         return self.execute(context)
 
 
