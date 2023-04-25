@@ -198,7 +198,6 @@ def copy(item_from, data_to, to_index=-1):
             kwargs["%s_index" % data_attr_parent[:-1]] = item_from.index
             kwargs["bakejob_index"] = item_from.bakejob_index
         trash_ot('INVOKE_DEFAULT', **kwargs)
-        print(attr, "trashed with", kwargs)
 
         # recursive copy to copy subcontainers from container
         containers = getattr(item_from, attr)

@@ -1468,6 +1468,10 @@ class BM_OT_Containers_Group(Operator):
 
     def eval_group(self, bakemaster, container, s_group_level,
                    curr_group_level, p_continue_selection):
+        if self.group_insert_index == -1:
+            print(f"BakeMaster Internal Warning: group_insert_index is not defined at {self}")  # noqa: E501
+            return False, 'TRYAGAIN_ERROR'
+
         if all([not container.ui_indent_level >= s_group_level,
                 container.is_selected]):
             # don't clear selection on error
@@ -1543,8 +1547,9 @@ class BM_OT_Containers_Group(Operator):
 
         errors = {
             'LEVEL_ERROR': "Cannot group with items from levels above first selected",  # noqa: E501
-            'ONEBLOCK_ERROR': "One-block selection is required to group"  # noqa: E501
-        }
+            'ONEBLOCK_ERROR': "One-block selection is required to group",  # noqa: E501
+            'TRYAGAIN_ERROR': "Try again. Internal error (see console)"
+            }
 
         to_group = []
 
@@ -1583,10 +1588,6 @@ class BM_OT_Containers_Group(Operator):
                 return {'CANCELLED'}
             elif allow_group:
                 to_group.append(container)
-
-        # if self.group_insert_index == -1:
-        #     print(f"BakeMaster Internal Warning: group_insert_index is not defined at {self}")  # noqa: E501
-        #     return {'CANCELLED'}
 
         for container in to_group:
             container.ui_indent_level += 1
