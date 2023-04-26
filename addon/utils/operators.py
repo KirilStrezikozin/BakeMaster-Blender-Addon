@@ -86,6 +86,15 @@ def bakehistory_unreserve(bakemaster):
 
 
 def disable_drag(bakemaster, data, containers, attr, clear_selection=True):
+    """
+    Turn off drag and remove drag_empties.
+    If clear_selection is True, unset multi selection.
+
+    Call before adding items to collections to reduce flicker of undrawn
+    containers. Call when removing items from collections to not take
+    drag_empty away by mistake.
+    """
+
     bakemaster.allow_drag = False
     bakemaster.drag_from_index = -1
     bakemaster.drag_to_index = -1
