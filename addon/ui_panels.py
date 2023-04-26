@@ -241,12 +241,12 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
                         active_propname, index, allow_drag_viz, drag_layout):
         bakemaster = context.scene.bakemaster
 
+        if bakemaster.get_drag_to_index(self.data_name) == -1:
+            return
         if any([drag_layout == 'DEFAULT',
                 all([drag_layout == 'TRANS_FROM',
                      bakemaster.allow_multi_selection_drag])]):
             text = "..."
-            if bakemaster.get_drag_to_index(self.data_name) == -1:
-                return
         elif drag_layout == 'TRANS_TO':
             if container.is_drag_placeholder:
                 row = row.box()
@@ -265,6 +265,9 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         bakemaster = context.scene.bakemaster
 
         if not all([allow_drag_viz, drag_layout == 'TRANS_TO']):
+            return False
+
+        if bakemaster.get_drag_to_index(self.data_name) == -1:
             return False
 
         if container.index == getattr(data, active_propname):
