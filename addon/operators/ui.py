@@ -1571,7 +1571,6 @@ class BM_OT_Containers_Group(Operator):
         self.add_group_item(bakejob, s_group_level)
 
         bm_ots_utils.indexes_recalc(bakejob, "containers")
-        bm_ots_utils.group_indexes_recalc(bakejob, "containers")
         return {'FINISHED'}
 
 
@@ -1711,7 +1710,6 @@ class BM_OT_Containers_Ungroup(Operator):
         bakejob.containers_len -= len(to_remove)
 
         bm_ots_utils.indexes_recalc(bakejob, "containers")
-        bm_ots_utils.group_indexes_recalc(bakejob, "containers")
         return {'FINISHED'}
 
     def invoke(self, context, _):

@@ -116,12 +116,15 @@ def disable_drag(bakemaster, data, containers, attr, clear_selection=True):
         containers.remove(index)
 
 
-def indexes_recalc(data, items_name: str, childs_recursive=True,
+def indexes_recalc(data, items_name: str, childs_recursive=True, groups=True,
                    parent_props=[]):
     """
     Recalculate items' indexes.
     Continues recalculating childs' indexes recursively and updating childs'
     pointers to parent indexes.
+
+    if groups is True, recalculate items' parent_group_indexes based on their
+    ui_indent_levels.
     """
 
     child = {
@@ -134,47 +137,43 @@ def indexes_recalc(data, items_name: str, childs_recursive=True,
     if not hasattr(data, items_name):
         return
 
-    index = 0
-    for item in getattr(data, items_name):
-        item.index = index
+    containers = getattr(data, items_name)
+    group_index = -1
+    group_level = -1
 
+    index = 0
+    for container in containers:
+        container.index = index
+
+        # if any([container.is_drag_empty, container.has_drop_prompt]):
+        #     continue
+
+        # assign parent_group_index
+        if groups:
+            if not container.ui_indent_level >= group_level:
+                group_index, group_level = data.resolve_mutual_group(
+                    containers, group_index, group_level, container.index,
+                    container.ui_indent_level)
+
+            container.parent_group_index = group_index
+            group_level = container.ui_indent_level
+
+            if container.is_group:
+                group_index = container.index
+
+        # assign parent's props
         for prop_name, prop_val in parent_props:
-            if hasattr(item, prop_name):
-                setattr(item, prop_name, prop_val)
+            if hasattr(container, prop_name):
+                setattr(container, prop_name, prop_val)
             else:
-                print(f"BakeMaster Internal AttributeError: {item} has no {prop_name} attribute")  # noqa: E501
+                print(f"BakeMaster Internal AttributeError: {container} has no {prop_name} attribute")  # noqa: E501
 
         if childs_recursive:
             indexes_recalc(
-                item, child[items_name], childs_recursive,
-                parent_props + [["%s_index" % items_name[:-1], item.index]])
+                container, child[items_name], childs_recursive,
+                parent_props + [["%s_index" % items_name[:-1],
+                                 container.index]])
         index += 1
-
-
-def group_indexes_recalc(data, items_name):
-    """
-    Recalculate items' p_group_index property value based on
-    items' ui_indent_level.
-    """
-
-    group_index = -1
-    group_level = -1
-    containers = getattr(data, items_name)
-
-    for container in containers:
-        if any([container.is_drag_empty, container.has_drop_prompt]):
-            continue
-
-        if not container.ui_indent_level >= group_level:
-            group_index, group_level = data.resolve_mutual_group(
-                containers, group_index, group_level, container.index,
-                container.ui_indent_level)
-
-        container.parent_group_index = group_index
-        group_level = container.ui_indent_level
-
-        if container.is_group:
-            group_index = container.index
 
 
 def copy(item_from, data_to, to_index=-1, exclude={}):
