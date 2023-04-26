@@ -237,6 +237,25 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         if not container.is_group:
             return
 
+    def draw_drag_placeholder(self, context, col, data, container, icon,
+                              active_data, active_propname, index,
+                              allow_drag_viz, drag_layout):
+        if not all([allow_drag_viz, container.is_drag_placeholder,
+                    any([drag_layout == 'DEFAULT',
+                         drag_layout == 'TRANS_FROM' and any([
+                             not container.is_selected,
+                             container.is_drag_empty])])]):
+            return
+
+        dp_row = col.row()
+        dp_row.alignment = 'LEFT'
+
+        self.draw_indent(dp_row, context.scene.bakemaster, container)
+
+        drag_placeholder = dp_row.box()
+        drag_placeholder.label(text="")
+        drag_placeholder.scale_y = 0.1
+
     def draw_drag_empty(self, context, row, data, container, icon, active_data,
                         active_propname, index, allow_drag_viz, drag_layout):
         bakemaster = context.scene.bakemaster
@@ -291,7 +310,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             return
 
         if bakemaster.prefs_developer_use_show_groups_indexes:
-            indent_ad_text = container.parent_group_index
+            indent_ad_text = str(container.parent_group_index)
         else:
             indent_ad_text = ""
 
@@ -342,14 +361,9 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         col = col_layout.column(align=True)
 
         # draw a darker line when dragging container
-        if all([allow_drag_viz, container.is_drag_placeholder,
-                any([drag_layout == 'DEFAULT',
-                     drag_layout == 'TRANS_FROM' and any([
-                         not container.is_selected,
-                         container.is_drag_empty])])]):
-            drag_placeholder = col.row().box()
-            drag_placeholder.label(text="")
-            drag_placeholder.scale_y = 0.1
+        self.draw_drag_placeholder(context, col, data, container, icon,
+                                   active_data, active_propname, index,
+                                   allow_drag_viz, drag_layout)
 
         row = col.row(align=True)
         row.alignment = 'LEFT'
