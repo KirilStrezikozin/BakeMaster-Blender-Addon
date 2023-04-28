@@ -38,6 +38,7 @@ All BakeMaster Releases and Changelogs are listed on this page. Each new release
     `2.0.1 - March 8th, 2023 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/releases>`__
 
 **Fixes:**
+
 #. Image format (.png) is occasionally written twice (.png.png) (`issue-22 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/22>`__)
 #. Roughness map wasn't added to Baked Material (`dev-9d1a30a <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon-Dev/commit/9d1a30ab757115b1c7c976c20b2c36e0566cb971>`__)
 #. Color stepping when baking Displacement from Multires (`dev-9d1a30a <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon-Dev/commit/9d1a30ab757115b1c7c976c20b2c36e0566cb971>`__)

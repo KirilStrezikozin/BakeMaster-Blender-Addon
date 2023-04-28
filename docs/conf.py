@@ -21,7 +21,7 @@ bakemaster_version = '2.0.2'
 # -- Project information -----------------------------------------------------
 
 project = 'BakeMaster %s Documentation' % bakemaster_version
-copyright = ': 2022, Kiril Strezikozin'
+copyright = ': 2023, Kiril Strezikozin'
 author = 'kemplerart'
 version = bakemaster_version
 branch = "release-2.0.2"
