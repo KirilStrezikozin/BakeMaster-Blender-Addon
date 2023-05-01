@@ -46,6 +46,29 @@ def get_icon_id(bakemaster, icon_name: str):
         return thumb.icon_id
 
 
+def get_group_icon(bakemaster, container, all=False):
+    if container.group_type == 'DECORATOR':
+        return get_icon_id(bakemaster, "bakemaster_collection.png")
+
+    color_tags = ["", "_color_01", "_color_02", "_color_03", "_color_04",
+                  "_color_05", "_color_06", "_color_07", "_color_08"]
+
+    if container.group_type == 'DICTATOR':
+        icon_raw = r"bakemaster_collection%s.png"
+    else:
+        icon_raw = r"bakemaster_smartgroup%s.png"
+
+    if all:
+        icons_all = []
+        for color_tag in color_tags:
+            icons_all.append([
+                color_tag,
+                get_icon_id(bakemaster, icon_raw % color_tag)])
+        return icons_all
+    else:
+        return get_icon_id(bakemaster, icon_raw % container.group_color_tag)
+
+
 def bakehistory_timestamp_get_label(bakemaster, bakehistory):
     if bakehistory.index == bakemaster.bakehistory_reserved_index:
         return "in progress..."

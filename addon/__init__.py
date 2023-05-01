@@ -109,7 +109,8 @@ classes = (
     operators_ui.BM_OT_Containers_Trash,
     operators_ui.BM_OT_Container_Rename,
     operators_ui.BM_OT_Containers_GroupToggleExpand,
-    operators_ui.BM_OT_Containers_GroupType,
+    operators_ui.BM_OT_Containers_GroupOptions,
+    operators_ui.BM_OT_Containers_Group_SetIcon,
     operators_ui.BM_OT_Containers_Group,
     operators_ui.BM_OT_Containers_Ungroup,
 

@@ -648,11 +648,8 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
                 data, "%s_active_index" % self.data_name) == container.index,
                     container.group_type == 'DECORATOR']):
                 return '', '', True
-            if bpy_version > (2, 91, 0):
-                group_icon = 'OUTLINER_COLLECTION'
-            else:
-                group_icon = 'GROUP'
-            return 'ICON', group_icon, True
+            group_icon = bm_ui_utils.get_group_icon(bakemaster, container)
+            return 'ICON_VALUE', group_icon, True
 
         if data is None:
             return 'ICON_VALUE', error_icon, False
@@ -704,11 +701,6 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
             row.active = False or self.is_pattern_match(
                 container.name, self.filter_name, self.use_filter_invert)
 
-        if bpy_version > (2, 91, 0):
-            group_icon = 'OUTLINER_COLLECTION'
-        else:
-            group_icon = 'GROUP'
-
         if getattr(data,
                    "%s_active_index" % self.data_name) == container.index:
             subrow = row.row()
@@ -717,8 +709,10 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
                 subrow.emboss = 'NONE'
             else:
                 subrow.emboss = 'NORMAL'
-            subrow.operator("bakemaster.containers_grouptype", text="",
-                            icon=group_icon)
+
+            group_icon = bm_ui_utils.get_group_icon(bakemaster, container)
+            subrow.operator("bakemaster.containers_groupoptions", text="",
+                            icon_value=group_icon)
             subrow.active = row.active and container.group_type != 'DECORATOR'
 
 

@@ -43,8 +43,8 @@ from bpy_extras.io_utils import ImportHelper
 from ..utils import (
     get as bm_get,
     operators as bm_ots_utils,
+    ui as bm_ui_utils,
 )
-from ..utils.ui import get_icon_id as bm_ui_utils_get_icon_id
 from ..properties import (
     Container,
     BakeJob,
@@ -1085,7 +1085,7 @@ class BM_OT_BakeJob_ToggleType(Operator):
         layout.use_property_split = False
         layout.use_property_decorate = False
 
-        icon_objects = bm_ui_utils_get_icon_id(context.scene.bakemaster,
+        icon_objects = bm_ui_utils.get_icon_id(context.scene.bakemaster,
                                                "bakemaster_objects.png")
 
         col = layout.column(align=True)
@@ -1436,10 +1436,10 @@ class BM_OT_Containers_GroupToggleExpand(Operator):
         return self.execute(context)
 
 
-class BM_OT_Containers_GroupType(Operator):
-    bl_idname = "bakemaster.containers_grouptype"
+class BM_OT_Containers_GroupOptions(Operator):
+    bl_idname = "bakemaster.containers_groupoptions"
     bl_label = "Group Type"
-    bl_description = "Change Group Type"
+    bl_description = "Change Group Options: Type and icon"
     bl_options = {'INTERNAL', 'UNDO'}
 
     bakejob_index: IntProperty(default=-1)
@@ -1447,7 +1447,7 @@ class BM_OT_Containers_GroupType(Operator):
 
     container: Container = None
 
-    def execute(self, context):
+    def execute(self, _):
         return {'FINISHED'}
 
     def invoke(self, context, _):
@@ -1461,7 +1461,55 @@ class BM_OT_Containers_GroupType(Operator):
         return wm.invoke_props_dialog(self, width=300)
 
     def draw(self, context):
-        self.layout.prop(self.container, "group_type", expand=True)
+        layout = self.layout
+        layout.use_property_split = False
+        layout.use_property_decorate = False
+
+        layout.prop(self.container, "group_type", expand=True)
+        if self.container.group_type == 'DECORATOR':
+            return
+
+        layout.separator(factor=1.0)
+        layout.label(text="Group Icon")
+        flow = layout.grid_flow(row_major=False, columns=0, even_columns=True,
+                                even_rows=False, align=True)
+
+        for color_tag, icon in bm_ui_utils.get_group_icon(
+                context.scene.bakemaster, self.container, all=True):
+            icon_ot = flow.operator(
+                "bakemaster.containers_group_seticon", text="",
+                icon_value=icon,
+                emboss=color_tag == self.container.group_color_tag)
+            icon_ot.bakejob_index = self.bakejob_index
+            icon_ot.container_index = self.container_index
+            icon_ot.new_color_tag = color_tag
+
+
+class BM_OT_Containers_Group_SetIcon(Operator):
+    bl_idname = "bakemaster.containers_group_seticon"
+    bl_label = "Change Group icon"
+    bl_description = "Change Group icon"
+    bl_options = {'INTERNAL'}
+
+    bakejob_index: IntProperty(default=-1)
+    container_index: IntProperty(default=-1)
+
+    new_color_tag: StringProperty(default="")
+
+    container: Container = None
+
+    def execute(self, _):
+        self.container.group_color_tag = self.new_color_tag
+        return {'FINISHED'}
+
+    def invoke(self, context, _):
+        bakemaster = context.scene.bakemaster
+        bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
+        self.container = bm_get.container(bakejob, self.container_index)
+        if bakejob is None or self.container is None:
+            return {'CANCELLED'}
+
+        return self.execute(context)
 
 
 class BM_OT_Containers_Group(Operator):

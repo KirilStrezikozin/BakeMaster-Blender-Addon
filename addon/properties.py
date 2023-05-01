@@ -148,13 +148,24 @@ class Subcontainer(BM_PropertyGroup_Helper):
         name="Expand/Collapse the group",
         default=True)
 
+    group_color_tag: StringProperty(default="")
+
+    # UI Props
     group_type: EnumProperty(
         name="Group Type",
         description="Choose Group Type. Hover over values to see descriptions",
         default='DICTATOR',
         items=[('DICTATOR', "Dictator", "Group will dictate all settigs to its childs"),  # noqa: E501
                ('SMART', "Smart", "Smart Group will dictate only specific chosen settings to its childs"),  # noqa: E501
-               ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")])  # noqa: E501
+               ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")],  # noqa: E501
+        update=bm_props_utils.Subcontainer_group_type_Update)
+
+    use_bake: BoolProperty(
+        name="Include/Exclude Item from bake",
+        default=True,
+        update=bm_props_utils.Subcontainer_use_bake_Update)
+
+    ###
 
     # UIList Walk Handler Props
 
@@ -203,15 +214,17 @@ class Container(BM_PropertyGroup_Helper):
         name="Expand/Collapse the group",
         default=True)
 
+    group_color_tag: StringProperty(default="")
+
+    # UI Props
     group_type: EnumProperty(
         name="Group Type",
         description="Choose Group Type. Hover over values to see descriptions",
         default='DICTATOR',
         items=[('DICTATOR', "Dictator", "Group will dictate all settigs to its childs"),  # noqa: E501
                ('SMART', "Smart", "Smart Group will dictate only specific chosen settings to its childs"),  # noqa: E501
-               ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")])  # noqa: E501
-
-    # UI Props
+               ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")],  # noqa: E501
+        update=bm_props_utils.Container_group_type_Update)
 
     use_bake: BoolProperty(
         name="Include/Exclude Item from bake",
@@ -280,15 +293,17 @@ class BakeJob(BM_PropertyGroup_Helper):
         name="Expand/Collapse the group",
         default=True)
 
+    group_color_tag: StringProperty(default="")
+
+    # UI Props
     group_type: EnumProperty(
         name="Group Type",
         description="Choose Group Type. Hover over values to see descriptions",
         default='DICTATOR',
         items=[('DICTATOR', "Dictator", "Group will dictate all settigs to its childs"),  # noqa: E501
                ('SMART', "Smart", "Smart Group will dictate only specific chosen settings to its childs"),  # noqa: E501
-               ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")])  # noqa: E501
-
-    # UI Props
+               ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")],  # noqa: E501
+        update=bm_props_utils.BakeJob_group_type_Update)
 
     type: EnumProperty(
         name="Bake Job Type",
