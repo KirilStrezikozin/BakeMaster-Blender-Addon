@@ -45,6 +45,10 @@ from ..utils import (
     operators as bm_ots_utils,
 )
 from ..utils.ui import get_icon_id as bm_ui_utils_get_icon_id
+from ..properties import (
+    Container,
+    BakeJob,
+)
 from ..labels import (
     BM_URLs,
 )
@@ -1047,7 +1051,7 @@ class BM_OT_BakeJob_ToggleType(Operator):
         update=type_maps_update,
         options={'SKIP_SAVE'})
 
-    bakejob = None
+    bakejob: BakeJob = None
 
     def execute(self, _):
         if self.bakejob is None:
@@ -1365,7 +1369,7 @@ class BM_OT_Container_Rename(Operator):
         default="",
         options={'SKIP_SAVE'})
 
-    container = None
+    container: Container = None
     bakejob_type = ''
 
     def execute(self, context):
@@ -1430,6 +1434,34 @@ class BM_OT_Containers_GroupToggleExpand(Operator):
 
     def invoke(self, context, _):
         return self.execute(context)
+
+
+class BM_OT_Containers_GroupType(Operator):
+    bl_idname = "bakemaster.containers_grouptype"
+    bl_label = "Group Type"
+    bl_description = "Change Group Type"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    bakejob_index: IntProperty(default=-1)
+    container_index: IntProperty(default=-1)
+
+    container: Container = None
+
+    def execute(self, context):
+        return {'FINISHED'}
+
+    def invoke(self, context, _):
+        bakemaster = context.scene.bakemaster
+        bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
+        self.container = bm_get.container(bakejob, self.container_index)
+        if bakejob is None or self.container is None:
+            return {'CANCELLED'}
+
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def draw(self, context):
+        self.layout.prop(self.container, "group_type", expand=True)
 
 
 class BM_OT_Containers_Group(Operator):

@@ -272,8 +272,9 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
                         active_propname, index, allow_drag_viz, drag_layout,
                         check):
         bakemaster = context.scene.bakemaster
+        drag_to_index = bakemaster.get_drag_to_index(self.data_name)
         if any([not allow_drag_viz,
-                bakemaster.get_drag_to_index(self.data_name) == -1]):
+                drag_to_index == -1]):
             return
 
         if check:
@@ -645,7 +646,7 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
         if container.is_group:
             if any([getattr(
                 data, "%s_active_index" % self.data_name) == container.index,
-                    not container.group_is_dictator]):
+                    container.group_type == 'DECORATOR']):
                 return '', '', True
             if bpy_version > (2, 91, 0):
                 group_icon = 'OUTLINER_COLLECTION'
@@ -687,7 +688,7 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
             icon = 'RESTRICT_RENDER_ON'
             row.active = False
 
-        if not container.is_group or container.group_is_dictator:
+        if not container.is_group or container.group_type != 'DECORATOR':
             subrow = row.row()
             self.draw_prop(bakemaster, self.data_name, subrow, "BoolProperty",
                            container, "use_bake", None, text="", icon=icon)
@@ -716,9 +717,9 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
                 subrow.emboss = 'NONE'
             else:
                 subrow.emboss = 'NORMAL'
-            subrow.prop(container, "group_is_dictator", text="",
-                        icon=group_icon)
-            subrow.active = row.active and container.group_is_dictator
+            subrow.operator("bakemaster.containers_grouptype", text="",
+                            icon=group_icon)
+            subrow.active = row.active and container.group_type != 'DECORATOR'
 
 
 class BM_UL_BakeHistory(UIList):

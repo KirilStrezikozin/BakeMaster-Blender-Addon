@@ -148,10 +148,13 @@ class Subcontainer(BM_PropertyGroup_Helper):
         name="Expand/Collapse the group",
         default=True)
 
-    group_is_dictator: BoolProperty(
-        name="Toggle Dictator Group",
-        description="If disabled, Group will be for beauty only, it won't dictate settings to its childs",
-        default=True)
+    group_type: EnumProperty(
+        name="Group Type",
+        description="Choose Group Type. Hover over values to see descriptions",
+        default='DICTATOR',
+        items=[('DICTATOR', "Dictator", "Group will dictate all settigs to its childs"),  # noqa: E501
+               ('SMART', "Smart", "Smart Group will dictate only specific chosen settings to its childs"),  # noqa: E501
+               ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")])  # noqa: E501
 
     # UIList Walk Handler Props
 
@@ -200,10 +203,13 @@ class Container(BM_PropertyGroup_Helper):
         name="Expand/Collapse the group",
         default=True)
 
-    group_is_dictator: BoolProperty(
-        name="Toggle Dictator Group",
-        description="If disabled, Group will be for beauty only, it won't dictate settings to its childs",
-        default=True)
+    group_type: EnumProperty(
+        name="Group Type",
+        description="Choose Group Type. Hover over values to see descriptions",
+        default='DICTATOR',
+        items=[('DICTATOR', "Dictator", "Group will dictate all settigs to its childs"),  # noqa: E501
+               ('SMART', "Smart", "Smart Group will dictate only specific chosen settings to its childs"),  # noqa: E501
+               ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")])  # noqa: E501
 
     # UI Props
 
@@ -274,10 +280,13 @@ class BakeJob(BM_PropertyGroup_Helper):
         name="Expand/Collapse the group",
         default=True)
 
-    group_is_dictator: BoolProperty(
-        name="Toggle Dictator Group",
-        description="If disabled, Group will be for beauty only, it won't dictate settings to its childs",
-        default=True)
+    group_type: EnumProperty(
+        name="Group Type",
+        description="Choose Group Type. Hover over values to see descriptions",
+        default='DICTATOR',
+        items=[('DICTATOR', "Dictator", "Group will dictate all settigs to its childs"),  # noqa: E501
+               ('SMART', "Smart", "Smart Group will dictate only specific chosen settings to its childs"),  # noqa: E501
+               ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")])  # noqa: E501
 
     # UI Props
 
