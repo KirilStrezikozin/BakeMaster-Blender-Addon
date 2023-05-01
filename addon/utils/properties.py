@@ -444,8 +444,8 @@ def Subcontainer_ticker_Update(self, context):
 def Subcontainer_drag_empty_ticker_Update(self, context):
     Generic_drag_empty_ticker_Update(self, context, "subcontainers")
 
-# UI Props' Updates
 
+# UI Props' Updates
 
 def BakeJob_use_bake_Update(self, context):
     Generic_property_in_multi_selection_Update(
@@ -457,6 +457,26 @@ def BakeJob_type_Update(self, context):
         self, context, "bakejobs", "type")
 
 
+def BakeJob_group_type_Update(self, context):
+    Generic_property_in_multi_selection_Update(
+        self, context, "bakejbos", "group_type")
+
+
 def Container_use_bake_Update(self, context):
     Generic_property_in_multi_selection_Update(
         self, context, "containers", "use_bake")
+
+
+def Container_group_type_Update(self, context):
+    Generic_property_in_multi_selection_Update(
+        self, context, "containers", "group_type")
+
+
+def Subcontainer_use_bake_Update(self, context):
+    Generic_property_in_multi_selection_Update(
+        self, context, "subcontainers", "use_bake")
+
+
+def Subcontainer_group_type_Update(self, context):
+    Generic_property_in_multi_selection_Update(
+        self, context, "subcontainers", "group_type")
