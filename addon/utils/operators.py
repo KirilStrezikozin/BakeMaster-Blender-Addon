@@ -85,7 +85,7 @@ def bakehistory_unreserve(bakemaster):
     bakemaster.bakehistory_reserved_index = -1
 
 
-def disable_drag(bakemaster, data, containers, attr, clear_selection=True):
+def disable_drag(bakemaster, _, containers, attr, clear_selection=True):
     """
     Turn off drag and remove drag_empties.
     If clear_selection is True, unset multi selection.
@@ -106,14 +106,20 @@ def disable_drag(bakemaster, data, containers, attr, clear_selection=True):
         clear_multi_selection(None, bakemaster, attr)
     bakemaster.allow_drag_trans = False
 
-    mask = data.get_seq(attr, "is_drag_empty", bool)
-    to_remove = data.get_seq(attr, "index", int)[mask]
-
-    data.set_seq(attr, "has_drag_prompt", False)
-    data.set_seq(attr, "is_drag_placeholder", False)
-
-    for index in reversed(to_remove):
-        containers.remove(index)
+    containers.foreach_set("has_drag_prompt", [False] * len(containers))
+    containers.foreach_set("is_drag_placeholder",
+                           [False] * len(containers))
+    containers.foreach_set("is_drag_empty_placeholder",
+                           [False] * len(containers))
+    containers.foreach_set("is_drag_empty",
+                           [False] * len(containers))
+    # XXX
+    # seemed to be faster but breaks everything
+    # for container in containers:
+    #     container.has_drag_prompt = False
+    #     container.is_drag_placeholder = False
+    #     container.is_drag_empty_placeholder = False
+    #     container.is_drag_empty = False
 
 
 def indexes_recalc(data, items_name: str, childs_recursive=True, groups=True,
@@ -145,7 +151,7 @@ def indexes_recalc(data, items_name: str, childs_recursive=True, groups=True,
     for container in containers:
         container.index = index
 
-        # if any([container.is_drag_empty, container.has_drop_prompt]):
+        # if container.has_drop_prompt:
         #     continue
 
         # assign parent_group_index
@@ -208,7 +214,9 @@ def copy(item_from, data_to, to_index=-1, exclude={}):
             "has_drop_prompt": True,
             "is_drag_empty": True,
             "is_drag_placeholder": True,
+            "is_drag_empty_placeholder": True,
             "ticker": True,
+            "drag_empty_ticker": True,
             "is_selected": True
         }
 
@@ -230,7 +238,9 @@ def copy(item_from, data_to, to_index=-1, exclude={}):
         "has_drop_prompt": True,
         "is_drag_empty": True,
         "is_drag_placeholder": True,
+        "is_drag_empty_placeholder": True,
         "ticker": True,
+        "drag_empty_ticker": True,
         "is_selected": True
     }
 

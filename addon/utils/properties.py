@@ -89,7 +89,7 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
     if all([bakemaster.is_double_click,
             bakemaster.last_left_click_ticker != self.ticker,
             self.index == getattr(data, "%s_active_index" % attr),
-            not self.is_drag_empty, not self.has_drop_prompt,
+            not self.has_drop_prompt,
             double_click_ot_idname != ""]):
 
         double_click_ot = getattr(bpy_ops.bakemaster, double_click_ot_idname)
@@ -130,7 +130,7 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
         old_selected_index = -1
         for container in containers:
             if any([not container.is_selected,
-                    container.is_drag_empty, container.has_drop_prompt]):
+                    container.has_drop_prompt]):
                 continue
             if old_selected_index == -1:
                 old_selected_index = container.index
@@ -164,13 +164,54 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
     drag_to_index = bakemaster.get_drag_to_index(walk_data)
     if drag_to_index != -1:
         containers[drag_to_index].is_drag_placeholder = False
+        containers[drag_to_index].is_drag_empty_placeholder = False
+        containers[drag_to_index].is_drag_empty = False
     self.is_drag_placeholder = True
+    self.is_drag_empty_placeholder = False
+    drag_empty_eval(self, data, containers, walk_data)
+
     bakemaster.set_drag_to_index(walk_data, self.index)
     bakemaster.drag_data_to = walk_data
 
     ticker_old = bakemaster.drag_from_ticker
     if self.ticker == ticker_old:
         self.ticker = not ticker_old
+
+
+def drag_empty_eval(self, data, containers, walk_data):
+    if getattr(data, "%s_len" % walk_data) - 1 == self.index:
+        self.is_drag_empty = True
+    elif containers[
+            self.index + 1].ui_indent_level < self.ui_indent_level:
+        self.is_drag_empty = True
+
+
+def Generic_drag_empty_ticker_Update(self, context, walk_data):
+    bakemaster = context.scene.bakemaster
+    bakemaster.walk_data_name = walk_data
+
+    walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
+    data, containers, _ = walk_data_getter(bakemaster)
+    if data is None:
+        print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")
+        return
+
+    drag_to_index = bakemaster.get_drag_to_index(walk_data)
+
+    if drag_to_index != -1:
+        containers[drag_to_index].is_drag_placeholder = False
+        containers[drag_to_index].is_drag_empty_placeholder = False
+        containers[drag_to_index].is_drag_empty = False
+    self.is_drag_placeholder = False
+    self.is_drag_empty_placeholder = True
+    drag_empty_eval(self, data, containers, walk_data)
+
+    bakemaster.set_drag_to_index(walk_data, self.index)
+    bakemaster.drag_data_to = walk_data
+
+    ticker_old = bakemaster.drag_from_ticker
+    if self.drag_empty_ticker == ticker_old:
+        self.drag_empty_ticker = not ticker_old
 
 
 def Generic_active_index_Update(self, context: not None, walk_data: str):
@@ -204,8 +245,7 @@ def Generic_active_index_Update(self, context: not None, walk_data: str):
         setattr(data, "%s_active_index" % attr,
                 getattr(data, "%s_active_index_old" % attr))
         return
-    if any([containers[active_index].is_drag_empty,
-            containers[active_index].has_drop_prompt]):
+    if containers[active_index].has_drop_prompt:
         setattr(data, "%s_active_index" % attr,
                 getattr(data, "%s_active_index_old" % attr))
         return
@@ -375,6 +415,10 @@ def BakeJob_ticker_Update(self, context):
                           double_click_ot_idname="bakejob_rename")
 
 
+def BakeJob_drag_empty_ticker_Update(self, context):
+    Generic_drag_empty_ticker_Update(self, context, "bakejobs")
+
+
 def Container_drop_name_Update(self, context):
     Generic_drop_name_Update(self, context, walk_data="containers",
                              adddropped_ot_idname="containers_adddropped")
@@ -389,8 +433,16 @@ def Container_ticker_Update(self, context):
                           double_click_ot_idname="container_rename")
 
 
+def Container_drag_empty_ticker_Update(self, context):
+    Generic_drag_empty_ticker_Update(self, context, "containers")
+
+
 def Subcontainer_ticker_Update(self, context):
     Generic_ticker_Update(self, context, walk_data="subcontainers")
+
+
+def Subcontainer_drag_empty_ticker_Update(self, context):
+    Generic_drag_empty_ticker_Update(self, context, "subcontainers")
 
 # UI Props' Updates
 

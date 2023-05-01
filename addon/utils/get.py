@@ -27,12 +27,6 @@
 #
 # ##### END LICENSE BLOCK #####
 
-from bpy import ops as bpy_ops
-from numpy import (
-    array as numpy_array,
-    isin as numpy_isin,
-)
-
 
 def bakejob(bakemaster: not None, index=-1):
     if index == -1:
@@ -42,7 +36,7 @@ def bakejob(bakemaster: not None, index=-1):
     except IndexError:
         return None
 
-    if any([bj.is_drag_empty, bj.has_drop_prompt]):
+    if bj.has_drop_prompt:
         return None
     else:
         return bj
@@ -58,7 +52,7 @@ def container(bj, index=-1):
     except IndexError:
         return None
 
-    if any([ctnr.is_drag_empty, ctnr.has_drop_prompt]):
+    if ctnr.has_drop_prompt:
         return None
     else:
         return ctnr
@@ -74,7 +68,7 @@ def subcontainer(ctnr, index=-1):
     except IndexError:
         return None
 
-    if any([subctnr.is_drag_empty, subctnr.has_drop_prompt]):
+    if subctnr.has_drop_prompt:
         return None
     else:
         return subctnr

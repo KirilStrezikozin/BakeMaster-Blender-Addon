@@ -164,8 +164,15 @@ class Subcontainer(BM_PropertyGroup_Helper):
         default=False,
         update=bm_props_utils.Subcontainer_ticker_Update)
 
+    drag_empty_ticker: BoolProperty(
+        name="Item",
+        description="Double click to change.\nPress and drag to move.\nUse Shift, Ctrl to select multiple",  # noqa: E501
+        default=False,
+        update=bm_props_utils.Subcontainer_drag_empty_ticker_Update)
+
     is_drag_empty: BoolProperty(default=False)
     is_drag_placeholder: BoolProperty(default=False)
+    is_drag_empty_placeholder: BoolProperty(default=False)
 
     is_selected: BoolProperty(default=True)
 
@@ -230,8 +237,15 @@ class Container(BM_PropertyGroup_Helper):
         default=False,
         update=bm_props_utils.Container_ticker_Update)
 
+    drag_empty_ticker: BoolProperty(
+        name="Item",
+        description="Double click to change.\nPress and drag to move.\nUse Shift, Ctrl to select multiple",  # noqa: E501
+        default=False,
+        update=bm_props_utils.Container_drag_empty_ticker_Update)
+
     is_drag_empty: BoolProperty(default=False)
     is_drag_placeholder: BoolProperty(default=False)
+    is_drag_empty_placeholder: BoolProperty(default=False)
 
     is_selected: BoolProperty(default=True)
 
@@ -305,8 +319,15 @@ class BakeJob(BM_PropertyGroup_Helper):
         default=False,
         update=bm_props_utils.BakeJob_ticker_Update)
 
+    drag_empty_ticker: BoolProperty(
+        name="Bake Job",
+        description="Double click to change.\nPress and drag to move.\nUse Shift, Ctrl to select multiple",  # noqa: E501
+        default=False,
+        update=bm_props_utils.BakeJob_drag_empty_ticker_Update)
+
     is_drag_empty: BoolProperty(default=False)
     is_drag_placeholder: BoolProperty(default=False)
+    is_drag_empty_placeholder: BoolProperty(default=False)
 
     is_selected: BoolProperty(default=True)
 
@@ -439,6 +460,10 @@ class Global(BM_PropertyGroup_Helper):
 
     prefs_developer_use_show_groups_indexes: BoolProperty(
         name="Show groups indexes",
+        default=False)
+
+    prefs_developer_show_tickers: BoolProperty(
+        name="Show tickers values",
         default=False)
 
     prefs_developer_ui_indent_width: IntProperty(

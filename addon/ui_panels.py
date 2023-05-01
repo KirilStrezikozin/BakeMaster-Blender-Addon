@@ -136,6 +136,7 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
 
             col.prop(bakemaster, "prefs_developer_use_prop_relinquish")
             col.prop(bakemaster, "prefs_developer_use_show_groups_indexes")
+            col.prop(bakemaster, "prefs_developer_show_tickers")
             col.prop(bakemaster, "prefs_developer_use_console_debug")
         ###
 
@@ -168,6 +169,8 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
     use_filter = True
     filter_propname = "name"
 
+    draw_drag_empty_placeholder = False
+
     filter_name: StringProperty(
         name="Filter by Name",
         description="Only show items matching this name (use '*' as wildcard)",
@@ -185,8 +188,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
     def allow_multi_select_viz(self, bakemaster, container):
         has_selection, _ = bm_get.walk_data_multi_selection_data(
             bakemaster, self.data_name)
-        return has_selection and all([not container.has_drop_prompt,
-                                      not container.is_drag_empty])
+        return has_selection and not container.has_drop_prompt
 
     def allow_drag_viz(self, bakemaster, _):
         if not bakemaster.allow_drag:
@@ -241,41 +243,72 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
                               active_data, active_propname, index,
                               allow_drag_viz, drag_layout):
         if not all([allow_drag_viz, container.is_drag_placeholder,
-                    any([drag_layout == 'DEFAULT',
-                         drag_layout == 'TRANS_FROM' and any([
-                             not container.is_selected,
-                             container.is_drag_empty])])]):
+                    not container.is_drag_empty_placeholder,
+                    drag_layout != 'TRANS_TO']):
+            return
+        if drag_layout == 'TRANS_FROM' and container.is_selected:
             return
 
+        self.draw_drag_placeholder_row(context.scene.bakemaster, col,
+                                       container)
+
+    def draw_drag_placeholder_row(self, bakemaster, col, container):
         dp_row = col.row()
         dp_row.alignment = 'LEFT'
 
-        self.draw_indent(dp_row, context.scene.bakemaster, container)
+        self.draw_indent(dp_row, bakemaster, container)
 
         drag_placeholder = dp_row.box()
         drag_placeholder.label(text="")
-        drag_placeholder.scale_y = 0.1
+        drag_placeholder.scale_y = 0.01
 
-    def draw_drag_empty(self, context, row, data, container, icon, active_data,
-                        active_propname, index, allow_drag_viz, drag_layout):
+    def draw_drag_empty_row(self, bakemaster, col, container):
+        row = col.row()
+        row.alignment = 'LEFT'
+        self.draw_indent(row, bakemaster, container)
+        return row
+
+    def draw_drag_empty(self, context, col, data, container, icon, active_data,
+                        active_propname, index, allow_drag_viz, drag_layout,
+                        check):
         bakemaster = context.scene.bakemaster
-
-        if bakemaster.get_drag_to_index(self.data_name) == -1:
+        if any([not allow_drag_viz,
+                bakemaster.get_drag_to_index(self.data_name) == -1]):
             return
-        if any([drag_layout == 'DEFAULT',
-                all([drag_layout == 'TRANS_FROM',
-                     bakemaster.allow_multi_selection_drag])]):
-            text = "..."
-        elif drag_layout == 'TRANS_TO':
-            if container.is_drag_placeholder:
-                row = row.box()
-                row.scale_y = 0.4
-                row.alignment = 'LEFT'
+
+        if check:
+            containers = getattr(data, self.data_name)
+            if getattr(data, "%s_len" % self.data_name) - 1 == container.index:
+                pass
+            elif getattr(containers[container.index + 1],
+                         "ui_indent_level") < container.ui_indent_level:
+                pass
+            else:
+                return
+
+        if container.is_drag_empty_placeholder:
+            if drag_layout != 'TRANS_TO':
+                self.draw_drag_placeholder_row(bakemaster, col, container)
+                return
+
+            row = self.draw_drag_empty_row(bakemaster, col, container)
+            row = row.box()
+            row.alignment = 'LEFT'
+            row.scale_y = 0.4
             text = "Move into new..."
+
+        elif drag_layout == 'TRANS_TO':
+            row = self.draw_drag_empty_row(bakemaster, col, container)
+            text = "Move into new..."
+
+        elif drag_layout in {'DEFAULT', 'TRANS_FROM'}:
+            row = self.draw_drag_empty_row(bakemaster, col, container)
+            text = "..."
+
         else:
             return
 
-        row.prop(container, "ticker", text=text, emboss=False,
+        row.prop(container, "drag_empty_ticker", text=text, emboss=False,
                  toggle=True)
 
     def draw_trans_to_prompts(self, context, row, data, container, icon,
@@ -353,29 +386,22 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         allow_drag_viz, drag_layout = self.allow_drag_viz(
             bakemaster, container)
 
-        if allow_multi_select_viz and container.is_selected:
-            col_layout = layout.box()
-            col_layout.scale_y = 0.45
-        else:
-            col_layout = layout
-        col = col_layout.column(align=True)
+        col = layout.column(align=True)
 
         # draw a darker line when dragging container
         self.draw_drag_placeholder(context, col, data, container, icon,
                                    active_data, active_propname, index,
                                    allow_drag_viz, drag_layout)
 
-        row = col.row(align=True)
+        if allow_multi_select_viz and container.is_selected:
+            row = col.box().row(align=True)
+            row.scale_y = 0.45
+        else:
+            row = col.row(align=True)
         row.alignment = 'LEFT'
 
-        # draw an empty container at the end
-        if container.is_drag_empty:
-            if not allow_drag_viz:
-                return
-            self.draw_drag_empty(context, row, data, container, icon,
-                                 active_data, active_propname, index,
-                                 allow_drag_viz, drag_layout)
-            return
+        if bakemaster.prefs_developer_show_tickers:
+            row.label(text=str(container.ticker))
 
         # draw a drop prompt ("add new...")
         if container.has_drop_prompt:
@@ -383,6 +409,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             row.prop(container, "drop_name", text="", emboss=True)
             return
 
+        # No emboss for operators
         if container.index != bakemaster.bakejobs_active_index:
             row.emboss = 'NONE'
 
@@ -457,6 +484,12 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
                 drag_layout in ['DEFAULT', 'TRANS_TO']]):
             row.active = drag_to_row_active
 
+        # draw drag_empty
+        self.draw_drag_empty(context, col, data, container, icon,
+                             active_data, active_propname, index,
+                             allow_drag_viz, drag_layout,
+                             check=not container.is_drag_empty)
+
     def draw_filter(self, context, layout):
         bakemaster = context.scene.bakemaster
         if any([all([bakemaster.allow_drag,
@@ -480,7 +513,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         path_cache = {}
 
         for container in reversed(containers):
-            if any([container.is_drag_empty, container.has_drop_prompt]):
+            if container.has_drop_prompt:
                 continue
 
             is_match = self.is_pattern_match(
@@ -510,7 +543,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
 
         # visible if parent groups are expanded
         for container in containers:
-            if any([container.is_drag_empty, container.has_drop_prompt]):
+            if container.has_drop_prompt:
                 continue
 
             if container.ui_indent_level >= last_ui_indent:
@@ -530,8 +563,11 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             if container.parent_group_index == -1:
                 last_group_is_expanded = True
             else:
-                last_group_is_expanded = groups_cache[str(
-                    container.parent_group_index)]
+                try:
+                    last_group_is_expanded = groups_cache[str(
+                        container.parent_group_index)]
+                except KeyError:
+                    last_group_is_expanded = True
 
             if not last_group_is_expanded:
                 flt_flags[container.index] &= ~self.bitflag_filter_item

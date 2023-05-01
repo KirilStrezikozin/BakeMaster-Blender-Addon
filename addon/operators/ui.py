@@ -187,7 +187,10 @@ class BM_OT_UIList_Walk_Handler(Operator):
         return False
 
     def reset_all_tickers(self, bakemaster):
-        # Reset tickers in every walk_data -> drag to other data with no errors
+        """
+        Reset tickers in every walk_data as such drag to other data won't
+        cause errors.
+        """
 
         datas = ["bakejobs", "containers", "subcontainers"]
 
@@ -198,11 +201,22 @@ class BM_OT_UIList_Walk_Handler(Operator):
                 # print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")  # noqa: E501
                 continue
 
-            # len(containers) is used because containers_len doesn't
-            # cover drag_empty
             containers.foreach_set("ticker", [False] * len(containers))
+            containers.foreach_set("is_drag_empty", [False] * len(containers))
             containers.foreach_set("is_drag_placeholder",
                                    [False] * len(containers))
+            containers.foreach_set("is_drag_empty_placeholder",
+                                   [False] * len(containers))
+
+            # XXX
+            # seemed to be faster but breaks everything
+            # for container in containers:
+            #     container.ticker = False
+            #     container.drag_empty_ticker = False
+            #     container.has_drag_prompt = False
+            #     container.is_drag_placeholder = False
+            #     container.is_drag_empty_placeholder = False
+            #     container.is_drag_empty = False
 
     def evaluate_data_trans(self, bakemaster, data, containers, attr):
         """
@@ -221,14 +235,6 @@ class BM_OT_UIList_Walk_Handler(Operator):
         # disallow drag (ticker update) inside data
         # containers.foreach_set("ticker",
         #                   [True] * getattr(data, "%s_len" % attr))
-
-    def add_drag_empty(self, data, containers, attr):
-        # ensure there's only one drag_empty
-        drag_empties = data.get_seq(attr, "is_drag_empty", bool)
-        if drag_empties[drag_empties].size == 0:
-            drag_empty = containers.add()
-            drag_empty.index = getattr(data, "%s_len" % attr)
-            drag_empty.is_drag_empty = True
 
     def add_drop_prompt(self, data, containers, attr):
         # ensure there's only one drop_prompt
@@ -270,24 +276,9 @@ class BM_OT_UIList_Walk_Handler(Operator):
         self.remove_drop_prompts(bakemaster)
 
         data, containers, attr = self.get_containers(bakemaster)
-
-        # Add drag_empty to parent walk_data
-        try:
-            parent_data, parent_containers, parent_attr = getattr(
-                bm_get, "walk_data_get_%s" % bm_get.walk_data_parent(
-                    bakemaster.walk_data_name))(bakemaster)
-        except (AttributeError, KeyError):
-            parent_data = None
-            parent_containers = None
-            parent_attr = None
-
         containers_active_index = getattr(data, "%s_active_index" % attr)
+
         self.drag_end(bakemaster)
-
-        self.add_drag_empty(data, containers, attr)
-        if parent_data is not None:
-            self.add_drag_empty(parent_data, parent_containers, parent_attr)
-
         self.reset_all_tickers(bakemaster)
         self.evaluate_data_trans(bakemaster, data, containers, attr)
 
@@ -426,7 +417,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
         datas.
         """
 
-        data, _, attr = self.get_containers(bakemaster)
+        data, containers, attr = self.get_containers(bakemaster)
 
         if data is None:
             print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")  # noqa: E501
@@ -434,6 +425,13 @@ class BM_OT_UIList_Walk_Handler(Operator):
             return
 
         drag_to_index = bakemaster.get_drag_to_index(attr)
+        if drag_to_index == -1 or drag_to_index >= getattr(data,
+                                                           "%s_len" % attr):
+            self.drag_end(bakemaster)
+            return
+
+        if containers[drag_to_index].is_drag_empty_placeholder:
+            drag_to_index += 1
 
         # move across walk_datas
         if bakemaster.allow_drag_trans and attr != bakemaster.drag_data_from:
@@ -598,7 +596,7 @@ class BM_OT_WalkData_Trans(Operator):
                 data_to, "%s_active_index" % bakemaster.drag_data_to):
             destination_data = None
 
-        elif destination_data.is_drag_empty:
+        elif destination_data.is_drag_empty_placeholder:
             old_active_index = getattr(
                 data_to, "%s_active_index" % bakemaster.drag_data_to)
 
@@ -663,8 +661,7 @@ class BM_OT_WalkData_Trans(Operator):
         to_remove = []
         for index in selected_indexes:
             container_from = containers_from[index]
-            if any([container_from.is_drag_empty,
-                    container_from.has_drop_prompt]):
+            if container_from.has_drop_prompt:
                 continue
 
             # add_ot('INVOKE_DEFAULT')
@@ -675,7 +672,6 @@ class BM_OT_WalkData_Trans(Operator):
                     getattr(destination_data,
                             "%s_len" % bakemaster.drag_data_from) + 1)
 
-            new_container.is_drag_empty = False
             new_container.has_drop_prompt = False
 
             if not self.use_copy:
@@ -772,8 +768,7 @@ class BM_OT_WalkData_Move(Operator):
             return {'CANCELLED'}
 
         # skip if dragged onto selection itself
-        if all([active_container.is_selected,
-                not active_container.is_drag_empty]):
+        if active_container.is_selected:
             return {'CANCELLED'}
 
         containers_len = getattr(data, "%s_len" % attr)
@@ -782,7 +777,6 @@ class BM_OT_WalkData_Move(Operator):
 
         for container in containers:
             if any([container.index == containers_len,
-                    container.is_drag_empty,
                     container.has_drop_prompt,
                     not container.is_selected]):
                 continue
@@ -1003,11 +997,11 @@ class BM_OT_BakeJob_Rename(Operator):
 
     def invoke(self, context, _):
         if self.index == -1:
-            self.report({'WARNING', "Internal error: Cannot resolve Bake Job"})
+            self.report({'WARNING'}, "Internal error: Cannot resolve Bake Job")
             return {'CANCELLED'}
         self.bakejob = bm_get.bakejob(context.scene.bakemaster, self.index)
         if self.bakejob is None:
-            self.report({'WARNING', "Internal error: Cannot resolve Bake Job"})
+            self.report({'WARNING'}, "Internal error: Cannot resolve Bake Job")
             return {'CANCELLED'}
         self.name = self.bakejob.name
 
@@ -1066,11 +1060,11 @@ class BM_OT_BakeJob_ToggleType(Operator):
 
     def invoke(self, context, _):
         if self.index == -1:
-            self.report({'WARNING', "Internal error: Cannot resolve Bake Job"})
+            self.report({'WARNING'}, "Internal error: Cannot resolve Bake Job")
             return {'CANCELLED'}
         self.bakejob = bm_get.bakejob(context.scene.bakemaster, self.index)
         if self.bakejob is None:
-            self.report({'WARNING', "Internal error: Cannot resolve Bake Job"})
+            self.report({'WARNING'}, "Internal error: Cannot resolve Bake Job")
             return {'CANCELLED'}
         if self.bakejob.type == 'OBJECTS':
             self.type_objects = True
@@ -1142,7 +1136,7 @@ class BM_OT_BakeJobs_Merge(Operator):
     def invoke(self, context, _):
         bakejob = bm_get.bakejob(context.scene.bakemaster)
         if bakejob is None:
-            self.report({'WARNING', "Internal error: Cannot resolve Bake Job"})
+            self.report({'WARNING'}, "Internal error: Cannot resolve Bake Job")
             return {'CANCELLED'}
 
         if not bakejob.is_selected:
@@ -1399,8 +1393,8 @@ class BM_OT_Container_Rename(Operator):
         self.container = bm_get.container(bakejob, self.index)
 
         if self.container is None or bakejob is None:
-            self.report({'WARNING',
-                         "Internal error: Cannot resolve Container"})
+            self.report({'WARNING'},
+                        "Internal error: Cannot resolve Container")
             return {'CANCELLED'}
 
         self.name = self.container.name
@@ -1417,10 +1411,6 @@ class BM_OT_Container_Rename(Operator):
 
 
 class BM_OT_Containers_GroupToggleExpand(Operator):
-    """
-    For no Undo event when group_is_expanded value has changed.
-    """
-
     bl_idname = "bakemaster.containers_grouptoggleexpand"
     bl_label = "Expand/Collapse"
     bl_options = {'INTERNAL'}
@@ -1536,7 +1526,7 @@ class BM_OT_Containers_Group(Operator):
         p_continue_selection = False  # continue grouping child items
 
         for container in bakejob.containers:
-            if container.is_drag_empty or container.has_drop_prompt:
+            if container.has_drop_prompt:
                 continue
 
             if container.is_selected and s_group_level == -1:
@@ -1670,7 +1660,7 @@ class BM_OT_Containers_Ungroup(Operator):
         to_remove = []
 
         for container in bakejob.containers:
-            if container.is_drag_empty or container.has_drop_prompt:
+            if container.has_drop_prompt:
                 continue
 
             if all([self.s_ungroup_level == -1,
