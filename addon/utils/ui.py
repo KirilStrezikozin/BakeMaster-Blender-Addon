@@ -66,6 +66,19 @@ def get_group_icon(bakemaster, container, all=False):
         return get_icon_id(bakemaster, icon_raw % container.group_color_tag)
 
 
+def is_group_with_no_childs(container, data, containers, attr):
+    if not container.is_group:
+        return False
+
+    # no loops :)
+    if container.index == getattr(data, "%s_len" % attr) - 1:
+        return True
+    elif containers[container.index + 1].parent_group_index != container.index:
+        return True
+    else:
+        return False
+
+
 def bakehistory_timestamp_get_label(bakemaster, bakehistory):
     if bakehistory.index == bakemaster.bakehistory_reserved_index:
         return "in progress..."

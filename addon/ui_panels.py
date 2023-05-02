@@ -27,7 +27,6 @@
 #
 # ##### END LICENSE BLOCK #####
 
-from bpy.app import version as bpy_version
 from .ui_base import (
     BM_UI_ml_draw,
     BM_PT_BakeJobsBase,
@@ -269,26 +268,39 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         self.draw_indent(row, bakemaster, container)
         return row
 
-    def draw_drag_empty(self, context, col, data, container, icon, active_data,
-                        active_propname, index, allow_drag_viz, drag_layout,
-                        check):
+    def draw_drag_empty(self, context, col, row, data, container, icon,
+                        active_data, active_propname, index, allow_drag_viz,
+                        drag_layout):
         bakemaster = context.scene.bakemaster
         drag_to_index = bakemaster.get_drag_to_index(self.data_name)
         if any([not allow_drag_viz,
                 drag_to_index == -1]):
             return
 
-        if check:
+        allow_explicit_group_drag_empty = False
+
+        # Explicit drag_empty draw
+        if not container.is_drag_empty:
             containers = getattr(data, self.data_name)
             if getattr(data, "%s_len" % self.data_name) - 1 == container.index:
                 pass
             elif getattr(containers[container.index + 1],
                          "ui_indent_level") < container.ui_indent_level:
                 pass
+            elif any([bm_ui_utils.is_group_with_no_childs(
+                container, data, getattr(data, self.data_name),
+                self.data_name),
+                    container.is_group and not container.group_is_expanded]):
+                allow_explicit_group_drag_empty = True
             else:
                 return
 
         if container.is_drag_empty_placeholder:
+            if all([bakemaster.drag_from_index != bakemaster.get_drag_to_index(
+                    self.data_name),
+                    allow_explicit_group_drag_empty]):
+                row.label(text="", icon='BACK')
+
             if drag_layout != 'TRANS_TO':
                 self.draw_drag_placeholder_row(bakemaster, col, container)
                 return
@@ -368,16 +380,61 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             native_indent*container.ui_indent_level,
             indent_ad_text))
 
-    def draw_box_prompt(self, layout, text: str):
+    def draw_box_prompt(self, layout, text: str,
+                        container=None, ticker_atr=""):
         old_emboss = layout.emboss
         layout.emboss = 'NORMAL'
 
         placeholder_box = layout.box()
         placeholder_box.scale_y = 0.4
         placeholder_box.alignment = 'LEFT'
-        placeholder_box.label(text=text)
+
+        if container is None:
+            placeholder_box.label(text=text)
+        else:
+            placeholder_box.prop(container, ticker_atr, text=text,
+                                 emboss=False, toggle=True)
 
         layout.emboss = old_emboss
+
+    def draw_drag_row_inactive(self, row, bakemaster, data, container,
+                               allow_drag_viz, drag_layout,
+                               drag_to_row_active):
+        if not all([allow_drag_viz,
+                    bakemaster.allow_drag, not container.has_drag_prompt,
+                    bakemaster.get_drag_to_index(self.data_name) != -1]):
+            return False
+
+        if drag_layout == 'DEFAULT':
+            row.active = drag_to_row_active
+
+            # back arrow near group user's dragging into
+            if container.index == getattr(data, self.data_name)[
+                    bakemaster.get_drag_to_index(self.data_name)
+                    ].parent_group_index:
+                return True
+
+        elif drag_layout == 'TRANS_TO':
+            row.active = drag_to_row_active
+        return False
+
+    def draw_arrow(self, row, bakemaster, data, container, allow_draw_arrow):
+        if not all([allow_draw_arrow,
+                    bakemaster.drag_from_index != bakemaster.get_drag_to_index(
+                        self.data_name)]):
+            return
+
+        for container in getattr(data, self.data_name):
+            if not container.is_drag_empty_placeholder:
+                continue
+            elif any([bm_ui_utils.is_group_with_no_childs(
+                container, data, getattr(data, self.data_name),
+                self.data_name),
+                    container.is_group and not container.group_is_expanded
+                    ]):
+                break
+        else:
+            row.label(text="", icon='BACK')
 
     def draw_item(self, context, layout, data, container, icon, active_data,
                   active_propname, index):
@@ -467,10 +524,6 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         else:
             row.prop(container, "ticker", text=container.name, toggle=True)
 
-        drag_to_row_active = self.draw_trans_to_prompts(
-            context, row, data, container, icon, active_data, active_propname,
-            index, allow_drag_viz, drag_layout)
-
         self.draw_group_props(context, row, data, container, icon, active_data,
                               active_propname, index, allow_drag_viz,
                               drag_layout)
@@ -479,18 +532,21 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
                             active_propname, index,
                             allow_drag_viz, drag_layout)
 
+        drag_to_row_active = self.draw_trans_to_prompts(
+            context, row, data, container, icon, active_data, active_propname,
+            index, allow_drag_viz, drag_layout)
+
         # fade out row while dragging if container in it isn't dragged
-        if all([allow_drag_viz,
-                bakemaster.allow_drag, not container.has_drag_prompt,
-                bakemaster.get_drag_to_index(self.data_name) != -1,
-                drag_layout in ['DEFAULT', 'TRANS_TO']]):
-            row.active = drag_to_row_active
+        allow_draw_arrow = self.draw_drag_row_inactive(
+            row, bakemaster, data, container, allow_drag_viz, drag_layout,
+            drag_to_row_active)
 
         # draw drag_empty
-        self.draw_drag_empty(context, col, data, container, icon,
-                             active_data, active_propname, index,
-                             allow_drag_viz, drag_layout,
-                             check=not container.is_drag_empty)
+        self.draw_drag_empty(
+            context, col, row, data, container, icon, active_data,
+            active_propname, index, allow_drag_viz, drag_layout)
+
+        self.draw_arrow(row, bakemaster, data, container, allow_draw_arrow)
 
     def draw_filter(self, context, layout):
         bakemaster = context.scene.bakemaster
