@@ -445,7 +445,8 @@ class BM_OT_UIList_Walk_Handler(Operator):
                 drag_to_index=bakemaster.drag_to_index)
 
         # default move, multi selection move
-        else:
+        # check if move is inside data
+        elif attr == bakemaster.drag_data_from:
             bpy_ops.bakemaster.walk_data_move(
                     'INVOKE_DEFAULT',
                     index=bakemaster.drag_from_index, new_index=drag_to_index,
