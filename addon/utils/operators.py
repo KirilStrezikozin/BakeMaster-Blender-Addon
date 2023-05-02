@@ -196,7 +196,7 @@ def copy(item_from, data_to, to_index=-1, exclude={}):
             "bakejob_index": True,
             "is_group": True,
             "group_is_expanded": True,
-            "group_is_dictator": True
+            "group_type": True
         }
     Default exlude{} is:
         {

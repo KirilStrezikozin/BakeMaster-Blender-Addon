@@ -1670,7 +1670,7 @@ class BM_OT_Containers_Ungroup(Operator):
         # if parent group is dictator, copy settings from it,
         # else do not copy anything.
         parent_container = bakejob.containers[container.parent_group_index]
-        if not parent_container.group_is_dictator:
+        if parent_container.group_type == 'DECORATOR':
             return
 
         exclude_copy = {
@@ -1679,7 +1679,7 @@ class BM_OT_Containers_Ungroup(Operator):
             "bakejob_index": True,
             "is_group": True,
             "group_is_expanded": True,
-            "group_is_dictator": True
+            "group_type": True
         }
         _ = bm_ots_utils.copy(parent_container, bakejob.containers,
                               container.index, exclude_copy)
