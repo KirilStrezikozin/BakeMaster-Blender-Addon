@@ -1198,8 +1198,8 @@ class BM_OT_Containers_Add(Operator):
             return {'CANCELLED'}
 
         for name_holder in names:
-            object, _, _, _, error_message = bm_get.object_ui_info(
-                context.scene.objects, name_holder.name)
+            object, _, _, _, _, error_message = bm_get.object_ui_info(
+                bakemaster, context.scene.objects, name_holder.name)
 
             if object is None:
                 print("BakeMaster Object Add Error: %s" % error_message)
@@ -1377,8 +1377,8 @@ class BM_OT_Container_Rename(Operator):
             return {'CANCELLED'}
 
         if self.bakejob_type == 'OBJECTS':
-            object, _, _, _, error_message = bm_get.object_ui_info(
-                context.scene.objects, self.name)
+            object, _, _, _, _, error_message = bm_get.object_ui_info(
+                context.scene.bakemaster, context.scene.objects, self.name)
 
             if object is None:
                 self.report({'ERROR'}, error_message)

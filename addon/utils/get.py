@@ -27,6 +27,8 @@
 #
 # ##### END LICENSE BLOCK #####
 
+from .ui import get_icon_id as bm_ui_utils_get_icon_id
+
 
 def bakejob(bakemaster: not None, index=-1):
     if index == -1:
@@ -134,12 +136,12 @@ def walk_data_parent(data_name: str):
     return datas[data_name]
 
 
-def object_ui_info(objects, name: str):
+def object_ui_info(bakemaster, objects, name: str):
     """
     Get object info given its name.
 
     Return values are:
-    object, obj_type, obj_icon, error_id, error_message.
+    object, obj_type, obj_icon_type, obj_icon, error_id, error_message.
     """
 
     errors = {
@@ -151,25 +153,41 @@ def object_ui_info(objects, name: str):
     try:
         object = objects[name]
     except KeyError:
-        return None, '', '', 'NOTFOUND', errors['NOTFOUND']
+        return None, '', '', '', 'NOTFOUND', errors['NOTFOUND']
 
-    info = {
-        'MESH': 'OUTLINER_OB_MESH',
-        'CURVE': 'OUTLINER_OB_CURVE',
-        'META': 'OUTLINER_OB_META',
-        'FONT': 'OUTLINER_OB_FONT',
-        'EMPTY': 'OUTLINER_OB_IMAGE'
-    }
+    if bakemaster.prefs_developer_use_orange_ob_icons:
+        icon_type = 'ICON_VALUE'
+        info = {
+            'MESH': bm_ui_utils_get_icon_id(
+                bakemaster, "bakemaster_ob_mesh.png"),
+            'CURVE': bm_ui_utils_get_icon_id(
+                bakemaster, "bakemaster_ob_curve.png"),
+            'META': bm_ui_utils_get_icon_id(
+                bakemaster, "bakemaster_ob_meta.png"),
+            'FONT': bm_ui_utils_get_icon_id(
+                bakemaster, "bakemaster_ob_font.png"),
+            'EMPTY': bm_ui_utils_get_icon_id(
+                bakemaster, "bakemaster_ob_image.png"),
+        }
+    else:
+        icon_type = 'ICON'
+        info = {
+            'MESH': 'OUTLINER_OB_MESH',
+            'CURVE': 'OUTLINER_OB_CURVE',
+            'META': 'OUTLINER_OB_META',
+            'FONT': 'OUTLINER_OB_FONT',
+            'EMPTY': 'OUTLINER_OB_IMAGE'
+        }
 
     try:
         info[object.type]
     except KeyError:
-        return None, '', '', 'INVALID', errors['INVALID']
+        return None, '', '', '', 'INVALID', errors['INVALID']
 
     if object.type == 'EMPTY':
         if object.empty_display_type != 'IMAGE':
-            return None, '', '', 'INVALID', errors['INVALID']
+            return None, '', '', '', 'INVALID', errors['INVALID']
         elif object.data is None:
-            return None, '', '', 'NOIMAGE', errors['NOIMAGE']
+            return None, '', '', '', 'NOIMAGE', errors['NOIMAGE']
 
-    return object, object.type, info[object.type], None, ""
+    return object, object.type, icon_type, info[object.type], None, ""

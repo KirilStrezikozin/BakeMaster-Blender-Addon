@@ -659,13 +659,13 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
             return '', '', True
 
         elif data.type == 'OBJECTS':
-            object, _, obj_icon, _, _ = bm_get.object_ui_info(
-                    context.scene.objects, container.name)
+            object, _, obj_icon_type, obj_icon, _, _ = bm_get.object_ui_info(
+                    bakemaster, context.scene.objects, container.name)
 
             if object is None:
                 return 'ICON_VALUE', error_icon, False
 
-            return 'ICON', obj_icon, True
+            return obj_icon_type, obj_icon, True
 
         return 'ICON_VALUE', error_icon, False
 
