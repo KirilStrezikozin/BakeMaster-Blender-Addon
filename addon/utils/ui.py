@@ -53,10 +53,7 @@ def get_group_icon(bakemaster, container, all=False):
     color_tags = ["", "_color_01", "_color_02", "_color_03", "_color_04",
                   "_color_05", "_color_06", "_color_07", "_color_08"]
 
-    if container.group_type == 'DICTATOR':
-        icon_raw = r"bakemaster_collection%s.png"
-    else:
-        icon_raw = r"bakemaster_smartgroup%s.png"
+    icon_raw = r"bakemaster_collection%s.png"
 
     if all:
         icons_all = []
