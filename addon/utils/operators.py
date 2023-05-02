@@ -157,7 +157,7 @@ def indexes_recalc(data, items_name: str, childs_recursive=True, groups=True,
         # assign parent_group_index
         if groups:
             if not container.ui_indent_level >= group_level:
-                group_index, group_level = data.resolve_mutual_group(
+                group_index, _ = data.resolve_mutual_group(
                     containers, group_index, group_level, container.index,
                     container.ui_indent_level)
 

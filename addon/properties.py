@@ -107,6 +107,19 @@ class BM_PropertyGroup_Helper(PropertyGroup):
 
     def resolve_mutual_group(self, containers, gi_group_index, gi_group_level,
                              i_index, i_group_level):
+        """
+        Get index and ui_indent_level of container holding both
+        containers of gi_group_index, i_index.
+
+        Usually, i_index represents a container with lover ui_indent_level.
+        (e.g first give container below, then container above)
+
+        Note:
+        If given in reversed order, a container stepbacked by the difference of
+        gi_group_level and i_group_level above container of i_index will
+        define return values.
+        """
+
         level_diff = abs(gi_group_level - i_group_level)
 
         mutual = containers[gi_group_index]
@@ -115,7 +128,12 @@ class BM_PropertyGroup_Helper(PropertyGroup):
                 break
             mutual = containers[mutual.parent_group_index]
 
-        return mutual.parent_group_index, mutual.ui_indent_level
+        if mutual.parent_group_index == -1:
+            mutual_ui_indent_level = 0
+        else:
+            mutual_ui_indent_level = containers[
+                mutual.parent_group_index].ui_indent_level
+        return mutual.parent_group_index, mutual_ui_indent_level
 
     def resolve_top_group(self, containers: not None, container=None):
         if container is None:
