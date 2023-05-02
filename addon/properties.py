@@ -504,6 +504,11 @@ class Global(BM_PropertyGroup_Helper):
         description="Recommended: | ˙ . -",
         default="˙")
 
+    prefs_developer_use_orange_ob_icons: BoolProperty(
+        name="Orange Object icon",
+        description="Toggle between orange and white object icons",
+        default=True)
+
     # Preview Collections - Custom Icons Props
 
     preview_collections = {

@@ -127,6 +127,8 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
         col = split.column()
         col.prop(bakemaster, "prefs_use_developer_mode")
         if bakemaster.prefs_use_developer_mode:
+            col.prop(bakemaster, "prefs_developer_use_orange_ob_icons")
+
             col_aligned = col.column(align=True)
             col_aligned.prop(
                 bakemaster, "prefs_developer_use_group_descenting_lines")
