@@ -161,6 +161,10 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
     #         self.index == getattr(data, "%s_active_index" % attr)]):
     #     return
 
+    if is_drag_group_into_itself(self, bakemaster, data, containers,
+                                 walk_data):
+        return
+
     drag_to_index = bakemaster.get_drag_to_index(walk_data)
     if drag_to_index != -1:
         containers[drag_to_index].is_drag_placeholder = False
@@ -176,6 +180,37 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
     ticker_old = bakemaster.drag_from_ticker
     if self.ticker == ticker_old:
         self.ticker = not ticker_old
+
+
+def is_drag_group_into_itself(self, bakemaster, data, containers, walk_data):
+    # Skip dragging group inside itself
+
+    # If no multi selection, self = self, check drag_from_index,
+    # otherwise self = first selected item, check first selected item index.
+    has_selection, _ = bm_get.walk_data_multi_selection_data(
+        bakemaster, walk_data)
+    if has_selection:
+        for container in containers:
+            if container.has_drop_prompt or not container.is_selected:
+                continue
+            drag_from_index = container.index
+            break
+        else:
+            drag_from_index = bakemaster.drag_from_index
+    else:
+        drag_from_index = bakemaster.drag_from_index
+
+    if all([self.index > drag_from_index,
+            walk_data == bakemaster.drag_data_from]):
+
+        m_group_index, m_group_level = data.resolve_mutual_group(
+            containers, self.index, self.ui_indent_level,
+            drag_from_index, containers[drag_from_index].ui_indent_level)
+
+        if all([m_group_index == drag_from_index,
+                m_group_level >= containers[drag_from_index].ui_indent_level]):
+            return True
+    return False
 
 
 def drag_empty_eval(self, data, containers, walk_data):
@@ -196,8 +231,11 @@ def Generic_drag_empty_ticker_Update(self, context, walk_data):
         print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")
         return
 
-    drag_to_index = bakemaster.get_drag_to_index(walk_data)
+    if is_drag_group_into_itself(self, bakemaster, data, containers,
+                                 walk_data):
+        return
 
+    drag_to_index = bakemaster.get_drag_to_index(walk_data)
     if drag_to_index != -1:
         containers[drag_to_index].is_drag_placeholder = False
         containers[drag_to_index].is_drag_empty_placeholder = False
