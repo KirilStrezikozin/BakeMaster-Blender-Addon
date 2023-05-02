@@ -504,10 +504,6 @@ class Global(BM_PropertyGroup_Helper):
         description="Recommended: | ˙ . -",
         default="˙")
 
-    prefs_developer_use_prop_relinquish: BoolProperty(
-        name="'~' sign for props in multi selection",
-        default=True)
-
     # Preview Collections - Custom Icons Props
 
     preview_collections = {

@@ -134,7 +134,6 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
                 bakemaster, "prefs_developer_groups_descenting_lines_symbol")
             col_aligned.prop(bakemaster, "prefs_developer_ui_indent_width")
 
-            col.prop(bakemaster, "prefs_developer_use_prop_relinquish")
             col.prop(bakemaster, "prefs_developer_use_show_groups_indexes")
             col.prop(bakemaster, "prefs_developer_show_tickers")
             col.prop(bakemaster, "prefs_developer_use_console_debug")
