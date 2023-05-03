@@ -118,6 +118,40 @@ def walk_data_multi_selection_data(bakemaster, data_name: str):
                 multi_selection_exists]), our_multi_selection_data
 
 
+def is_oneblock_multi_selection(bakemaster, containers, attr):
+    # Define bakemaster.allow_multi_selection_drag
+    # (if one-block selection)
+
+    has_selection, _ = walk_data_multi_selection_data(
+        bakemaster, attr)
+    is_oneblock = has_selection
+
+    if not has_selection:
+        return False
+
+    old_selected_index = -1
+    first_ui_indent_level = 0
+
+    for container in containers:
+        if any([not container.is_selected,
+                container.has_drop_prompt]):
+            continue
+
+        if old_selected_index == -1:
+            old_selected_index = container.index
+            first_ui_indent_level = container.ui_indent_level
+            continue
+        if container.index != old_selected_index + 1:
+            is_oneblock = False
+            break
+        elif container.ui_indent_level < first_ui_indent_level:
+            is_oneblock = False
+            break
+        old_selected_index = container.index
+
+    return is_oneblock
+
+
 def walk_data_child(data_name: str):
     datas = {
         "bakejobs": "containers",

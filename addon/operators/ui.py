@@ -45,6 +45,7 @@ from ..utils import (
     operators as bm_ots_utils,
     ui as bm_ui_utils,
 )
+from ..utils.properties import copy as bm_props_utils_copy
 from ..properties import (
     Container,
     BakeJob,
@@ -671,8 +672,8 @@ class BM_OT_WalkData_Trans(Operator):
 
             # add_ot('INVOKE_DEFAULT')
             # new_container = destination_containers[:-1]
-            new_container = bm_ots_utils.copy(container_from,
-                                              destination_containers)
+            new_container = bm_props_utils_copy(container_from,
+                                                destination_containers)
             setattr(destination_data, "%s_len" % bakemaster.drag_data_from,
                     getattr(destination_data,
                             "%s_len" % bakemaster.drag_data_from) + 1)
@@ -1680,10 +1681,11 @@ class BM_OT_Containers_Ungroup(Operator):
             "bakejob_index": True,
             "is_group": True,
             "group_is_expanded": True,
-            "group_type": True
+            "group_type": True,
+            "group_is_texset": True
         }
-        _ = bm_ots_utils.copy(parent_container, bakejob.containers,
-                              container.index, exclude_copy)
+        _ = bm_props_utils_copy(parent_container, bakejob.containers,
+                                container.index, exclude_copy)
 
     def ungroup_has_selection_errors(self, has_selection, container,
                                      last_selected_index):

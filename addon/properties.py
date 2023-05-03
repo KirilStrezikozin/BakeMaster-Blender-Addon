@@ -168,12 +168,14 @@ class Subcontainer(BM_PropertyGroup_Helper):
 
     group_color_tag: StringProperty(default="")
 
+    group_old_type: StringProperty(default="DICTATOR")
     group_type: EnumProperty(
         name="Group Type",
         description="Choose Group Type. Hover over values to see descriptions",
         default='DICTATOR',
         items=[('DICTATOR', "Dictator", "Group will dictate all settigs to its childs"),  # noqa: E501
-               ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")])  # noqa: E501
+               ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")],  # noqa: E501
+        update=bm_props_utils.Subcontainer_group_type_Update)
 
     # UI Props
     group_is_texset: BoolProperty(
@@ -238,12 +240,14 @@ class Container(BM_PropertyGroup_Helper):
 
     group_color_tag: StringProperty(default="")
 
+    group_old_type: StringProperty(default="DICTATOR")
     group_type: EnumProperty(
         name="Group Type",
         description="Choose Group Type. Hover over values to see descriptions",
         default='DICTATOR',
         items=[('DICTATOR', "Dictator", "Group will dictate all settigs to its childs"),  # noqa: E501
-               ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")])  # noqa: E501
+               ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")],  # noqa: E501
+        update=bm_props_utils.Container_group_type_Update)
 
     # UI Props
     group_is_texset: BoolProperty(
@@ -321,12 +325,14 @@ class BakeJob(BM_PropertyGroup_Helper):
 
     group_color_tag: StringProperty(default="")
 
+    group_old_type: StringProperty(default="DICTATOR")
     group_type: EnumProperty(
         name="Group Type",
         description="Choose Group Type. Hover over values to see descriptions",
         default='DICTATOR',
         items=[('DICTATOR', "Dictator", "Group will dictate all settigs to its childs"),  # noqa: E501
-               ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")])  # noqa: E501
+               ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")],  # noqa: E501
+        update=bm_props_utils.BakeJob_group_type_Update)
 
     # UI Props
     group_is_texset: BoolProperty(

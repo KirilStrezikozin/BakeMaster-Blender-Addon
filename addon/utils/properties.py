@@ -65,6 +65,114 @@ def load_preview_collections():
     return pcoll
 
 
+def copy(item_from, data_to, to_index=-1, exclude={}):
+    """
+    Copy item_from data-block to item of to_index in iterable data_to.
+    If to_index is not given, a new data-block will be instanced.
+
+    Provide exclude{} dictionary with names of attrs to exclude.
+    Example (use when copying settings from parent group,
+    parent_group_index and ui_indent_level excluded by default):
+        {
+            "name": True,
+            "index": True,
+            "bakejob_index": True,
+            "is_group": True,
+            "group_is_expanded": True,
+            "group_type": True,
+            "group_is_texset": True
+        }
+    Default exlude{} is:
+        {
+            "__annotations__": True,
+            "__doc__": True,
+            "__module__": True,
+            "bl_rna": True,
+            "id_data": True,
+            "rna_type": True,
+            "drop_name": True,
+            "drop_name_old": True,
+            "parent_group_index": True,
+            "ui_indent_level": True,
+            "has_drag_prompt": True,
+            "has_drop_prompt": True,
+            "is_drag_empty": True,
+            "is_drag_placeholder": True,
+            "is_drag_empty_placeholder": True,
+            "ticker": True,
+            "drag_empty_ticker": True,
+            "is_selected": True
+        }
+
+    Used with containers, subcontainers.
+    """
+
+    exclude_attrs = {
+        "__annotations__": True,
+        "__doc__": True,
+        "__module__": True,
+        "bl_rna": True,
+        "id_data": True,
+        "rna_type": True,
+        "drop_name": True,
+        "drop_name_old": True,
+        "parent_group_index": True,
+        "ui_indent_level": True,
+        "has_drag_prompt": True,
+        "has_drop_prompt": True,
+        "is_drag_empty": True,
+        "is_drag_placeholder": True,
+        "is_drag_empty_placeholder": True,
+        "ticker": True,
+        "drag_empty_ticker": True,
+        "is_selected": True
+    }
+
+    data_attrs = {
+        "bakejobs": True,
+        "containers": True,
+        "subcontainers": True
+    }
+
+    if to_index != -1:
+        item_to = data_to[to_index]
+    else:
+        item_to = data_to.add()
+
+    for attr in dir(item_from):
+        if exclude_attrs.get(attr, False) or exclude.get(attr, False):
+            continue
+
+        if not data_attrs.get(attr, False):
+            try:
+                setattr(item_to, attr, getattr(item_from, attr))
+            except (AttributeError, IndexError, TypeError,
+                    ValueError) as error:
+                print(f"BakeMaster Internal Warning at {copy}: {error} while setting {attr} attribute for {item_to}")  # noqa: E501
+
+            continue
+
+        # for containers only (attr == subcontainers)
+        # still, some safety adressed
+        try:
+            trash_ot = getattr(bpy_ops.bakemaster, '%s_trash' % attr)
+        except AttributeError:
+            continue
+        kwargs = {}
+        data_attr_parent = bm_get.walk_data_parent(attr)
+        if data_attr_parent != "":
+            kwargs["%s_index" % data_attr_parent[:-1]] = item_from.index
+            kwargs["bakejob_index"] = item_from.bakejob_index
+        trash_ot('INVOKE_DEFAULT', **kwargs)
+
+        # recursive copy to copy subcontainers from container
+        containers = getattr(item_from, attr)
+        for container in containers:
+            _ = copy(container, containers)
+
+    return item_to
+
+
 def Generic_ticker_Update(self, context: not None, walk_data: str,
                           double_click_ot_idname=""):
     """
@@ -120,26 +228,9 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
 
         # Define bakemaster.allow_multi_selection_drag
         # (if one-block selection)
-        has_selection, _ = bm_get.walk_data_multi_selection_data(
-            bakemaster, attr)
-        bakemaster.allow_multi_selection_drag = has_selection
-
-        if not has_selection:
-            return
-
-        old_selected_index = -1
-        for container in containers:
-            if any([not container.is_selected,
-                    container.has_drop_prompt]):
-                continue
-            if old_selected_index == -1:
-                old_selected_index = container.index
-                continue
-            if container.index != old_selected_index + 1:
-                bakemaster.allow_multi_selection_drag = False
-                break
-            old_selected_index = container.index
-
+        setattr(bakemaster, "allow_multi_selection_drag",
+                bm_get.is_oneblock_multi_selection(
+                    bakemaster, containers, attr))
         return
 
     # Skip when dragging to invalid datas
@@ -440,6 +531,40 @@ def Generic_property_in_multi_selection_Update(self, context, walk_data: str,
     bakemaster.allow_prop_in_multi_selection_update = True
 
 
+def Generic_group_type_change_Update(group, context, walk_data: str):
+    """
+    If group_type changed to Decorator, copy settings from group to all its
+    childs. If changed to Dictator, then do nothing.
+
+    Attention: called on active container!
+    """
+
+    if group.group_old_type == group.group_type:
+        return
+    group.group_old_type = group.group_type
+
+    if not group.is_group or group.group_type == 'DICTATOR':
+        return
+
+    walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
+    data, containers, attr = walk_data_getter(context.scene.bakemaster)
+
+    exclude_copy = {
+        "name": True,
+        "index": True,
+        "bakejob_index": True,
+        "is_group": True,
+        "group_is_expanded": True,
+        "group_type": True,
+        "group_is_texset": True,
+        "group_color_tag": True
+    }
+    for index in range(group.index + 1, getattr(data, "%s_len" % attr)):
+        if containers[index].ui_indent_level <= group.ui_indent_level:
+            break
+        _ = copy(group, containers, index, exclude_copy)
+
+
 def Global_bakejobs_active_index_Update(self, context):
     Generic_active_index_Update(self, context, "bakejobs")
 
@@ -462,6 +587,10 @@ def BakeJob_drag_empty_ticker_Update(self, context):
     Generic_drag_empty_ticker_Update(self, context, "bakejobs")
 
 
+def BakeJob_group_type_Update(self, context):
+    Generic_group_type_change_Update(self, context, "bakejobs")
+
+
 def Container_drop_name_Update(self, context):
     Generic_drop_name_Update(self, context, walk_data="containers",
                              adddropped_ot_idname="containers_adddropped")
@@ -480,12 +609,20 @@ def Container_drag_empty_ticker_Update(self, context):
     Generic_drag_empty_ticker_Update(self, context, "containers")
 
 
+def Container_group_type_Update(self, context):
+    Generic_group_type_change_Update(self, context, "containers")
+
+
 def Subcontainer_ticker_Update(self, context):
     Generic_ticker_Update(self, context, walk_data="subcontainers")
 
 
 def Subcontainer_drag_empty_ticker_Update(self, context):
     Generic_drag_empty_ticker_Update(self, context, "subcontainers")
+
+
+def Subcontainer_group_type_Update(self, context):
+    Generic_group_type_change_Update(self, context, "subcontainers")
 
 
 # UI Props' Updates
