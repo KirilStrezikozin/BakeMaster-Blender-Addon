@@ -495,9 +495,9 @@ def BakeJob_type_Update(self, context):
         self, context, "bakejobs", "type")
 
 
-def BakeJob_group_type_Update(self, context):
+def BakeJob_group_is_texset_Update(self, context):
     Generic_property_in_multi_selection_Update(
-        self, context, "bakejbos", "group_type")
+        self, context, "bakejobs", "group_is_texset")
 
 
 def Container_use_bake_Update(self, context):
@@ -505,9 +505,9 @@ def Container_use_bake_Update(self, context):
         self, context, "containers", "use_bake")
 
 
-def Container_group_type_Update(self, context):
+def Container_group_is_texset_Update(self, context):
     Generic_property_in_multi_selection_Update(
-        self, context, "containers", "group_type")
+        self, context, "containers", "group_is_texset")
 
 
 def Subcontainer_use_bake_Update(self, context):
@@ -515,6 +515,6 @@ def Subcontainer_use_bake_Update(self, context):
         self, context, "subcontainers", "use_bake")
 
 
-def Subcontainer_group_type_Update(self, context):
+def Subcontainer_group_is_texset_Update(self, context):
     Generic_property_in_multi_selection_Update(
-        self, context, "subcontainers", "group_type")
+        self, context, "subcontainers", "group_is_texset")

@@ -235,9 +235,50 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
 
     def draw_group_props(self, context, row, data, container, icon,
                          active_data, active_propname, index, allow_drag_viz,
-                         drag_layout):
+                         drag_layout, allow_multi_select_viz):
         if not container.is_group:
             return
+
+        bakemaster = context.scene.bakemaster
+
+        old_emboss = row.emboss
+        if allow_multi_select_viz:
+            row.emboss = 'NONE'
+        else:
+            row.emboss = 'NORMAL'
+        texset_icon = bm_ui_utils.get_icon_id(
+            bakemaster, "bakemaster_texset.png")
+
+        if container.index == getattr(data, active_propname):
+
+            subrow = row.row()
+            self.draw_prop(
+                bakemaster, self.data_name, subrow, "BoolProperty", container,
+                "group_is_texset", None, text="", icon_value=texset_icon)
+
+            if not container.group_is_texset:
+                subrow.active = False
+
+        elif container.group_is_texset:
+            subrow = row.row()
+
+            if allow_multi_select_viz:
+                self.draw_prop(
+                    bakemaster, self.data_name, subrow, "BoolProperty",
+                    container, "group_is_texset", None, text="",
+                    icon_value=texset_icon)
+                subrow.enabled = False
+            else:
+                subrow.label(text="", icon_value=texset_icon)
+
+        else:
+            row.emboss = old_emboss
+            return
+
+        if bakemaster.allow_drag and bakemaster.get_drag_to_index(
+                self.data_name) != -1:
+            subrow.enabled = False
+        row.emboss = old_emboss
 
     def draw_drag_placeholder(self, context, col, data, container, icon,
                               active_data, active_propname, index,
@@ -526,7 +567,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
 
         self.draw_group_props(context, row, data, container, icon, active_data,
                               active_propname, index, allow_drag_viz,
-                              drag_layout)
+                              drag_layout, allow_multi_select_viz)
 
         self.draw_operators(context, row, data, container, icon, active_data,
                             active_propname, index,
