@@ -225,3 +225,51 @@ def object_ui_info(bakemaster, objects, name: str):
             return None, '', '', '', 'NOIMAGE', errors['NOIMAGE']
 
     return object, object.type, icon_type, info[object.type], None, ""
+
+
+def parent_group(container: not None, containers,
+                 stop_at_prop_name: str, stop_at_prop_value,
+                 return_at_prop_name: str, return_at_prop_value):
+    """
+    Get container's parent group.
+
+    Returned container has attribute of stop_at_prop_name equal
+    to stop_at_prop_value.
+
+    Climb up until condition above is met and parent's attribute
+    of return_at_prop_name equals return_at_prop_value.
+
+    The second return value defines whether the last condition was met.
+    """
+
+    explicit_none = False
+    if container.is_group and container.group_type == 'DICTATOR':
+        explicit_none = True
+
+    if container.parent_group_index == -1:
+        return None, False
+
+    s_parent = None  # parent to get settings from
+
+    while True:
+        if container.parent_group_index != -1 and not container.is_group:
+            container = containers[container.parent_group_index]
+
+        if s_parent is None and getattr(
+                container, stop_at_prop_name) == stop_at_prop_value:
+            s_parent = container
+
+        if s_parent is not None and all(
+                [getattr(container,
+                         return_at_prop_name) == return_at_prop_value,
+                 getattr(container, stop_at_prop_name) == stop_at_prop_value]):
+            if explicit_none:
+                return None, True
+            return s_parent, True
+
+        if container.parent_group_index == -1:
+            if explicit_none:
+                return None, False
+            return s_parent, False
+
+        container = containers[container.parent_group_index]
