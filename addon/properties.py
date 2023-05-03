@@ -111,29 +111,24 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         Get index and ui_indent_level of container holding both
         containers of gi_group_index, i_index.
 
-        Usually, i_index represents a container with lover ui_indent_level.
+        Usually, i_index represents a container with higher ui_indent_level.
         (e.g first give container below, then container above)
-
-        Note:
-        If given in reversed order, a container stepbacked by the difference of
-        gi_group_level and i_group_level above container of i_index will
-        define return values.
         """
 
-        level_diff = abs(gi_group_level - i_group_level)
+        while True:
+            c1 = containers[gi_group_index]
+            c2 = containers[i_index]
 
-        mutual = containers[gi_group_index]
-        for _ in range(level_diff - 1):
-            if mutual.parent_group_index == -1:
-                break
-            mutual = containers[mutual.parent_group_index]
+            if c1.index == c2.index:
+                return c1.index, c1.ui_indent_level
 
-        if mutual.parent_group_index == -1:
-            mutual_ui_indent_level = 0
-        else:
-            mutual_ui_indent_level = containers[
-                mutual.parent_group_index].ui_indent_level
-        return mutual.parent_group_index, mutual_ui_indent_level
+            elif c1.parent_group_index == -1 or c2.parent_group_index == -1:
+                return -1, 0
+
+            if i_index > gi_group_index:
+                i_index = c2.parent_group_index
+            elif gi_group_index > i_index:
+                gi_group_index = c1.parent_group_index
 
     def resolve_top_group(self, containers: not None, container=None):
         if container is None:
