@@ -430,6 +430,11 @@ def Generic_property_in_multi_selection_Update(self, context, walk_data: str,
     for container in containers:
         if not container.is_selected:
             continue
+
+        # skip setting group prop value if container isn't a group
+        elif prop_name.find("group") == 0 and not container.is_group:
+            continue
+
         setattr(container, prop_name, prop_val)
 
     bakemaster.allow_prop_in_multi_selection_update = True

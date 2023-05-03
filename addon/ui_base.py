@@ -87,9 +87,13 @@ class BM_UI_ml_draw():
         props_equal = True
         old_prop_val = getattr(data, property)
         for container in containers:
-            if any([not container.is_selected, container.is_drag_empty,
-                    container.has_drop_prompt]):
+            if not container.is_selected or container.has_drop_prompt:
                 continue
+
+            # skip setting group prop value if container isn't a group
+            elif property.find("group") == 0 and not container.is_group:
+                continue
+
             if getattr(container, property) != old_prop_val:
                 props_equal = False
                 break
