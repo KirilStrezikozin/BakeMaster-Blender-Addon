@@ -940,7 +940,7 @@ class BM_OT_BakeJobs_AddDropped(BM_OT_Generic_AddDropped):
         for name in add_names:
             bpy_ops.bakemaster.containers_add('INVOKE_DEFAULT',
                                               bakejob_index=new_bakejob.index,
-                                              name=name)
+                                              new_name=name)
 
     def invoke(self, context, _):
         try:
@@ -981,13 +981,13 @@ class BM_OT_BakeJobs_Trash(Operator):
 
 class BM_OT_BakeJob_Rename(Operator):
     bl_idname = 'bakemaster.bakejob_rename'
-    bl_label = "Rename the Bake Job"
+    bl_label = "Rename Bake Job"
     bl_description = "Click to rename the Bake Job"
     bl_options = {'INTERNAL', 'UNDO'}
 
     index: IntProperty(default=-1)
 
-    name: StringProperty(
+    new_name: StringProperty(
         name="New name",
         description="Enter new name",
         default="",
@@ -998,7 +998,7 @@ class BM_OT_BakeJob_Rename(Operator):
     def execute(self, _):
         if self.bakejob is None:
             return {'CANCELLED'}
-        self.bakejob.name = self.name
+        self.bakejob.name = self.new_name
         return {'FINISHED'}
 
     def invoke(self, context, _):
@@ -1009,7 +1009,7 @@ class BM_OT_BakeJob_Rename(Operator):
         if self.bakejob is None:
             self.report({'WARNING'}, "Internal error: Cannot resolve Bake Job")
             return {'CANCELLED'}
-        self.name = self.bakejob.name
+        self.new_name = self.bakejob.name
 
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
@@ -1159,7 +1159,7 @@ class BM_OT_Containers_Add(Operator):
     bl_options = {'INTERNAL', 'UNDO'}
 
     bakejob_index: IntProperty(default=-1)
-    name: StringProperty(default="")
+    new_name: StringProperty(default="")
 
     def add(self, bakejob, name: str):
         new_container = bakejob.containers.add()
@@ -1190,25 +1190,25 @@ class BM_OT_Containers_Add(Operator):
 
         errors = 0
 
-        if self.name == "":
-            names = context.selected_objects
+        if self.new_name == "":
+            names = [object.name for object in context.selected_objects]
         else:
-            names = [self]
+            names = [self.new_name]
 
         if len(names) == 0:
             self.report({'INFO'}, "Nothing is selected to add")
             return {'CANCELLED'}
 
-        for name_holder in names:
+        for name in names:
             object, _, _, _, _, error_message = bm_get.object_ui_info(
-                bakemaster, context.scene.objects, name_holder.name)
+                bakemaster, context.scene.objects, name)
 
             if object is None:
                 print("BakeMaster Object Add Error: %s" % error_message)
                 errors += 1
                 continue
 
-            self.add(bakejob, name_holder.name)
+            self.add(bakejob, name)
 
         if errors:
             self.report({'WARNING'},
@@ -1306,7 +1306,7 @@ class BM_OT_Containers_AddDropped(BM_OT_Generic_AddDropped):
         for name in add_names:
             add_ot('INVOKE_DEFAULT',
                    bakejob_index=bakemaster.bakejobs_active_index,
-                   name=name)
+                   new_name=name)
 
     def invoke(self, context, _):
         bakemaster = context.scene.bakemaster
@@ -1359,15 +1359,21 @@ class BM_OT_Containers_Trash(Operator):
 
 class BM_OT_Container_Rename(Operator):
     bl_idname = 'bakemaster.container_rename'
-    bl_label = "Relink the Object to the new one"
+    bl_label = "Rename"
     bl_description = "Click to rename the Object"
     bl_options = {'INTERNAL', 'UNDO'}
 
     index: IntProperty(default=-1)
 
-    name: StringProperty(
+    new_name: StringProperty(
         name="New name",
         description="Enter new name",
+        default="",
+        options={'SKIP_SAVE'})
+
+    new_link: StringProperty(
+        name="Relink to",
+        description="Relink this item to a new Object",
         default="",
         options={'SKIP_SAVE'})
 
@@ -1379,19 +1385,22 @@ class BM_OT_Container_Rename(Operator):
             return {'CANCELLED'}
 
         if self.bakejob_type == 'OBJECTS':
+            if self.container.is_group:
+                self.container.name = self.new_name
+                return {'FINISHED'}
+
             object, _, _, _, _, error_message = bm_get.object_ui_info(
-                context.scene.bakemaster, context.scene.objects, self.name)
+                context.scene.bakemaster, context.scene.objects, self.new_link)
 
             if object is None:
                 self.report({'ERROR'}, error_message)
                 return {'CANCELLED'}
 
-            self.container.obj_name = self.name
+            self.container.name = self.new_link
 
         elif self.bakejob_type == 'MAPS':
             pass
 
-        self.container.name = self.name
         return {'FINISHED'}
 
     def invoke(self, context, _):
@@ -1403,7 +1412,8 @@ class BM_OT_Container_Rename(Operator):
                         "Internal error: Cannot resolve Container")
             return {'CANCELLED'}
 
-        self.name = self.container.name
+        self.new_name = self.container.name
+        self.new_link = self.container.name
         self.bakejob_type = bakejob.type
 
         wm = context.window_manager
@@ -1413,7 +1423,11 @@ class BM_OT_Container_Rename(Operator):
         layout = self.layout
         layout.use_property_split = False
         layout.use_property_decorate = False
-        layout.prop(self, "name")
+
+        if self.container.is_group:
+            layout.prop(self, "new_name")
+        else:
+            layout.prop(self, "new_link")
 
 
 class BM_OT_Containers_GroupToggleExpand(Operator):
