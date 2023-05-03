@@ -122,17 +122,17 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
 
         col_heading = split.column()
         col_heading.alignment = 'RIGHT'
-        col_heading.label(text="Developer")
+        col_heading.label(text="Developer mode")
         col = split.column()
-        col.prop(bakemaster, "prefs_use_developer_mode")
+        col.prop(bakemaster, "prefs_use_developer_mode", text="Show Options")
         if bakemaster.prefs_use_developer_mode:
             col.prop(bakemaster, "prefs_developer_use_orange_ob_icons")
 
             col_aligned = col.column(align=True)
             col_aligned.prop(
-                bakemaster, "prefs_developer_use_group_descenting_lines")
+                bakemaster, "prefs_developer_use_group_descending_lines")
             col_aligned.prop(
-                bakemaster, "prefs_developer_groups_descenting_lines_symbol")
+                bakemaster, "prefs_developer_groups_descending_lines_symbol")
             col_aligned.prop(bakemaster, "prefs_developer_ui_indent_width")
 
             col.prop(bakemaster, "prefs_developer_use_show_groups_indexes")
@@ -421,7 +421,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         else:
             indent_ad_text = ""
 
-        if not bakemaster.prefs_developer_use_group_descenting_lines:
+        if not bakemaster.prefs_developer_use_group_descending_lines:
             native_indent = " "*(
                 bakemaster.prefs_developer_ui_indent_width + 6)
 
@@ -433,7 +433,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         spaces_after = " "*bakemaster.prefs_developer_ui_indent_width
         native_indent = "%s%s%s " % (
                 "     ",
-                bakemaster.prefs_developer_groups_descenting_lines_symbol,
+                bakemaster.prefs_developer_groups_descending_lines_symbol,
                 spaces_after)
 
         row.label(text=" %s%s" % (

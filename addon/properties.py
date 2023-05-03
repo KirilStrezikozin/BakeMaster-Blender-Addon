@@ -526,12 +526,12 @@ class Global(BM_PropertyGroup_Helper):
         description="Indent width for items in groups. Recommended: from 0 to 4",
         default=0)
 
-    prefs_developer_use_group_descenting_lines: BoolProperty(
-        name="Descenting lines for Groups",
+    prefs_developer_use_group_descending_lines: BoolProperty(
+        name="Descending lines for Groups",
         default=True)
 
-    prefs_developer_groups_descenting_lines_symbol: StringProperty(
-        name="Descenting lines symbol",
+    prefs_developer_groups_descending_lines_symbol: StringProperty(
+        name="Descending lines symbol",
         description="Recommended: | ˙ . -",
         default="˙")
 
