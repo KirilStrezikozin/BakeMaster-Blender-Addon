@@ -311,19 +311,28 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
 
     def draw_drag_empty(self, context, col, row, data, container, icon,
                         active_data, active_propname, index, allow_drag_viz,
-                        drag_layout):
+                        drag_layout, allow_multi_select_viz):
         bakemaster = context.scene.bakemaster
         drag_to_index = bakemaster.get_drag_to_index(self.data_name)
         if any([not allow_drag_viz,
                 drag_to_index == -1]):
             return
 
+        containers = getattr(data, self.data_name)
+        is_container_last = getattr(
+            data, "%s_len" % self.data_name) - 1 == container.index
+
+        # Don't draw drag_empties inside multi selection
+        if not is_container_last and all(
+                [containers[container.index + 1].is_selected,
+                 allow_multi_select_viz]):
+            return
+
         allow_explicit_group_drag_empty = False
 
         # Explicit drag_empty draw
         if not container.is_drag_empty:
-            containers = getattr(data, self.data_name)
-            if getattr(data, "%s_len" % self.data_name) - 1 == container.index:
+            if is_container_last:
                 pass
             elif getattr(containers[container.index + 1],
                          "ui_indent_level") < container.ui_indent_level:
@@ -446,7 +455,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
                     bakemaster.get_drag_to_index(self.data_name) != -1]):
             return False
 
-        if drag_layout == 'DEFAULT':
+        if drag_layout in ['DEFAULT', 'TRANS_FROM']:
             row.active = drag_to_row_active
 
             # back arrow near group user's dragging into
@@ -585,7 +594,8 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         # draw drag_empty
         self.draw_drag_empty(
             context, col, row, data, container, icon, active_data,
-            active_propname, index, allow_drag_viz, drag_layout)
+            active_propname, index, allow_drag_viz, drag_layout,
+            allow_multi_select_viz)
 
         self.draw_arrow(row, bakemaster, data, container, allow_draw_arrow)
 
