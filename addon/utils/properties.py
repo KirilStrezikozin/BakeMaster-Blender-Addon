@@ -294,12 +294,15 @@ def is_drag_group_into_itself(self, bakemaster, data, containers, walk_data):
     if all([self.index > drag_from_index,
             walk_data == bakemaster.drag_data_from]):
 
-        m_group_index, m_group_level = data.resolve_mutual_group(
+        m_gi, m_gl = data.resolve_mutual_group(
             containers, self.index, self.ui_indent_level,
             drag_from_index, containers[drag_from_index].ui_indent_level)
 
-        if all([m_group_index == drag_from_index,
-                m_group_level >= containers[drag_from_index].ui_indent_level]):
+        if all([any([m_gi == drag_from_index,
+                     m_gi == containers[drag_from_index].parent_group_index]),
+                any([m_gl >= containers[drag_from_index].ui_indent_level,
+                     m_gl >= containers[drag_from_index].ui_indent_level - 1])
+                ]):
             return True
     return False
 
