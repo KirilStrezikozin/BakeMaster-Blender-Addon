@@ -509,7 +509,10 @@ def Generic_property_in_multi_selection_Update(self, context, walk_data: str,
     bakemaster.allow_prop_in_multi_selection_update = False
 
     walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
-    _, containers, _ = walk_data_getter(bakemaster)
+    data, containers, _ = walk_data_getter(bakemaster)
+    if data is None:
+        print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")
+        return
 
     # foreach_get/set does not work for enum
     # see https://projects.blender.org/blender/blender/issues/92621
@@ -551,6 +554,9 @@ def Generic_group_type_change_Update(group, context, walk_data: str):
 
     walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
     data, containers, attr = walk_data_getter(context.scene.bakemaster)
+    if data is None:
+        print(f"BakeMaster Internal Error: cannot resolve walk data at {group}")  # noqa: E501
+        return
 
     exclude_copy = {
         "name": True,
@@ -562,10 +568,30 @@ def Generic_group_type_change_Update(group, context, walk_data: str):
         "group_is_texset": True,
         "group_color_tag": True
     }
+
+    forbid_copy_cache = {}
+
     for index in range(group.index + 1, getattr(data, "%s_len" % attr)):
-        if containers[index].ui_indent_level <= group.ui_indent_level:
+        container = containers[index]
+
+        if container.ui_indent_level <= group.ui_indent_level:
             break
+
+        # skip copying to items that have their own dictator groups
+        elif container.is_group and container.group_type == 'DICTATOR':
+            forbid_copy_cache[str(index)] = True
+            continue
+        elif forbid_copy_cache.get(str(container.parent_group_index), False):
+            forbid_copy_cache[str(index)] = True
+            continue
+
         _ = copy(group, containers, index, exclude_copy)
+
+        if container.is_group and container.group_type == 'DECORATOR':
+            container.use_bake = True
+
+    # because group_type changed to Decorator and we don't need inactive ui
+    group.use_bake = True
 
 
 def Global_bakejobs_active_index_Update(self, context):
