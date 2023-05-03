@@ -216,6 +216,16 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         bakemaster = context.scene.bakemaster
         row.emboss = 'NONE'
 
+        group, forbid_bake = bm_get.parent_group(
+            container, getattr(data, self.data_name), "group_type", "DICTATOR",
+            "use_bake", False)
+
+        if group is not None:
+            row.active = not forbid_bake
+            return
+        else:
+            row.active = container.use_bake
+
         if container.use_bake:
             icon = 'RESTRICT_RENDER_OFF'
         else:
@@ -782,31 +792,43 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
         bakemaster = context.scene.bakemaster
         row.emboss = 'NONE'
 
+        group, forbid_bake = bm_get.parent_group(
+            container, getattr(data, self.data_name), "group_type", "DICTATOR",
+            "use_bake", False)
+
         # unpack third ticker_icon() return value -> container_exists
         _, _, container_exists = self.ticker_icon(context, bakemaster,
                                                   data, container)
-        row.active = container_exists
 
-        if container.use_bake:
-            icon = 'RESTRICT_RENDER_OFF'
+        if group is None:
+            if container.use_bake:
+                icon = 'RESTRICT_RENDER_OFF'
+            else:
+                icon = 'RESTRICT_RENDER_ON'
+                row.active = False
+
+            row.active &= container_exists
+
+            if not container.is_group or container.group_type != 'DECORATOR':
+                subrow = row.row()
+                self.draw_prop(bakemaster, self.data_name, subrow,
+                               "BoolProperty", container, "use_bake", None,
+                               text="", icon=icon)
+                if bakemaster.allow_drag and bakemaster.get_drag_to_index(
+                        self.data_name) != -1:
+                    subrow.enabled = False
+
         else:
-            icon = 'RESTRICT_RENDER_ON'
-            row.active = False
-
-        if not container.is_group or container.group_type != 'DECORATOR':
-            subrow = row.row()
-            self.draw_prop(bakemaster, self.data_name, subrow, "BoolProperty",
-                           container, "use_bake", None, text="", icon=icon)
-            if bakemaster.allow_drag and bakemaster.get_drag_to_index(
-                    self.data_name) != -1:
-                subrow.enabled = False
+            row.active = not forbid_bake
 
         if not container.is_group:
             return
+        else:
+            row.active = not forbid_bake and container.use_bake
 
         # fade out groups when filtering on name
         if self.filter_name:
-            row.active = False or self.is_pattern_match(
+            row.active &= False or self.is_pattern_match(
                 container.name, self.filter_name, self.use_filter_invert)
 
         if getattr(data,
