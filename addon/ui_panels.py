@@ -131,8 +131,6 @@ class BM_PREFS_AddonPreferences(AddonPreferences):
             col_aligned = col.column(align=True)
             col_aligned.prop(
                 bakemaster, "prefs_developer_use_group_descending_lines")
-            col_aligned.prop(
-                bakemaster, "prefs_developer_groups_descending_lines_symbol")
             col_aligned.prop(bakemaster, "prefs_developer_ui_indent_width")
 
             col.prop(bakemaster, "prefs_developer_use_show_groups_indexes")
@@ -301,22 +299,22 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             return
 
         self.draw_drag_placeholder_row(context.scene.bakemaster, col,
-                                       container)
+                                       data, container)
 
-    def draw_drag_placeholder_row(self, bakemaster, col, container):
+    def draw_drag_placeholder_row(self, bakemaster, col, data, container):
         dp_row = col.row()
         dp_row.alignment = 'LEFT'
 
-        self.draw_indent(dp_row, bakemaster, container)
+        self.draw_indent(dp_row, bakemaster, data, container)
 
         drag_placeholder = dp_row.box()
         drag_placeholder.label(text="")
         drag_placeholder.scale_y = 0.01
 
-    def draw_drag_empty_row(self, bakemaster, col, container):
+    def draw_drag_empty_row(self, bakemaster, col, data, container):
         row = col.row()
         row.alignment = 'LEFT'
-        self.draw_indent(row, bakemaster, container)
+        self.draw_indent(row, bakemaster, data, container)
         return row
 
     def draw_drag_empty(self, context, col, row, data, container, icon,
@@ -362,21 +360,22 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
                 row.label(text="", icon='BACK')
 
             if drag_layout != 'TRANS_TO':
-                self.draw_drag_placeholder_row(bakemaster, col, container)
+                self.draw_drag_placeholder_row(bakemaster, col, data,
+                                               container)
                 return
 
-            row = self.draw_drag_empty_row(bakemaster, col, container)
+            row = self.draw_drag_empty_row(bakemaster, col, data, container)
             row = row.box()
             row.alignment = 'LEFT'
             row.scale_y = 0.4
             text = "Move into new..."
 
         elif drag_layout == 'TRANS_TO':
-            row = self.draw_drag_empty_row(bakemaster, col, container)
+            row = self.draw_drag_empty_row(bakemaster, col, data, container)
             text = "Move into new..."
 
         elif drag_layout in {'DEFAULT', 'TRANS_FROM'}:
-            row = self.draw_drag_empty_row(bakemaster, col, container)
+            row = self.draw_drag_empty_row(bakemaster, col, data, container)
             text = "..."
 
         else:
@@ -411,11 +410,23 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
 
         return False
 
-    def draw_indent(self, row, bakemaster, container):
-        if container.parent_group_index == -1:
-            row.label(text=" ")
-            return
+    def get_indent_line_color(self, bakemaster, data, container,
+                              line_index: int):
+        color_tag = ""
+        containers = getattr(data, self.data_name)
 
+        while container.ui_indent_level != line_index:
+            if any([container.parent_group_index == -1,
+                    container.ui_indent_level < line_index]):
+                color_tag = ""
+                break
+            container = containers[container.parent_group_index]
+            color_tag = container.group_color_tag
+
+        return bm_ui_utils.get_icon_id(
+            bakemaster, "bakemaster_indent_line%s.png" % color_tag)
+
+    def draw_indent(self, row, bakemaster, data, container):
         if bakemaster.prefs_developer_use_show_groups_indexes:
             indent_ad_text = str(container.parent_group_index)
         else:
@@ -430,15 +441,11 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
                 indent_ad_text))
             return
 
-        spaces_after = " "*bakemaster.prefs_developer_ui_indent_width
-        native_indent = "%s%s%s " % (
-                "     ",
-                bakemaster.prefs_developer_groups_descending_lines_symbol,
-                spaces_after)
-
-        row.label(text=" %s%s" % (
-            native_indent*container.ui_indent_level,
-            indent_ad_text))
+        for line_index in range(container.ui_indent_level):
+            row.label(text="", icon_value=self.get_indent_line_color(
+                bakemaster, data, container, line_index))
+            if bakemaster.prefs_developer_ui_indent_width > 0:
+                row.label(text=" "*bakemaster.prefs_developer_ui_indent_width)
 
     def draw_box_prompt(self, layout, text: str,
                         container=None, ticker_atr=""):
@@ -537,7 +544,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             layout.active = container.is_selected
             row.emboss = 'NONE'
 
-        self.draw_indent(row, bakemaster, container)
+        self.draw_indent(row, bakemaster, data, container)
 
         # draw group's group_is_expanded toggle
         if container.is_group:

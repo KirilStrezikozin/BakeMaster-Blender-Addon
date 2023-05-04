@@ -530,11 +530,6 @@ class Global(BM_PropertyGroup_Helper):
         name="Descending lines for Groups",
         default=True)
 
-    prefs_developer_groups_descending_lines_symbol: StringProperty(
-        name="Descending lines symbol",
-        description="Recommended: | ˙ . -",
-        default="˙")
-
     prefs_developer_use_orange_ob_icons: BoolProperty(
         name="Orange Object icon",
         description="Toggle between orange and white object icons",
