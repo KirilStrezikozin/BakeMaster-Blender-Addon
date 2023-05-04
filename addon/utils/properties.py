@@ -80,7 +80,10 @@ def copy(item_from, data_to, to_index=-1, exclude={}):
             "is_group": True,
             "group_is_expanded": True,
             "group_type": True,
-            "group_is_texset": True
+            "group_is_texset": True,
+            "group_color_tag": True,
+            "lowpoly_index": True,
+            "lowpoly_name": True
         }
     Default exlude{} is:
         {
@@ -566,7 +569,9 @@ def Generic_group_type_change_Update(group, context, walk_data: str):
         "group_is_expanded": True,
         "group_type": True,
         "group_is_texset": True,
-        "group_color_tag": True
+        "group_color_tag": True,
+        "lowpoly_index": True,
+        "lowpoly_name": True
     }
 
     forbid_copy_cache = {}

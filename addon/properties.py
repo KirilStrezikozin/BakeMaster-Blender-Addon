@@ -172,6 +172,9 @@ class Subcontainer(BM_PropertyGroup_Helper):
                ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")],  # noqa: E501
         update=bm_props_utils.Subcontainer_group_type_Update)
 
+    lowpoly_index: IntProperty(default=-1)
+    lowpoly_name: StringProperty(default="")
+
     # UI Props
     group_is_texset: BoolProperty(
         name="Texture Set",
@@ -243,6 +246,9 @@ class Container(BM_PropertyGroup_Helper):
         items=[('DICTATOR', "Dictator", "Group will dictate all settigs to its childs"),  # noqa: E501
                ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")],  # noqa: E501
         update=bm_props_utils.Container_group_type_Update)
+
+    lowpoly_index: IntProperty(default=-1)
+    lowpoly_name: StringProperty(default="")
 
     # UI Props
     group_is_texset: BoolProperty(
@@ -328,6 +334,9 @@ class BakeJob(BM_PropertyGroup_Helper):
         items=[('DICTATOR', "Dictator", "Group will dictate all settigs to its childs"),  # noqa: E501
                ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")],  # noqa: E501
         update=bm_props_utils.BakeJob_group_type_Update)
+
+    lowpoly_index: IntProperty(default=-1)
+    lowpoly_name: StringProperty(default="")
 
     # UI Props
     group_is_texset: BoolProperty(
