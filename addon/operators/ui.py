@@ -1585,6 +1585,7 @@ class BM_OT_Containers_Group(Operator):
 
         new_group = bakejob.containers.add()
         new_group.name = name
+        # new_group.bakejob_index = bakejob.index -> in indexes_recalc()
         new_group.is_group = True
         new_group.ui_indent_level = group_level
 
