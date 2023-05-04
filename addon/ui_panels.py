@@ -302,7 +302,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
                                        data, container)
 
     def draw_drag_placeholder_row(self, bakemaster, col, data, container):
-        dp_row = col.row()
+        dp_row = col.row(align=True)
         dp_row.alignment = 'LEFT'
 
         self.draw_indent(dp_row, bakemaster, data, container)
@@ -312,7 +312,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         drag_placeholder.scale_y = 0.01
 
     def draw_drag_empty_row(self, bakemaster, col, data, container):
-        row = col.row()
+        row = col.row(align=True)
         row.alignment = 'LEFT'
         self.draw_indent(row, bakemaster, data, container)
         return row
