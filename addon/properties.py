@@ -235,7 +235,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         elif index < 0:
             return None
 
-        elif self.index == getattr(data, "%s_len" % attr) - 1:
+        elif self.index >= getattr(data, "%s_len" % attr) - 1:
             return None
 
         elif containers[self.index + 1].lowpoly_index != self.index:
@@ -247,7 +247,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         while count != index:
             count += 1
 
-            if self.index + 1 + count == getattr(data, "%s_len" % attr) - 1:
+            if self.index + 1 + count >= getattr(data, "%s_len" % attr) - 1:
                 return None
 
             elif not getattr(containers[self.index + 1 + count],
@@ -261,7 +261,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         else:
             return container
 
-    def get_highpoly(self, data, containers, attr, index: int):
+    def get_highpoly(self, data, containers, attr, index=0):
         """
         Get container's highpoly of given index.
         Returns None if invalid.
@@ -270,7 +270,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         return self.__generic_get(data, containers, attr, index,
                                   "highpoly")
 
-    def get_cage(self, data, containers, attr, index: int):
+    def get_cage(self, data, containers, attr, index=0):
         """
         Get container's cage of given index.
         Returns None if invalid.
@@ -279,7 +279,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         return self.__generic_get(data, containers, attr, index,
                                   "cage")
 
-    def get_decal(self, data, containers, attr, index: int):
+    def get_decal(self, data, containers, attr, index=0):
         """
         Get container's decal of given index.
         Returns None if invalid.
