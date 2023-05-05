@@ -149,7 +149,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         Return True if container is lowpoly.
         """
 
-        return self.lowpoly_index == -1
+        return not self.is_group and self.lowpoly_index == -1
 
     def get_is_highpoly(self):
         """
