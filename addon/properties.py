@@ -222,7 +222,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         Pseudo-private method. Call get_highpoly(...), get_cage(...),
         get_decal(...) instead.
 
-        Receives type in {"get_highpoly", "get_cage", "get_decal"}.
+        Receives type in {"get_is_highpoly", "get_is_cage", "get_is_decal"}.
         """
 
         if not self.get_is_lowpoly():
@@ -246,8 +246,6 @@ class BM_PropertyGroup_Helper(PropertyGroup):
             if self.index + 1 + count == getattr(data, "%s_len" % attr) - 1:
                 return None
 
-            elif containers[self.index + 1 + count].get_is_lowpoly():
-                return None
             elif not getattr(containers[self.index + 1 + count], type)():
                 continue
 
@@ -265,7 +263,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         """
 
         return self.__generic_get(data, containers, attr, index,
-                                  "get_highpoly")
+                                  "get_is_highpoly")
 
     def get_cage(self, data, containers, attr, index: int):
         """
@@ -274,7 +272,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         """
 
         return self.__generic_get(data, containers, attr, index,
-                                  "get_cage")
+                                  "get_is_cage")
 
     def get_decal(self, data, containers, attr, index: int):
         """
@@ -283,7 +281,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         """
 
         return self.__generic_get(data, containers, attr, index,
-                                  "get_decal")
+                                  "get_is_decal")
 
 
 class Subcontainer(BM_PropertyGroup_Helper):
