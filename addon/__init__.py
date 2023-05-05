@@ -108,13 +108,14 @@ classes = (
     operators_ui.BM_OT_Containers_AddDropped,
     operators_ui.BM_OT_Containers_Trash,
     operators_ui.BM_OT_Container_Rename,
-    operators_ui.BM_OT_Containers_GroupToggleExpand,
+    operators_ui.BM_OT_Containers_Toggle_Expand,
     operators_ui.BM_OT_Containers_GroupOptions,
     operators_ui.BM_OT_Containers_Group_SetIcon,
     operators_ui.BM_OT_Containers_Group,
     operators_ui.BM_OT_Containers_Ungroup,
 
     operators_ui.BM_OT_Subcontainers_Trash,
+    operators_ui.BM_OT_Subcontainers_Toggle_Expand,
 
     operators_ui.BM_OT_FileChooseDialog,
     operators_ui.BM_OT_Setup,
