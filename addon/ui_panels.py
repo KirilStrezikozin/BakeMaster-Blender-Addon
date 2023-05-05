@@ -558,16 +558,18 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
 
             # Groups are shown expanded when filtering on name
             if not self.filter_name:
-                group_toggle_expand_ot = row.operator(
-                    "bakemaster.containers_grouptoggleexpand", text="",
-                    icon=icon)
+
+                toggle_expand_ot = row.operator(
+                    "bakemaster.%s_toggle_expand" % self.data_name,
+                    text="", icon=icon)
+
+                toggle_expand_ot.bakejob_index = container.bakejob_index
+                toggle_expand_ot.index = container.index
+
                 parent_index_name = "%s_index" % bm_get.walk_data_parent(
                     self.data_name)[:-1]
-                container_index_name = "%s_index" % self.data_name[:-1]
-                setattr(group_toggle_expand_ot, parent_index_name,
+                setattr(toggle_expand_ot, parent_index_name,
                         getattr(container, parent_index_name))
-                setattr(group_toggle_expand_ot, container_index_name,
-                        container.index)
             else:
                 row.label(text="", icon='DISCLOSURE_TRI_DOWN')
 
@@ -806,6 +808,41 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
         # unpack third ticker_icon() return value -> container_exists
         _, _, container_exists = self.ticker_icon(context, bakemaster,
                                                   data, container)
+
+        # draw is_expanded for lowpolies
+        if container.get_is_lowpoly():
+            subrow = row.row(align=True)
+            subrow.emboss = 'NONE'
+
+            if container.is_expanded:
+                icon = 'DISCLOSURE_TRI_DOWN'
+            else:
+                icon = 'DISCLOSURE_TRI_RIGHT'
+
+            # contianers are shown expanded when filtering on name
+            if not self.filter_name:
+
+                toggle_expand_ot = subrow.operator(
+                    "bakemaster.%s_toggle_expand" % self.data_name,
+                    text="", icon=icon)
+
+                toggle_expand_ot.bakejob_index = container.bakejob_index
+                toggle_expand_ot.index = container.index
+
+                parent_index_name = "%s_index" % bm_get.walk_data_parent(
+                    self.data_name)[:-1]
+                setattr(toggle_expand_ot, parent_index_name,
+                        getattr(container, parent_index_name))
+            else:
+                subrow.label(text="", icon='DISCLOSURE_TRI_DOWN')
+
+            # fade toggle_expand if lowpoly has no HCDs
+            containers = getattr(data, self.data_name)
+            if not any(
+                    [container.get_highpoly(data, containers, self.data_name),
+                     container.get_cage(data, containers, self.data_name),
+                     container.get_decal(data, containers, self.data_name)]):
+                subrow.active = False
 
         if group is None:
             if container.use_bake:
