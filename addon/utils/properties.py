@@ -534,6 +534,9 @@ def Generic_property_in_multi_selection_Update(self, context, walk_data: str,
         # skip setting group prop value if container isn't a group
         elif prop_name.find("group") == 0 and not container.is_group:
             continue
+        # skip setting props for decorator group
+        elif container.is_group and container.group_type == 'DECORATOR':
+            continue
 
         setattr(container, prop_name, prop_val)
 
