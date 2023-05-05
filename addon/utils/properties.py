@@ -597,6 +597,8 @@ def Generic_group_type_change_Update(group, context, walk_data: str):
 
     # because group_type changed to Decorator and we don't need inactive ui
     group.use_bake = True
+    # also reset group_color_tag to default white for Decorator Group
+    group.group_color_tag = ""
 
 
 def Global_bakejobs_active_index_Update(self, context):
