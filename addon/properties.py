@@ -174,6 +174,8 @@ class Subcontainer(BM_PropertyGroup_Helper):
 
     lowpoly_index: IntProperty(default=-1)
     lowpoly_name: StringProperty(default="")
+    is_cage: BoolProperty(default=False)
+    is_decal: BoolProperty(default=False)
 
     # UI Props
     group_is_texset: BoolProperty(
@@ -249,6 +251,8 @@ class Container(BM_PropertyGroup_Helper):
 
     lowpoly_index: IntProperty(default=-1)
     lowpoly_name: StringProperty(default="")
+    is_cage: BoolProperty(default=False)
+    is_decal: BoolProperty(default=False)
 
     # UI Props
     group_is_texset: BoolProperty(
@@ -337,6 +341,8 @@ class BakeJob(BM_PropertyGroup_Helper):
 
     lowpoly_index: IntProperty(default=-1)
     lowpoly_name: StringProperty(default="")
+    is_cage: BoolProperty(default=False)
+    is_decal: BoolProperty(default=False)
 
     # UI Props
     group_is_texset: BoolProperty(
