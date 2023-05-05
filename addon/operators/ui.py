@@ -782,7 +782,7 @@ class BM_OT_WalkData_Move(Operator):
         step = 0
 
         for container in containers:
-            if any([container.index == containers_len,
+            if any([container.index >= containers_len,
                     container.has_drop_prompt,
                     not container.is_selected]):
                 continue
@@ -1019,7 +1019,7 @@ class BM_OT_BakeJob_Rename(Operator):
         layout = self.layout
         layout.use_property_split = False
         layout.use_property_decorate = False
-        layout.prop(self, "name")
+        layout.prop(self, "new_name")
 
 
 class BM_OT_BakeJob_ToggleType(Operator):
@@ -1431,19 +1431,21 @@ class BM_OT_Container_Rename(Operator):
             layout.prop(self, "new_link")
 
 
-class BM_OT_Containers_GroupToggleExpand(Operator):
-    bl_idname = "bakemaster.containers_grouptoggleexpand"
+class BM_OT_Containers_Toggle_Expand(Operator):
+    bl_idname = "bakemaster.containers_toggle_expand"
     bl_label = "Expand/Collapse"
     bl_options = {'INTERNAL'}
 
     bakejob_index: IntProperty(default=-1)
-    container_index: IntProperty(default=-1)
+    index: IntProperty(default=-1)
 
     def execute(self, context):
         bakemaster = context.scene.bakemaster
         bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
-        container = bm_get.container(bakejob, self.container_index)
+        container = bm_get.container(bakejob, self.index)
         if bakejob is None or container is None:
+            return {'CANCELLED'}
+        elif not any([container.is_group, container.get_is_lowpoly()]):
             return {'CANCELLED'}
 
         container.is_expanded = not container.is_expanded
@@ -1843,6 +1845,33 @@ class BM_OT_Subcontainers_Trash(Operator):
 
         bm_ots_utils.indexes_recalc(container, "subcontainers")
         return {'FINISHED'}
+
+
+class BM_OT_Subcontainers_Toggle_Expand(Operator):
+    bl_idname = "bakemaster.subcontainers_toggle_expand"
+    bl_label = "Expand/Collapse"
+    bl_options = {'INTERNAL'}
+
+    bakejob_index: IntProperty(default=-1)
+    container_index: IntProperty(default=-1)
+    index: IntProperty(default=-1)
+
+    def execute(self, context):
+        bakemaster = context.scene.bakemaster
+        bakejob = bm_get.bakejob(bakemaster, self.bakejob_index)
+        container = bm_get.container(bakejob, self.container_index)
+        subcontainer = bm_get.subcontainer(bakejob, self.index)
+
+        if bakejob is None or container is None or subcontainer is None:
+            return {'CANCELLED'}
+        elif not subcontainer.is_group:
+            return {'CANCELLED'}
+
+        container.is_expanded = not container.is_expanded
+        return {'FINISHED'}
+
+    def invoke(self, context, _):
+        return self.execute(context)
 
 
 class BM_OT_FileChooseDialog(Operator, ImportHelper):
