@@ -300,12 +300,12 @@ class BM_PropertyGroup_Helper(PropertyGroup):
             return -1
 
         lowpoly = self.get_lowpoly(containers)
-        first_item = getattr(lowpoly, "get_%s" % type)(
+        first_hcd = getattr(lowpoly, "get_%s" % type)(
                 data, containers, attr, 0)
-        if first_item is None:
+        if first_hcd is None:
             return -1
 
-        return self.index - first_item.index
+        return self.index - first_hcd.index
 
     def index_in_highpolies(self, data, containers, attr):
         return self.__generic_index_in(data, containers, attr, type="highpoly")
@@ -379,6 +379,12 @@ class Subcontainer(BM_PropertyGroup_Helper):
         description="Double click to change.\nPress and drag to move.\nUse Shift, Ctrl to select multiple",  # noqa: E501
         default=False,
         update=bm_props_utils.Subcontainer_drag_empty_ticker_Update)
+
+    lowpoly_ticker: BoolProperty(
+        name="Add data...",
+        description="Drag over and release to add Highpoly, Cage, or Decal for this Object",  # noqa: E501
+        default=False,
+        update=bm_props_utils.Subcontainer_lowpoly_ticker_Update)
 
     is_drag_empty: BoolProperty(default=False)
     is_drag_placeholder: BoolProperty(default=False)
@@ -468,6 +474,12 @@ class Container(BM_PropertyGroup_Helper):
         description="Double click to change.\nPress and drag to move.\nUse Shift, Ctrl to select multiple",  # noqa: E501
         default=False,
         update=bm_props_utils.Container_drag_empty_ticker_Update)
+
+    lowpoly_ticker: BoolProperty(
+        name="Add data...",
+        description="Drag over and release to add Highpoly, Cage, or Decal for this Object",  # noqa: E501
+        default=False,
+        update=bm_props_utils.Container_lowpoly_ticker_Update)
 
     is_drag_empty: BoolProperty(default=False)
     is_drag_placeholder: BoolProperty(default=False)
@@ -566,6 +578,12 @@ class BakeJob(BM_PropertyGroup_Helper):
         description="Double click to change.\nPress and drag to move.\nUse Shift, Ctrl to select multiple",  # noqa: E501
         default=False,
         update=bm_props_utils.BakeJob_drag_empty_ticker_Update)
+
+    lowpoly_ticker: BoolProperty(
+        name="Add data...",
+        description="Drag over and release to add Highpoly, Cage, or Decal for this Object",  # noqa: E501
+        default=False,
+        update=bm_props_utils.BakeJob_lowpoly_ticker_Update)
 
     is_drag_empty: BoolProperty(default=False)
     is_drag_placeholder: BoolProperty(default=False)
