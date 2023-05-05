@@ -1446,7 +1446,7 @@ class BM_OT_Containers_GroupToggleExpand(Operator):
         if bakejob is None or container is None:
             return {'CANCELLED'}
 
-        container.group_is_expanded = not container.group_is_expanded
+        container.is_expanded = not container.is_expanded
         return {'FINISHED'}
 
     def invoke(self, context, _):
@@ -1696,7 +1696,7 @@ class BM_OT_Containers_Ungroup(Operator):
             "index": True,
             "bakejob_index": True,
             "is_group": True,
-            "group_is_expanded": True,
+            "is_expanded": True,
             "group_type": True,
             "group_is_texset": True,
             "group_color_tag": True,

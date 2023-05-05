@@ -348,7 +348,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             elif any([bm_ui_utils.is_group_with_no_childs(
                 container, data, getattr(data, self.data_name),
                 self.data_name),
-                    container.is_group and not container.group_is_expanded]):
+                    container.is_group and not container.is_expanded]):
                 allow_explicit_group_drag_empty = True
             else:
                 return
@@ -497,7 +497,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             elif any([bm_ui_utils.is_group_with_no_childs(
                 container, data, getattr(data, self.data_name),
                 self.data_name),
-                    container.is_group and not container.group_is_expanded
+                    container.is_group and not container.is_expanded
                     ]):
                 break
         else:
@@ -546,12 +546,12 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
 
         self.draw_indent(row, bakemaster, data, container)
 
-        # draw group's group_is_expanded toggle
+        # draw group's is_expanded toggle
         if container.is_group:
             old_emboss = row.emboss
             row.emboss = 'NONE'
 
-            if container.group_is_expanded:
+            if container.is_expanded:
                 icon = 'DISCLOSURE_TRI_DOWN'
             else:
                 icon = 'DISCLOSURE_TRI_RIGHT'
@@ -658,10 +658,10 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
 
     def filter_itmes_groups(self, flt_flags, containers):
         """
-        Get flt_flags based of groups' group_is_expanded value.
+        Get flt_flags based of groups' is_expanded value.
         """
 
-        last_group_is_expanded = True
+        last_is_expanded = True
         last_ui_indent = 0
 
         # to not resolve top parent group recursively each time
@@ -675,33 +675,33 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             if container.ui_indent_level >= last_ui_indent:
                 last_ui_indent = container.ui_indent_level
 
-                if not last_group_is_expanded:
+                if not last_is_expanded:
                     flt_flags[container.index] &= ~self.bitflag_filter_item
 
                 if container.is_group:
-                    last_group_is_expanded = all([last_group_is_expanded,
-                                                  container.group_is_expanded])
-                    groups_cache[str(container.index)] = last_group_is_expanded
+                    last_is_expanded = all([last_is_expanded,
+                                            container.is_expanded])
+                    groups_cache[str(container.index)] = last_is_expanded
                 continue
 
             last_ui_indent = container.ui_indent_level
 
             if container.parent_group_index == -1:
-                last_group_is_expanded = True
+                last_is_expanded = True
             else:
                 try:
-                    last_group_is_expanded = groups_cache[str(
+                    last_is_expanded = groups_cache[str(
                         container.parent_group_index)]
                 except KeyError:
-                    last_group_is_expanded = True
+                    last_is_expanded = True
 
-            if not last_group_is_expanded:
+            if not last_is_expanded:
                 flt_flags[container.index] &= ~self.bitflag_filter_item
 
             if container.is_group:
-                last_group_is_expanded = all([last_group_is_expanded,
-                                              container.group_is_expanded])
-                groups_cache[str(container.index)] = last_group_is_expanded
+                last_is_expanded = all([last_is_expanded,
+                                        container.is_expanded])
+                groups_cache[str(container.index)] = last_is_expanded
 
         return flt_flags
 

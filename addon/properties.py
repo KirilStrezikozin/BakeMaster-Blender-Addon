@@ -329,8 +329,8 @@ class Subcontainer(BM_PropertyGroup_Helper):
     parent_group_index: IntProperty(default=-1)
     ui_indent_level: IntProperty(default=0)
 
-    group_is_expanded: BoolProperty(
-        name="Expand/Collapse the group",
+    is_expanded: BoolProperty(
+        name="Expand/Collapse",
         default=True)
 
     group_color_tag: StringProperty(default="")
@@ -406,8 +406,8 @@ class Container(BM_PropertyGroup_Helper):
     parent_group_index: IntProperty(default=-1)
     ui_indent_level: IntProperty(default=0)
 
-    group_is_expanded: BoolProperty(
-        name="Expand/Collapse the group",
+    is_expanded: BoolProperty(
+        name="Expand/Collapse",
         default=True)
 
     group_color_tag: StringProperty(default="")
@@ -496,8 +496,8 @@ class BakeJob(BM_PropertyGroup_Helper):
     parent_group_index: IntProperty(default=-1)
     ui_indent_level: IntProperty(default=0)
 
-    group_is_expanded: BoolProperty(
-        name="Expand/Collapse the group",
+    is_expanded: BoolProperty(
+        name="Expand/Collapse",
         default=True)
 
     group_color_tag: StringProperty(default="")
