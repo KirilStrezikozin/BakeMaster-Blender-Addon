@@ -90,8 +90,11 @@ class BM_UI_ml_draw():
             if not container.is_selected or container.has_drop_prompt:
                 continue
 
-            # skip setting group prop value if container isn't a group
+            # skip checking group prop value if container isn't a group
             elif property.find("group") == 0 and not container.is_group:
+                continue
+            # skip checking decorator groups
+            elif container.is_group and container.group_type == 'DECORATOR':
                 continue
 
             if getattr(container, property) != old_prop_val:
