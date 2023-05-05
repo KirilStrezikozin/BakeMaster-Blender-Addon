@@ -144,6 +144,147 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         except IndexError:
             return self
 
+    def get_is_lowpoly(self):
+        """
+        Return True if container is lowpoly.
+        """
+
+        return self.lowpoly_index == -1
+
+    def get_is_highpoly(self):
+        """
+        Return True if container is highpoly.
+        """
+
+        return self.lowpoly_index != -1 and not any(
+            [self.is_cage, self.is_decal])
+
+    def get_is_cage(self):
+        """
+        Return True if container is cage.
+        """
+
+        return self.lowpoly_index != -1 and self.is_cage
+
+    def get_is_decal(self):
+        """
+        Return True if container is decal.
+        """
+
+        return self.lowpoly_index != -1 and self.is_decal
+
+    def make_lowpoly(self):
+        """
+        Make container a lowpoly.
+        """
+
+        self.lowpoly_index = -1
+
+    def make_highpoly(self, lowpoly_index: int):
+        """
+        Make container a highpoly for lowpoly of given lowpoly_index.
+        """
+
+        self.lowpoly_index = lowpoly_index
+        self.is_cage = False
+        self.is_decal = False
+
+    def make_cage(self, lowpoly_index: int):
+        """
+        Make container a cage for lowpoly of given lowpoly_index.
+        """
+
+        self.lowpoly_index = lowpoly_index
+        self.is_cage = True
+        self.is_decal = False
+
+    def make_decal(self, lowpoly_index: int):
+        """
+        Make container a decal for lowpoly of given lowpoly_index.
+        """
+
+        self.lowpoly_index = lowpoly_index
+        self.is_cage = False
+        self.is_decal = True
+
+    def get_lowpoly(self, containers):
+        """
+        Get container's lowpoly
+        """
+
+        if self.lowpoly_index == -1:
+            return self
+        else:
+            return containers[self.lowpoly_index]
+
+    def __generic_get(self, data, containers, attr, index: int, type: str):
+        """
+        Pseudo-private method. Call get_highpoly(...), get_cage(...),
+        get_decal(...) instead.
+
+        Receives type in {"get_highpoly", "get_cage", "get_decal"}.
+        """
+
+        if not self.get_is_lowpoly():
+            return None
+
+        elif index < 0:
+            return None
+
+        elif self.index == getattr(data, "%s_len" % attr) - 1:
+            return None
+
+        elif containers[self.index + 1].lowpoly_index != self.index:
+            return None
+
+        count = 0
+        container = containers[self.index + 1]
+
+        while count != index:
+            count += 1
+
+            if self.index + 1 + count == getattr(data, "%s_len" % attr) - 1:
+                return None
+
+            elif containers[self.index + 1 + count].get_is_lowpoly():
+                return None
+            elif not getattr(containers[self.index + 1 + count], type)():
+                continue
+
+            container = containers[self.index + 1 + count]
+            if container.lowpoly_index != self.index:
+                return None
+
+        else:
+            return container
+
+    def get_highpoly(self, data, containers, attr, index: int):
+        """
+        Get container's highpoly of given index.
+        Returns None if invalid.
+        """
+
+        return self.__generic_get(data, containers, attr, index,
+                                  "get_highpoly")
+
+    def get_cage(self, data, containers, attr, index: int):
+        """
+        Get container's cage of given index.
+        Returns None if invalid.
+        """
+
+        return self.__generic_get(data, containers, attr, index,
+                                  "get_cage")
+
+    def get_decal(self, data, containers, attr, index: int):
+        """
+        Get container's decal of given index.
+        Returns None if invalid.
+        """
+
+        return self.__generic_get(data, containers, attr, index,
+                                  "get_decal")
+
 
 class Subcontainer(BM_PropertyGroup_Helper):
     name: StringProperty(
