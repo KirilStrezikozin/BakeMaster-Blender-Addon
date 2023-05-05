@@ -226,7 +226,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         Pseudo-private method. Call get_highpoly(...), get_cage(...),
         get_decal(...) instead.
 
-        Receives type in {"get_is_highpoly", "get_is_cage", "get_is_decal"}.
+        Receives type in {"highpoly", "cage", "decal"}.
         """
 
         if not self.get_is_lowpoly():
@@ -250,7 +250,8 @@ class BM_PropertyGroup_Helper(PropertyGroup):
             if self.index + 1 + count == getattr(data, "%s_len" % attr) - 1:
                 return None
 
-            elif not getattr(containers[self.index + 1 + count], type)():
+            elif not getattr(containers[self.index + 1 + count],
+                             "get_is_%s" % type)():
                 continue
 
             container = containers[self.index + 1 + count]
@@ -267,7 +268,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         """
 
         return self.__generic_get(data, containers, attr, index,
-                                  "get_is_highpoly")
+                                  "highpoly")
 
     def get_cage(self, data, containers, attr, index: int):
         """
@@ -276,7 +277,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         """
 
         return self.__generic_get(data, containers, attr, index,
-                                  "get_is_cage")
+                                  "cage")
 
     def get_decal(self, data, containers, attr, index: int):
         """
@@ -285,7 +286,35 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         """
 
         return self.__generic_get(data, containers, attr, index,
-                                  "get_is_decal")
+                                  "decal")
+
+    def __generic_index_in(self, data, containers, attr, type: str):
+        """
+        Pseudo-private method. Call index_in_highpolies(...),
+        index_in_cages(...), index_in_decals(...) instead.
+
+        Receives type in {"highpoly", "cage", "decal"}.
+        """
+
+        if not getattr(self, "get_is_%s" % type)():
+            return -1
+
+        lowpoly = self.get_lowpoly(containers)
+        first_item = getattr(lowpoly, "get_%s" % type)(
+                data, containers, attr, 0)
+        if first_item is None:
+            return -1
+
+        return self.index - first_item.index
+
+    def index_in_highpolies(self, data, containers, attr):
+        return self.__generic_index_in(data, containers, attr, type="highpoly")
+
+    def index_in_cages(self, data, containers, attr):
+        return self.__generic_index_in(data, containers, attr, type="cages")
+
+    def index_in_decals(self, data, containers, attr):
+        return self.__generic_index_in(data, containers, attr, type="decals")
 
 
 class Subcontainer(BM_PropertyGroup_Helper):
