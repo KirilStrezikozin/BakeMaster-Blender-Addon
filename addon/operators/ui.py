@@ -536,7 +536,7 @@ class BM_OT_Generic_AddDropped(Operator):
         bakemaster = context.scene.bakemaster
 
         if bakemaster.allow_drop:
-            self.remove()
+            self.remove(bakemaster)
             return {'CANCELLED'}
 
         add_names = []
@@ -548,7 +548,7 @@ class BM_OT_Generic_AddDropped(Operator):
                 proceed = True
 
         if not proceed:
-            self.remove()
+            self.remove(bakemaster)
             return {'CANCELLED'}
 
         self.add(bakemaster, add_names)
@@ -930,7 +930,7 @@ class BM_OT_BakeJobs_AddDropped(BM_OT_Generic_AddDropped):
 
     drop_name: StringProperty(default="")
 
-    def remove(self):
+    def remove(self, _):
         bpy_ops.bakemaster.bakejobs_remove('INVOKE_DEFAULT', index=self.index)
 
     def add(self, bakemaster, add_names: list):
@@ -943,14 +943,15 @@ class BM_OT_BakeJobs_AddDropped(BM_OT_Generic_AddDropped):
                                               new_name=name)
 
     def invoke(self, context, _):
+        bakemaster = context.scene.bakemaster
         try:
-            context.scene.bakemaster.bakejobs[self.index]
+            bakemaster.bakejobs[self.index]
             if self.index == -1:
                 raise IndexError
         except IndexError:
             return self.execute(context)
         else:
-            self.remove()
+            self.remove(bakemaster)
             return {'CANCELLED'}
 
 
@@ -1322,7 +1323,7 @@ class BM_OT_Containers_AddDropped(BM_OT_Generic_AddDropped):
         except IndexError:
             return self.execute(context)
         else:
-            self.remove()
+            self.remove(bakemaster)
             return {'CANCELLED'}
 
 
