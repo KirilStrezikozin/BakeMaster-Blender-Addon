@@ -1700,7 +1700,9 @@ class BM_OT_Containers_Ungroup(Operator):
             "group_is_texset": True,
             "group_color_tag": True,
             "lowpoly_index": True,
-            "lowpoly_name": True
+            "lowpoly_name": True,
+            "is_cage": True,
+            "is_decal": True
         }
         _ = bm_props_utils_copy(parent_container, bakejob.containers,
                                 container.index, exclude_copy)

@@ -83,7 +83,9 @@ def copy(item_from, data_to, to_index=-1, exclude={}):
             "group_is_texset": True,
             "group_color_tag": True,
             "lowpoly_index": True,
-            "lowpoly_name": True
+            "lowpoly_name": True,
+            "is_cage": True,
+            "is_decal": True
         }
     Default exlude{} is:
         {
@@ -546,17 +548,14 @@ def Generic_property_in_multi_selection_Update(self, context, walk_data: str,
 def Generic_group_type_change_Update(group, context, walk_data: str):
     """
     If group_type changed to Decorator, copy settings from group to all its
-    childs. If changed to Dictator, then do nothing.
+    childs. If changed to Dictator, copy settings from the first child.
 
     Attention: called on active container!
     """
 
-    if group.group_old_type == group.group_type:
+    if group.group_old_type == group.group_type or not group.is_group:
         return
     group.group_old_type = group.group_type
-
-    if not group.is_group or group.group_type == 'DICTATOR':
-        return
 
     walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
     data, containers, attr = walk_data_getter(context.scene.bakemaster)
@@ -574,9 +573,23 @@ def Generic_group_type_change_Update(group, context, walk_data: str):
         "group_is_texset": True,
         "group_color_tag": True,
         "lowpoly_index": True,
-        "lowpoly_name": True
+        "lowpoly_name": True,
+        "is_cage": True,
+        "is_decal": True
     }
 
+    # changed to dictator
+    if group.group_type == 'DICTATOR':
+        if group.index == getattr(data, "%s_len" % attr) - 1:
+            return
+        container = containers[group.index + 1]
+        if container.ui_indent_level <= group.ui_indent_level:
+            return
+
+        _ = copy(container, containers, group.index, exclude_copy)
+        return
+
+    # changed to decorator
     forbid_copy_cache = {}
 
     for index in range(group.index + 1, getattr(data, "%s_len" % attr)):
