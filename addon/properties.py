@@ -179,6 +179,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         """
 
         self.lowpoly_index = -1
+        self.is_group = False
 
     def make_highpoly(self, lowpoly_index: int):
         """
@@ -188,6 +189,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         self.lowpoly_index = lowpoly_index
         self.is_cage = False
         self.is_decal = False
+        self.is_group = False
 
     def make_cage(self, lowpoly_index: int):
         """
@@ -197,6 +199,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         self.lowpoly_index = lowpoly_index
         self.is_cage = True
         self.is_decal = False
+        self.is_group = False
 
     def make_decal(self, lowpoly_index: int):
         """
@@ -206,6 +209,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         self.lowpoly_index = lowpoly_index
         self.is_cage = False
         self.is_decal = True
+        self.is_group = False
 
     def get_lowpoly(self, containers):
         """
