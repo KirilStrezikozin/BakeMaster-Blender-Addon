@@ -580,7 +580,7 @@ def Generic_group_type_change_Update(group, context, walk_data: str):
 
     # changed to dictator
     if group.group_type == 'DICTATOR':
-        if group.index == getattr(data, "%s_len" % attr) - 1:
+        if group.index >= getattr(data, "%s_len" % attr) - 1:
             return
         container = containers[group.index + 1]
         if container.ui_indent_level <= group.ui_indent_level:

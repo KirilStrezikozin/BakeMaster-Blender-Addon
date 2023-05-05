@@ -71,7 +71,7 @@ def is_group_with_no_childs(container, data, containers, attr):
         return False
 
     # no loops :)
-    if container.index == getattr(data, "%s_len" % attr) - 1:
+    if container.index >= getattr(data, "%s_len" % attr) - 1:
         return True
     elif containers[container.index + 1].parent_group_index != container.index:
         return True
