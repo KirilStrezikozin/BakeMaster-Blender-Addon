@@ -241,6 +241,43 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
                        active_propname, index, allow_drag_viz, drag_layout):
         pass
 
+    def draw_add_lowpoly_data_prompt(self, context, row, data, container, icon,
+                                     active_data, active_propname, index,
+                                     allow_drag_viz, drag_layout,
+                                     allow_multi_select_viz):
+        # This method is exclusive for lowpoly's 'Add data...' ticker draw.
+
+        bakemaster = context.scene.bakemaster
+
+        if not all([container.get_is_lowpoly(), self.data_name == "containers",
+                    container.get_bm_name(
+                        bakemaster, self.data_name) == "objects",
+                    allow_drag_viz,
+                    container.index == bakemaster.get_drag_to_index(
+                        self.data_name)]):
+            return
+
+        old_emboss = row.emboss
+        row.emboss = 'NORMAL'
+
+        if all([bakemaster.is_drag_lowpoly_data,
+                container.is_lowpoly_placeholder]):
+            sublayout = row.box().row(align=True)
+            sublayout.scale_y = 0.4
+        else:
+            sublayout = row.row(align=True)
+
+        sublayout.alignment = 'LEFT'
+
+        # TODO (from lowpoly_ticker Update):
+        # run some stuff in lowpoly_ticker Update to automatically
+        # decide hcd type
+        hcd_txt = "data"
+        sublayout.prop(container, "lowpoly_ticker", text=f"Add {hcd_txt}...",
+                       emboss=False, toggle=True)
+
+        row.emboss = old_emboss
+
     def draw_group_props(self, context, row, data, container, icon,
                          active_data, active_propname, index, allow_drag_viz,
                          drag_layout, allow_multi_select_viz):
@@ -596,6 +633,11 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         self.draw_group_props(context, row, data, container, icon, active_data,
                               active_propname, index, allow_drag_viz,
                               drag_layout, allow_multi_select_viz)
+
+        self.draw_add_lowpoly_data_prompt(context, row, data, container, icon,
+                                          active_data, active_propname, index,
+                                          allow_drag_viz, drag_layout,
+                                          allow_multi_select_viz)
 
         self.draw_operators(context, row, data, container, icon, active_data,
                             active_propname, index,
