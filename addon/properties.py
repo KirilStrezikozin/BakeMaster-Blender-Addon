@@ -389,6 +389,7 @@ class Subcontainer(BM_PropertyGroup_Helper):
     is_drag_empty: BoolProperty(default=False)
     is_drag_placeholder: BoolProperty(default=False)
     is_drag_empty_placeholder: BoolProperty(default=False)
+    is_lowpoly_placeholder: BoolProperty(default=False)
 
     is_selected: BoolProperty(default=True)
 
@@ -484,6 +485,7 @@ class Container(BM_PropertyGroup_Helper):
     is_drag_empty: BoolProperty(default=False)
     is_drag_placeholder: BoolProperty(default=False)
     is_drag_empty_placeholder: BoolProperty(default=False)
+    is_lowpoly_placeholder: BoolProperty(default=False)
 
     is_selected: BoolProperty(default=True)
 
@@ -588,6 +590,7 @@ class BakeJob(BM_PropertyGroup_Helper):
     is_drag_empty: BoolProperty(default=False)
     is_drag_placeholder: BoolProperty(default=False)
     is_drag_empty_placeholder: BoolProperty(default=False)
+    is_lowpoly_placeholder: BoolProperty(default=False)
 
     is_selected: BoolProperty(default=True)
 
@@ -637,6 +640,7 @@ class Global(BM_PropertyGroup_Helper):
     allow_drag_trans: BoolProperty(default=False, options={'SKIP_SAVE'})
     drag_from_ticker: BoolProperty(default=False, options={'SKIP_SAVE'})
     allow_multi_selection_drag: BoolProperty(default=False, options={'SKIP_SAVE'})
+    is_drag_lowpoly_data: BoolProperty(default=False, options={'SKIP_SAVE'})
 
     allow_multi_select: BoolProperty(default=False, options={'SKIP_SAVE'})
     multi_select_event: StringProperty(default="", options={'SKIP_SAVE'})
