@@ -908,6 +908,7 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
             row.active = not forbid_bake
 
         if not container.is_group:
+            row.active &= container_exists
             return
         else:
             row.active = not forbid_bake and container.use_bake
