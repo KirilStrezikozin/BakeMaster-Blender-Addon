@@ -1770,7 +1770,7 @@ class BM_OT_Containers_Ungroup(Operator):
             return last_selected_index, 'ONEBLOCK_ERROR'
         elif container.ui_indent_level < self.s_ungroup_level:
             return last_selected_index, 'LEVEL_ERROR'
-        return container.index, False
+        return container.index, ''
 
     def ungroup_is_finished(self, has_selection, container, f_group_index):
         selection_passed = all(
