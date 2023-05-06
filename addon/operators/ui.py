@@ -132,6 +132,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
         bakemaster.allow_drag_trans = False
         bakemaster.drag_from_ticker = False
         bakemaster.allow_multi_selection_drag = False
+        bakemaster.is_drag_lowpoly_data = False
 
         bakemaster.allow_multi_select = False
         bakemaster.multi_select_event = ''
@@ -212,6 +213,8 @@ class BM_OT_UIList_Walk_Handler(Operator):
                                    [False] * len(containers))
             containers.foreach_set("is_drag_empty_placeholder",
                                    [False] * len(containers))
+            containers.foreach_set("is_lowpoly_placeholder",
+                                   [False] * len(containers))
 
             # XXX
             # seemed to be faster but breaks everything
@@ -221,6 +224,7 @@ class BM_OT_UIList_Walk_Handler(Operator):
             #     container.has_drag_prompt = False
             #     container.is_drag_placeholder = False
             #     container.is_drag_empty_placeholder = False
+            #     container.is_lowpoly_placeholder = False
             #     container.is_drag_empty = False
 
     def evaluate_data_trans(self, bakemaster, data, containers, attr):
@@ -420,6 +424,9 @@ class BM_OT_UIList_Walk_Handler(Operator):
 
         Walk Data Transition is responsible for moving containers to another
         datas.
+
+        Move Lowpoly Data is responsible for adding HCDs (Highpolies, Cages,
+        Decals) to a Lowpoly of bakemaster.get_drag_to_index().
         """
 
         data, containers, attr = self.get_containers(bakemaster)
@@ -444,6 +451,15 @@ class BM_OT_UIList_Walk_Handler(Operator):
                 'INVOKE_DEFAULT',
                 drag_from_index=bakemaster.drag_from_index,
                 drag_to_index=bakemaster.drag_to_index)
+
+        # move lowpoly data
+        elif all([bakemaster.is_drag_lowpoly_data,
+                  attr == bakemaster.drag_data_from]):
+            bpy_ops.bakemaster.walk_data_move_lowpoly_data(
+                'INVOKE_DEFAULT',
+                index=bakemaster.drag_from_index, new_index=drag_to_index,
+                data_name=attr,
+                ml_drag=bakemaster.allow_multi_selection_drag)
 
         # default move, multi selection move
         # check if move is inside data
@@ -555,9 +571,42 @@ class BM_OT_Generic_AddDropped(Operator):
         return {'FINISHED'}
 
 
+class BM_OT_WalkData_Move_Lowpoly_Data(Operator):
+    """
+    Add moved container(s) as HCDs (Highpolies, Cages, Decals) for the Lowpoly
+    of given index inside data. Gets called in BM_OT_UIList_Walk_Handler
+    based on walk_data identifier.
+    Exists only for the sake of a Move Undo event.
+
+    ml_drag equals to bakemaster.allow_multi_selection_drag (given to be safe
+    from event handler calls).
+
+    data_name is an identifier of walk_data with uilist walk features.
+    """
+
+    bl_idname = 'bakemaster.walk_data_move_lowpoly_data'
+    bl_label = "Add data"
+    bl_description = "Add Highpolies, Cages, and Decals for the Lowpoly"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    index: IntProperty(default=-1)
+    new_index: IntProperty(default=-1)
+    data_name: StringProperty(default="")
+    ml_drag: BoolProperty(default=False)
+
+    def execute(self, context):
+        self.report({'WARNING'}, "Not implemented")
+        return {'FINISHED'}
+
+    def invoke(self, context, _):
+        pass
+
+
 class BM_OT_WalkData_Trans(Operator):
     """
     Move multi selection across walk_datas.
+    Gets called in BM_OT_UIList_Walk_Handler based on walk_data identifier.
+    Exists only for the sake of a Move Undo event.
     """
 
     bl_idname = 'bakemaster.walk_data_move_trans'
@@ -711,7 +760,7 @@ class BM_OT_WalkData_Trans(Operator):
 
 class BM_OT_WalkData_Move(Operator):
     """
-    Mmove container(s) inside data. Gets called in BM_OT_UIList_Walk_Handler
+    Move container(s) inside data. Gets called in BM_OT_UIList_Walk_Handler
     based on walk_data identifier.
     Exists only for the sake of a Move Undo event.
 
