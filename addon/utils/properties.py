@@ -292,16 +292,25 @@ def is_drag_group_into_itself(self, bakemaster, data, containers, walk_data):
     # otherwise self = first selected item, check first selected item index.
     has_selection, _ = bm_get.walk_data_multi_selection_data(
         bakemaster, walk_data)
+
+    abort_if_not_group = False
     if has_selection:
         for container in containers:
             if container.has_drop_prompt or not container.is_selected:
+                continue
+            elif not container.is_group:
                 continue
             drag_from_index = container.index
             break
         else:
             drag_from_index = bakemaster.drag_from_index
+            abort_if_not_group = True
     else:
         drag_from_index = bakemaster.drag_from_index
+        abort_if_not_group = True
+
+    if abort_if_not_group and not containers[drag_from_index].is_group:
+        return
 
     if not all([self.index > drag_from_index,
                 walk_data == bakemaster.drag_data_from]):
