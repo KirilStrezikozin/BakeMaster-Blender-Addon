@@ -99,6 +99,7 @@ def disable_drag(bakemaster, _, containers, attr, clear_selection=True):
     bakemaster.drag_to_index_temp = -1
     bakemaster.drag_from_ticker = False
     bakemaster.allow_multi_selection_drag = False
+    bakemaster.is_drag_lowpoly_data = False
 
     if bakemaster.allow_drag_trans and clear_selection:
         clear_multi_selection(None, bakemaster, attr)
@@ -109,6 +110,8 @@ def disable_drag(bakemaster, _, containers, attr, clear_selection=True):
                            [False] * len(containers))
     containers.foreach_set("is_drag_empty_placeholder",
                            [False] * len(containers))
+    containers.foreach_set("is_lowpoly_placeholder",
+                           [False] * len(containers))
     containers.foreach_set("is_drag_empty",
                            [False] * len(containers))
     # XXX
@@ -117,6 +120,7 @@ def disable_drag(bakemaster, _, containers, attr, clear_selection=True):
     #     container.has_drag_prompt = False
     #     container.is_drag_placeholder = False
     #     container.is_drag_empty_placeholder = False
+    #     container.is_lowpoly_placeholder = False
     #     container.is_drag_empty = False
 
 
