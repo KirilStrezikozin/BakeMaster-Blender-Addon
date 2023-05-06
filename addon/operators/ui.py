@@ -1709,7 +1709,8 @@ class BM_OT_Containers_Group(Operator):
             container.ui_indent_level += 1
         self.add_group_item(bakejob, s_group_level)
 
-        bm_ots_utils.indexes_recalc(bakejob, "containers")
+        bm_ots_utils.indexes_recalc(bakejob, "containers", parent_props=[
+            ["bakejob_index", bakejob.index]])
         return {'FINISHED'}
 
 
@@ -2367,7 +2368,8 @@ class BM_OT_BakeHistory_Remove(Operator):
     def execute(self, context):
         bakemaster = context.scene.bakemaster
         bm_ots_utils.bakehistory_remove(bakemaster, self.index)
-        bm_ots_utils.indexes_recalc(bakemaster, "bakehistory", False)
+        bm_ots_utils.indexes_recalc(bakemaster, "bakehistory",
+                                    childs_recursive=False)
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 

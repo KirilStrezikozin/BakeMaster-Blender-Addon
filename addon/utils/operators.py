@@ -138,14 +138,10 @@ def indexes_recalc(data, items_name: str, childs_recursive=True, groups=True,
         ...
 
         bm_ots_utils.indexes_recalc(
-            bakejob, "containers", [["bakejob_index", bakejob.index]])
+            bakejob, "containers", parent_props=[
+                ["bakejob_index", bakejob.index]])
 
         ...
-
-    Such example usage isn't necessary since it is inited by default.
-    But can be useful when you need to update subcontainers indexes and
-    provide bakejob_index + container_index for them, which won't be
-    resolved automatically.
     """
 
     child = {
@@ -155,20 +151,8 @@ def indexes_recalc(data, items_name: str, childs_recursive=True, groups=True,
         "bakehistory": ""
     }
 
-    parent = {
-        "bakejobs": "",
-        "containers": "bakejobs",
-        "subcontainers": "containers",
-        "bakehistory": ""
-    }
-
     if not hasattr(data, items_name):
         return
-
-    # init parent_props
-    if len(parent_props) == 0:
-        i_parent_prop = parent[items_name][:-1]
-        parent_props.append(["%s_index" % i_parent_prop, data.index])
 
     containers = getattr(data, items_name)
     group_index = -1
@@ -203,7 +187,7 @@ def indexes_recalc(data, items_name: str, childs_recursive=True, groups=True,
 
         if childs_recursive:
             indexes_recalc(
-                container, child[items_name], childs_recursive,
+                container, child[items_name], childs_recursive, groups,
                 parent_props + [["%s_index" % items_name[:-1],
                                  container.index]])
         index += 1
