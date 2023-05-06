@@ -288,6 +288,9 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
 def is_drag_group_into_itself(self, bakemaster, data, containers, walk_data):
     # Skip dragging group inside itself
 
+    if walk_data != bakemaster.drag_data_from:
+        return False
+
     # If no multi selection, self = self, check drag_from_index,
     # otherwise self = first selected item, check first selected item index.
     has_selection, _ = bm_get.walk_data_multi_selection_data(
