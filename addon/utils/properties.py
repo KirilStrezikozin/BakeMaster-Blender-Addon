@@ -104,8 +104,10 @@ def copy(item_from, data_to, to_index=-1, exclude={}):
             "is_drag_empty": True,
             "is_drag_placeholder": True,
             "is_drag_empty_placeholder": True,
+            "is_lowpoly_placeholder": True,
             "ticker": True,
             "drag_empty_ticker": True,
+            "lowpoly_ticker": True,
             "is_selected": True
         }
 
@@ -128,8 +130,10 @@ def copy(item_from, data_to, to_index=-1, exclude={}):
         "is_drag_empty": True,
         "is_drag_placeholder": True,
         "is_drag_empty_placeholder": True,
+        "is_lowpoly_placeholder": True,
         "ticker": True,
         "drag_empty_ticker": True,
+        "lowpoly_ticker": True,
         "is_selected": True
     }
 
@@ -192,6 +196,7 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
 
     bakemaster = context.scene.bakemaster
     bakemaster.walk_data_name = walk_data
+    bakemaster.is_drag_lowpoly_data = False
 
     walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
     data, containers, attr = walk_data_getter(bakemaster)
@@ -265,9 +270,11 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
     if drag_to_index != -1:
         containers[drag_to_index].is_drag_placeholder = False
         containers[drag_to_index].is_drag_empty_placeholder = False
+        containers[drag_to_index].is_lowpoly_placeholder = False
         containers[drag_to_index].is_drag_empty = False
     self.is_drag_placeholder = True
     self.is_drag_empty_placeholder = False
+    self.is_lowpoly_placeholder = False
     drag_empty_eval(self, data, containers, walk_data)
 
     bakemaster.set_drag_to_index(walk_data, self.index)
@@ -321,8 +328,16 @@ def drag_empty_eval(self, data, containers, walk_data):
 
 
 def Generic_drag_empty_ticker_Update(self, context, walk_data):
+    """
+    Generic drag_empty_ticker property update.
+
+    walk_data is an attribute name of Collection Property that has uilist walk
+    features.
+    """
+
     bakemaster = context.scene.bakemaster
     bakemaster.walk_data_name = walk_data
+    bakemaster.is_drag_lowpoly_data = False
 
     walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
     data, containers, _ = walk_data_getter(bakemaster)
@@ -338,9 +353,11 @@ def Generic_drag_empty_ticker_Update(self, context, walk_data):
     if drag_to_index != -1:
         containers[drag_to_index].is_drag_placeholder = False
         containers[drag_to_index].is_drag_empty_placeholder = False
+        containers[drag_to_index].is_lowpoly_placeholder = False
         containers[drag_to_index].is_drag_empty = False
     self.is_drag_placeholder = False
     self.is_drag_empty_placeholder = True
+    self.is_lowpoly_placeholder = False
     drag_empty_eval(self, data, containers, walk_data)
 
     bakemaster.set_drag_to_index(walk_data, self.index)
@@ -349,6 +366,52 @@ def Generic_drag_empty_ticker_Update(self, context, walk_data):
     ticker_old = bakemaster.drag_from_ticker
     if self.drag_empty_ticker == ticker_old:
         self.drag_empty_ticker = not ticker_old
+
+
+def Generic_lowpoly_ticker_Update(self, context: not None, walk_data: str):
+    """
+    Generic lowpoly_ticker property update.
+
+    walk_data is an attribute name of Collection Property that has uilist walk
+    features.
+    """
+
+    bakemaster = context.scene.bakemaster
+
+    # lowpoly_ticker is for Objects exclusively
+    if walk_data != self.get_bm_name(bakemaster, walk_data) != "objects":
+        return
+
+    bakemaster.walk_data_name = walk_data
+
+    walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
+    data, containers, _ = walk_data_getter(bakemaster)
+    if data is None:
+        print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")
+        return
+
+    if is_drag_group_into_itself(self, bakemaster, data, containers,
+                                 walk_data):
+        return
+
+    bakemaster.is_drag_lowpoly_data = True
+
+    drag_to_index = bakemaster.get_drag_to_index(walk_data)
+    if drag_to_index != -1:
+        containers[drag_to_index].is_drag_placeholder = False
+        containers[drag_to_index].is_drag_empty_placeholder = False
+        containers[drag_to_index].is_lowpoly_placeholder = False
+        containers[drag_to_index].is_drag_empty = False
+    self.is_drag_placeholder = False
+    self.is_drag_empty_placeholder = False
+    self.is_lowpoly_placeholder = True
+
+    bakemaster.set_drag_to_index(walk_data, self.index)
+    bakemaster.drag_data_to = walk_data
+
+    ticker_old = bakemaster.drag_from_ticker
+    if self.lowpoly_ticker == ticker_old:
+        self.lowpoly_ticker = not ticker_old
 
 
 def Generic_active_index_Update(self, context: not None, walk_data: str):
@@ -639,6 +702,10 @@ def BakeJob_drag_empty_ticker_Update(self, context):
     Generic_drag_empty_ticker_Update(self, context, "bakejobs")
 
 
+def BakeJob_lowpoly_ticker_Update(self, context):
+    Generic_lowpoly_ticker_Update(self, context, "bakejobs")
+
+
 def BakeJob_group_type_Update(self, context):
     Generic_group_type_change_Update(self, context, "bakejobs")
 
@@ -661,6 +728,10 @@ def Container_drag_empty_ticker_Update(self, context):
     Generic_drag_empty_ticker_Update(self, context, "containers")
 
 
+def Container_lowpoly_ticker_Update(self, context):
+    Generic_lowpoly_ticker_Update(self, context, "containers")
+
+
 def Container_group_type_Update(self, context):
     Generic_group_type_change_Update(self, context, "containers")
 
@@ -671,6 +742,10 @@ def Subcontainer_ticker_Update(self, context):
 
 def Subcontainer_drag_empty_ticker_Update(self, context):
     Generic_drag_empty_ticker_Update(self, context, "subcontainers")
+
+
+def Subcontainer_lowpoly_ticker_Update(self, context):
+    Generic_lowpoly_ticker_Update(self, context, "subcontainers")
 
 
 def Subcontainer_group_type_Update(self, context):
