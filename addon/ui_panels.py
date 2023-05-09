@@ -27,6 +27,10 @@
 #
 # ##### END LICENSE BLOCK #####
 
+from datetime import datetime
+
+from fnmatch import fnmatch as fnmatch
+
 from .ui_base import (
     BM_UI_ml_draw,
     BM_PT_BakeJobsBase,
@@ -45,11 +49,43 @@ from bpy.props import (
     StringProperty,
     BoolProperty,
 )
-from fnmatch import fnmatch as fnmatch
 
 bm_space_type = 'VIEW_3D'
 bm_region_type = 'UI'
 bm_category = "BakeMaster"
+
+
+def get_bakehistory_timestamp_label(bakemaster, bakehistory):
+    if bakehistory.index == bakemaster.bakehistory_reserved_index:
+        return "in progress..."
+
+    try:
+        timediff = datetime.now() - datetime.strptime(bakehistory.time_stamp,
+                                                      "%Y-%m-%d %H:%M:%S.%f")
+    except ValueError:
+        return ""
+    seconds = timediff.total_seconds()
+    if seconds < 1:
+        return "in progress..."
+    elif seconds < 60:
+        return "%dsec ago" % seconds.__int__()
+    minutes = seconds / 60
+    if minutes < 60:
+        return "%dmin ago" % minutes.__int__()
+    hours = minutes / 60
+    if hours < 24:
+        return "%dh ago" % hours.__int__()
+    days = hours / 24
+    ending = "s" if days.__int__() > 1 else ""
+    if days < 30:
+        return "%dday%s ago" % (days.__int__(), ending)
+    months = days / 30
+    ending = "s" if months.__int__() > 1 else ""
+    if months < 12:
+        return "%dmonth%s ago" % (months.__int__(), ending)
+    years = months / 12
+    ending = "s" if years.__int__() > 1 else ""
+    return "%dyear%s ago" % (years.__int__(), ending)
 
 
 class BM_PT_BakeJobs(BM_PT_BakeJobsBase):
@@ -949,8 +985,7 @@ class BM_UL_BakeHistory(UIList):
         self.use_filter_sort_reverse = True
 
         bakemaster = data
-        timestamp = bm_ui_utils.bakehistory_timestamp_get_label(bakemaster,
-                                                                container)
+        timestamp = get_bakehistory_timestamp_label(bakemaster, container)
 
         row = layout.row()
         row.prop(container, 'name', text="", emboss=False, icon='RENDER_STILL')
@@ -973,8 +1008,7 @@ class BM_UL_BakeHistory(UIList):
                  icon='ARROW_LEFTRIGHT')
 
     def container_get_name(self, data, container):
-        timestamp = bm_ui_utils.bakehistory_timestamp_get_label(data,
-                                                                container)
+        timestamp = get_bakehistory_timestamp_label(data, container)
         return "%s%s" % (container.name, timestamp)
 
     def filter_by_name(self, data, pattern, bitflag, containers,

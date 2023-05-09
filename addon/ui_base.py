@@ -36,6 +36,10 @@ from .utils import (
 )
 
 
+def get_uilist_rows(len_of_idprop, min_rows: int, max_rows: int):
+    return min(max_rows, max(min_rows, len_of_idprop))
+
+
 class BM_UI_ml_draw():
     """
     BakeMaster custom UI props draw methods specifically for drawing props of
@@ -208,8 +212,8 @@ class BM_PT_BakeJobsBase(BM_PT_Helper, BM_UI_ml_draw):
             min_rows = 2 + ml_rows
         else:
             min_rows = 4 + ml_rows
-        rows = bm_ui_utils.get_uilist_rows(bakemaster.bakejobs_len + ml_rows,
-                                           min_rows, 4 + ml_rows)
+        rows = get_uilist_rows(bakemaster.bakejobs_len + ml_rows,
+                               min_rows, 4 + ml_rows)
 
         row.template_list('BM_UL_BakeJobs', "", bakemaster,
                           'bakejobs', bakemaster,
@@ -309,8 +313,8 @@ class BM_PT_ContainersBase(BM_PT_Helper, BM_UI_ml_draw):
             min_rows = 2 + ml_rows
         else:
             min_rows = 4 + ml_rows
-        rows = bm_ui_utils.get_uilist_rows(bakejob.containers_len + ml_rows,
-                                           min_rows, 4 + ml_rows)
+        rows = get_uilist_rows(bakejob.containers_len + ml_rows,
+                               min_rows, 4 + ml_rows)
 
         row.template_list('BM_UL_Containers', "", bakejob,
                           'containers', bakejob,
@@ -439,7 +443,7 @@ class BM_PT_BakeHistoryBase(BM_PT_Helper):
         if bakemaster.bakehistory_len == 0:
             row.label(text="No bakes in the history")
             return
-        rows = bm_ui_utils.get_uilist_rows(bakemaster.bakehistory_len, 1, 10)
+        rows = get_uilist_rows(bakemaster.bakehistory_len, 1, 10)
         row.template_list('BM_UL_BakeHistory', "", bakemaster,
                           'bakehistory', bakemaster,
                           'bakehistory_active_index', rows=rows)
