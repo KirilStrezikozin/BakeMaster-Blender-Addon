@@ -29,124 +29,25 @@
 
 from bpy.types import (
     Panel,
-)
-from .utils import (
-    ui as bm_ui_utils,
-    get as bm_get,
+    AddonPreferences,
 )
 
+from bpy.props import (
+    EnumProperty,
+    BoolProperty,
+    IntProperty,
+)
 
-def get_uilist_rows(len_of_idprop, min_rows: int, max_rows: int):
+from .helpers import BM_UI_ml_draw
+
+
+_bm_space_type = 'VIEW_3D'
+_bm_region_type = 'UI'
+_bm_category = "BakeMaster"
+
+
+def __get_uilist_rows(len_of_idprop: int, min_rows: int, max_rows: int) -> int:
     return min(max_rows, max(min_rows, len_of_idprop))
-
-
-class BM_UI_ml_draw():
-    """
-    BakeMaster custom UI props draw methods specifically for drawing props of
-    items in a multi selection.
-
-    Case 1. If no valid multi selection, default prop draw is used.
-
-    Case 2. If props of propname are equal in a multi selection, default prop
-    draw is used.
-
-    Case 3. If props of prop_name aren't equal in a multi selection, a custom
-    draw is used depending on a prop_type with an operator to
-    'relinquish' the props = make them equal as such the default
-    prop draw will be used.
-
-    Use by inheriting.
-
-    data_name is an identifier of walk_data_name for an instance.
-
-    Example:
-    ...
-
-    self.draw_prop(bakemaster, layout, "IntProperty", container, "use_bake",
-                   None, text="Bake Visibility", icon='RENDER_STILL',
-                   emboss=False)
-
-    self.draw_prop(bakemaster, layout, "Operator", None, None,
-                   "bakemaster.bakejobs_add", text="Add", icon='ADD')
-
-    ...
-    """
-
-    def draw_prop(self, bakemaster, data_name, layout, prop_type,
-                  data, property, operator, *args, **kwargs):
-
-        if data_name == "":
-            data_name = self.data_name
-
-        # Case 1
-        if data is None or any([not self.has_multi_selection(bakemaster,
-                                                             data_name),
-                                not data.is_selected]):
-            return self.default_draw_prop(layout, prop_type, data, property,
-                                          operator, *args, **kwargs)
-
-        _, containers, _ = getattr(
-            bm_get, "walk_data_get_%s" % data_name)(bakemaster)
-
-        props_equal = True
-        old_prop_val = getattr(data, property)
-        for container in containers:
-            if not container.is_selected or container.has_drop_prompt:
-                continue
-
-            # skip checking group prop value if container isn't a group
-            elif property.find("group") == 0 and not container.is_group:
-                continue
-            # skip checking decorator groups
-            elif container.is_group and container.group_type == 'DECORATOR':
-                continue
-
-            if getattr(container, property) != old_prop_val:
-                props_equal = False
-                break
-
-        # Case 2
-        if props_equal:
-            return self.default_draw_prop(layout, prop_type, data, property,
-                                          operator, *args, **kwargs)
-
-        # Case 3
-        icon_value = bm_ui_utils.get_icon_id(
-            bakemaster, "bakemaster_floatingvalue.png")
-
-        if prop_type != "Operator":
-            relinquish_operator = layout.operator(
-                'bakemaster.ui_prop_relinquish', text=kwargs.get("text", ""),
-                icon_value=icon_value)
-            relinquish_operator.data_name = data_name
-            relinquish_operator.prop_name = property
-            return
-
-        if kwargs.get("icon") is not None:
-            _ = kwargs.pop("icon")
-        kwargs["icon_value"] = icon_value
-        return layout.operator(operator, *args, **kwargs)
-
-    def default_draw_prop(self, layout, prop_type, data, property, operator,
-                          *args, **kwargs):
-        if prop_type == "Operator":
-            return layout.operator(operator, *args, **kwargs)
-
-        layout.prop(data, property, *args, **kwargs)
-
-    def has_multi_selection(self, bakemaster: not None, data_name=""):
-        """
-        Return True if there is a visualized multi selection
-        in the iterable attribute of data_name name inside the given data.
-
-        If data_name is not given (empty), self.data_name will be used.
-        """
-        if data_name == "":
-            data_name = self.data_name
-
-        has_selection, _ = bm_get.walk_data_multi_selection_data(
-            bakemaster, data_name)
-        return has_selection
 
 
 class BM_PT_Helper(Panel):
@@ -158,6 +59,10 @@ class BM_PT_Helper(Panel):
 
     Use by inheriting.
     """
+
+    bl_space_type = _bm_space_type
+    bl_region_type = _bm_region_type
+    bl_category = _bm_category
 
     use_help = True  # draw help button
     data_name = ""
@@ -179,13 +84,113 @@ class BM_PT_Helper(Panel):
         bakemaster = context.scene.bakemaster
         row = self.layout.row()
 
-        if not all([self.use_help, bakemaster.prefs_use_show_help]):
+        if not all([self.use_help, bakemaster.get_pref(context,
+                                                       "use_show_help")]):
             return
-        row.operator('bakemaster.help', text="",
+        row.operator('bakemaster.global_help', text="",
                      icon='HELP').id = self.bl_idname
 
 
-class BM_PT_BakeJobsBase(BM_PT_Helper, BM_UI_ml_draw):
+class BM_PT_Preferences(AddonPreferences):
+    # dev: __package__ is 'BakeMaster.addon'
+    # end user: __package__ is 'BakeMaster'
+    bl_idname = __package__.split(".")[0]
+
+    # Addon Preferences Props
+
+    use_show_help: BoolProperty(
+        name="Show Help buttons",
+        description="Allow help buttons in panels' headers",
+        default=True)
+
+    default_bakejob_type: EnumProperty(
+        name="Default type",
+        description="Choose BakeJob's default type. Hover over values to see descriptions",
+        default='OBJECTS',
+        items=[('OBJECTS', "Objects", "Bake Job will contain Objects, where each of them will contain Maps to bake"),  # noqa: E501
+               ('MAPS', "Maps", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for")])  # noqa: E501
+
+    use_developer_mode: BoolProperty(
+        name="Developer mode",
+        description="Toggle debugging and developer UI controls and features",
+        default=False)
+
+    developer_use_console_debug: BoolProperty(
+        name="Debug to Console",
+        description="Debug statuses, process progress, and error codes to the Console",
+        default=True)
+
+    developer_use_show_groups_indexes: BoolProperty(
+        name="Show groups indexes",
+        default=False)
+
+    developer_show_tickers: BoolProperty(
+        name="Show tickers values",
+        default=False)
+
+    developer_ui_indent_width: IntProperty(
+        name="Indent width",
+        description="Indent width for items in groups. Recommended: from 0 to 4",
+        default=0)
+
+    developer_use_group_descending_lines: BoolProperty(
+        name="Descending lines for Groups",
+        default=True)
+
+    developer_use_orange_ob_icons: BoolProperty(
+        name="Orange Object icon",
+        description="Toggle between orange and white object icons",
+        default=True)
+
+    def poll(self, context):
+        return hasattr(context.scene, "bakemaster")
+
+    def draw(self, context):
+        bakemaster = context.scene.bakemaster
+        layout = self.layout
+
+        # Help
+        split = layout.split(factor=0.4)
+
+        col_heading = split.column()
+        col_heading.alignment = 'RIGHT'
+        col_heading.label(text="Help")
+
+        col = split.column(align=True)
+        col.prop(self, "use_show_help")
+        ###
+
+        # BakeJob
+        split = layout.split(factor=0.4)
+
+        col_heading = split.column()
+        col_heading.alignment = 'RIGHT'
+        col_heading.label(text="BakeJob")
+        col = split.column(align=True)
+        col.prop(self, "default_bakejob_type", text="type")
+        ###
+
+        # BakeJob
+        split = layout.split(factor=0.4)
+
+        col_heading = split.column()
+        col_heading.alignment = 'RIGHT'
+        col_heading.label(text="Developer mode")
+        col = split.column()
+        col.prop(self, "use_developer_mode", text="Show Options")
+        if bakemaster.get_pref(context, "use_developer_mode"):
+            col.prop(self, "developer_use_orange_ob_icons")
+
+            col_aligned = col.column(align=True)
+            col_aligned.prop(self, "developer_use_group_descending_lines")
+            col_aligned.prop(self, "developer_ui_indent_width")
+
+            col.prop(self, "developer_use_show_groups_indexes")
+            col.prop(self, "developer_show_tickers")
+            col.prop(self, "developer_use_console_debug")
+
+
+class BM_PT_BakeJobs(BM_PT_Helper, BM_UI_ml_draw):
     bl_label = "Bake Jobs"
     bl_idname = 'BM_PT_BakeJobs'
 
@@ -201,7 +206,7 @@ class BM_PT_BakeJobsBase(BM_PT_Helper, BM_UI_ml_draw):
 
         # check if tools for multi selection are available
         ml_rows = 0
-        if self.has_multi_selection(bakemaster):
+        if self.has_multi_selection(bakemaster, bakemaster):
             seq = bakemaster.get_seq("bakejobs", "is_selected", bool)
             if seq[seq].size > 0:
                 ml_rows = 1
@@ -212,38 +217,38 @@ class BM_PT_BakeJobsBase(BM_PT_Helper, BM_UI_ml_draw):
             min_rows = 2 + ml_rows
         else:
             min_rows = 4 + ml_rows
-        rows = get_uilist_rows(bakemaster.bakejobs_len + ml_rows,
-                               min_rows, 4 + ml_rows)
+        rows = __get_uilist_rows(bakemaster.bakejobs_len + ml_rows,
+                                 min_rows, 4 + ml_rows)
 
         row.template_list('BM_UL_BakeJobs', "", bakemaster,
                           'bakejobs', bakemaster,
                           'bakejobs_active_index', rows=rows)
         col = row.column(align=True)
-        col.operator('bakemaster.bakejobs_add', text="",
+        col.operator('bakemaster.bakejob_add', text="",
                      icon='ADD').index = bakemaster.bakejobs_active_index
 
         if bakemaster.bakejobs_len > 0:
-            remove_ot = col.operator('bakemaster.bakejobs_remove', text="",
+            remove_ot = col.operator('bakemaster.bakejob_remove', text="",
                                      icon='REMOVE')
             remove_ot.index = bakemaster.bakejobs_active_index
 
         col.emboss = 'NONE'
         if bakemaster.bakejobs_len > 1:
             col.separator(factor=1.0)
-            col.operator('bakemaster.bakejobs_trash', text="", icon='TRASH')
+            col.operator('bakemaster.bakejob_trash', text="", icon='TRASH')
 
         col.separator(factor=1.0)
-        col.operator('bakemaster.setup', text="", icon='PREFERENCES')
+        col.operator('bakemaster.bake_setup', text="", icon='PREFERENCES')
 
         if ml_rows == 0:
             return
         col.separator(factor=1.0)
         col.emboss = 'NORMAL'
-        col.operator('bakemaster.bakejobs_merge', text="",
+        col.operator('bakemaster.bakejob_merge', text="",
                      icon='SELECT_EXTEND')
 
 
-class BM_PT_ContainersBase(BM_PT_Helper, BM_UI_ml_draw):
+class BM_PT_Containers(BM_PT_Helper, BM_UI_ml_draw):
     bl_label = " "
     bl_idname = 'BM_PT_Containers'
 
@@ -253,11 +258,11 @@ class BM_PT_ContainersBase(BM_PT_Helper, BM_UI_ml_draw):
     def panel_poll(cls, context):
         bakemaster = context.scene.bakemaster
 
-        bakejob = bm_get.bakejob(bakemaster)
+        bakejob = bakemaster.get_bakejob(bakemaster)
         if bakejob is None:
             return False
 
-        if all([cls.has_multi_selection(cls, bakemaster, "bakejobs"),
+        if all([cls.has_multi_selection(cls, bakejob, "bakejobs"),
                 not bakejob.is_selected]):
             return False
 
@@ -265,7 +270,7 @@ class BM_PT_ContainersBase(BM_PT_Helper, BM_UI_ml_draw):
 
     def draw_header(self, context):
         bakemaster = context.scene.bakemaster
-        bakejob = bm_get.bakejob(bakemaster)
+        bakejob = bakemaster.get_bakejob(bakemaster)
         if bakejob is None:
             return
 
@@ -273,8 +278,7 @@ class BM_PT_ContainersBase(BM_PT_Helper, BM_UI_ml_draw):
         row.active = bakejob.use_bake
 
         if bakejob.type == 'OBJECTS':
-            type_icon = bm_ui_utils.get_icon_id(bakemaster,
-                                                "bakemaster_objects.png")
+            type_icon = bakemaster.get_icon('OBJECTS')
             type_ot = self.draw_prop(
                 bakemaster, "bakejobs", row, "Operator", bakejob, "type",
                 'bakemaster.bakejob_toggletype', text="", icon_value=type_icon)
@@ -293,7 +297,7 @@ class BM_PT_ContainersBase(BM_PT_Helper, BM_UI_ml_draw):
         bakemaster = scene.bakemaster
         layout = self.layout
 
-        bakejob = bm_get.bakejob(bakemaster)
+        bakejob = bakemaster.get_bakejob(bakemaster)
         if bakejob is None:
             return
 
@@ -302,7 +306,7 @@ class BM_PT_ContainersBase(BM_PT_Helper, BM_UI_ml_draw):
 
         # check if tools for multi selection are available
         ml_rows = 0
-        if self.has_multi_selection(bakemaster):
+        if self.has_multi_selection(bakemaster, bakejob):
             seq = bakejob.get_seq("containers", "is_selected", bool)
             if seq[seq].size > 0:
                 ml_rows = 1
@@ -313,18 +317,18 @@ class BM_PT_ContainersBase(BM_PT_Helper, BM_UI_ml_draw):
             min_rows = 2 + ml_rows
         else:
             min_rows = 4 + ml_rows
-        rows = get_uilist_rows(bakejob.containers_len + ml_rows,
-                               min_rows, 4 + ml_rows)
+        rows = __get_uilist_rows(bakejob.containers_len + ml_rows,
+                                 min_rows, 4 + ml_rows)
 
         row.template_list('BM_UL_Containers', "", bakejob,
                           'containers', bakejob,
                           'containers_active_index', rows=rows)
         col = row.column(align=True)
-        col.operator('bakemaster.containers_add', text="",
+        col.operator('bakemaster.container_add', text="",
                      icon='ADD').bakejob_index = bakejob.index
 
         if bakejob.containers_len > 0:
-            remove_ot = col.operator('bakemaster.containers_remove', text="",
+            remove_ot = col.operator('bakemaster.container_remove', text="",
                                      icon='REMOVE')
             remove_ot.bakejob_index = bakejob.index
             remove_ot.index = bakejob.containers_active_index
@@ -332,11 +336,11 @@ class BM_PT_ContainersBase(BM_PT_Helper, BM_UI_ml_draw):
         col.emboss = 'NONE'
         if bakejob.containers_len > 1:
             col.separator(factor=1.0)
-            trash_ot = col.operator('bakemaster.containers_trash', text="",
+            trash_ot = col.operator('bakemaster.container_trash', text="",
                                     icon='TRASH')
             trash_ot.bakejob_index = bakejob.index
 
-        container = bm_get.container(bakejob)
+        container = bakemaster.get_container(bakejob)
         if container is None:
             return
 
@@ -346,22 +350,20 @@ class BM_PT_ContainersBase(BM_PT_Helper, BM_UI_ml_draw):
             subcol.emboss = 'NORMAL'
 
             if ml_rows != 0:
-                icon_value = bm_ui_utils.get_icon_id(bakemaster,
-                                                     "bakemaster_group.png")
-                group_ot = subcol.operator('bakemaster.containers_group',
+                icon_value = bakemaster.get_icon('GROUP')
+                group_ot = subcol.operator('bakemaster.container_group',
                                            text="", icon_value=icon_value)
                 group_ot.bakejob_index = bakejob.index
 
             if container.is_group or ml_rows != 0:
-                icon_value = bm_ui_utils.get_icon_id(bakemaster,
-                                                     "bakemaster_ungroup.png")
-                ungroup_ot = subcol.operator('bakemaster.containers_ungroup',
+                icon_value = bakemaster.get_icon('UNGROUP')
+                ungroup_ot = subcol.operator('bakemaster.container_ungroup',
                                              text="", icon_value=icon_value)
                 ungroup_ot.bakejob_index = bakejob.index
                 ungroup_ot.container_index = bakejob.containers_active_index
 
 
-class BM_PT_BakeBase(BM_PT_Helper):
+class BM_PT_Bake(BM_PT_Helper):
     bl_label = " "
     bl_idname = 'BM_PT_Bake'
 
@@ -374,10 +376,12 @@ class BM_PT_BakeBase(BM_PT_Helper):
         pass
 
 
-class BM_PT_BakeControlsBase(BM_PT_Helper):
+class BM_PT_BakeControls(BM_PT_Helper):
     bl_label = " "
     bl_idname = 'BM_PT_BakeControls'
     bl_options = {'HIDE_HEADER'}
+
+    bl_parent_id = BM_PT_Bake.bl_idname
 
     def draw_header(self, _):
         pass
@@ -421,10 +425,12 @@ class BM_PT_BakeControlsBase(BM_PT_Helper):
         layout.separator(factor=1.5)
 
 
-class BM_PT_BakeHistoryBase(BM_PT_Helper):
+class BM_PT_BakeHistory(BM_PT_Helper):
     bl_label = " "
     bl_idname = 'BM_PT_BakeHistory'
     bl_options = {'DEFAULT_CLOSED'}
+
+    bl_parent_id = BM_PT_Bake.bl_idname
 
     def draw_header(self, _):
         label = "Bake History"
@@ -443,7 +449,7 @@ class BM_PT_BakeHistoryBase(BM_PT_Helper):
         if bakemaster.bakehistory_len == 0:
             row.label(text="No bakes in the history")
             return
-        rows = get_uilist_rows(bakemaster.bakehistory_len, 1, 10)
+        rows = __get_uilist_rows(bakemaster.bakehistory_len, 1, 10)
         row.template_list('BM_UL_BakeHistory', "", bakemaster,
                           'bakehistory', bakemaster,
                           'bakehistory_active_index', rows=rows)

@@ -31,31 +31,18 @@ from datetime import datetime
 
 from fnmatch import fnmatch as fnmatch
 
-from .ui_base import (
-    BM_UI_ml_draw,
-    BM_PT_BakeJobsBase,
-    BM_PT_ContainersBase,
-    BM_PT_BakeControlsBase,
-    BM_PT_BakeHistoryBase,
-    BM_PT_BakeBase,
-    bm_ui_utils,
-    bm_get,
-)
-from bpy.types import (
-    UIList,
-    AddonPreferences,
-)
+from bpy.types import UIList
+
 from bpy.props import (
     StringProperty,
     BoolProperty,
 )
 
-bm_space_type = 'VIEW_3D'
-bm_region_type = 'UI'
-bm_category = "BakeMaster"
+from .helpers import BM_UI_ml_draw
 
 
-def get_bakehistory_timestamp_label(bakemaster, bakehistory):
+def __get_bakehistory_timestamp_label(bakemaster: not None,
+                                      bakehistory: not None):
     if bakehistory.index == bakemaster.bakehistory_reserved_index:
         return "in progress..."
 
@@ -86,93 +73,6 @@ def get_bakehistory_timestamp_label(bakemaster, bakehistory):
     years = months / 12
     ending = "s" if years.__int__() > 1 else ""
     return "%dyear%s ago" % (years.__int__(), ending)
-
-
-class BM_PT_BakeJobs(BM_PT_BakeJobsBase):
-    bl_space_type = bm_space_type
-    bl_region_type = bm_region_type
-    bl_category = bm_category
-
-
-class BM_PT_Containers(BM_PT_ContainersBase):
-    bl_space_type = bm_space_type
-    bl_region_type = bm_region_type
-    bl_category = bm_category
-
-
-class BM_PT_Bake(BM_PT_BakeBase):
-    bl_space_type = bm_space_type
-    bl_region_type = bm_region_type
-    bl_category = bm_category
-
-
-class BM_PT_BakeControls(BM_PT_BakeControlsBase):
-    bl_space_type = bm_space_type
-    bl_region_type = bm_region_type
-    bl_category = bm_category
-    bl_parent_id = BM_PT_Bake.bl_idname
-
-
-class BM_PT_BakeHistory(BM_PT_BakeHistoryBase):
-    bl_space_type = bm_space_type
-    bl_region_type = bm_region_type
-    bl_category = bm_category
-    bl_parent_id = BM_PT_Bake.bl_idname
-
-
-class BM_PREFS_AddonPreferences(AddonPreferences):
-    # dev: __package__ is 'BakeMaster.addon'
-    # end user: __package__ is 'BakeMaster'
-    bl_idname = __package__.split(".")[0]
-
-    def poll(self, context):
-        return hasattr(context.scene, "bakemaster")
-
-    def draw(self, context):
-        bakemaster = context.scene.bakemaster
-        layout = self.layout
-
-        # Help
-        split = layout.split(factor=0.4)
-
-        col_heading = split.column()
-        col_heading.alignment = 'RIGHT'
-        col_heading.label(text="Help")
-
-        col = split.column(align=True)
-        col.prop(bakemaster, "prefs_use_show_help")
-        ###
-
-        # BakeJob
-        split = layout.split(factor=0.4)
-
-        col_heading = split.column()
-        col_heading.alignment = 'RIGHT'
-        col_heading.label(text="BakeJob")
-        col = split.column(align=True)
-        col.prop(bakemaster, "prefs_default_bakejob_type", text="type")
-        ###
-
-        # BakeJob
-        split = layout.split(factor=0.4)
-
-        col_heading = split.column()
-        col_heading.alignment = 'RIGHT'
-        col_heading.label(text="Developer mode")
-        col = split.column()
-        col.prop(bakemaster, "prefs_use_developer_mode", text="Show Options")
-        if bakemaster.prefs_use_developer_mode:
-            col.prop(bakemaster, "prefs_developer_use_orange_ob_icons")
-
-            col_aligned = col.column(align=True)
-            col_aligned.prop(
-                bakemaster, "prefs_developer_use_group_descending_lines")
-            col_aligned.prop(bakemaster, "prefs_developer_ui_indent_width")
-
-            col.prop(bakemaster, "prefs_developer_use_show_groups_indexes")
-            col.prop(bakemaster, "prefs_developer_show_tickers")
-            col.prop(bakemaster, "prefs_developer_use_console_debug")
-        ###
 
 
 class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
@@ -219,10 +119,9 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         custom_value = None
         return None, '', custom_value
 
-    def allow_multi_select_viz(self, bakemaster, container):
-        has_selection, _ = bm_get.walk_data_multi_selection_data(
-            bakemaster, self.data_name)
-        return has_selection and not container.has_drop_prompt
+    def allow_multi_select_viz(self, bakemaster, data, container):
+        has_ms = bakemaster.wh_has_ms(data, self.data_name)
+        return has_ms and not container.has_drop_prompt
 
     def allow_drag_viz(self, bakemaster, _):
         if not bakemaster.allow_drag:
@@ -239,7 +138,8 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
 
         if self.data_name == bakemaster.drag_data_from:
             return True, 'TRANS_FROM'
-        if bm_get.walk_data_child(self.data_name) == bakemaster.drag_data_from:
+        if bakemaster.get_wh_childs_name(
+                self.data_name) == bakemaster.drag_data_from:
             return True, 'TRANS_TO'
 
         return False, ''
@@ -250,9 +150,9 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         bakemaster = context.scene.bakemaster
         row.emboss = 'NONE'
 
-        group, forbid_bake = bm_get.parent_group(
-            container, getattr(data, self.data_name), "group_type", "DICTATOR",
-            "use_bake", False)
+        group, forbid_bake = container.get_parent_group(
+                getattr(data, self.data_name), "group_type", "DICTATOR",
+                "use_bake", False)
 
         if group is not None:
             row.active = not forbid_bake
@@ -327,8 +227,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             row.emboss = 'NONE'
         else:
             row.emboss = 'NORMAL'
-        texset_icon = bm_ui_utils.get_icon_id(
-            bakemaster, "bakemaster_texset.png")
+        texset_icon = bakemaster.get_icon('TEXSET')
 
         if container.index == getattr(data, active_propname):
 
@@ -371,23 +270,24 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         if drag_layout == 'TRANS_FROM' and container.is_selected:
             return
 
-        self.draw_drag_placeholder_row(context.scene.bakemaster, col,
+        self.draw_drag_placeholder_row(context, context.scene.bakemaster, col,
                                        data, container)
 
-    def draw_drag_placeholder_row(self, bakemaster, col, data, container):
+    def draw_drag_placeholder_row(self, context, bakemaster, col, data,
+                                  container):
         dp_row = col.row(align=True)
         dp_row.alignment = 'LEFT'
 
-        self.draw_indent(dp_row, bakemaster, data, container)
+        self.draw_indent(context, dp_row, bakemaster, data, container)
 
         drag_placeholder = dp_row.box()
         drag_placeholder.label(text="")
         drag_placeholder.scale_y = 0.01
 
-    def draw_drag_empty_row(self, bakemaster, col, data, container):
+    def draw_drag_empty_row(self, context, bakemaster, col, data, container):
         row = col.row(align=True)
         row.alignment = 'LEFT'
-        self.draw_indent(row, bakemaster, data, container)
+        self.draw_indent(context, row, bakemaster, data, container)
         return row
 
     def draw_drag_empty(self, context, col, row, data, container, icon,
@@ -418,8 +318,8 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             elif getattr(containers[container.index + 1],
                          "ui_indent_level") < container.ui_indent_level:
                 pass
-            elif any([bm_ui_utils.is_group_with_no_childs(
-                container, data, getattr(data, self.data_name),
+            elif any([container.group_has_childs(
+                data, getattr(data, self.data_name),
                 self.data_name),
                     container.is_group and not container.is_expanded]):
                 allow_explicit_group_drag_empty = True
@@ -433,22 +333,25 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
                 row.label(text="", icon='BACK')
 
             if drag_layout != 'TRANS_TO':
-                self.draw_drag_placeholder_row(bakemaster, col, data,
+                self.draw_drag_placeholder_row(context, bakemaster, col, data,
                                                container)
                 return
 
-            row = self.draw_drag_empty_row(bakemaster, col, data, container)
+            row = self.draw_drag_empty_row(context, bakemaster, col, data,
+                                           container)
             row = row.box()
             row.alignment = 'LEFT'
             row.scale_y = 0.4
             text = "Move into new..."
 
         elif drag_layout == 'TRANS_TO':
-            row = self.draw_drag_empty_row(bakemaster, col, data, container)
+            row = self.draw_drag_empty_row(context, bakemaster, col, data,
+                                           container)
             text = "Move into new..."
 
         elif drag_layout in {'DEFAULT', 'TRANS_FROM'}:
-            row = self.draw_drag_empty_row(bakemaster, col, data, container)
+            row = self.draw_drag_empty_row(context, bakemaster, col, data,
+                                           container)
             text = "..."
 
         else:
@@ -496,18 +399,18 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             container = containers[container.parent_group_index]
             color_tag = container.group_color_tag
 
-        return bm_ui_utils.get_icon_id(
-            bakemaster, "bakemaster_indent_line%s.png" % color_tag)
+        return bakemaster.get_icon('INDENT%s' % color_tag)
 
-    def draw_indent(self, row, bakemaster, data, container):
-        if bakemaster.prefs_developer_use_show_groups_indexes:
+    def draw_indent(self, context, row, bakemaster, data, container):
+        if bakemaster.get_pref(context, "developer_use_show_groups_indexes"):
             indent_ad_text = str(container.parent_group_index)
         else:
             indent_ad_text = ""
 
-        if not bakemaster.prefs_developer_use_group_descending_lines:
+        if not bakemaster.get_pref(context,
+                                   "developer_use_group_descending_lines"):
             native_indent = " "*(
-                bakemaster.prefs_developer_ui_indent_width + 6)
+                bakemaster.get_pref(context, "developer_ui_indent_width") + 6)
 
             row.label(text=" %s%s" % (
                 native_indent*container.ui_indent_level,
@@ -517,8 +420,9 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         for line_index in range(container.ui_indent_level):
             row.label(text="", icon_value=self.get_indent_line_color(
                 bakemaster, data, container, line_index))
-            if bakemaster.prefs_developer_ui_indent_width > 0:
-                row.label(text=" "*bakemaster.prefs_developer_ui_indent_width)
+            if bakemaster.get_pref(context, "developer_ui_indent_width") > 0:
+                row.label(text=" "*bakemaster.get_pref(
+                    context, "developer_ui_indent_width"))
 
     def draw_box_prompt(self, layout, text: str,
                         container=None, ticker_atr=""):
@@ -567,8 +471,8 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         for container in getattr(data, self.data_name):
             if not container.is_drag_empty_placeholder:
                 continue
-            elif any([bm_ui_utils.is_group_with_no_childs(
-                container, data, getattr(data, self.data_name),
+            elif any([container.group_has_childs(
+                data, getattr(data, self.data_name),
                 self.data_name),
                     container.is_group and not container.is_expanded
                     ]):
@@ -581,7 +485,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
         bakemaster = context.scene.bakemaster
 
         allow_multi_select_viz = self.allow_multi_select_viz(
-            bakemaster, container)
+            bakemaster, data, container)
         allow_drag_viz, drag_layout = self.allow_drag_viz(
             bakemaster, container)
 
@@ -599,7 +503,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             row = col.row(align=True)
         row.alignment = 'LEFT'
 
-        if bakemaster.prefs_developer_show_tickers:
+        if bakemaster.get_pref(context, "developer_show_tickers"):
             row.label(text=str(container.ticker))
 
         # draw a drop prompt ("add new...")
@@ -617,7 +521,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
             layout.active = container.is_selected
             row.emboss = 'NONE'
 
-        self.draw_indent(row, bakemaster, data, container)
+        self.draw_indent(context, row, bakemaster, data, container)
 
         # draw group's is_expanded toggle
         if container.is_group:
@@ -639,7 +543,7 @@ class BM_WalkHandler_UIList(UIList, BM_UI_ml_draw):
                 toggle_expand_ot.bakejob_index = container.bakejob_index
                 toggle_expand_ot.index = container.index
 
-                parent_index_name = "%s_index" % bm_get.walk_data_parent(
+                parent_index_name = "%s_index" % bakemaster.get_wh_parent_name(
                     self.data_name)[:-1]
                 setattr(toggle_expand_ot, parent_index_name,
                         getattr(container, parent_index_name))
@@ -824,8 +728,7 @@ class BM_UL_BakeJobs(BM_WalkHandler_UIList):
         bakemaster = context.scene.bakemaster
 
         if container.type == 'OBJECTS':
-            type_icon = bm_ui_utils.get_icon_id(bakemaster,
-                                                "bakemaster_objects.png")
+            type_icon = bakemaster.get_icon('OBJECTS')
             type_ot = self.draw_prop(
                 bakemaster, self.data_name, row, "Operator", container, "type",
                 'bakemaster.bakejob_toggletype', text="", icon_value=type_icon)
@@ -845,15 +748,14 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
     data_name = "containers"
 
     def ticker_icon(self, context, bakemaster, data, container):
-        error_icon = bm_ui_utils.get_icon_id(bakemaster,
-                                             "bakemaster_rederror.png")
+        error_icon = bakemaster.get_icon('RED_ERROR')
 
         if container.is_group:
             if any([getattr(
                 data, "%s_active_index" % self.data_name) == container.index,
                     container.group_type == 'DECORATOR']):
                 return '', '', True
-            group_icon = bm_ui_utils.get_group_icon(bakemaster, container)
+            group_icon = container.get_group_icon(bakemaster)
             return 'ICON_VALUE', group_icon, True
 
         if data is None:
@@ -863,10 +765,10 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
             return '', '', True
 
         elif data.type == 'OBJECTS':
-            object, _, obj_icon_type, obj_icon, _, _ = bm_get.object_ui_info(
+            obj, _, obj_icon_type, obj_icon, _, _ = bakemaster.get_object_info(
                     bakemaster, context.scene.objects, container.name)
 
-            if object is None:
+            if obj is None:
                 return 'ICON_VALUE', error_icon, False
 
             return obj_icon_type, obj_icon, True
@@ -879,7 +781,7 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
         bakemaster = context.scene.bakemaster
         row.emboss = 'NONE'
 
-        group, forbid_bake = bm_get.parent_group(
+        group, forbid_bake = bakemaster.get_wh_parent_name(
             container, getattr(data, self.data_name), "group_type", "DICTATOR",
             "use_bake", False)
 
@@ -907,7 +809,7 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
                 toggle_expand_ot.bakejob_index = container.bakejob_index
                 toggle_expand_ot.index = container.index
 
-                parent_index_name = "%s_index" % bm_get.walk_data_parent(
+                parent_index_name = "%s_index" % bakemaster.get_wh_parent_name(
                     self.data_name)[:-1]
                 setattr(toggle_expand_ot, parent_index_name,
                         getattr(container, parent_index_name))
@@ -963,7 +865,7 @@ class BM_UL_Containers(BM_WalkHandler_UIList):
             else:
                 subrow.emboss = 'NORMAL'
 
-            group_icon = bm_ui_utils.get_group_icon(bakemaster, container)
+            group_icon = container.get_group_icon(bakemaster)
             subrow.operator("bakemaster.containers_groupoptions", text="",
                             icon_value=group_icon)
             subrow.active = row.active and container.group_type != 'DECORATOR'
@@ -985,7 +887,7 @@ class BM_UL_BakeHistory(UIList):
         self.use_filter_sort_reverse = True
 
         bakemaster = data
-        timestamp = get_bakehistory_timestamp_label(bakemaster, container)
+        timestamp = __get_bakehistory_timestamp_label(bakemaster, container)
 
         row = layout.row()
         row.prop(container, 'name', text="", emboss=False, icon='RENDER_STILL')
@@ -1008,7 +910,7 @@ class BM_UL_BakeHistory(UIList):
                  icon='ARROW_LEFTRIGHT')
 
     def container_get_name(self, data, container):
-        timestamp = get_bakehistory_timestamp_label(data, container)
+        timestamp = __get_bakehistory_timestamp_label(data, container)
         return "%s%s" % (container.name, timestamp)
 
     def filter_by_name(self, data, pattern, bitflag, containers,
