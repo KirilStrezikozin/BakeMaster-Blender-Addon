@@ -40,7 +40,8 @@ from bpy.props import (
 )
 
 
-def ui_bake_poll(bakemaster, bake_is_running: bool) -> typing.Tuple[bool, str]:
+def __ui_bake_poll(bakemaster, bake_is_running: bool
+                   ) -> typing.Tuple[bool, str]:
     if bake_is_running:
         message = "Another bake is running"
         bakemaster.log("o4x0000", message)
@@ -55,7 +56,7 @@ def ui_bake_poll(bakemaster, bake_is_running: bool) -> typing.Tuple[bool, str]:
     return True, ""
 
 
-def ui_bakehistory_poll(ot_instance, bakemaster) -> typing.Tuple[bool, str]:
+def __ui_bakehistory_poll(ot_instance, bakemaster) -> typing.Tuple[bool, str]:
     if ot_instance.index == -1:
         message = "Internal Error: Cannot resolve item in Bake History"
         bakemaster.log("o4x0001", message)
@@ -76,7 +77,7 @@ def ui_bakehistory_poll(ot_instance, bakemaster) -> typing.Tuple[bool, str]:
     return True, ""
 
 
-def bakehistory_add_entry(bakemaster):
+def __bakehistory_add_entry(bakemaster):
     new_item = bakemaster.bakehistory.add()
     new_item.index = bakemaster.bakehistory_len
     new_item.name += " %d" % (new_item.index + 1)
@@ -84,7 +85,7 @@ def bakehistory_add_entry(bakemaster):
     bakemaster.bakehistory_reserved_index = new_item.index
 
 
-def bakehistory_remove_entry(bakemaster, remove_index: int):
+def __bakehistory_remove_entry(bakemaster, remove_index: int):
     if bakemaster.bakehistory_reserved_index > remove_index:
         bakemaster.bakehistory_reserved_index -= 1
     for index in range(remove_index + 1, bakemaster.bakehistory_len):
@@ -93,7 +94,7 @@ def bakehistory_remove_entry(bakemaster, remove_index: int):
     bakemaster.bakehistory_len -= 1
 
 
-def bakehistory_unblock_reserved_entry(bakemaster):
+def __bakehistory_unblock_reserved_entry(bakemaster):
     if bakemaster.bakehistory_reserved_index == -1:
         return
 
@@ -124,7 +125,7 @@ class BM_OT_UI_Bake_Generic(Operator):
         bakemaster = context.scene.bakemaster
 
         bake_is_running = bakemaster.bake_is_running
-        poll_success, message = ui_bake_poll(bakemaster, bake_is_running)
+        poll_success, message = __ui_bake_poll(bakemaster, bake_is_running)
         if not poll_success:
             self.report({'ERROR'}, message)
             return False
@@ -267,7 +268,7 @@ class BM_OT_Bake_One(BM_OT_UI_Bake_Generic):
     def execute(self, context):
         bakemaster = context.scene.bakemaster
         self.props_set_explicit(bakemaster)
-        bakehistory_add_entry(bakemaster)
+        __bakehistory_add_entry(bakemaster)
 
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
@@ -293,7 +294,7 @@ class BM_OT_Bake_All(Operator):
     def execute(self, context):
         bakemaster = context.scene.bakemaster
         self.props_set_explicit(bakemaster)
-        bakehistory_add_entry(bakemaster)
+        __bakehistory_add_entry(bakemaster)
 
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
@@ -314,7 +315,7 @@ class BM_OT_Bake_Toggle_Pause(Operator):
     def pause_poll(self, context):
         bakemaster = context.scene.bakemaster
         bake_is_running = bakemaster.bake_is_running
-        poll_success, _ = ui_bake_poll(bakemaster, not bake_is_running)
+        poll_success, _ = __ui_bake_poll(bakemaster, not bake_is_running)
         return poll_success
 
     def props_set_explicit(self, bakemaster):
@@ -344,7 +345,7 @@ class BM_OT_Bake_Stop(Operator):
     def stop_poll(self, context):
         bakemaster = context.scene.bakemaster
         bake_is_running = bakemaster.bake_is_running
-        poll_success, _ = ui_bake_poll(bakemaster, not bake_is_running)
+        poll_success, _ = __ui_bake_poll(bakemaster, not bake_is_running)
         return poll_success
 
     def props_set_explicit(self, bakemaster):
@@ -356,7 +357,7 @@ class BM_OT_Bake_Stop(Operator):
     def execute(self, context):
         bakemaster = context.scene.bakemaster
         self.props_set_explicit(bakemaster)
-        bakehistory_unblock_entry(bakemaster)
+        __bakehistory_unblock_reserved_entry(bakemaster)
         bakemaster.bake_trigger_stop = False
 
         self.report({'WARNING'}, "Not implemented")
@@ -378,7 +379,7 @@ class BM_OT_Bake_Cancel(Operator):
     def cancel_poll(self, context):
         bakemaster = context.scene.bakemaster
         bake_is_running = bakemaster.bake_is_running
-        poll_success, _ = ui_bake_poll(bakemaster, not bake_is_running)
+        poll_success, _ = __ui_bake_poll(bakemaster, not bake_is_running)
         return poll_success
 
     def props_set_explicit(self, bakemaster):
@@ -390,7 +391,7 @@ class BM_OT_Bake_Cancel(Operator):
     def execute(self, context):
         bakemaster = context.scene.bakemaster
         self.props_set_explicit(bakemaster)
-        bakehistory_unblock_entry(bakemaster)
+        __bakehistory_unblock_reserved_entry(bakemaster)
         bakemaster.bake_trigger_cancel = False
 
         self.report({'WARNING'}, "Not implemented")
@@ -422,13 +423,13 @@ class BM_OT_BakeHistory_Rebake(Operator):
     def rebake_poll(self, context):
         bakemaster = context.scene.bakemaster
 
-        poll_success, message = ui_bakehistory_poll(self, bakemaster)
+        poll_success, message = __ui_bakehistory_poll(self, bakemaster)
         if not poll_success:
             self.report({'ERROR'}, message)
             return False
 
         bake_is_running = bakemaster.bake_is_running
-        poll_success, message = ui_bake_poll(bakemaster, bake_is_running)
+        poll_success, message = __ui_bake_poll(bakemaster, bake_is_running)
         if not poll_success:
             self.report({'ERROR'}, message)
             return False
@@ -469,7 +470,7 @@ class BM_OT_BakeHistory_Config(Operator):
     def config_poll(self, context):
         bakemaster = context.scene.bakemaster
 
-        poll_success, message = ui_bakehistory_poll(self, bakemaster)
+        poll_success, message = __ui_bakehistory_poll(self, bakemaster)
         if not poll_success:
             self.report({'ERROR'}, message)
             return False
@@ -514,7 +515,7 @@ class BM_OT_BakeHistory_Remove(Operator):
     def remove_poll(self, context):
         bakemaster = context.scene.bakemaster
 
-        poll_success, message = ui_bakehistory_poll(self, bakemaster)
+        poll_success, message = __ui_bakehistory_poll(self, bakemaster)
         if not poll_success:
             self.report({'ERROR'}, message)
             return False
@@ -523,7 +524,7 @@ class BM_OT_BakeHistory_Remove(Operator):
     def execute(self, context):
         bakemaster = context.scene.bakemaster
 
-        bakehistory_remove_entry(bakemaster, self.index)
+        __bakehistory_remove_entry(bakemaster, self.index)
         bakemaster.wh_recalc_indexes(bakemaster, "bakehistory",
                                      childs_recursive=False)
 
