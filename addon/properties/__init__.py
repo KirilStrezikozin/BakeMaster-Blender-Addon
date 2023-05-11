@@ -26,3 +26,7 @@
 # see <http://www.gnu.org/licenses/>.
 #
 # ##### END LICENSE BLOCK #####
+
+from . import properties
+
+__all__ = ["properties"]

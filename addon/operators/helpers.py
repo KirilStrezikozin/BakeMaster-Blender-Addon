@@ -53,7 +53,12 @@ class BM_OT_Global_Free_Icons(Operator):
 
     def execute(self, context):
         import bpy.utils.previews
-        preview_collections = context.scene.bakemaster.get_icon(reg=True)
+
+        bakemaster = context.scene.bakemaster
+        preview_collections = bakemaster.get_icon('', reg=True)
+
+        if len(preview_collections) == 0:
+            bakemaster.log("mbx0002")
 
         for pcoll in preview_collections.values():
             bpy.utils.previews.remove(pcoll)
@@ -85,14 +90,14 @@ class BM_OT_Global_Help(Operator):
         url = urls.get(self.page_id, r'%s/')
         return url % (base + self.addon_version)
 
-    def invoke(self, context, _):
-        self.addon_version = context.scene.bakemaster.get_addon_version()
-        return self.execute(context)
-
     def execute(self, _):
         from webbrowser import open as webbrowser_open
         webbrowser_open(self.get_url())
         return {'FINISHED'}
+
+    def invoke(self, context, _):
+        self.addon_version = context.scene.bakemaster.get_addon_version()
+        return self.execute(context)
 
 
 class BM_OT_Helper_FileChooseDialog(Operator, ImportHelper):

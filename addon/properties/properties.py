@@ -63,7 +63,7 @@ _ui_pcoll_open = {}
 _short_bake_instruction = "Press `ESC` key to cancel baking current map iteration.\n\nOpen Blender Console to see more information about the baking process and, if you face an unexpected Blender freeze, be able to press `Ctrl + C` (Windows), `Cmd + C` (Mac), `Super + C` (Linux) to abort the bake. Enable Prompt before freeze for more control"  # noqa: E501
 
 
-def __load_preview_collections() -> typing.Union[
+def _load_preview_collections() -> typing.Union[
         bpy.utils.previews.ImagePreviewCollection,
         typing.Dict["str", typing.Any]]:
     """
@@ -258,8 +258,8 @@ class BM_PropertyGroup_Helper(PropertyGroup):
             return True
 
     def get_group_icon(self, bakemaster: not None, all: bool = False
-                       ) -> typing.Union[int,
-                                         typing.List[typing.List[str, int]]]:
+                       ) -> typing.Union[int, typing.List[
+                           typing.List[typing.Union[str, int]]]]:
         if self.group_type == 'DECORATOR':
             return bakemaster.get_icon('COLLECTION')
 
@@ -851,7 +851,7 @@ class Global(BM_PropertyGroup_Helper):
     # Preview Collections - Custom Icons Props
 
     __preview_collections = {
-        "main": __load_preview_collections(),
+        "main": _load_preview_collections(),
     }
 
     # Helper Funcs
@@ -862,7 +862,8 @@ class Global(BM_PropertyGroup_Helper):
     def log(self, log_id: str, *args):
         log_ids = {
             "mbx0001": r"BakeMaster: Internal Warning: icon %s not loaded",
-            "mbx0002": r"BakeMaster: Internal Warning: %s while setting %s attribute for %s",  # noqa: E501
+            "mbx0002": r"BakeMaster: Internal Warning: no icons loaded to close",  # noqa: E501
+            "mbx0003": r"BakeMaster: Internal Warning: %s while setting %s attribute for %s",  # noqa: E501
             "pux0000": r"BakeMaster: Internal Error: cannot resolve %s walk data at %s",  # noqa: E501
             "o0x0000": r"BakeMaster: Internal Error: cannot resolve %s walk data at %s",  # noqa: E501
             "o0x0001": r"BakeMaster: Internal Error: not enough data at %s",
@@ -882,7 +883,11 @@ class Global(BM_PropertyGroup_Helper):
                 print(f"BakeMaster: Internal Warning: {log_id} log id didn't receive anough arguments")  # noqa: E501
             print(message)
 
-    def get_icon(self, icon_id: str) -> int:
+    def get_icon(self, icon_id: str, reg=False
+                 ) -> typing.Union[int, typing.Dict]:
+        if reg:
+            return self.__preview_collections
+
         try:
             thumb = self.__preview_collections["main"].get(icon_id)
             if thumb is None:
@@ -1309,7 +1314,7 @@ class Global(BM_PropertyGroup_Helper):
                     setattr(item_to, attr, getattr(item_from, attr))
                 except (AttributeError, IndexError, TypeError,
                         ValueError) as error:
-                    self.log("mbx0002", error, attr, item_to)
+                    self.log("mbx0003", error, attr, item_to)
                 continue
 
             # for containers only (attr == subcontainers)
@@ -1424,3 +1429,10 @@ class Global(BM_PropertyGroup_Helper):
                 context.preferences.addons[package_name].preferences,
                 propname)
         return pref_value
+
+    def get_addon_version(self, use_tuple=False
+                          ) -> typing.Union[str, typing.Tuple[int]]:
+        if use_tuple:
+            return (3, 0, 0)
+        else:
+            return "3.0.0"
