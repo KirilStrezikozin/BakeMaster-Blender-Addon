@@ -27,7 +27,7 @@
 #
 # ##### END LICENSE BLOCK #####
 
-import typing.Tuple
+import typing
 
 from datetime import datetime
 

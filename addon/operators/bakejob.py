@@ -31,6 +31,7 @@ from bpy.types import Operator
 from bpy.props import (
     IntProperty,
     BoolProperty,
+    StringProperty,
 )
 
 

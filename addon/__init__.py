@@ -27,21 +27,6 @@
 #
 # ##### END LICENSE BLOCK #####
 
-import bpy
-
-
-if "bpy" not in locals():
-    from . import properties
-    from . import operators
-    from . import ui
-
-else:
-    import importlib
-
-    properties = importlib.reload(properties)
-    operators = importlib.reload(operators)
-    ui = importlib.reload(ui)
-
 bl_info = {
     "name": "BakeMaster",
     "description":
@@ -56,23 +41,29 @@ bl_info = {
     "category": "Material"
 }
 
+
+if "bpy" in locals():
+    import importlib
+
+    properties = importlib.reload(properties)
+    operators = importlib.reload(operators)
+    ui = importlib.reload(ui)
+else:
+    import bpy
+
+    from . import (
+        properties,
+        operators,
+        ui,
+    )
+
+
 classes = (
     properties.properties.Subcontainer,
     properties.properties.Container,
     properties.properties.BakeJob,
     properties.properties.BakeHistory,
     properties.properties.Global,
-
-    ui.panels.BM_PT_Preferences,
-    ui.panels.BM_PT_BakeJobs,
-    ui.panels.BM_PT_Containers,
-    ui.panels.BM_PT_Bake,
-    ui.panels.BM_PT_BakeControls,
-    ui.panels.BM_PT_BakeHistory,
-
-    ui.uilists.BM_UL_BakeJobs,
-    ui.uilists.BM_UL_Containers,
-    ui.uilists.BM_UL_BakeHistory,
 
     operators.helpers.BM_OT_Global_Free_Icons,
     operators.helpers.BM_OT_Global_Help,
@@ -93,17 +84,17 @@ classes = (
     operators.bakejob.BM_OT_BakeJob_Merge,
 
     operators.container.BM_OT_Container_Add,
-    operators.container.BM_OT_Containers_Remove,
-    operators.container.BM_OT_Containers_Trash,
+    operators.container.BM_OT_Container_Remove,
+    operators.container.BM_OT_Container_Trash,
     operators.container.BM_OT_Container_Rename,
-    operators.container.BM_OT_Containers_Toggle_Expand,
-    operators.container.BM_OT_Containers_Group_SetIcon,
-    operators.container.BM_OT_Containers_GroupOptions,
-    operators.container.BM_OT_Containers_Group,
-    operators.container.BM_OT_Containers_Ungroup,
+    operators.container.BM_OT_Container_Toggle_Expand,
+    operators.container.BM_OT_Container_Group_Set_Icon,
+    operators.container.BM_OT_Container_Group_Options,
+    operators.container.BM_OT_Container_Group,
+    operators.container.BM_OT_Container_Ungroup,
 
     operators.subcontainer.BM_OT_Subcontainer_Trash,
-    operators.subcontainer.BM_OT_Subcontainers_Toggle_Expand,
+    operators.subcontainer.BM_OT_Subcontainer_Toggle_Expand,
 
     operators.bake.BM_OT_Bake_All,
     operators.bake.BM_OT_Bake_One,
@@ -115,6 +106,17 @@ classes = (
     operators.bake.BM_OT_BakeHistory_Remove,
     operators.bake.BM_OT_BakeHistory_Rebake,
     operators.bake.BM_OT_BakeHistory_Config,
+
+    ui.panels.BM_PT_Preferences,
+    ui.panels.BM_PT_BakeJobs,
+    ui.panels.BM_PT_Containers,
+    ui.panels.BM_PT_Bake,
+    ui.panels.BM_PT_BakeControls,
+    ui.panels.BM_PT_BakeHistory,
+
+    ui.uilists.BM_UL_BakeJobs,
+    ui.uilists.BM_UL_Containers,
+    ui.uilists.BM_UL_BakeHistory,
 )
 
 _is_walk_handler_timer_started = False

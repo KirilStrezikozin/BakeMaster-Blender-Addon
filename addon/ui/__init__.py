@@ -26,3 +26,8 @@
 # see <http://www.gnu.org/licenses/>.
 #
 # ##### END LICENSE BLOCK #####
+
+from . import uilists
+from . import panels
+
+__all__ = ["uilists", "panels"]

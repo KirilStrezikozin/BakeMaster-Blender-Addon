@@ -44,7 +44,7 @@ _walk_handler_invoke_time = 0
 
 
 class BM_OT_Global_WalkHandler(Operator):
-    bl_idname = 'bakemaster.global_uilist_walkhandler'
+    bl_idname = 'bakemaster.global_walkhandler'
     bl_label = "BakeMaster Walk Handler"
     bl_description = "User Interface Walk Handler for operating Drag, Drop, Multi Selection"  # noqa: E501
     bl_options = {'INTERNAL'}
