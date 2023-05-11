@@ -29,6 +29,15 @@
 
 import typing
 
+from os import (
+    path as os_path,
+    listdir as os_listdir,
+)
+
+from bpy import ops as bpy_ops
+
+import bpy.utils.previews
+
 from bpy.types import PropertyGroup
 from bpy.props import (
     CollectionProperty,
@@ -39,6 +48,7 @@ from bpy.props import (
 )
 
 from numpy import (
+    ndarray as numpy_ndarray,
     zeros as numpy_zeros,
     array as numpy_array,
 )
@@ -46,6 +56,41 @@ from numpy import (
 from . import prop_updates
 
 # class F():
+
+
+_ui_pcoll_open = {}
+
+_short_bake_instruction = "Press `ESC` key to cancel baking current map iteration.\n\nOpen Blender Console to see more information about the baking process and, if you face an unexpected Blender freeze, be able to press `Ctrl + C` (Windows), `Cmd + C` (Mac), `Super + C` (Linux) to abort the bake. Enable Prompt before freeze for more control"  # noqa: E501
+
+
+def __load_preview_collections() -> typing.Union[
+        bpy.utils.previews.ImagePreviewCollection,
+        typing.Dict["str", typing.Any]]:
+    """
+    Load custom icons into bakemaster.__preview_collections.
+    """
+
+    icons_dir = os_path.join(
+            os_path.dirname(os_path.dirname(__file__)),
+            "icons")
+
+    if not os_path.exists(icons_dir):
+        print("BakeMaster: Internal Warning: custom icons weren't found")
+        return dict()
+
+    # To avoid ResourceWarning on loading previously initialized instance
+    pcoll = _ui_pcoll_open.get("main")
+    if pcoll is not None:
+        return pcoll
+
+    pcoll = bpy.utils.previews.new()
+    _ui_pcoll_open["main"] = pcoll
+
+    for filename in os_listdir(icons_dir):
+        filepath = os_path.join(icons_dir, filename)
+        pcoll.load(filename, filepath, 'IMAGE')
+
+    return pcoll
 
 
 class BM_PropertyGroup_Helper(PropertyGroup):
@@ -56,7 +101,8 @@ class BM_PropertyGroup_Helper(PropertyGroup):
     add active_index_old property alongside active_index.
     """
 
-    def get_seq(self, data, attr, dtype: type) -> typing.Iterable[typing.Any]:
+    def get_seq(self, data: not None, attr: str, dtype: type
+                ) -> numpy_ndarray:
         """
         Get a numpy array of len count containing a sequence of attrs' values
         in data.
@@ -67,7 +113,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         data_prop.foreach_get(attr, seq)
         return seq
 
-    def set_seq(self, data, attr, value) -> typing.Iterable[typing.Any]:
+    def set_seq(self, data: not None, attr: str, value: typing.Any):
         """
         Set each item's property of name attr to the given value
         (items are in iterable data property).
@@ -77,7 +123,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         seq = numpy_array([value] * len(data_prop))
         data_prop.foreach_set(attr, seq)
 
-    def get_bm_name(self, bakemaster, data_name) -> str:
+    def get_bm_name(self, bakemaster: not None, data_name: str) -> str:
         """
         Get bm_name representing the UI name of the iterable walk data in the
         data_name.
@@ -197,7 +243,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
 
             container = containers[container.parent_group_index]
 
-    def group_has_childs(self, data: typing.Any,
+    def group_has_childs(self, data: not None,
                          containers: typing.Iterable[typing.Any],
                          attr: str) -> bool:
         if not self.is_group:
@@ -446,7 +492,7 @@ class Subcontainer(BM_PropertyGroup_Helper):
         default='DICTATOR',
         items=[('DICTATOR', "Dictator", "Group will dictate all settigs to its childs"),  # noqa: E501
                ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")],  # noqa: E501
-        update=bm_props_utils.Subcontainer_group_type_Update)
+        update=prop_updates.Subcontainer_group_type_Update)
 
     lowpoly_index: IntProperty(default=-1)
     lowpoly_name: StringProperty(default="")
@@ -458,12 +504,12 @@ class Subcontainer(BM_PropertyGroup_Helper):
         name="Texture Set",
         description="Make this Group a Texture Set where all child objects will share the same image for each map",  # noqa: E501
         default=False,
-        update=bm_props_utils.Subcontainer_group_is_texset_Update)
+        update=prop_updates.Subcontainer_group_is_texset_Update)
 
     use_bake: BoolProperty(
         name="Include/Exclude Item from bake",
         default=True,
-        update=bm_props_utils.Subcontainer_use_bake_Update)
+        update=prop_updates.Subcontainer_use_bake_Update)
 
     ###
 
@@ -476,19 +522,19 @@ class Subcontainer(BM_PropertyGroup_Helper):
         name="Item",
         description="Double click to change.\nPress and drag to move.\nUse Shift, Ctrl to select multiple",  # noqa: E501
         default=False,
-        update=bm_props_utils.Subcontainer_ticker_Update)
+        update=prop_updates.Subcontainer_ticker_Update)
 
     drag_empty_ticker: BoolProperty(
         name="Item",
         description="Double click to change.\nPress and drag to move.\nUse Shift, Ctrl to select multiple",  # noqa: E501
         default=False,
-        update=bm_props_utils.Subcontainer_drag_empty_ticker_Update)
+        update=prop_updates.Subcontainer_drag_empty_ticker_Update)
 
     lowpoly_ticker: BoolProperty(
         name="Add data...",
         description="Drag over and release to add Highpoly, Cage, or Decal for this Object",  # noqa: E501
         default=False,
-        update=bm_props_utils.Subcontainer_lowpoly_ticker_Update)
+        update=prop_updates.Subcontainer_lowpoly_ticker_Update)
 
     is_drag_empty: BoolProperty(default=False)
     is_drag_placeholder: BoolProperty(default=False)
@@ -506,7 +552,7 @@ class Container(BM_PropertyGroup_Helper):
         name="New Object",
         description="Drop objects here to put them into selected Bake Jobs",
         default="new Object...",
-        update=bm_props_utils.Container_drop_name_Update)
+        update=prop_updates.Container_drop_name_Update)
 
     drop_name_old: StringProperty(default="new Object...")
 
@@ -530,7 +576,7 @@ class Container(BM_PropertyGroup_Helper):
         default='DICTATOR',
         items=[('DICTATOR', "Dictator", "Group will dictate all settigs to its childs"),  # noqa: E501
                ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")],  # noqa: E501
-        update=bm_props_utils.Container_group_type_Update)
+        update=prop_updates.Container_group_type_Update)
 
     lowpoly_index: IntProperty(default=-1)
     lowpoly_name: StringProperty(default="")
@@ -542,12 +588,12 @@ class Container(BM_PropertyGroup_Helper):
         name="Texture Set",
         description="Make this Group a Texture Set where all child objects will share the same image for each map",  # noqa: E501
         default=False,
-        update=bm_props_utils.Container_group_is_texset_Update)
+        update=prop_updates.Container_group_is_texset_Update)
 
     use_bake: BoolProperty(
         name="Include/Exclude Item from bake",
         default=True,
-        update=bm_props_utils.Container_use_bake_Update)
+        update=prop_updates.Container_use_bake_Update)
 
     ###
 
@@ -557,7 +603,7 @@ class Container(BM_PropertyGroup_Helper):
         name="Active item",
         description="Click to configure settings",
         default=-1,
-        update=bm_props_utils.Container_subcontainers_active_index_Update)
+        update=prop_updates.Container_subcontainers_active_index_Update)
 
     subcontainers_active_index_old: IntProperty(default=-1)
 
@@ -572,19 +618,19 @@ class Container(BM_PropertyGroup_Helper):
         name="Item",
         description="Double click to change.\nPress and drag to move.\nUse Shift, Ctrl to select multiple",  # noqa: E501
         default=False,
-        update=bm_props_utils.Container_ticker_Update)
+        update=prop_updates.Container_ticker_Update)
 
     drag_empty_ticker: BoolProperty(
         name="Item",
         description="Double click to change.\nPress and drag to move.\nUse Shift, Ctrl to select multiple",  # noqa: E501
         default=False,
-        update=bm_props_utils.Container_drag_empty_ticker_Update)
+        update=prop_updates.Container_drag_empty_ticker_Update)
 
     lowpoly_ticker: BoolProperty(
         name="Add data...",
         description="Drag over and release to add Highpoly, Cage, or Decal for this Object",  # noqa: E501
         default=False,
-        update=bm_props_utils.Container_lowpoly_ticker_Update)
+        update=prop_updates.Container_lowpoly_ticker_Update)
 
     is_drag_empty: BoolProperty(default=False)
     is_drag_placeholder: BoolProperty(default=False)
@@ -604,7 +650,7 @@ class BakeJob(BM_PropertyGroup_Helper):
         name="New Bake Job",
         description="Drop objects here to create a new Bake Job with them",
         default="new Bake Job...",
-        update=bm_props_utils.BakeJob_drop_name_Update)
+        update=prop_updates.BakeJob_drop_name_Update)
 
     drop_name_old: StringProperty(default="new Bake Job...")
 
@@ -627,7 +673,7 @@ class BakeJob(BM_PropertyGroup_Helper):
         default='DICTATOR',
         items=[('DICTATOR', "Dictator", "Group will dictate all settigs to its childs"),  # noqa: E501
                ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")],  # noqa: E501
-        update=bm_props_utils.BakeJob_group_type_Update)
+        update=prop_updates.BakeJob_group_type_Update)
 
     lowpoly_index: IntProperty(default=-1)
     lowpoly_name: StringProperty(default="")
@@ -639,7 +685,7 @@ class BakeJob(BM_PropertyGroup_Helper):
         name="Texture Set",
         description="Make this Group a Texture Set where all child objects will share the same image for each map",  # noqa: E501
         default=False,
-        update=bm_props_utils.BakeJob_group_is_texset_Update)
+        update=prop_updates.BakeJob_group_is_texset_Update)
 
     type: EnumProperty(
         name="Bake Job Type",
@@ -647,12 +693,12 @@ class BakeJob(BM_PropertyGroup_Helper):
         default='OBJECTS',
         items=[('OBJECTS', "Objects", "Bake Job will contain Objects, where each of them will contain Maps to bake"),  # noqa: E501
                ('MAPS', "Maps", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for")],  # noqa: E501
-        update=bm_props_utils.BakeJob_type_Update)
+        update=prop_updates.BakeJob_type_Update)
 
     use_bake: BoolProperty(
         name="Include/Exclude Bake Job from bake",
         default=True,
-        update=bm_props_utils.BakeJob_use_bake_Update)
+        update=prop_updates.BakeJob_use_bake_Update)
 
     ###
 
@@ -662,7 +708,7 @@ class BakeJob(BM_PropertyGroup_Helper):
         name="Active item",
         description="Click to configure settings",
         default=-1,
-        update=bm_props_utils.BakeJob_containers_active_index_Update)
+        update=prop_updates.BakeJob_containers_active_index_Update)
 
     containers_active_index_old: IntProperty(default=-1)
 
@@ -677,19 +723,19 @@ class BakeJob(BM_PropertyGroup_Helper):
         name="Bake Job",
         description="Double click to rename.\nPress and drag to move.\nUse Shift, Ctrl to select multiple",  # noqa: E501
         default=False,
-        update=bm_props_utils.BakeJob_ticker_Update)
+        update=prop_updates.BakeJob_ticker_Update)
 
     drag_empty_ticker: BoolProperty(
         name="Bake Job",
         description="Double click to change.\nPress and drag to move.\nUse Shift, Ctrl to select multiple",  # noqa: E501
         default=False,
-        update=bm_props_utils.BakeJob_drag_empty_ticker_Update)
+        update=prop_updates.BakeJob_drag_empty_ticker_Update)
 
     lowpoly_ticker: BoolProperty(
         name="Add data...",
         description="Drag over and release to add Highpoly, Cage, or Decal for this Object",  # noqa: E501
         default=False,
-        update=bm_props_utils.BakeJob_lowpoly_ticker_Update)
+        update=prop_updates.BakeJob_lowpoly_ticker_Update)
 
     is_drag_empty: BoolProperty(default=False)
     is_drag_placeholder: BoolProperty(default=False)
@@ -721,7 +767,7 @@ class Global(BM_PropertyGroup_Helper):
         name="Bake Job",
         description="Active Bake Job",
         default=-1,
-        update=bm_props_utils.Global_bakejobs_active_index_Update)
+        update=prop_updates.Global_bakejobs_active_index_Update)
 
     bakejobs_active_index_old: IntProperty(default=-1)
 
@@ -772,7 +818,7 @@ class Global(BM_PropertyGroup_Helper):
 
     short_bake_instruction: StringProperty(
         name="Short Bake Instruction",
-        description=BM_LABELS_Props("Global", "short_bake_instruction", "description").get(),  # noqa: E501
+        description=_short_bake_instruction,
         default="Short Bake Instruction",
         options={'SKIP_SAVE'})
 
@@ -802,69 +848,39 @@ class Global(BM_PropertyGroup_Helper):
         description="Choose a folder on the disk containing Presets for BakeMaster (leave empty for default path). // is relative to this .blend file",  # noqa: E501
         default="")
 
-    # Addon Preferences Props
-
-    prefs_use_show_help: BoolProperty(
-        name="Show Help buttons",
-        description="Allow help buttons in panels' headers",
-        default=True)
-
-    prefs_default_bakejob_type: EnumProperty(
-        name="Default type",
-        description="Choose BakeJob's default type. Hover over values to see descriptions",
-        default='OBJECTS',
-        items=[('OBJECTS', "Objects", "Bake Job will contain Objects, where each of them will contain Maps to bake"),  # noqa: E501
-               ('MAPS', "Maps", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for")])  # noqa: E501
-
-    prefs_use_developer_mode: BoolProperty(
-        name="Developer mode",
-        description="Toggle debugging and developer UI controls and features",
-        default=False)
-
-    prefs_developer_use_console_debug: BoolProperty(
-        name="Debug to Console",
-        description="Debug statuses, process progress, and error codes to the Console",
-        default=True)
-
-    prefs_developer_use_show_groups_indexes: BoolProperty(
-        name="Show groups indexes",
-        default=False)
-
-    prefs_developer_show_tickers: BoolProperty(
-        name="Show tickers values",
-        default=False)
-
-    prefs_developer_ui_indent_width: IntProperty(
-        name="Indent width",
-        description="Indent width for items in groups. Recommended: from 0 to 4",
-        default=0)
-
-    prefs_developer_use_group_descending_lines: BoolProperty(
-        name="Descending lines for Groups",
-        default=True)
-
-    prefs_developer_use_orange_ob_icons: BoolProperty(
-        name="Orange Object icon",
-        description="Toggle between orange and white object icons",
-        default=True)
-
     # Preview Collections - Custom Icons Props
 
     __preview_collections = {
-        "main": init_preview_collections(),
+        "main": __load_preview_collections(),
     }
 
     # Helper Funcs
 
-    def log(self, log_id: str, message: typing.Union[str, typing.Any] = ""):
+    def __get_package_name(self) -> str:
+        return __package__.split(".")[0]
+
+    def log(self, log_id: str, *args):
         log_ids = {
-            "mbx0001": r"BakeMaster Internal Warning: icon %s not loaded",
+            "mbx0001": r"BakeMaster: Internal Warning: icon %s not loaded",
+            "mbx0002": r"BakeMaster: Internal Warning: %s while setting %s attribute for %s",  # noqa: E501
+            "pux0000": r"BakeMaster: Internal Error: cannot resolve %s walk data at %s",  # noqa: E501
+            "o0x0000": r"BakeMaster: Internal Error: cannot resolve %s walk data at %s",  # noqa: E501
+            "o0x0001": r"BakeMaster: Internal Error: not enough data at %s",
+            "o0x0002": r"BakeMaster: Internal warning: cannot resolve container at %s",  # noqa: E501
         }
 
-        if message:
-            print(log_ids[log_id] % str(message))
+        try:
+            message = log_ids[log_id]
+        except KeyError:
+            print(f"BakeMaster: Internal Error: invalid {log_id} log id")
+            return
+
+        if len(args):
+            print(message % tuple([str(arg) for arg in args]))
         else:
-            print(log_ids[log_id])
+            if message.count(r"%s") > 0:
+                print(f"BakeMaster: Internal Warning: {log_id} log id didn't receive anough arguments")  # noqa: E501
+            print(message)
 
     def get_icon(self, icon_id: str) -> int:
         try:
@@ -893,7 +909,7 @@ class Global(BM_PropertyGroup_Helper):
         else:
             return bj
 
-    def get_container(self, bj: BakeJob, index=-1
+    def get_container(self, bj: typing.Union[BakeJob, None], index=-1
                       ) -> typing.Union[Container, None]:
         if bj is None:
             return None
@@ -909,7 +925,7 @@ class Global(BM_PropertyGroup_Helper):
         else:
             return ctnr
 
-    def get_subcontainer(self, ctnr: Container, index=-1
+    def get_subcontainer(self, ctnr: typing.Union[Container, None], index=-1
                          ) -> typing.Union[Subcontainer, None]:
         if ctnr is None:
             return None
@@ -1018,7 +1034,7 @@ class Global(BM_PropertyGroup_Helper):
                                      container.index]])
             index += 1
 
-    def wh_disable_drag(self, data, attr: str, clear_selection=True):
+    def wsh_disable_drag(self, data, attr: str, clear_selection=True):
         """
         Turn off drag.
         If clear_selection is True, unset multi selection.
@@ -1048,8 +1064,8 @@ class Global(BM_PropertyGroup_Helper):
                                [False] * containers_len)
         containers.foreach_set("is_drag_empty", [False] * containers_len)
 
-    def __wh_clear_ms(self, data: typing.Union[None, typing.Any], attr: str):
-        pass
+    def __wh_clear_ms(self, _: typing.Union[None, typing.Any], attr: str):
+        prop_updates.__generic_multi_select(None, self, attr)
 
     def wh_disable_ms(self):
         self.__wh_clear_ms()
@@ -1196,6 +1212,126 @@ class Global(BM_PropertyGroup_Helper):
         setattr(data, "%s_len" % attr, 0)
         return {'FINISHED'}
 
+    def wh_copy(
+            self, item_from: typing.Union[BakeJob, Container, Subcontainer],
+            data_to: typing.Iterable[typing.Any],
+            to_index=-1, exclude: typing.Dict[str, bool] = {}
+            ) -> typing.Union[BakeJob, Container, Subcontainer]:
+        """
+        Copy item_from data-block to item of to_index in iterable data_to.
+        If to_index is not given, a new data-block will be instanced.
+
+        Provide exclude{} dictionary with names of attrs to exclude.
+        Example (use when copying settings from parent group,
+        parent_group_index and ui_indent_level excluded by default):
+            {
+                "name": True,
+                "index": True,
+                "bakejob_index": True,
+                "is_group": True,
+                "is_expanded": True,
+                "group_type": True,
+                "group_is_texset": True,
+                "group_color_tag": True,
+                "lowpoly_index": True,
+                "lowpoly_name": True,
+                "is_cage": True,
+                "is_decal": True
+            }
+        Default exlude{} is:
+            {
+                "__annotations__": True,
+                "__doc__": True,
+                "__module__": True,
+                "bl_rna": True,
+                "id_data": True,
+                "rna_type": True,
+                "drop_name": True,
+                "drop_name_old": True,
+                "parent_group_index": True,
+                "ui_indent_level": True,
+                "has_drag_prompt": True,
+                "has_drop_prompt": True,
+                "is_drag_empty": True,
+                "is_drag_placeholder": True,
+                "is_drag_empty_placeholder": True,
+                "is_lowpoly_placeholder": True,
+                "ticker": True,
+                "drag_empty_ticker": True,
+                "lowpoly_ticker": True,
+                "is_selected": True
+            }
+
+        Used with containers, subcontainers.
+        """
+
+        exclude_attrs = {
+            "__annotations__": True,
+            "__doc__": True,
+            "__module__": True,
+            "bl_rna": True,
+            "id_data": True,
+            "rna_type": True,
+            "drop_name": True,
+            "drop_name_old": True,
+            "parent_group_index": True,
+            "ui_indent_level": True,
+            "has_drag_prompt": True,
+            "has_drop_prompt": True,
+            "is_drag_empty": True,
+            "is_drag_placeholder": True,
+            "is_drag_empty_placeholder": True,
+            "is_lowpoly_placeholder": True,
+            "ticker": True,
+            "drag_empty_ticker": True,
+            "lowpoly_ticker": True,
+            "is_selected": True
+        }
+
+        data_attrs = {
+            "bakejobs": True,
+            "containers": True,
+            "subcontainers": True,
+            "bakehistory": True
+        }
+
+        if to_index != -1:
+            item_to = data_to[to_index]
+        else:
+            item_to = data_to.add()
+
+        for attr in dir(item_from):
+            if exclude_attrs.get(attr, False) or exclude.get(attr, False):
+                continue
+
+            if not data_attrs.get(attr, False):
+                try:
+                    setattr(item_to, attr, getattr(item_from, attr))
+                except (AttributeError, IndexError, TypeError,
+                        ValueError) as error:
+                    self.log("mbx0002", error, attr, item_to)
+                continue
+
+            # for containers only (attr == subcontainers)
+            # still, some safety adressed
+            try:
+                trash_ot = getattr(bpy_ops.bakemaster, '%s_trash' % attr)
+            except AttributeError:
+                continue
+            kwargs = {}
+            data_attr_parent = self.get_wh_parents_name(attr)
+            if data_attr_parent != "":
+                kwargs["%s_index" % data_attr_parent[:-1]] = item_from.index
+                kwargs["bakejob_index"] = item_from.bakejob_index
+            trash_ot('INVOKE_DEFAULT', **kwargs)
+
+            # recursive copy to copy subcontainers from container
+            containers = getattr(item_from, attr)
+            for container in containers:
+                _ = self.wh_copy(container, containers)
+
+        return item_to
+
     def get_object_info(self, objects: typing.Iterable[typing.Any], name: str
                         ) -> typing.Tuple[typing.Any, str, str, str, str, str]:
         """
@@ -1272,3 +1408,19 @@ class Global(BM_PropertyGroup_Helper):
         _, drag_to_index_name = self.get_drag_to_index(
             data_name, get_name=True)
         setattr(self, drag_to_index_name, value)
+
+    def get_pref(self, context: not None, propname: str) -> typing.Any:
+        """
+        Get value of propname addon's preference property.
+
+        Parameters:
+            context - active context (to get addon package preferences).
+
+            propname - name of the property.
+        """
+
+        package_name = self.__get_package_name()
+        pref_value = getattr(
+                context.preferences.addons[package_name].preferences,
+                propname)
+        return pref_value
