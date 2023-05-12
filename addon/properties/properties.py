@@ -1113,7 +1113,7 @@ class Global(BM_PropertyGroup_Helper):
 
             if childs_recursive:
                 self.wh_recalc_indexes(
-                    container, self.get_wh_childs_name[attr], childs_recursive,
+                    container, self.get_wh_child_name[attr], childs_recursive,
                     groups, parent_props + [["%s_index" % attr[:-1],
                                              container.index]])
             index += 1
@@ -1235,7 +1235,7 @@ class Global(BM_PropertyGroup_Helper):
 
         return is_oneblock
 
-    def get_wh_childs_name(self, data_name: str) -> str:
+    def get_wh_child_name(self, data_name: str) -> str:
 
         datas = {
             "bakejobs": "containers",
@@ -1245,7 +1245,7 @@ class Global(BM_PropertyGroup_Helper):
         }
         return datas.get(data_name, "")
 
-    def get_wh_parents_name(self, data_name: str) -> str:
+    def get_wh_parent_name(self, data_name: str) -> str:
 
         datas = {
             "bakejobs": "",
