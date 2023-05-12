@@ -35,5 +35,6 @@ classes = (
     properties.Subcontainer,
     properties.Container,
     properties.BakeJob,
+    properties.BakeHistory,
     properties.Global,
 )
