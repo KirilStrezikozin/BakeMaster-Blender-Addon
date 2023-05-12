@@ -30,7 +30,7 @@
 bl_info = {
     "name": "BakeMaster",
     "description":
-        "Bake various PBR-based or Cycles maps with ease and comfort",
+        "Bake various PBR and other maps fast, with ease and comfort",
     "author": "kemplerart",
     "version": (3, 0, 0),
     "blender": (2, 83, 0),
@@ -57,120 +57,29 @@ else:
         ui,
     )
 
-
-classes = (
-    properties.properties.Subcontainer,
-    properties.properties.Container,
-    properties.properties.BakeJob,
-    properties.properties.BakeHistory,
-    properties.properties.Global,
-
-    operators.helpers.BM_OT_Global_Free_Icons,
-    operators.helpers.BM_OT_Global_Help,
-    operators.helpers.BM_OT_Helper_FileChooseDialog,
-    operators.helpers.BM_OT_Global_UI_Prop_Relinquish,
-
-    operators.walk_handler.BM_OT_Global_WalkHandler,
-    operators.walk_handler.BM_OT_Global_WalkData_Move,
-    operators.walk_handler.BM_OT_Global_WalkData_Trans,
-    operators.walk_handler.BM_OT_Global_WalkData_Move_Lowpoly_Data,
-    operators.walk_handler.BM_OT_Global_WalkData_AddDropped,
-
-    operators.bakejob.BM_OT_BakeJob_Add,
-    operators.bakejob.BM_OT_BakeJob_Remove,
-    operators.bakejob.BM_OT_BakeJob_Trash,
-    operators.bakejob.BM_OT_BakeJob_Rename,
-    operators.bakejob.BM_OT_BakeJob_Change_Type,
-    operators.bakejob.BM_OT_BakeJob_Merge,
-
-    operators.container.BM_OT_Container_Add,
-    operators.container.BM_OT_Container_Remove,
-    operators.container.BM_OT_Container_Trash,
-    operators.container.BM_OT_Container_Rename,
-    operators.container.BM_OT_Container_Toggle_Expand,
-    operators.container.BM_OT_Container_Group_Set_Icon,
-    operators.container.BM_OT_Container_Group_Options,
-    operators.container.BM_OT_Container_Group,
-    operators.container.BM_OT_Container_Ungroup,
-
-    operators.subcontainer.BM_OT_Subcontainer_Trash,
-    operators.subcontainer.BM_OT_Subcontainer_Toggle_Expand,
-
-    operators.bake.BM_OT_Bake_All,
-    operators.bake.BM_OT_Bake_One,
-    operators.bake.BM_OT_Bake_Toggle_Pause,
-    operators.bake.BM_OT_Bake_Stop,
-    operators.bake.BM_OT_Bake_Cancel,
-    operators.bake.BM_OT_Bake_Setup,
-    operators.bake.BM_OT_Bake_Config,
-    operators.bake.BM_OT_BakeHistory_Remove,
-    operators.bake.BM_OT_BakeHistory_Rebake,
-    operators.bake.BM_OT_BakeHistory_Config,
-
-    ui.panels.BM_PT_Preferences,
-    ui.panels.BM_PT_BakeJobs,
-    ui.panels.BM_PT_Containers,
-    ui.panels.BM_PT_Bake,
-    ui.panels.BM_PT_BakeControls,
-    ui.panels.BM_PT_BakeHistory,
-
-    ui.uilists.BM_UL_BakeJobs,
-    ui.uilists.BM_UL_Containers,
-    ui.uilists.BM_UL_BakeHistory,
-)
-
-_is_walk_handler_timer_started = False
+classes = properties.classes + operators.classes + ui.classes
 
 
-@bpy.app.handlers.persistent
-def BM_WalkHandler_caller(_):
-    """
-    Walk Handler caller. After the first invoke, if Handler was cancelled,
-    try to reinvoke every 5 seconds.
-    """
-
-    if operators.walk_handler._walk_handler_invoked:
-        return
-
-    global _is_walk_handler_timer_started
-
-    time = operators.walk_handler.time
-
-    invoke_time = operators.walk_handler._walk_handler_invoke_time
-    time_diff = time() - invoke_time
-
-    if not any([time_diff > 5,
-                not _is_walk_handler_timer_started]):
-        return
-
-    _is_walk_handler_timer_started = True
-    operators.walk_handler._walk_handler_invoke_time = time()
-
-    bpy.ops.bakemaster.global_walkhandler('INVOKE_DEFAULT')
-
-
-def register():
+def register() -> None:
     for cls in classes:
         bpy.utils.register_class(cls)
 
     bpy.types.Scene.bakemaster = bpy.props.PointerProperty(
         type=properties.properties.Global)
 
-    bpy.app.handlers.depsgraph_update_pre.append(BM_WalkHandler_caller)
+    bpy.app.handlers.depsgraph_update_pre.append(operators.BM_call_WalkHandler)
 
 
-def unregister():
-    # remove custom icons
-    bpy.ops.bakemaster.global_free_icons('EXEC_DEFAULT')
+def unregister() -> None:
+    bpy.ops.bakemaster.helper_free_icons('EXEC_DEFAULT')
 
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
-    # remove calls handlers
-    for item in bpy.app.handlers.depsgraph_update_pre:
-        if item.__name__ != "BM_WalkHandler_caller":
+    for f in bpy.app.handlers.depsgraph_update_pre:
+        if f.__name__ != "BM_call_WalkHandler":
             continue
-        bpy.app.handlers.depsgraph_update_pre.remove(item)
+        bpy.app.handlers.depsgraph_update_pre.remove(f)
 
     del bpy.types.Scene.bakemaster
 
