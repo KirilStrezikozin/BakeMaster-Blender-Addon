@@ -1119,8 +1119,8 @@ class Global(BM_PropertyGroup_Helper):
                                              container.index]])
             index += 1
 
-    def wsh_disable_drag(self, data: PropertyGroup, data_name: str,
-                         clear_selection=True) -> None:
+    def wh_disable_drag(self, data: PropertyGroup, data_name: str,
+                        clear_selection=True) -> None:
         """
         Turn off drag.
         If clear_selection is True, unset multi selection.
