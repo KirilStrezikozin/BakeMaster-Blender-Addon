@@ -200,7 +200,7 @@ class BM_OT_WalkHandler(Operator):
 
         for data_name in datas:
             walk_data_getter = getattr(bakemaster, "get_active_%s" % data_name)
-            data, containers, _ = walk_data_getter(bakemaster)
+            data, containers, _ = walk_data_getter()
             if data is None:
                 # bakemaster.log("o0x0000", data_name, self)
                 continue
@@ -259,7 +259,7 @@ class BM_OT_WalkHandler(Operator):
 
         for data_name in datas:
             walk_data_getter = getattr(bakemaster, "get_active_%s" % data_name)
-            data, containers, attr = walk_data_getter(bakemaster)
+            data, containers, attr = walk_data_getter()
             if data is None:
                 # bakemaster.log("o0x0000", data_name, self)
                 continue
@@ -302,7 +302,7 @@ class BM_OT_WalkHandler(Operator):
 
         for data_name in datas:
             walk_data_getter = getattr(bakemaster, "get_active_%s" % data_name)
-            data, containers, attr = walk_data_getter(bakemaster)
+            data, containers, attr = walk_data_getter()
             if data is None:
                 # bakemaster.log("o0x0000", data_name, self)
                 continue
@@ -605,7 +605,7 @@ class BM_OT_Global_WalkData_AddDropped(Operator):
 
         walk_data_getter = getattr(
             bakemaster, "get_active_%s" % self.walk_data)
-        self.data, self.containers, _ = walk_data_getter(bakemaster)
+        self.data, self.containers, _ = walk_data_getter()
         if self.data is None:
             bakemaster.log("o0x0000", self.walk_data, self)
             return

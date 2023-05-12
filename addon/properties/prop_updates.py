@@ -117,7 +117,7 @@ def _generic_ticker_Update(self: PropertyGroup, context: Context,
     bakemaster.is_drag_lowpoly_data = False
 
     walk_data_getter = getattr(bakemaster, "get_active_%s" % walk_data)
-    data, containers, attr = walk_data_getter(bakemaster)
+    data, containers, attr = walk_data_getter()
     if data is None:
         bakemaster.log("pux0000", walk_data, self)
         return
@@ -223,7 +223,7 @@ def _generic_drag_empty_ticker_Update(self: PropertyGroup, context: Context,
     bakemaster.is_drag_lowpoly_data = False
 
     walk_data_getter = getattr(bakemaster, "get_active_%s" % walk_data)
-    data, containers, _ = walk_data_getter(bakemaster)
+    data, containers, _ = walk_data_getter()
     if data is None:
         bakemaster.log("pux0000", walk_data, self)
         return
@@ -274,7 +274,7 @@ def _generic_lowpoly_ticker_Update(self: PropertyGroup, context: Context,
     bakemaster.walk_data_name = walk_data
 
     walk_data_getter = getattr(bakemaster, "get_active_%s" % walk_data)
-    data, containers, _ = walk_data_getter(bakemaster)
+    data, containers, _ = walk_data_getter()
     if data is None:
         bakemaster.log("pux0000", walk_data, self)
         return
@@ -323,7 +323,7 @@ def _generic_active_index_Update(self: PropertyGroup, context: Context,
     bakemaster.walk_data_name = walk_data
 
     walk_data_getter = getattr(bakemaster, "get_active_%s" % walk_data)
-    data, containers, attr = walk_data_getter(bakemaster)
+    data, containers, attr = walk_data_getter()
     if data is None:
         bakemaster.log("pux0000", walk_data, self)
         return
@@ -395,7 +395,7 @@ def _generic_multi_select(self: PropertyGroup, bakemaster: PropertyGroup,
     """
 
     walk_data_getter = getattr(bakemaster, "get_active_%s" % walk_data)
-    data, containers, attr = walk_data_getter(bakemaster)
+    data, containers, attr = walk_data_getter()
     if data is None:
         bakemaster.log("pux0000", walk_data, self)
         return
@@ -477,7 +477,7 @@ def _generic_property_in_multi_selection_Update(
         return
 
     walk_data_getter = getattr(bakemaster, "get_active_%s" % walk_data)
-    data, containers, _ = walk_data_getter(bakemaster)
+    data, containers, _ = walk_data_getter()
     if data is None:
         bakemaster.log("pux0000", walk_data, self)
         return
@@ -546,7 +546,7 @@ def _generic_group_type_change_Update(self: PropertyGroup, context: Context,
         kwargs["bakejob_index"] = self.bakejob_index
     if hasattr(self, "container_index"):
         kwargs["container_index"] = self.container_index
-    data, containers, attr = walk_data_getter(bakemaster, kwargs)
+    data, containers, attr = walk_data_getter(kwargs)
     if data is None:
         bakemaster.log("pux0000", walk_data, self)
         return
