@@ -104,8 +104,7 @@ class BM_OT_WalkHandler(Operator):
             return None
 
         data, containers, attr = getattr(
-            bakemaster, "get_active_%s" % bakemaster.walk_data_name)(
-                bakemaster)
+            bakemaster, "get_active_%s" % bakemaster.walk_data_name)()
         if data is None:
             return None
         return data, containers, attr
