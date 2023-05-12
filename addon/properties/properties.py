@@ -458,7 +458,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
             return container
 
     def get_highpoly(self, data: PropertyGroup, containers: Collection,
-                     data_name: str, index: int
+                     data_name: str, index=0
                      ) -> typing.Union[PropertyGroup, None]:
         """
         Get container's highpoly of given index.
@@ -469,7 +469,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
                                   "highpoly")
 
     def get_cage(self, data: PropertyGroup, containers: Collection,
-                 data_name: str, index: int
+                 data_name: str, index=0
                  ) -> typing.Union[PropertyGroup, None]:
         """
         Get container's cage of given index.
@@ -480,7 +480,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
                                   "cage")
 
     def get_decal(self, data: PropertyGroup, containers: Collection,
-                  data_name: str, index: int
+                  data_name: str, index=0
                   ) -> typing.Union[PropertyGroup, None]:
         """
         Get container's decal of given index.
