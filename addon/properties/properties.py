@@ -27,6 +27,8 @@
 #
 # ##### END LICENSE BLOCK #####
 
+__all__ = ["Subcontainer", "Container", "BakeJob", "Global"]
+
 import typing
 
 from os import (
@@ -34,11 +36,14 @@ from os import (
     listdir as os_listdir,
 )
 
-from bpy import ops as bpy_ops
-
 import bpy.utils.previews
 
-from bpy.types import PropertyGroup
+from bpy.types import (
+    Context,
+    Object,
+    PropertyGroup,
+    bpy_prop_collection as Collection,
+)
 from bpy.props import (
     CollectionProperty,
     IntProperty,
@@ -55,6 +60,7 @@ from numpy import (
 
 from . import prop_updates
 
+
 # class F():
 
 
@@ -67,15 +73,14 @@ _walk_data_literal = {
 }
 
 
-def check_walk_data_safety(data_name: str) -> None:
+def _check_walk_data_safety(data_name: str) -> None:
+
     if _walk_data_literal.get(data_name, False):
         return
     raise NameError(f"BakeMaster: Internal Error: {data_name} walk_data name does not meet the literal criteria")  # noqa: E501
 
 
-def load_preview_collections() -> typing.Union[
-        bpy.utils.previews.ImagePreviewCollection,
-        typing.Dict["str", typing.Any]]:
+def _load_preview_collections() -> bpy.utils.previews.ImagePreviewCollection:
     """
     Load custom icons into bakemaster.__preview_collections.
     """
@@ -106,12 +111,9 @@ def load_preview_collections() -> typing.Union[
 class BM_PropertyGroup_Helper(PropertyGroup):
     """
     BakeMaster PropertyGroup Helper class providing PropertyGroup utilities.
-
-    If PropertyGroup has iterable data for UIList Walk Handler,
-    add active_index_old property alongside active_index.
     """
 
-    def get_seq(self, data: not None, attr: str, dtype: type
+    def get_seq(self, data: PropertyGroup, attr: str, dtype: type
                 ) -> numpy_ndarray:
         """
         Get a numpy array of len count containing a sequence of attrs' values
@@ -123,21 +125,23 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         data_prop.foreach_get(attr, seq)
         return seq
 
-    def set_seq(self, data: not None, attr: str, value: typing.Any):
+    def set_seq(self, data: PropertyGroup, attr: str, value: typing.Any
+                ) -> None:
         """
-        Set each item's property of name attr to the given value
-        (items are in iterable data property).
+        Set each item's property of name attr to the given value.
         """
 
         data_prop = getattr(self, data)
         seq = numpy_array([value] * len(data_prop))
         data_prop.foreach_set(attr, seq)
 
-    def get_bm_name(self, bakemaster: not None, data_name: str) -> str:
+    def get_bm_name(self, bakemaster: PropertyGroup, data_name: str) -> str:
         """
-        Get bm_name representing the UI name of the iterable walk data in the
-        data_name.
+        Get bm_name representing the UI name of the iterable walk_data
+        of data_name.
         """
+
+        _check_walk_data_safety(data_name)
 
         if data_name == "bakejobs":
             return "bakejobs"
@@ -158,21 +162,19 @@ class BM_PropertyGroup_Helper(PropertyGroup):
             else:
                 return "objects"
 
-    def resolve_mutual_group(self, containers: typing.Iterable[typing.Any],
-                             gi_group_index: int, gi_group_level: int,
-                             i_index: int, i_group_level: int
-                             ) -> typing.Tuple[int, int]:
+    def resolve_mutual_group(self, containers: Collection, index_1: int,
+                             index_2: int) -> typing.Tuple[int, int]:
         """
-        Get index and ui_indent_level of container holding both
-        containers of gi_group_index, i_index.
+        Get index and ui_indent_level of a group that contains both
+        containers of index_1, index_2.
 
-        Usually, i_index represents a container with higher ui_indent_level.
-        (e.g first give container below, then container above)
+        Call on data is preferred but isn't mandatory since self is unused here
+        Example: mg = data.resolve_mutual_group(...).
         """
 
         while True:
-            c1 = containers[gi_group_index]
-            c2 = containers[i_index]
+            c1 = containers[index_1]
+            c2 = containers[index_2]
 
             if c1.index == c2.index:
                 return c1.index, c1.ui_indent_level
@@ -180,32 +182,34 @@ class BM_PropertyGroup_Helper(PropertyGroup):
             elif c1.parent_group_index == -1 or c2.parent_group_index == -1:
                 return -1, 0
 
-            if i_index > gi_group_index:
-                i_index = c2.parent_group_index
-            elif gi_group_index > i_index:
-                gi_group_index = c1.parent_group_index
+            if index_1 > index_2:
+                index_1 = c1.parent_group_index
+            elif index_2 > index_1:
+                index_2 = c2.parent_group_index
 
-    def resolve_top_group(self, containers: typing.Iterable[typing.Any],
-                          container: typing.Optional[typing.Any]
-                          ) -> typing.Any:
+    def resolve_top_group(self, containers: Collection,
+                          container: PropertyGroup = None) -> PropertyGroup:
+
         if container is None:
             return self.resolve_top_group(self, containers, self)
 
-        if not hasattr(self, "parent_group_index"):
-            return self
+        if not hasattr(container, "parent_group_index"):
+            return container
 
-        if self.parent_group_index == -1:
-            return self
+        if container.parent_group_index == -1:
+            return container
         try:
-            return containers[self.parent_group_index]
+            group = containers[container.parent_group_index]
         except IndexError:
-            return self
+            return container
+        else:
+            self.resolve_top_group(containers, group)
 
     def get_parent_group(
-            self, containers: typing.Iterable[typing.Any],
+            self, containers: Collection,
             stop_at_prop_name: str, stop_at_prop_value: typing.Any,
             return_at_prop_name: str, return_at_prop_value: typing.Any
-            ) -> typing.Tuple[typing.Any, bool]:
+            ) -> typing.Tuple[typing.Optional[PropertyGroup], bool]:
         """
         Get container's parent group.
 
@@ -253,23 +257,27 @@ class BM_PropertyGroup_Helper(PropertyGroup):
 
             container = containers[container.parent_group_index]
 
-    def group_has_childs(self, data: not None,
-                         containers: typing.Iterable[typing.Any],
-                         attr: str) -> bool:
+    def group_has_childs(self, data: PropertyGroup, containers: Collection,
+                         data_name: str) -> bool:
+        """
+        Return True if group has childs or self is not group.
+        """
+
+        _check_walk_data_safety(data_name)
+
         if not self.is_group:
             return True
 
-        # no loops :)
-        if self.index >= getattr(data, "%s_len" % attr) - 1:
+        if self.get_is_last(data, data_name):
             return False
-        elif containers[self.index + 1].parent_group_index != self.index:
+        elif self.get_next_item(containers).parent_group_index != self.index:
             return False
         else:
             return True
 
-    def get_group_icon(self, bakemaster: not None, all: bool = False
-                       ) -> typing.Union[int, typing.List[
-                           typing.List[typing.Union[str, int]]]]:
+    def get_group_icon(self, bakemaster: PropertyGroup, all=False
+                       ) -> typing.Union[int, list]:
+
         if self.group_type == 'DECORATOR':
             return bakemaster.get_icon('COLLECTION')
 
@@ -288,21 +296,56 @@ class BM_PropertyGroup_Helper(PropertyGroup):
                 bakemaster.get_icon(icon_raw % color_tag)])
         return icons_all
 
+    def get_is_last(self, data: PropertyGroup, data_name: str,
+                    index: typing.Optional[int] = -1) -> bool:
+        """
+        Return True if self is the last item in data_name Collection.
+        Compare index if given.
+        """
+
+        _check_walk_data_safety(data_name)
+
+        last_index = getattr(data, "%s_len" % data_name) - 1
+        index = self.index if index == -1 else index
+
+        if last_index == index:
+            return True
+        elif last_index <= index:
+            print(f"BakeMaster: Internal Warning: {self} index {index} exceeds last possible index {last_index}")  # noqa: E501
+            # bakemaster.log("mbx0004", last_index, index)
+
+    def get_next_item(self, containers: Collection, step=1) -> PropertyGroup:
+        """
+        Get next item in containers. If self is last, return first
+        in containers.
+        Next item index will be self.index + step.
+        """
+
+        try:
+            return containers[self.index + step]
+        except IndexError:
+            return containers[0]
+
     def get_is_object(self, bakemaster: PropertyGroup, data_name: str) -> bool:
-        check_walk_data_safety(data_name)
+        """
+        Return True if self is an Object.
+        """
+
+        _check_walk_data_safety(data_name)
+
         return self.get_bm_name(
             bakemaster, data_name) == "objects" and not self.is_group
 
     def get_is_lowpoly(self) -> bool:
         """
-        Return True if container is lowpoly.
+        Return True if self is lowpoly.
         """
 
         return not self.is_group and self.lowpoly_index == -1
 
     def get_is_highpoly(self) -> bool:
         """
-        Return True if container is highpoly.
+        Return True if self is highpoly.
         """
 
         return self.lowpoly_index != -1 and not any(
@@ -310,19 +353,19 @@ class BM_PropertyGroup_Helper(PropertyGroup):
 
     def get_is_cage(self) -> bool:
         """
-        Return True if container is cage.
+        Return True if self is cage.
         """
 
         return self.lowpoly_index != -1 and self.is_cage
 
     def get_is_decal(self) -> bool:
         """
-        Return True if container is decal.
+        Return True if self is decal.
         """
 
         return self.lowpoly_index != -1 and self.is_decal
 
-    def make_lowpoly(self):
+    def make_lowpoly(self) -> None:
         """
         Make container a lowpoly.
         """
@@ -330,7 +373,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         self.lowpoly_index = -1
         self.is_group = False
 
-    def make_highpoly(self, lowpoly_index: int):
+    def make_highpoly(self, lowpoly_index: int) -> None:
         """
         Make container a highpoly for lowpoly of given lowpoly_index.
         """
@@ -340,7 +383,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         self.is_decal = False
         self.is_group = False
 
-    def make_cage(self, lowpoly_index: int):
+    def make_cage(self, lowpoly_index: int) -> None:
         """
         Make container a cage for lowpoly of given lowpoly_index.
         """
@@ -350,7 +393,7 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         self.is_decal = False
         self.is_group = False
 
-    def make_decal(self, lowpoly_index: int):
+    def make_decal(self, lowpoly_index: int) -> None:
         """
         Make container a decal for lowpoly of given lowpoly_index.
         """
@@ -360,9 +403,9 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         self.is_decal = True
         self.is_group = False
 
-    def get_lowpoly(self, containers) -> typing.Any:
+    def get_lowpoly(self, containers: Collection) -> PropertyGroup:
         """
-        Get container's lowpoly
+        Get self's lowpoly. Return self if no lowpoly assigned.
         """
 
         if self.lowpoly_index == -1:
@@ -370,9 +413,9 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         else:
             return containers[self.lowpoly_index]
 
-    def __generic_get(self, data: not None,
-                      containers: typing.Iterable[typing.Any], attr: str,
-                      index: int, type: str) -> typing.Any:
+    def __generic_get(self, data: PropertyGroup, containers: Collection,
+                      data_name: str, index: int, type: str
+                      ) -> typing.Union[PropertyGroup, None]:
         """
         Pseudo-private method. Call get_highpoly(...), get_cage(...),
         get_decal(...) instead.
@@ -380,74 +423,75 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         Receives type in {"highpoly", "cage", "decal"}.
         """
 
+        _check_walk_data_safety(data_name)
+
         if not self.get_is_lowpoly():
             return None
 
         elif index < 0:
             return None
 
-        elif self.index >= getattr(data, "%s_len" % attr) - 1:
+        elif self.get_is_last(data, data_name):
             return None
 
-        elif containers[self.index + 1].lowpoly_index != self.index:
+        elif self.get_next_item(containers).lowpoly_index != self.index:
             return None
 
         count = 0
-        container = containers[self.index + 1]
+        container = self.get_next_item(containers)
 
         while count != index:
             count += 1
 
-            if self.index + 1 + count >= getattr(data, "%s_len" % attr) - 1:
+            if self.get_is_last(data, data_name, self.index + 1 + count):
                 return None
 
-            elif not getattr(containers[self.index + 1 + count],
+            elif not getattr(self.get_next_item(containers, 1 + count),
                              "get_is_%s" % type)():
                 continue
 
-            container = containers[self.index + 1 + count]
+            container = self.get_next_item(containers, 1 + count)
             if container.lowpoly_index != self.index:
                 return None
 
         else:
             return container
 
-    def get_highpoly(self, data: not None,
-                     containers: typing.Iterable[typing.Any], attr: str,
-                     index: int) -> typing.Any:
+    def get_highpoly(self, data: PropertyGroup, containers: Collection,
+                     data_name: str, index: int
+                     ) -> typing.Union[PropertyGroup, None]:
         """
         Get container's highpoly of given index.
         Returns None if invalid.
         """
 
-        return self.__generic_get(data, containers, attr, index,
+        return self.__generic_get(data, containers, data_name, index,
                                   "highpoly")
 
-    def get_cage(self, data: not None,
-                 containers: typing.Iterable[typing.Any], attr: str,
-                 index: int) -> typing.Any:
+    def get_cage(self, data: PropertyGroup, containers: Collection,
+                 data_name: str, index: int
+                 ) -> typing.Union[PropertyGroup, None]:
         """
         Get container's cage of given index.
         Returns None if invalid.
         """
 
-        return self.__generic_get(data, containers, attr, index,
+        return self.__generic_get(data, containers, data_name, index,
                                   "cage")
 
-    def get_decal(self, data: not None,
-                  containers: typing.Iterable[typing.Any], attr: str,
-                  index: int) -> typing.Any:
+    def get_decal(self, data: PropertyGroup, containers: Collection,
+                  data_name: str, index: int
+                  ) -> typing.Union[PropertyGroup, None]:
         """
         Get container's decal of given index.
         Returns None if invalid.
         """
 
-        return self.__generic_get(data, containers, attr, index,
+        return self.__generic_get(data, containers, data_name, index,
                                   "decal")
 
-    def __generic_index_in(self, data: not None,
-                           containers: typing.Iterable[typing.Any], attr: str,
-                           type: str) -> int:
+    def __generic_index_in(self, data: PropertyGroup, containers: Collection,
+                           data_name: str, type: str) -> int:
         """
         Pseudo-private method. Call index_in_highpolies(...),
         index_in_cages(...), index_in_decals(...) instead.
@@ -455,31 +499,36 @@ class BM_PropertyGroup_Helper(PropertyGroup):
         Receives type in {"highpoly", "cage", "decal"}.
         """
 
+        _check_walk_data_safety(data_name)
+
         if not getattr(self, "get_is_%s" % type)():
             return -1
 
         lowpoly = self.get_lowpoly(containers)
         first_hcd = getattr(lowpoly, "get_%s" % type)(
-                data, containers, attr, 0)
+                data, containers, data_name, 0)
         if first_hcd is None:
             return -1
 
         return self.index - first_hcd.index
 
-    def index_in_highpolies(self, data: not None,
-                            containers: typing.Iterable[typing.Any],
-                            attr: str) -> int:
-        return self.__generic_index_in(data, containers, attr, type="highpoly")
+    def index_in_highpolies(self, data: PropertyGroup, containers: Collection,
+                            data_name: str) -> int:
 
-    def index_in_cages(self, data: not None,
-                       containers: typing.Iterable[typing.Any],
-                       attr: str) -> int:
-        return self.__generic_index_in(data, containers, attr, type="cages")
+        return self.__generic_index_in(data, containers, data_name,
+                                       type="highpoly")
 
-    def index_in_decals(self, data: not None,
-                        containers: typing.Iterable[typing.Any],
-                        attr: str) -> int:
-        return self.__generic_index_in(data, containers, attr, type="decals")
+    def index_in_cages(self, data: PropertyGroup, containers: Collection,
+                       data_name: str) -> int:
+
+        return self.__generic_index_in(data, containers, data_name,
+                                       type="cages")
+
+    def index_in_decals(self, data: PropertyGroup, containers: Collection,
+                        data_name: str) -> int:
+
+        return self.__generic_index_in(data, containers, data_name,
+                                       type="decals")
 
 
 class Subcontainer(BM_PropertyGroup_Helper):
@@ -528,7 +577,7 @@ class Subcontainer(BM_PropertyGroup_Helper):
 
     ###
 
-    # UIList Walk Handler Props
+    # WalkHandler Props
 
     has_drop_prompt: BoolProperty(default=False)
     has_drag_prompt: BoolProperty(default=False)
@@ -558,18 +607,12 @@ class Subcontainer(BM_PropertyGroup_Helper):
 
     is_selected: BoolProperty(default=True)
 
+    ###
+
 
 class Container(BM_PropertyGroup_Helper):
     name: StringProperty(
         default="Object")
-
-    drop_name: StringProperty(
-        name="New Object",
-        description="Drop objects here to put them into selected Bake Jobs",
-        default="new Object...",
-        update=prop_updates.Container_drop_name_Update)
-
-    drop_name_old: StringProperty(default="new Object...")
 
     index: IntProperty(default=-1)
     bakejob_index: IntProperty(default=-1)
@@ -624,7 +667,15 @@ class Container(BM_PropertyGroup_Helper):
 
     subcontainers_len: IntProperty(default=0)
 
-    # UIList Walk Handler Props
+    # WalkHandler Props
+
+    drop_name: StringProperty(
+        name="New Object",
+        description="Drop objects here to put them into selected Bake Jobs",
+        default="new Object...",
+        update=prop_updates.Container_drop_name_Update)
+
+    drop_name_old: StringProperty(default="new Object...")
 
     has_drop_prompt: BoolProperty(default=False)
     has_drag_prompt: BoolProperty(default=False)
@@ -654,20 +705,14 @@ class Container(BM_PropertyGroup_Helper):
 
     is_selected: BoolProperty(default=True)
 
+    ###
+
 
 class BakeJob(BM_PropertyGroup_Helper):
     name: StringProperty(
         name="Bake Job",
         description="Double click to rename",
         default="Bake Job")
-
-    drop_name: StringProperty(
-        name="New Bake Job",
-        description="Drop objects here to create a new Bake Job with them",
-        default="new Bake Job...",
-        update=prop_updates.BakeJob_drop_name_Update)
-
-    drop_name_old: StringProperty(default="new Bake Job...")
 
     index: IntProperty(default=-1)
 
@@ -729,7 +774,15 @@ class BakeJob(BM_PropertyGroup_Helper):
 
     containers_len: IntProperty(default=0)
 
-    # UIList Walk Handler Props
+    # WalkHandler Props
+
+    drop_name: StringProperty(
+        name="New Bake Job",
+        description="Drop objects here to create a new Bake Job with them",
+        default="new Bake Job...",
+        update=prop_updates.BakeJob_drop_name_Update)
+
+    drop_name_old: StringProperty(default="new Bake Job...")
 
     has_drop_prompt: BoolProperty(default=False)
     has_drag_prompt: BoolProperty(default=False)
@@ -759,6 +812,8 @@ class BakeJob(BM_PropertyGroup_Helper):
 
     is_selected: BoolProperty(default=True)
 
+    ###
+
 
 class BakeHistory(BM_PropertyGroup_Helper):
     name: StringProperty(
@@ -774,7 +829,7 @@ class BakeHistory(BM_PropertyGroup_Helper):
 
 
 class Global(BM_PropertyGroup_Helper):
-    # Bake Jobs Props
+    # BakeJobs Props
 
     bakejobs: CollectionProperty(type=BakeJob)
 
@@ -788,7 +843,7 @@ class Global(BM_PropertyGroup_Helper):
 
     bakejobs_len: IntProperty(default=0)
 
-    # UIList Walk Handler Props
+    # WalkHandler Props
 
     walk_data_name: StringProperty(
         default="",
@@ -804,14 +859,16 @@ class Global(BM_PropertyGroup_Helper):
     drag_data_to: StringProperty(default="", options={'SKIP_SAVE'})
     allow_drag_trans: BoolProperty(default=False, options={'SKIP_SAVE'})
     drag_from_ticker: BoolProperty(default=False, options={'SKIP_SAVE'})
-    allow_multi_selection_drag: BoolProperty(default=False, options={'SKIP_SAVE'})
+    allow_multi_selection_drag: BoolProperty(
+        default=False, options={'SKIP_SAVE'})
     is_drag_lowpoly_data: BoolProperty(default=False, options={'SKIP_SAVE'})
 
     allow_multi_select: BoolProperty(default=False, options={'SKIP_SAVE'})
     multi_select_event: StringProperty(default="", options={'SKIP_SAVE'})
     is_multi_selection_empty: BoolProperty(default=True, options={'SKIP_SAVE'})
     multi_selection_data: StringProperty(default="", options={'SKIP_SAVE'})
-    allow_prop_in_multi_selection_update: BoolProperty(default=True, options={'SKIP_SAVE'})
+    allow_prop_in_multi_selection_update: BoolProperty(
+        default=True, options={'SKIP_SAVE'})
 
     is_double_click: BoolProperty(default=False, options={'SKIP_SAVE'})
     last_left_click_ticker: BoolProperty(default=False, options={'SKIP_SAVE'})
@@ -866,19 +923,22 @@ class Global(BM_PropertyGroup_Helper):
     # Preview Collections - Custom Icons Props
 
     __preview_collections = {
-        "main": load_preview_collections(),
+        "main": _load_preview_collections(),
     }
 
     # Helper Funcs
 
     def __get_package_name(self) -> str:
+
         return __package__.split(".")[0]
 
-    def log(self, log_id: str, *args):
+    def log(self, log_id: str, *args) -> None:
+
         log_ids = {
             "mbx0001": r"BakeMaster: Internal Warning: icon %s not loaded",
             "mbx0002": r"BakeMaster: Internal Warning: no icons loaded to close",  # noqa: E501
             "mbx0003": r"BakeMaster: Internal Warning: %s while setting %s attribute for %s",  # noqa: E501
+            "mbx0004": r"BakeMaster: Internal Warning: %s index %s exceeds last possible index %s",  # noqa: E501
             "pux0000": r"BakeMaster: Internal Error: cannot resolve %s walk data at %s",  # noqa: E501
             "o0x0000": r"BakeMaster: Internal Error: cannot resolve %s walk data at %s",  # noqa: E501
             "o0x0001": r"BakeMaster: Internal Error: not enough data at %s",
@@ -900,6 +960,7 @@ class Global(BM_PropertyGroup_Helper):
 
     def get_icon(self, icon_id: str, reg=False
                  ) -> typing.Union[int, typing.Dict]:
+
         if reg:
             return self.__preview_collections
 
@@ -913,8 +974,9 @@ class Global(BM_PropertyGroup_Helper):
         else:
             return thumb.icon_id
 
-    def get_bakejob(self, bkm: typing.Any, index=-1
+    def get_bakejob(self, bkm: PropertyGroup, index=-1
                     ) -> typing.Union[BakeJob, None]:
+
         if bkm is None:
             return None
         if index == -1:
@@ -931,6 +993,7 @@ class Global(BM_PropertyGroup_Helper):
 
     def get_container(self, bj: typing.Union[BakeJob, None], index=-1
                       ) -> typing.Union[Container, None]:
+
         if bj is None:
             return None
         if index == -1:
@@ -947,6 +1010,7 @@ class Global(BM_PropertyGroup_Helper):
 
     def get_subcontainer(self, ctnr: typing.Union[Container, None], index=-1
                          ) -> typing.Union[Subcontainer, None]:
+
         if ctnr is None:
             return None
         if index == -1:
@@ -961,24 +1025,30 @@ class Global(BM_PropertyGroup_Helper):
         else:
             return subctnr
 
-    def get_active_bakejobs(
-            self, **_: typing.Optional[str]) -> typing.Tuple[
-            typing.Any, typing.Iterable[BakeJob], str]:
+    def get_active_bakejobs(self, **_
+                            ) -> typing.Tuple[PropertyGroup, Collection, str]:
+        """Get data, containers, data_name representing bakejobs."""
 
         return self, self.bakejobs, "bakejobs"
 
-    def get_active_containers(
-            self, **kwargs: typing.Optional[str]) -> typing.Tuple[
-            BakeJob, typing.Iterable[Container], str]:
+    def get_active_containers(self, **kwargs
+                              ) -> typing.Tuple[BakeJob, Collection, str]:
+        """
+        Get data, containers, data_name representing containers.
+        bakejobs_index parameter is optional.
+        """
 
         bj = self.get_bakejob(self, kwargs.get("bakejob_index", -1))
         if bj is None:
             return None, [], "containers"
         return bj, bj.containers, "containers"
 
-    def get_active_subcontainers(
-            self, **kwargs: typing.Optional[str]) -> typing.Tuple[
-            Container, typing.Iterable[Subcontainer], str]:
+    def get_active_subcontainers(self, **kwargs
+                                 ) -> typing.Tuple[Container, Collection, str]:
+        """
+        Get data, containers, data_name representing subcontainers.
+        bakejobs_index, container_index parameters are optional.
+        """
 
         bj = self.get_bakejob(self, kwargs.get("bakejob_index", -1))
         ctnr = self.get_container(bj, kwargs.get("container_index", -1))
@@ -986,8 +1056,9 @@ class Global(BM_PropertyGroup_Helper):
             return None, [], "subcontainers"
         return ctnr, ctnr.subcontainers, "subcontainers"
 
-    def wh_recalc_indexes(self, data, items_name: str, childs_recursive=True,
-                          groups=True, parent_props=[]):
+    def wh_recalc_indexes(self, data: PropertyGroup, attr: str,
+                          childs_recursive=True, groups=True, parent_props=[]
+                          ) -> None:
         """
         Recalculate items' indexes.
         Continues recalculating childs' indexes recursively and
@@ -1006,17 +1077,10 @@ class Global(BM_PropertyGroup_Helper):
             ...
         """
 
-        child = {
-            "bakejobs": "containers",
-            "containers": "subcontainers",
-            "subcontainers": "",
-            "bakehistory": ""
-        }
-
-        if not hasattr(data, items_name):
+        if not hasattr(data, attr):
             return
 
-        containers = getattr(data, items_name)
+        containers = getattr(data, attr)
         group_index = -1
         group_level = -1
 
@@ -1031,8 +1095,7 @@ class Global(BM_PropertyGroup_Helper):
             if groups:
                 if not container.ui_indent_level >= group_level:
                     group_index, _ = data.resolve_mutual_group(
-                        containers, group_index, group_level, container.index,
-                        container.ui_indent_level)
+                        containers, group_index, container.index)
 
                 container.parent_group_index = group_index
                 group_level = container.ui_indent_level
@@ -1045,20 +1108,23 @@ class Global(BM_PropertyGroup_Helper):
                 if hasattr(container, prop_name):
                     setattr(container, prop_name, prop_val)
                 else:
-                    print(f"BakeMaster Internal AttributeError: {container} has no {prop_name} attribute")  # noqa: E501
+                    self.log("mbx0003", AttributeError, prop_name, container)
 
             if childs_recursive:
                 self.wh_recalc_indexes(
-                    container, child[items_name], childs_recursive, groups,
-                    parent_props + [["%s_index" % items_name[:-1],
-                                     container.index]])
+                    container, self.get_wh_childs_name[attr], childs_recursive,
+                    groups, parent_props + [["%s_index" % attr[:-1],
+                                             container.index]])
             index += 1
 
-    def wsh_disable_drag(self, data, attr: str, clear_selection=True):
+    def wsh_disable_drag(self, data: PropertyGroup, data_name: str,
+                         clear_selection=True) -> None:
         """
         Turn off drag.
         If clear_selection is True, unset multi selection.
         """
+
+        _check_walk_data_safety(data_name)
 
         self.allow_drag = False
         self.drag_from_index = -1
@@ -1069,10 +1135,10 @@ class Global(BM_PropertyGroup_Helper):
         self.is_drag_lowpoly_data = False
 
         if self.allow_drag_trans and clear_selection:
-            self.__wh_clear_ms(data, attr)
+            self.__wh_clear_ms(data, data_name)
         self.allow_drag_trans = False
 
-        containers = getattr(data, attr)
+        containers = getattr(data, data_name)
         containers_len = len(containers)
 
         # No loop, foreach only
@@ -1084,20 +1150,34 @@ class Global(BM_PropertyGroup_Helper):
                                [False] * containers_len)
         containers.foreach_set("is_drag_empty", [False] * containers_len)
 
-    def __wh_clear_ms(self, _: typing.Union[None, typing.Any], attr: str):
-        prop_updates.__generic_multi_select(None, self, attr)
+    def __wh_clear_ms(self, _: typing.Union[None, PropertyGroup],
+                      data_name: str) -> None:
 
-    def wh_disable_ms(self):
-        self.__wh_clear_ms()
+        _check_walk_data_safety(data_name)
+        prop_updates._generic_multi_select(None, self, data_name)
+
+    def wh_disable_ms(self, data_name: str) -> None:
+        """ Turn off and clear multi selection."""
+
+        _check_walk_data_safety(data_name)
+        self.__wh_clear_ms(None, data_name)
+
         self.allow_multi_select = False
         self.is_multi_selection_empty = True
         self.multi_select_event = ''
 
-    def wh_has_ms(self, data: typing.Any, attr: str) -> bool:
-        has_ms, _ = self.wh_ms_id(data, attr)
+    def wh_has_ms(self, data: PropertyGroup, data_name: str) -> bool:
+
+        _check_walk_data_safety(data_name)
+
+        has_ms, _ = self.wh_ms_id(data, data_name)
         return has_ms
 
-    def wh_ms_id(self, data: not None, attr: str) -> typing.Tuple[bool, str]:
+    def wh_ms_id(self, data: PropertyGroup, data_name: str
+                 ) -> typing.Tuple[bool, str]:
+
+        _check_walk_data_safety(data_name)
+
         if not all([self.allow_multi_select,
                     not self.is_multi_selection_empty]):
             multi_selection_exists = False
@@ -1112,18 +1192,21 @@ class Global(BM_PropertyGroup_Helper):
             parent_index = data.index
         else:
             parent_index = ""
-        our_multi_selection_data = f"{attr}_{parent_index}"
+        our_multi_selection_data = f"{data_name}_{parent_index}"
 
         return all([self.multi_selection_data == our_multi_selection_data,
                     multi_selection_exists]), our_multi_selection_data
 
-    def wh_is_oneblock_ms(self, data: not None,
-                          containers: typing.Iterable[typing.Any],
-                          attr: str) -> bool:
-        # Define bakemaster.allow_multi_selection_drag
-        # (if one-block selection)
+    def wh_is_oneblock_ms(self, data: PropertyGroup, containers: Collection,
+                          data_name: str) -> bool:
+        """
+        Evaluate bakemaster.allow_multi_selection_drag and return True based
+        on that and whether multi selection is one-block.
+        """
 
-        has_ms = self.wh_has_ms(data, attr)
+        _check_walk_data_safety(data_name)
+
+        has_ms = self.wh_has_ms(data, data_name)
 
         if not has_ms:
             return False
@@ -1152,24 +1235,30 @@ class Global(BM_PropertyGroup_Helper):
         return is_oneblock
 
     def get_wh_childs_name(self, data_name: str) -> str:
+
         datas = {
             "bakejobs": "containers",
             "containers": "subcontainers",
-            "subcontainers": ""
+            "subcontainers": "",
+            "bakehistory": ""
         }
         return datas.get(data_name, "")
 
     def get_wh_parents_name(self, data_name: str) -> str:
+
         datas = {
             "bakejobs": "",
             "containers": "bakejobs",
-            "subcontainers": "containers"
+            "subcontainers": "containers",
+            "bakehistory": ""
         }
         return datas.get(data_name, "")
 
-    def wh_remove(self, data: typing.Any, attr: str, index=-1) -> set:
+    def wh_remove(self, data: PropertyGroup, attr: str, index=-1
+                  ) -> typing.Tuple[set, str]:
         """
         Wrapper around data.remove(index). Takes Multi Selection into account.
+        Return status set and a message.
 
         Parameters:
             data: data that holds iterable collection with walk features,
@@ -1179,6 +1268,9 @@ class Global(BM_PropertyGroup_Helper):
 
         if data is None:
             self.log("mbx0000")
+            return {'CANCELLED'}, ""
+
+        _check_walk_data_safety(attr)
 
         has_ms = self.wh_has_ms(data, attr)
 
@@ -1189,13 +1281,12 @@ class Global(BM_PropertyGroup_Helper):
         else:
             bakejob = self.get_bakejob(data, index)
             if bakejob is None:
-                return {'CANCELLED'}
+                return {'CANCELLED'}, ""
             to_remove = [bakejob.index]
             size = 1
 
         if size < 1:
-            self.report({'INFO'}, "Nothing to remove")
-            return {'CANCELLED'}
+            return {'CANCELLED'}, "Nothing to remove"
 
         for index in reversed(to_remove):
             data.getattr(attr).remove(index)
@@ -1211,11 +1302,12 @@ class Global(BM_PropertyGroup_Helper):
         if active_index > containers_len:
             setattr(data, "%s_active_index" % attr, containers_len - 1)
 
-        return {'FINISHED'}
+        return {'FINISHED'}, ""
 
-    def wh_trash(self, data: typing.Any, attr: str) -> set:
+    def wh_trash(self, data: PropertyGroup, attr: str) -> set:
         """
         Wrapper around data.remove(index) for all indexes.
+        Returns status set.
 
         Parameters:
             data: data that holds iterable collection with walk features,
@@ -1224,6 +1316,8 @@ class Global(BM_PropertyGroup_Helper):
 
         if data is None:
             self.log("mbx0000")
+
+        _check_walk_data_safety(attr)
 
         [data.getattr(attr).remove(index) for index in
          reversed(range(getattr(data, "%s_len" % attr)))]
@@ -1234,8 +1328,8 @@ class Global(BM_PropertyGroup_Helper):
 
     def wh_copy(
             self, item_from: typing.Union[BakeJob, Container, Subcontainer],
-            data_to: typing.Iterable[typing.Any],
-            to_index=-1, exclude: typing.Dict[str, bool] = {}
+            data_to: PropertyGroup, to_index=-1,
+            exclude: typing.Dict[str, bool] = {}
             ) -> typing.Union[BakeJob, Container, Subcontainer]:
         """
         Copy item_from data-block to item of to_index in iterable data_to.
@@ -1281,8 +1375,6 @@ class Global(BM_PropertyGroup_Helper):
                 "lowpoly_ticker": True,
                 "is_selected": True
             }
-
-        Used with containers, subcontainers.
         """
 
         exclude_attrs = {
@@ -1332,28 +1424,16 @@ class Global(BM_PropertyGroup_Helper):
                     self.log("mbx0003", error, attr, item_to)
                 continue
 
-            # for containers only (attr == subcontainers)
-            # still, some safety adressed
-            try:
-                trash_ot = getattr(bpy_ops.bakemaster, '%s_trash' % attr)
-            except AttributeError:
-                continue
-            kwargs = {}
-            data_attr_parent = self.get_wh_parents_name(attr)
-            if data_attr_parent != "":
-                kwargs["%s_index" % data_attr_parent[:-1]] = item_from.index
-                kwargs["bakejob_index"] = item_from.bakejob_index
-            trash_ot('INVOKE_DEFAULT', **kwargs)
-
-            # recursive copy to copy subcontainers from container
+            # recursive copy to copy subitems
             containers = getattr(item_from, attr)
             for container in containers:
                 _ = self.wh_copy(container, containers)
 
         return item_to
 
-    def get_object_info(self, objects: typing.Iterable[typing.Any], name: str
-                        ) -> typing.Tuple[typing.Any, str, str, str, str, str]:
+    def get_object_info(self, objects: Collection, name: str
+                        ) -> typing.Tuple[typing.Union[Object, None], str, str,
+                                          str, typing.Optional[str], str]:
         """
         Get object info given its name.
 
@@ -1410,6 +1490,8 @@ class Global(BM_PropertyGroup_Helper):
         dragged walk_data.
         """
 
+        _check_walk_data_safety(data_name)
+
         drag_to_index_name = "drag_to_index"
 
         if all([self.allow_drag_trans,
@@ -1425,11 +1507,13 @@ class Global(BM_PropertyGroup_Helper):
         Set drag_to_index value name based of the currently dragged walk_data.
         """
 
+        _check_walk_data_safety(data_name)
+
         _, drag_to_index_name = self.get_drag_to_index(
             data_name, get_name=True)
         setattr(self, drag_to_index_name, value)
 
-    def get_pref(self, context: not None, propname: str) -> typing.Any:
+    def get_pref(self, context: Context, propname: str) -> typing.Any:
         """
         Get value of propname addon's preference property.
 
@@ -1447,7 +1531,16 @@ class Global(BM_PropertyGroup_Helper):
 
     def get_addon_version(self, use_tuple=False
                           ) -> typing.Union[str, typing.Tuple[int]]:
+
         if use_tuple:
             return (3, 0, 0)
         else:
             return "3.0.0"
+
+    def check_walk_data_safety(self, data_name: str) -> None:
+        """
+        Wrapper around pseudo-private _check_walk_data_safety()
+        for calls in other places.
+        """
+
+        _check_walk_data_safety(data_name)

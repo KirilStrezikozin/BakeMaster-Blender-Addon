@@ -29,4 +29,11 @@
 
 from . import properties
 
-__all__ = ["properties"]
+__all__ = ["classes"]
+
+classes = (
+    properties.Subcontainer,
+    properties.Container,
+    properties.BakeJob,
+    properties.Global,
+)
