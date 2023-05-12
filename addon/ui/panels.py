@@ -379,7 +379,7 @@ class BM_PT_BakeControls(BM_PT_Helper):
         else:
             text = "Pause"
             icon = 'PAUSE'
-        row.operator('bakemaster.bake_pause', text=text, icon=icon)
+        row.operator('bakemaster.bake_toggle_pause', text=text, icon=icon)
         row.operator('bakemaster.bake_stop', icon='QUIT')
         row.operator('bakemaster.bake_cancel', icon='CANCEL')
         row.active = bakemaster.bake_is_running
