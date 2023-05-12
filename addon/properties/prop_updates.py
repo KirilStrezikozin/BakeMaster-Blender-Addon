@@ -27,32 +27,34 @@
 #
 # ##### END LICENSE BLOCK #####
 
-import typing
-
 from bpy import ops as bpy_ops
+from bpy.types import (
+    Context,
+    PropertyGroup,
+    bpy_prop_collection as Collection,
+)
 
 
-def __drag_empty_eval(self: not None, data: not None,
-                      containers: typing.Iterable[typing.Any], walk_data: str):
-    if getattr(data, "%s_len" % walk_data) - 1 == self.index:
+def _drag_empty_eval(self: PropertyGroup, data: PropertyGroup,
+                     containers: Collection, data_name: str) -> None:
+
+    if self.get_is_last(data, data_name):
         self.is_drag_empty = True
-    elif containers[
-            self.index + 1].ui_indent_level < self.ui_indent_level:
+    elif self.get_next_item(containers).ui_indent_level < self.ui_indent_level:
         self.is_drag_empty = True
 
 
-def __is_drag_group_into_itself(self: not None, bakemaster: not None,
-                                data: not None,
-                                containers: typing.Iterable[typing.Any],
-                                walk_data: str) -> bool:
-    # Skip dragging group inside itself
+def _is_drag_group_into_itself(
+        self: PropertyGroup, bakemaster: PropertyGroup, data: PropertyGroup,
+        containers: Collection, data_name: str) -> bool:
+    """Skip dragging group inside itself."""
 
-    if walk_data != bakemaster.drag_data_from:
+    if data_name != bakemaster.drag_data_from:
         return False
 
     # If no multi selection, self = self, check drag_from_index,
     # otherwise self = first selected item, check first selected item index.
-    has_ms = bakemaster.wh_has_ms(data, walk_data)
+    has_ms = bakemaster.wh_has_ms(data, data_name)
 
     abort_if_not_group = False
     if has_ms:
@@ -74,7 +76,7 @@ def __is_drag_group_into_itself(self: not None, bakemaster: not None,
         return False
 
     if not all([self.index > drag_from_index,
-                walk_data == bakemaster.drag_data_from]):
+                data_name == bakemaster.drag_data_from]):
         return False
 
     m_gi, m_gl = data.resolve_mutual_group(
@@ -93,16 +95,15 @@ def __is_drag_group_into_itself(self: not None, bakemaster: not None,
     return False
 
 
-def __generic_ticker_Update(self: not None, context: not None,
-                            walk_data: str,
-                            double_click_ot_idname=""):
+def _generic_ticker_Update(self: PropertyGroup, context: Context,
+                           walk_data: str, double_click_ot_idname="") -> None:
     """
     Generic ticker property update.
 
     Parameters:
         self - pointer to prop's PropertyGroup itself.
 
-        context - context the prop update was called from.
+        context - current data context.
 
         walk_data - attribute name of Collection Property that
                 has uilist walk features.
@@ -138,7 +139,7 @@ def __generic_ticker_Update(self: not None, context: not None,
     if all([bakemaster.allow_multi_select,
             any([not bakemaster.allow_drag_trans,
                  bakemaster.multi_select_event != ''])]):
-        __generic_multi_select(self, bakemaster, walk_data)
+        _generic_multi_select(self, bakemaster, walk_data)
         return
 
     if not bakemaster.allow_drag:
@@ -180,8 +181,8 @@ def __generic_ticker_Update(self: not None, context: not None,
     #         self.index == getattr(data, "%s_active_index" % attr)]):
     #     return
 
-    if __is_drag_group_into_itself(self, bakemaster, data, containers,
-                                   walk_data):
+    if _is_drag_group_into_itself(self, bakemaster, data, containers,
+                                  walk_data):
         return
 
     drag_to_index = bakemaster.get_drag_to_index(walk_data)
@@ -193,7 +194,7 @@ def __generic_ticker_Update(self: not None, context: not None,
     self.is_drag_placeholder = True
     self.is_drag_empty_placeholder = False
     self.is_lowpoly_placeholder = False
-    __drag_empty_eval(self, data, containers, walk_data)
+    _drag_empty_eval(self, data, containers, walk_data)
 
     bakemaster.set_drag_to_index(walk_data, self.index)
     bakemaster.drag_data_to = walk_data
@@ -203,8 +204,8 @@ def __generic_ticker_Update(self: not None, context: not None,
         self.ticker = not ticker_old
 
 
-def __generic_drag_empty_ticker_Update(self: not None, context: not None,
-                                       walk_data: str):
+def _generic_drag_empty_ticker_Update(self: PropertyGroup, context: Context,
+                                      walk_data: str) -> None:
     """
     Generic drag_empty_ticker property update.
 
@@ -227,8 +228,8 @@ def __generic_drag_empty_ticker_Update(self: not None, context: not None,
         bakemaster.log("pux0000", walk_data, self)
         return
 
-    if __is_drag_group_into_itself(self, bakemaster, data, containers,
-                                   walk_data):
+    if _is_drag_group_into_itself(self, bakemaster, data, containers,
+                                  walk_data):
         return
 
     drag_to_index = bakemaster.get_drag_to_index(walk_data)
@@ -240,7 +241,7 @@ def __generic_drag_empty_ticker_Update(self: not None, context: not None,
     self.is_drag_placeholder = False
     self.is_drag_empty_placeholder = True
     self.is_lowpoly_placeholder = False
-    __drag_empty_eval(self, data, containers, walk_data)
+    _drag_empty_eval(self, data, containers, walk_data)
 
     bakemaster.set_drag_to_index(walk_data, self.index)
     bakemaster.drag_data_to = walk_data
@@ -250,8 +251,8 @@ def __generic_drag_empty_ticker_Update(self: not None, context: not None,
         self.drag_empty_ticker = not ticker_old
 
 
-def __generic_lowpoly_ticker_Update(self: not None, context: not None,
-                                    walk_data: str):
+def _generic_lowpoly_ticker_Update(self: PropertyGroup, context: Context,
+                                   walk_data: str) -> None:
     """
     Generic lowpoly_ticker property update.
 
@@ -278,8 +279,8 @@ def __generic_lowpoly_ticker_Update(self: not None, context: not None,
         bakemaster.log("pux0000", walk_data, self)
         return
 
-    if __is_drag_group_into_itself(self, bakemaster, data, containers,
-                                   walk_data):
+    if _is_drag_group_into_itself(self, bakemaster, data, containers,
+                                  walk_data):
         return
 
     bakemaster.is_drag_lowpoly_data = True
@@ -302,8 +303,8 @@ def __generic_lowpoly_ticker_Update(self: not None, context: not None,
         self.lowpoly_ticker = not ticker_old
 
 
-def __generic_active_index_Update(self: not None, context: not None,
-                                  walk_data: str):
+def _generic_active_index_Update(self: PropertyGroup, context: Context,
+                                 walk_data: str) -> None:
     """
     Generic active_index property update.
     Revert to active_index_old when setting props of drop_prompt
@@ -351,8 +352,8 @@ def __generic_active_index_Update(self: not None, context: not None,
         containers[active_index].is_selected = True
 
 
-def __generic_drop_name_Update(self: not None, context: not None,
-                               walk_data: str):
+def _generic_drop_name_Update(self: PropertyGroup, context: Context,
+                              walk_data: str) -> None:
     """
     Generic drop_name property update.
 
@@ -377,8 +378,8 @@ def __generic_drop_name_Update(self: not None, context: not None,
         drop_name=self.drop_name)
 
 
-def __generic_multi_select(self: not None, bakemaster: not None,
-                           walk_data: str):
+def _generic_multi_select(self: PropertyGroup, bakemaster: PropertyGroup,
+                          walk_data: str) -> None:
     """
     Generic multiple selection manifestor.
 
@@ -452,8 +453,9 @@ def __generic_multi_select(self: not None, bakemaster: not None,
             container.is_selected = container.index in selection_range
 
 
-def __generic_property_in_multi_selection_Update(
-        self: not None, context: not None, walk_data: str, prop_name: str):
+def _generic_property_in_multi_selection_Update(
+        self: PropertyGroup, context: Context, walk_data: str, prop_name: str
+        ) -> None:
     """
     Generic property in multi selection update function. Lets set prop_name's
     property values in data's containers that are in multi selection.
@@ -516,8 +518,8 @@ def __generic_property_in_multi_selection_Update(
     bakemaster.allow_prop_in_multi_selection_update = True
 
 
-def __generic_group_type_change_Update(self: not None, context: not None,
-                                       walk_data: str):
+def _generic_group_type_change_Update(self: PropertyGroup, context: Context,
+                                      walk_data: str) -> None:
     """
     If group_type changed to Decorator, copy settings from group to all its
     childs. If changed to Dictator, copy settings from the first child.
@@ -529,8 +531,6 @@ def __generic_group_type_change_Update(self: not None, context: not None,
 
         walk_data - attribute name of Collection Property that
                 has uilist walk features.
-
-    Attention: called on active container.
     """
 
     if self.group_old_type == self.group_type or not self.is_group:
@@ -540,7 +540,13 @@ def __generic_group_type_change_Update(self: not None, context: not None,
     bakemaster = context.scene.bakemaster
 
     walk_data_getter = getattr(bakemaster, "get_active_%s" % walk_data)
-    data, containers, attr = walk_data_getter(bakemaster)
+
+    kwargs = {}
+    if hasattr(self, "bakejob_index"):
+        kwargs["bakejob_index"] = self.bakejob_index
+    if hasattr(self, "container_index"):
+        kwargs["container_index"] = self.container_index
+    data, containers, attr = walk_data_getter(bakemaster, kwargs)
     if data is None:
         bakemaster.log("pux0000", walk_data, self)
         return
@@ -562,9 +568,9 @@ def __generic_group_type_change_Update(self: not None, context: not None,
 
     # changed to dictator
     if self.group_type == 'DICTATOR':
-        if self.index >= getattr(data, "%s_len" % attr) - 1:
+        if self.get_is_last(data, attr):
             return
-        container = containers[self.index + 1]
+        container = self.get_next_item(containers)
         if container.ui_indent_level <= self.ui_indent_level:
             return
 
@@ -600,107 +606,107 @@ def __generic_group_type_change_Update(self: not None, context: not None,
 
 
 def Global_bakejobs_active_index_Update(self, context):
-    __generic_active_index_Update(self, context, "bakejobs")
+    _generic_active_index_Update(self, context, "bakejobs")
 
 
 def BakeJob_drop_name_Update(self, context):
-    __generic_drop_name_Update(self, context, walk_data="bakejobs")
+    _generic_drop_name_Update(self, context, walk_data="bakejobs")
 
 
 def BakeJob_containers_active_index_Update(self, context):
-    __generic_active_index_Update(self, context, "containers")
+    _generic_active_index_Update(self, context, "containers")
 
 
 def BakeJob_ticker_Update(self, context):
-    __generic_ticker_Update(self, context, walk_data="bakejobs",
-                            double_click_ot_idname="bakejob_rename")
+    _generic_ticker_Update(self, context, walk_data="bakejobs",
+                           double_click_ot_idname="bakejob_rename")
 
 
 def BakeJob_drag_empty_ticker_Update(self, context):
-    __generic_drag_empty_ticker_Update(self, context, "bakejobs")
+    _generic_drag_empty_ticker_Update(self, context, "bakejobs")
 
 
 def BakeJob_lowpoly_ticker_Update(self, context):
-    __generic_lowpoly_ticker_Update(self, context, "bakejobs")
+    _generic_lowpoly_ticker_Update(self, context, "bakejobs")
 
 
 def BakeJob_group_type_Update(self, context):
-    __generic_group_type_change_Update(self, context, "bakejobs")
+    _generic_group_type_change_Update(self, context, "bakejobs")
 
 
 def Container_drop_name_Update(self, context):
-    __generic_drop_name_Update(self, context, walk_data="containers")
+    _generic_drop_name_Update(self, context, walk_data="containers")
 
 
 def Container_subcontainers_active_index_Update(self, context):
-    __generic_active_index_Update(self, context, "subcontainers")
+    _generic_active_index_Update(self, context, "subcontainers")
 
 
 def Container_ticker_Update(self, context):
-    __generic_ticker_Update(self, context, walk_data="containers",
-                            double_click_ot_idname="container_rename")
+    _generic_ticker_Update(self, context, walk_data="containers",
+                           double_click_ot_idname="container_rename")
 
 
 def Container_drag_empty_ticker_Update(self, context):
-    __generic_drag_empty_ticker_Update(self, context, "containers")
+    _generic_drag_empty_ticker_Update(self, context, "containers")
 
 
 def Container_lowpoly_ticker_Update(self, context):
-    __generic_lowpoly_ticker_Update(self, context, "containers")
+    _generic_lowpoly_ticker_Update(self, context, "containers")
 
 
 def Container_group_type_Update(self, context):
-    __generic_group_type_change_Update(self, context, "containers")
+    _generic_group_type_change_Update(self, context, "containers")
 
 
 def Subcontainer_ticker_Update(self, context):
-    __generic_ticker_Update(self, context, walk_data="subcontainers")
+    _generic_ticker_Update(self, context, walk_data="subcontainers")
 
 
 def Subcontainer_drag_empty_ticker_Update(self, context):
-    __generic_drag_empty_ticker_Update(self, context, "subcontainers")
+    _generic_drag_empty_ticker_Update(self, context, "subcontainers")
 
 
 def Subcontainer_lowpoly_ticker_Update(self, context):
-    __generic_lowpoly_ticker_Update(self, context, "subcontainers")
+    _generic_lowpoly_ticker_Update(self, context, "subcontainers")
 
 
 def Subcontainer_group_type_Update(self, context):
-    __generic_group_type_change_Update(self, context, "subcontainers")
+    _generic_group_type_change_Update(self, context, "subcontainers")
 
 
 # UI Props' Updates
 
 def BakeJob_use_bake_Update(self, context):
-    __generic_property_in_multi_selection_Update(
+    _generic_property_in_multi_selection_Update(
         self, context, "bakejobs", "use_bake")
 
 
 def BakeJob_type_Update(self, context):
-    __generic_property_in_multi_selection_Update(
+    _generic_property_in_multi_selection_Update(
         self, context, "bakejobs", "type")
 
 
 def BakeJob_group_is_texset_Update(self, context):
-    __generic_property_in_multi_selection_Update(
+    _generic_property_in_multi_selection_Update(
         self, context, "bakejobs", "group_is_texset")
 
 
 def Container_use_bake_Update(self, context):
-    __generic_property_in_multi_selection_Update(
+    _generic_property_in_multi_selection_Update(
         self, context, "containers", "use_bake")
 
 
 def Container_group_is_texset_Update(self, context):
-    __generic_property_in_multi_selection_Update(
+    _generic_property_in_multi_selection_Update(
         self, context, "containers", "group_is_texset")
 
 
 def Subcontainer_use_bake_Update(self, context):
-    __generic_property_in_multi_selection_Update(
+    _generic_property_in_multi_selection_Update(
         self, context, "subcontainers", "use_bake")
 
 
 def Subcontainer_group_is_texset_Update(self, context):
-    __generic_property_in_multi_selection_Update(
+    _generic_property_in_multi_selection_Update(
         self, context, "subcontainers", "group_is_texset")
