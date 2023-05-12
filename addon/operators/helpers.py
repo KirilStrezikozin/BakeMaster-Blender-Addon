@@ -31,7 +31,7 @@ from os import path as os_path
 
 from bpy import ops as bpy_ops
 
-from bpy.types import Operator
+from bpy.types import Context, Event, Operator
 
 from bpy.props import (
     BoolProperty,
@@ -51,7 +51,7 @@ class BM_OT_Helper_Free_Icons(Operator):
     bl_label = "Remove Custom Icons"
     bl_options = {'INTERNAL'}
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         import bpy.utils.previews
 
         bakemaster = context.scene.bakemaster
@@ -76,7 +76,7 @@ class BM_OT_Helper_Help(Operator):
     page_id: StringProperty()
     addon_version = "latest"
 
-    def get_url(self):
+    def get_url(self) -> str:
         base = "https://bakemaster-blender-addon.readthedocs.io/en/"
         urls = {
             '': r'%s/',
@@ -90,12 +90,12 @@ class BM_OT_Helper_Help(Operator):
         url = urls.get(self.page_id, r'%s/')
         return url % (base + self.addon_version)
 
-    def execute(self, _):
+    def execute(self, _: Context) -> set:
         from webbrowser import open as webbrowser_open
         webbrowser_open(self.get_url())
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         self.addon_version = context.scene.bakemaster.get_addon_version()
         return self.execute(context)
 
@@ -113,12 +113,12 @@ class BM_OT_Helper_FileChooseDialog(Operator, ImportHelper):
 
     message: StringProperty(options={'HIDDEN'})
 
-    def process_exit(self):
+    def process_exit(self) -> set:
         if self.message != "":
             self.report({'INFO'}, self.message)
         return {'FINISHED'}
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         if os_path.isfile(self.filepath):
             self.filepath = os_path.dirname(self.filepath)
         # no safe check if property is invalid
@@ -128,6 +128,7 @@ class BM_OT_Helper_FileChooseDialog(Operator, ImportHelper):
             return self.process_exit()
 
         bpy_ops.bakemaster.config('EXEC_DEFAULT', action=self.config_action)
+        return {'FINISHED'}
 
 
 class BM_OT_Helper_UI_Prop_Relinquish(Operator):
@@ -139,7 +140,7 @@ class BM_OT_Helper_UI_Prop_Relinquish(Operator):
     data_name: StringProperty()
     prop_name: StringProperty()
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
 
         data, _, attr = getattr(
@@ -152,5 +153,5 @@ class BM_OT_Helper_UI_Prop_Relinquish(Operator):
         setattr(container, self.prop_name, getattr(container, self.prop_name))
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         return self.execute(context)
