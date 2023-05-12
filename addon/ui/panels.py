@@ -27,8 +27,17 @@
 #
 # ##### END LICENSE BLOCK #####
 
+__all__ = [
+        "BM_PT_Preferences",
+        "BM_PT_BakeJobs",
+        "BM_PT_Containers",
+        "BM_PT_Bake",
+        "BM_PT_BakeControls",
+        "BM_PT_BakeHistory",
+]
+
 from bpy.types import (
-    Panel,
+    Context,
     AddonPreferences,
 )
 
@@ -38,57 +47,14 @@ from bpy.props import (
     IntProperty,
 )
 
-from .helpers import BM_UI_ml_draw
+from .helpers import (
+    get_uilist_rows as _get_uilist_rows,
+    BM_UI_ms_draw,
+    BM_PT_Helper,
+)
 
 
-_bm_space_type = 'VIEW_3D'
-_bm_region_type = 'UI'
-_bm_category = "BakeMaster"
-
-
-def __get_uilist_rows(len_of_idprop: int, min_rows: int, max_rows: int) -> int:
-    return min(max_rows, max(min_rows, len_of_idprop))
-
-
-class BM_PT_Helper(Panel):
-    """
-    BakeMaster UI Panel Helper class.
-
-    data_name is an identifier of walk_data_name for this Panel instance.
-    Mandatory if a Panel will have walk_datas drawn.
-
-    Use by inheriting.
-    """
-
-    bl_space_type = _bm_space_type
-    bl_region_type = _bm_region_type
-    bl_category = _bm_category
-
-    use_help = True  # draw help button
-    data_name = ""
-
-    @classmethod
-    def poll(cls, context):
-        # Default poll (determine whether able to draw a panel)
-        return all([hasattr(context.scene, "bakemaster"),
-                    cls.panel_poll(context)])
-
-    @classmethod
-    def panel_poll(cls, _):
-        # Default empty panel_poll for additional checks
-        return True
-
-    def draw_header_preset(self, context):
-        # Draw default header layout
-
-        bakemaster = context.scene.bakemaster
-        row = self.layout.row()
-
-        if not all([self.use_help, bakemaster.get_pref(context,
-                                                       "use_show_help")]):
-            return
-        row.operator('bakemaster.global_help', text="",
-                     icon='HELP').id = self.bl_idname
+# class F():
 
 
 class BM_PT_Preferences(AddonPreferences):
@@ -105,7 +71,7 @@ class BM_PT_Preferences(AddonPreferences):
 
     default_bakejob_type: EnumProperty(
         name="Default type",
-        description="Choose BakeJob's default type. Hover over values to see descriptions",
+        description="Choose BakeJob's default type. Hover over values to see descriptions",  # noqa: E501
         default='OBJECTS',
         items=[('OBJECTS', "Objects", "Bake Job will contain Objects, where each of them will contain Maps to bake"),  # noqa: E501
                ('MAPS', "Maps", "Bake Job will contain Maps, where each of them will contain Objects the map should be baked for")])  # noqa: E501
@@ -117,7 +83,7 @@ class BM_PT_Preferences(AddonPreferences):
 
     developer_use_console_debug: BoolProperty(
         name="Debug to Console",
-        description="Debug statuses, process progress, and error codes to the Console",
+        description="Debug statuses, process progress, and error codes to the Console",  # noqa: E501
         default=True)
 
     developer_use_show_groups_indexes: BoolProperty(
@@ -130,7 +96,7 @@ class BM_PT_Preferences(AddonPreferences):
 
     developer_ui_indent_width: IntProperty(
         name="Indent width",
-        description="Indent width for items in groups. Recommended: from 0 to 4",
+        description="Indent width for items in groups. Recommended: from 0 to 4",  # noqa: E501
         default=0)
 
     developer_use_group_descending_lines: BoolProperty(
@@ -142,10 +108,10 @@ class BM_PT_Preferences(AddonPreferences):
         description="Toggle between orange and white object icons",
         default=True)
 
-    def poll(self, context):
+    def poll(self, context: Context) -> bool:
         return hasattr(context.scene, "bakemaster")
 
-    def draw(self, context):
+    def draw(self, context: Context) -> None:
         bakemaster = context.scene.bakemaster
         layout = self.layout
 
@@ -190,13 +156,13 @@ class BM_PT_Preferences(AddonPreferences):
             col.prop(self, "developer_use_console_debug")
 
 
-class BM_PT_BakeJobs(BM_PT_Helper, BM_UI_ml_draw):
+class BM_PT_BakeJobs(BM_PT_Helper, BM_UI_ms_draw):
     bl_label = "Bake Jobs"
     bl_idname = 'BM_PT_BakeJobs'
 
     data_name = "bakejobs"
 
-    def draw(self, context):
+    def draw(self, context: Context) -> None:
         scene = context.scene
         bakemaster = scene.bakemaster
         layout = self.layout
@@ -217,8 +183,8 @@ class BM_PT_BakeJobs(BM_PT_Helper, BM_UI_ml_draw):
             min_rows = 2 + ml_rows
         else:
             min_rows = 4 + ml_rows
-        rows = __get_uilist_rows(bakemaster.bakejobs_len + ml_rows,
-                                 min_rows, 4 + ml_rows)
+        rows = _get_uilist_rows(bakemaster.bakejobs_len + ml_rows,
+                                min_rows, 4 + ml_rows)
 
         row.template_list('BM_UL_BakeJobs', "", bakemaster,
                           'bakejobs', bakemaster,
@@ -248,14 +214,14 @@ class BM_PT_BakeJobs(BM_PT_Helper, BM_UI_ml_draw):
                      icon='SELECT_EXTEND')
 
 
-class BM_PT_Containers(BM_PT_Helper, BM_UI_ml_draw):
+class BM_PT_Containers(BM_PT_Helper, BM_UI_ms_draw):
     bl_label = " "
     bl_idname = 'BM_PT_Containers'
 
     data_name = "containers"
 
     @classmethod
-    def panel_poll(cls, context):
+    def panel_poll(cls, context: Context) -> bool:
         bakemaster = context.scene.bakemaster
 
         bakejob = bakemaster.get_bakejob(bakemaster)
@@ -268,7 +234,7 @@ class BM_PT_Containers(BM_PT_Helper, BM_UI_ml_draw):
 
         return True
 
-    def draw_header(self, context):
+    def draw_header(self, context: Context) -> None:
         bakemaster = context.scene.bakemaster
         bakejob = bakemaster.get_bakejob(bakemaster)
         if bakejob is None:
@@ -292,7 +258,7 @@ class BM_PT_Containers(BM_PT_Helper, BM_UI_ml_draw):
         label = "  %s" % bakejob.type.capitalize()
         row.label(text=label)
 
-    def draw(self, context):
+    def draw(self, context: Context) -> None:
         scene = context.scene
         bakemaster = scene.bakemaster
         layout = self.layout
@@ -317,8 +283,8 @@ class BM_PT_Containers(BM_PT_Helper, BM_UI_ml_draw):
             min_rows = 2 + ml_rows
         else:
             min_rows = 4 + ml_rows
-        rows = __get_uilist_rows(bakejob.containers_len + ml_rows,
-                                 min_rows, 4 + ml_rows)
+        rows = _get_uilist_rows(bakejob.containers_len + ml_rows,
+                                min_rows, 4 + ml_rows)
 
         row.template_list('BM_UL_Containers', "", bakejob,
                           'containers', bakejob,
@@ -367,12 +333,12 @@ class BM_PT_Bake(BM_PT_Helper):
     bl_label = " "
     bl_idname = 'BM_PT_Bake'
 
-    def draw_header(self, _):
+    def draw_header(self, _: Context) -> None:
         label = "Bake"
         icon = 'RENDER_STILL'
         self.layout.label(text=label, icon=icon)
 
-    def draw(self, _):
+    def draw(self, _: Context) -> None:
         pass
 
 
@@ -383,13 +349,13 @@ class BM_PT_BakeControls(BM_PT_Helper):
 
     bl_parent_id = BM_PT_Bake.bl_idname
 
-    def draw_header(self, _):
+    def draw_header(self, _: Context) -> None:
         pass
 
-    def draw_header_preset(self, _):
+    def draw_header_preset(self, _: Context) -> None:
         pass
 
-    def draw(self, context):
+    def draw(self, context: Context) -> None:
         scene = context.scene
         bakemaster = scene.bakemaster
         layout = self.layout
@@ -432,12 +398,12 @@ class BM_PT_BakeHistory(BM_PT_Helper):
 
     bl_parent_id = BM_PT_Bake.bl_idname
 
-    def draw_header(self, _):
+    def draw_header(self, _: Context) -> None:
         label = "Bake History"
         icon = 'TIME'
         self.layout.label(text=label, icon=icon)
 
-    def draw(self, context):
+    def draw(self, context: Context) -> None:
         scene = context.scene
         bakemaster = scene.bakemaster
         layout = self.layout
@@ -449,7 +415,7 @@ class BM_PT_BakeHistory(BM_PT_Helper):
         if bakemaster.bakehistory_len == 0:
             row.label(text="No bakes in the history")
             return
-        rows = __get_uilist_rows(bakemaster.bakehistory_len, 1, 10)
+        rows = _get_uilist_rows(bakemaster.bakehistory_len, 1, 10)
         row.template_list('BM_UL_BakeHistory', "", bakemaster,
                           'bakehistory', bakemaster,
                           'bakehistory_active_index', rows=rows)

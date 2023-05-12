@@ -30,4 +30,17 @@
 from . import uilists
 from . import panels
 
-__all__ = ["uilists", "panels"]
+__all__ = ["classes"]
+
+classes = (
+    uilists.BM_UL_BakeJobs,
+    uilists.BM_UL_Containers,
+    uilists.BM_UL_BakeHistory,
+
+    panels.BM_PT_Preferences,
+    panels.BM_PT_BakeJobs,
+    panels.BM_PT_Containers,
+    panels.BM_PT_Bake,
+    panels.BM_PT_BakeControls,
+    panels.BM_PT_BakeHistory,
+)
