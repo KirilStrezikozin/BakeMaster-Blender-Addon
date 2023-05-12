@@ -241,7 +241,7 @@ class BM_PT_Helper(Panel):
             return
 
         row.operator('bakemaster.helper_help', text="",
-                     icon='HELP').id = self.bl_idname
+                     icon='HELP').page_id = self.bl_idname
 
 
 class BM_UI_wh_UIList(UIList, BM_UI_ms_draw):
