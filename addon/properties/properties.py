@@ -965,7 +965,8 @@ class Global(BM_PropertyGroup_Helper):
             return self.__preview_collections
 
         try:
-            thumb = self.__preview_collections["main"].get(icon_id)
+            icon_name = "bakemaster_%s.png" % icon_id.lower()
+            thumb = self.__preview_collections["main"].get(icon_name)
             if thumb is None:
                 raise KeyError
         except (KeyError, AttributeError):
