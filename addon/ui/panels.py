@@ -228,7 +228,7 @@ class BM_PT_Containers(BM_PT_Helper, BM_UI_ms_draw):
         if bakejob is None:
             return False
 
-        if all([cls.has_multi_selection(cls, bakejob, "bakejobs"),
+        if all([cls.has_multi_selection(cls, bakemaster, bakejob, "bakejobs"),
                 not bakejob.is_selected]):
             return False
 
