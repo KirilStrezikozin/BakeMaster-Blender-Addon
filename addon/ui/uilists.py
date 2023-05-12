@@ -56,11 +56,12 @@ class BM_UL_BakeJobs(BM_UI_wh_UIList):
             type_icon = bakemaster.get_icon('OBJECTS')
             type_ot = self.draw_prop(
                 bakemaster, self.data_name, row, "Operator", container, "type",
-                'bakemaster.bakejob_toggletype', text="", icon_value=type_icon)
+                'bakemaster.bakejob_change_type', text="",
+                icon_value=type_icon)
         else:
             type_ot = self.draw_prop(
                 bakemaster, self.data_name, row, "Operator", container, "type",
-                'bakemaster.bakejob_toggletype', text="", icon='RENDERLAYERS')
+                'bakemaster.bakejob_change_type', text="", icon='RENDERLAYERS')
         if type_ot is not None:
             type_ot.index = container.index
 
@@ -91,7 +92,7 @@ class BM_UL_Containers(BM_UI_wh_UIList):
 
         elif data.type == 'OBJECTS':
             obj, _, obj_icon_type, obj_icon, _, _ = bakemaster.get_object_info(
-                    bakemaster, context.scene.objects, container.name)
+                    context.scene.objects, container.name)
 
             if obj is None:
                 return 'ICON_VALUE', error_icon, False
@@ -106,8 +107,8 @@ class BM_UL_Containers(BM_UI_wh_UIList):
         bakemaster = context.scene.bakemaster
         row.emboss = 'NONE'
 
-        group, forbid_bake = bakemaster.get_wh_parent_name(
-            container, getattr(data, self.data_name), "group_type", "DICTATOR",
+        group, forbid_bake = container.get_parent_group(
+            getattr(data, self.data_name), "group_type", "DICTATOR",
             "use_bake", False)
 
         # unpack third ticker_icon() return value -> container_exists
@@ -191,7 +192,7 @@ class BM_UL_Containers(BM_UI_wh_UIList):
                 subrow.emboss = 'NORMAL'
 
             group_icon = container.get_group_icon(bakemaster)
-            subrow.operator("bakemaster.containers_groupoptions", text="",
+            subrow.operator("bakemaster.containers_group_options", text="",
                             icon_value=group_icon)
             subrow.active = row.active and container.group_type != 'DECORATOR'
 
