@@ -41,13 +41,13 @@ from bpy.props import (
 from bpy_extras.io_utils import ImportHelper
 
 
-class BM_OT_Global_Free_Icons(Operator):
+class BM_OT_Helper_Free_Icons(Operator):
     """
     Remove Preview Collections of custom icons initialized in the Global
     Properties.
     """
 
-    bl_idname = 'bakemaster.global_free_icons'
+    bl_idname = 'bakemaster.helper_free_icons'
     bl_label = "Remove Custom Icons"
     bl_options = {'INTERNAL'}
 
@@ -67,8 +67,8 @@ class BM_OT_Global_Free_Icons(Operator):
         return {'FINISHED'}
 
 
-class BM_OT_Global_Help(Operator):
-    bl_idname = 'bakemaster.global_help'
+class BM_OT_Helper_Help(Operator):
+    bl_idname = 'bakemaster.helper_help'
     bl_label = "Help"
     bl_description = "Press to visit the according BakeMaster's online documentation page"  # noqa: E501
     bl_options = {'INTERNAL'}
@@ -130,8 +130,8 @@ class BM_OT_Helper_FileChooseDialog(Operator, ImportHelper):
         bpy_ops.bakemaster.config('EXEC_DEFAULT', action=self.config_action)
 
 
-class BM_OT_Global_UI_Prop_Relinquish(Operator):
-    bl_idname = 'bakemaster.global_ui_prop_relinquish'
+class BM_OT_Helper_UI_Prop_Relinquish(Operator):
+    bl_idname = 'bakemaster.helper_ui_prop_relinquish'
     bl_label = "Set similar values"
     bl_description = "Each selected item will have the same value of this property"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}

@@ -29,18 +29,57 @@
 
 from . import (
     helpers,
-    walk_handler,
+    walkhandler,
     bakejob,
     container,
     subcontainer,
     bake,
 )
 
-__all__ = [
-    "helpers",
-    "walk_handler",
-    "bakejob",
-    "container",
-    "subcontainer",
-    "bake",
-]
+BM_call_WalkHandler = walkhandler.call_WalkHandler
+
+__all__ = ["classes", "BM_call_WalkHandler"]
+
+classes = (
+    helpers.BM_OT_Helper_Free_Icons,
+    helpers.BM_OT_Helper_Help,
+    helpers.BM_OT_Helper_FileChooseDialog,
+    helpers.BM_OT_Helper_UI_Prop_Relinquish,
+
+    walkhandler.BM_OT_WalkHandler,
+    walkhandler.BM_OT_Global_WalkData_Move,
+    walkhandler.BM_OT_Global_WalkData_Trans,
+    walkhandler.BM_OT_Global_WalkData_Move_Lowpoly_Data,
+    walkhandler.BM_OT_Global_WalkData_AddDropped,
+
+    bakejob.BM_OT_BakeJob_Add,
+    bakejob.BM_OT_BakeJob_Remove,
+    bakejob.BM_OT_BakeJob_Trash,
+    bakejob.BM_OT_BakeJob_Rename,
+    bakejob.BM_OT_BakeJob_Change_Type,
+    bakejob.BM_OT_BakeJob_Merge,
+
+    container.BM_OT_Container_Add,
+    container.BM_OT_Container_Remove,
+    container.BM_OT_Container_Trash,
+    container.BM_OT_Container_Rename,
+    container.BM_OT_Container_Toggle_Expand,
+    container.BM_OT_Container_Group_Set_Icon,
+    container.BM_OT_Container_Group_Options,
+    container.BM_OT_Container_Group,
+    container.BM_OT_Container_Ungroup,
+
+    subcontainer.BM_OT_Subcontainer_Trash,
+    subcontainer.BM_OT_Subcontainer_Toggle_Expand,
+
+    bake.BM_OT_Bake_All,
+    bake.BM_OT_Bake_One,
+    bake.BM_OT_Bake_Toggle_Pause,
+    bake.BM_OT_Bake_Stop,
+    bake.BM_OT_Bake_Cancel,
+    bake.BM_OT_Bake_Setup,
+    bake.BM_OT_Bake_Config,
+    bake.BM_OT_BakeHistory_Remove,
+    bake.BM_OT_BakeHistory_Rebake,
+    bake.BM_OT_BakeHistory_Config,
+)

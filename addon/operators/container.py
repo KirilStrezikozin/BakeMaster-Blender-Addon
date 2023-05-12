@@ -105,10 +105,13 @@ class BM_OT_Container_Remove(Operator):
     def execute(self, context):
         bakemaster = context.scene.bakemaster
 
-        bakemaster.wh_remove(
+        status, message = bakemaster.wh_remove(
             bakemaster.get_bakejob(bakemaster, self.bakejob_index),
             "containers", self.index)
-        return {'FINISHED'}
+
+        if message:
+            self.report({'INFO'}, message)
+        return status
 
     def invoke(self, context, _):
         return self.execute(context)

@@ -31,7 +31,7 @@ from time import time
 
 from bpy import ops as bpy_ops
 
-from bpy.types import Operator
+from bpy.types import Operator, Scene
 
 from bpy.props import (
     IntProperty,
@@ -39,12 +39,44 @@ from bpy.props import (
     BoolProperty,
 )
 
+from bpy.app.handlers import persistent
+
 _walk_handler_invoked = False
 _walk_handler_invoke_time = 0
 
+_is_walk_handler_timer_started = False
 
-class BM_OT_Global_WalkHandler(Operator):
-    bl_idname = 'bakemaster.global_walkhandler'
+
+@persistent
+def call_WalkHandler(_: Scene):
+    """
+    Walk Handler caller. After the first invoke, if Handler was cancelled,
+    try to reinvoke every 5 seconds.
+    """
+
+    global _walk_handler_invoked
+    global _walk_handler_invoke_time
+
+    if _walk_handler_invoked:
+        return
+
+    global _is_walk_handler_timer_started
+
+    invoke_time = _walk_handler_invoke_time
+    time_diff = time() - invoke_time
+
+    if not any([time_diff > 5,
+                not _is_walk_handler_timer_started]):
+        return
+
+    _is_walk_handler_timer_started = True
+    _walk_handler_invoke_time = time()
+
+    bpy_ops.bakemaster.walkhandler('INVOKE_DEFAULT')
+
+
+class BM_OT_WalkHandler(Operator):
+    bl_idname = 'bakemaster.walkhandler'
     bl_label = "BakeMaster Walk Handler"
     bl_description = "User Interface Walk Handler for operating Drag, Drop, Multi Selection"  # noqa: E501
     bl_options = {'INTERNAL'}

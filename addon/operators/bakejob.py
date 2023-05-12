@@ -73,7 +73,12 @@ class BM_OT_BakeJob_Remove(Operator):
 
     def execute(self, context):
         bakemaster = context.scene.bakemaster
-        return bakemaster.wh_remove(bakemaster, "bakejobs", self.index)
+        status, message = bakemaster.wh_remove(bakemaster, "bakejobs",
+                                               self.index)
+
+        if message:
+            self.report({'INFO'}, message)
+        return status
 
     def invoke(self, context, _):
         return self.execute(context)
@@ -244,7 +249,7 @@ class BM_OT_BakeJob_Merge(Operator):
         bakemaster.bakejobs_active_index = self.bakejob.index
         bakemaster.bakejobs_len = len(bakemaster.bakejobs)
 
-        bakemaster.wh_disable_ms()
+        bakemaster.wh_disable_ms("bakejobs")
         bakemaster.wh_recalc_indexes(bakemaster, "bakejobs")
         return {'FINISHED'}
 
