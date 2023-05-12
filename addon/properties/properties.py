@@ -77,7 +77,7 @@ def _check_walk_data_safety(data_name: str) -> None:
 
     if _walk_data_literal.get(data_name, False):
         return
-    raise NameError(f"BakeMaster: Internal Error: {data_name} walk_data name does not meet the literal criteria")  # noqa: E501
+    raise NameError(f"BakeMaster: Internal Error: '{data_name}' walk_data name does not meet the literal criteria")  # noqa: E501
 
 
 def _load_preview_collections() -> bpy.utils.previews.ImagePreviewCollection:
