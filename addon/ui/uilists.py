@@ -129,8 +129,8 @@ class BM_UL_Containers(BM_UI_wh_UIList):
             if not self.filter_name:
 
                 toggle_expand_ot = subrow.operator(
-                    "bakemaster.%s_toggle_expand" % self.data_name,
-                    text="", icon=icon)
+                        "bakemaster.%s_toggle_expand" % self.data_name[:-1],
+                        text="", icon=icon)
 
                 toggle_expand_ot.bakejob_index = container.bakejob_index
                 toggle_expand_ot.index = container.index
