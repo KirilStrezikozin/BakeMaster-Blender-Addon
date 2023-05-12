@@ -70,6 +70,7 @@ _walk_data_literal = {
     "bakejobs": True,
     "containers": True,
     "subcontainers": True,
+    "": True
 }
 
 
