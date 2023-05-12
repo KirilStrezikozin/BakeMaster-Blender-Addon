@@ -247,11 +247,12 @@ class BM_PT_Containers(BM_PT_Helper, BM_UI_ms_draw):
             type_icon = bakemaster.get_icon('OBJECTS')
             type_ot = self.draw_prop(
                 bakemaster, "bakejobs", row, "Operator", bakejob, "type",
-                'bakemaster.bakejob_toggletype', text="", icon_value=type_icon)
+                'bakemaster.bakejob_change_type', text="",
+                icon_value=type_icon)
         else:
             type_ot = self.draw_prop(
                 bakemaster, "bakejobs", row, "Operator", bakejob, "type",
-                'bakemaster.bakejob_toggletype', text="", icon='RENDERLAYERS')
+                'bakemaster.bakejob_change_type', text="", icon='RENDERLAYERS')
         if type_ot is not None:
             type_ot.index = bakejob.index
 

@@ -192,7 +192,7 @@ class BM_UL_Containers(BM_UI_wh_UIList):
                 subrow.emboss = 'NORMAL'
 
             group_icon = container.get_group_icon(bakemaster)
-            subrow.operator("bakemaster.containers_group_options", text="",
+            subrow.operator("bakemaster.container_group_options", text="",
                             icon_value=group_icon)
             subrow.active = row.active and container.group_type != 'DECORATOR'
 

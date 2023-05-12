@@ -715,8 +715,8 @@ class BM_UI_wh_UIList(UIList, BM_UI_ms_draw):
             if not self.filter_name:
 
                 toggle_expand_ot = row.operator(
-                    "bakemaster.%s_toggle_expand" % self.data_name,
-                    text="", icon=icon)
+                        "bakemaster.%s_toggle_expand" % self.data_name[:-1],
+                        text="", icon=icon)
 
                 toggle_expand_ot.bakejob_index = container.bakejob_index
                 toggle_expand_ot.index = container.index
