@@ -92,7 +92,7 @@ class BM_UL_Containers(BM_UI_wh_UIList):
 
         elif data.type == 'OBJECTS':
             obj, _, obj_icon_type, obj_icon, _, _ = bakemaster.get_object_info(
-                    context.scene.objects, container.name)
+                    context, container.name)
 
             if obj is None:
                 return 'ICON_VALUE', error_icon, False

@@ -1432,7 +1432,7 @@ class Global(BM_PropertyGroup_Helper):
 
         return item_to
 
-    def get_object_info(self, objects: Collection, name: str
+    def get_object_info(self, context: Context, name: str
                         ) -> typing.Tuple[typing.Union[Object, None], str, str,
                                           str, typing.Optional[str], str]:
         """
@@ -1449,11 +1449,11 @@ class Global(BM_PropertyGroup_Helper):
         }
 
         try:
-            object = objects[name]
+            object = context.scene.objects[name]
         except KeyError:
             return None, '', '', '', 'NOTFOUND', errors['NOTFOUND']
 
-        if self.prefs_developer_use_orange_ob_icons:
+        if self.get_pref(context, "developer_use_orange_ob_icons"):
             icon_type = 'ICON_VALUE'
             info = {
                 'MESH': self.get_icon('OBJECT'),

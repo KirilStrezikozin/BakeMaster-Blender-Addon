@@ -72,7 +72,7 @@ class BM_OT_Container_Add(Operator):
 
         for name in names:
             object, _, _, _, _, error_message = bakemaster.get_object_info(
-                context.scene.objects, name)
+                context, name)
 
             if object is None:
                 bakemaster.log("o2x0001", error_message)
@@ -172,7 +172,7 @@ class BM_OT_Container_Rename(Operator):
                 return {'FINISHED'}
 
             object, _, _, _, _, error_message = bakemaster.get_object_info(
-                context.scene.bakemaster, context.scene.objects, self.new_link)
+                context, self.new_link)
 
             if object is None:
                 bakemaster.log("o2x0001", error_message)
