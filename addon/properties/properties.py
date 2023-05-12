@@ -60,10 +60,20 @@ from . import prop_updates
 
 _ui_pcoll_open = {}
 
-_short_bake_instruction = "Press `ESC` key to cancel baking current map iteration.\n\nOpen Blender Console to see more information about the baking process and, if you face an unexpected Blender freeze, be able to press `Ctrl + C` (Windows), `Cmd + C` (Mac), `Super + C` (Linux) to abort the bake. Enable Prompt before freeze for more control"  # noqa: E501
+_walk_data_literal = {
+    "bakejobs": True,
+    "containers": True,
+    "subcontainers": True,
+}
 
 
-def _load_preview_collections() -> typing.Union[
+def check_walk_data_safety(data_name: str) -> None:
+    if _walk_data_literal.get(data_name, False):
+        return
+    raise NameError(f"BakeMaster: Internal Error: {data_name} walk_data name does not meet the literal criteria")  # noqa: E501
+
+
+def load_preview_collections() -> typing.Union[
         bpy.utils.previews.ImagePreviewCollection,
         typing.Dict["str", typing.Any]]:
     """
@@ -277,6 +287,11 @@ class BM_PropertyGroup_Helper(PropertyGroup):
                 color_tag,
                 bakemaster.get_icon(icon_raw % color_tag)])
         return icons_all
+
+    def get_is_object(self, bakemaster: PropertyGroup, data_name: str) -> bool:
+        check_walk_data_safety(data_name)
+        return self.get_bm_name(
+            bakemaster, data_name) == "objects" and not self.is_group
 
     def get_is_lowpoly(self) -> bool:
         """
@@ -818,7 +833,7 @@ class Global(BM_PropertyGroup_Helper):
 
     short_bake_instruction: StringProperty(
         name="Short Bake Instruction",
-        description=_short_bake_instruction,
+        description="Press `ESC` key to cancel baking current map iteration.\n\nOpen Blender Console to see more information about the baking process and, if you face an unexpected Blender freeze, be able to press `Ctrl + C` (Windows), `Cmd + C` (Mac), `Super + C` (Linux) to abort the bake. Enable Prompt before freeze for more control",  # noqa: E501
         default="Short Bake Instruction",
         options={'SKIP_SAVE'})
 
@@ -851,7 +866,7 @@ class Global(BM_PropertyGroup_Helper):
     # Preview Collections - Custom Icons Props
 
     __preview_collections = {
-        "main": _load_preview_collections(),
+        "main": load_preview_collections(),
     }
 
     # Helper Funcs
