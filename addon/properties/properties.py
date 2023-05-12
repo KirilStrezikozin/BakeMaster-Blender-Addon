@@ -935,7 +935,7 @@ class Global(BM_PropertyGroup_Helper):
     def log(self, log_id: str, *args) -> None:
 
         log_ids = {
-            "mbx0001": r"BakeMaster: Internal Warning: icon %s not loaded",
+            "mbx0001": r"BakeMaster: Internal Warning: file %s with %s icon isn't loaded",  # noqa: E501
             "mbx0002": r"BakeMaster: Internal Warning: no icons loaded to close",  # noqa: E501
             "mbx0003": r"BakeMaster: Internal Warning: %s while setting %s attribute for %s",  # noqa: E501
             "mbx0004": r"BakeMaster: Internal Warning: %s index %s exceeds last possible index %s",  # noqa: E501
@@ -964,13 +964,13 @@ class Global(BM_PropertyGroup_Helper):
         if reg:
             return self.__preview_collections
 
+        icon_name = "bakemaster_%s.png" % icon_id.lower()
         try:
-            icon_name = "bakemaster_%s.png" % icon_id.lower()
             thumb = self.__preview_collections["main"].get(icon_name)
             if thumb is None:
                 raise KeyError
         except (KeyError, AttributeError):
-            self.log("mbx0001", icon_id)
+            self.log("mbx0001", icon_name, icon_id)
             return 0
         else:
             return thumb.icon_id
