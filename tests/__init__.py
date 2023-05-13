@@ -27,7 +27,38 @@
 #
 # ##### END LICENSE BLOCK #####
 
+# For run-py-tests: run tests package;
+# For run-bpy-tests: run this __init__.py directly.
 
-# No tests have been written yet
+__package__ = "tests"
 
-print("Success")
+import sys
+import unittest
+
+from os import path as os_path
+
+import bpy
+
+sys.path.append(os_path.join(os_path.dirname(__file__), ".."))
+
+from . import populate  # noqa: E402
+
+
+# Test Cases
+
+Test_ba_populate = populate.Test_ba_populate
+
+###
+
+
+if __name__ == '__main__':
+    print("\n")
+    print(f"Running tests from {__file__}.\nBlender version is {bpy.app.version}.\nPython version is {sys.version}")  # noqa: E501
+    print("\n\n")
+
+    argv = [__file__]
+
+    if "--" in sys.argv:
+        argv += sys.argv[sys.argv.index("--") + 1:]
+
+    unittest.main(argv=argv)
