@@ -46,7 +46,7 @@ class BM_OT_BakeJob_Add(Operator):
     def execute(self, context):
         bakemaster = context.scene.bakemaster
 
-        bakemaster.wh_disable_drag(bakemaster, "bakejobs")
+        bakemaster.wh_disable_drag(bakemaster, bakemaster.bakejobs, "bakejobs")
 
         new_bakejob = bakemaster.bakejobs.add()
         new_bakejob.index = bakemaster.bakejobs_len

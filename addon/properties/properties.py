@@ -1119,8 +1119,8 @@ class Global(BM_PropertyGroup_Helper):
                                              container.index]])
             index += 1
 
-    def wh_disable_drag(self, data: PropertyGroup, data_name: str,
-                        clear_selection=True) -> None:
+    def wh_disable_drag(self, data: PropertyGroup, containers: Collection,
+                        data_name: str, clear_selection=True) -> None:
         """
         Turn off drag.
         If clear_selection is True, unset multi selection.
@@ -1140,7 +1140,7 @@ class Global(BM_PropertyGroup_Helper):
             self.__wh_clear_ms(data, data_name)
         self.allow_drag_trans = False
 
-        containers = getattr(data, data_name)
+        # make sure foreach_set covers all containers
         containers_len = len(containers)
 
         # No loop, foreach only
