@@ -32,52 +32,14 @@
 
 # Minimal bash file for addon's dev commands execution
 
-# Sync non-version-dependant files
-# (copy those files from the given path into the current directory)
-# Example: ./commands sync-files-from path/to/dir
-if [[ "$1" == "sync-files-from" ]]; then
-    FROM_DIR=$2 
-
-    # cp $FROM_DIR/.git/ ./.git/
-    # cp $FROM_DIR/.github/ ./.github/
-    cp $FROM_DIR/.vscode/ ./.vscode/
-
-    # cp $FROM_DIR/addon/bakers/ ./addon/bakers/
-    # cp $FROM_DIR/addon/utils/ ./addon/utils/
-    cp $FROM_DIR/addon/README.txt ./addon/
-    cp $FROM_DIR/addon/__init__.py ./addon/
-    # cp $FROM_DIR/addon/labels.py ./addon/
-    # cp $FROM_DIR/addon/operator_bake.py ./addon/
-    cp $FROM_DIR/addon/operators.py ./addon/
-    cp $FROM_DIR/addon/presets.py ./addon/
-    cp $FROM_DIR/addon/properties.py ./addon/
-    cp $FROM_DIR/addon/ui_base.py ./addon/
-    cp $FROM_DIR/addon/ui_panels.py ./addon/
-
-    # cp $FROM_DIR/docs/ ./docs/
-    # cp $FROM_DIR/install/ ./install/
-    cp $FROM_DIR/prefs/ ./prefs/
-    cp $FROM_DIR/tests/ ./tests/
-    # cp $FROM_DIR/commands ./
-    cp $FROM_DIR/.gitignore ./
-    cp $FROM_DIR/LICENSE ./
-    cp $FROM_DIR/README.md ./
-    cp $FROM_DIR/__init__.py ./
-fi
-
 # Run tests
 # Example: ./commands run-tests path/to/set_of_tests.py
-if [[ "$1" == "run-tests" ]]; then
-    PYTHON_BIN=${PYTHON_BIN:-python3}
+if [[ "$1" == "run-py-tests" ]]; then
+    python3 -m unittest -v $2
+fi
 
-    # check if PYTHON_BIN binary is availble
-    if ! command -v "${PYTHON_BIN}" > /dev/null; then
-        echo "Error: Cannot find ${PYTHON_BIN} binary."
-        exit 1
-    fi
-
-    python_bin=$(command -v "${PYTHON_BIN}")
-    $python_bin $2
+if [[ "$1" == "run-bpy-tests" ]]; then
+    blender -b --python $2
 fi
 
 exit 0
