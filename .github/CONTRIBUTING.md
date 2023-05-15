@@ -209,79 +209,83 @@ def that_is_better(...) -> result:
 
 #### Comments and descriptions
 
-If line is longer than 79 characters because of a comment or description, add `# noqa: E501` to the end of it.
+You can and should use comments to:
 
-```python
-# Wrong commenting
+- Explain what function is doing if it isn't obvious by its name and provide a description of parameters
 
-some_v = value #here i explain what it is
-some_v2 = diff_value #that's gonna take so much time to explain what it does
+    Example:
 
+    ```python
+    def wh_remove(self, data: PropertyGroup, attr: str, index=-1
+                  ) -> typing.Tuple[set, str]:
+        """
+        Wrapper around data.remove(index). Takes Multi Selection into account.
+        Return status set and a message.
 
-# Correct commenting
+        Parameters:
+            data: data that holds iterable collection with walk features,
+            attr: name of the iterable collection attribute,
+            index (Optional): if no Multi Selection, remove item of this index.
+        """
 
+        ...
+    ```
 
-some_v = value  # here i explain what it is
+- Describe what class if for (for example, for an Operator that's not used in the UI)
 
-# Try to make it simple.
-informative_name = diff_value
-```
+    Example:
 
-- You can explain what function is doing if it isn't obvious by its name and provide a description of parameters
-- You can describe what class if for
+    ```python
+    class BM_OT_Global_WalkData_Trans(Operator):
+        """
+        Move multi selection across walk_datas.
+        Gets called in BM_OT_UIList_Walk_Handler based on walk_data identifier.
+        Exists only for the sake of a Move Undo event.
+        """
 
-Example:
+        ...
+    ```
 
-```python
-def _generic_ticker_Update(self: PropertyGroup, context: Context,
-                           walk_data: str, double_click_ot_idname="") -> None:
-    """
-    Generic ticker property update.
+- Planning
 
-    Parameters:
-        self - pointer to prop's PropertyGroup itself.
+    Example:
 
-        context - current data context.
+    ```python
+    # First step
+    # Second step
+    # Third step
+    ```
 
-        walk_data - attribute name of Collection Property that
-                has uilist walk features.
+- Tagging
 
-        double_click_ot - bl_idname of an operator that will be called on
-                double click event caught.
-    """
+    Example:
 
-    bakemaster = context.scene.bakemaster
-    bakemaster.walk_data_name = walk_data
-    bakemaster.is_drag_lowpoly_data = False
+    ```python
+    # TODO: Draw popover panel.
+    ```
 
-    walk_data_getter = getattr(bakemaster, "get_active_%s" % walk_data)
-    data, containers, attr = walk_data_getter()
-    if data is None:
-        bakemaster.log("pux0000", walk_data, self)
-        return
+- Explain what variables are for
 
-    ...
-```
+    Example:
 
-```python
-class BM_OT_Global_WalkData_AddDropped(Operator):
-    """
-    Add dropped objects to given walk_data data.
+        ```python
+        # Wrong commenting
 
-    Internal, not used in the UI, invoked from drop_name_Update.
-    """
-
-    bl_idname = 'bakemaster.global_walkdata_adddropped'
-    bl_label = "New item..."
-    bl_description = "Add dropped objects into as new items"
-    bl_options = {'INTERNAL', 'UNDO'}
+        some_v = value #here i explain what it is
+        some_v2 = diff_value #that's gonna take so much time to explain what it does
 
 
-    def remove(self, bakemaster: PropertyGroup):
-        bakemaster.wh_remove(self.data, self.walk_data, self.index)
+        # Correct commenting
 
-    ...
-```
+
+        some_v = value  # here i explain what it is
+
+        # Try to make it simple.
+        informative_name = diff_value
+        ```
+
+> **Note**: If line is longer than 79 characters because of a comment or long string, add `# noqa: E501` to the end of it.
+
 
 #### Naming conventions
 
@@ -346,6 +350,143 @@ def _generic_drag_empty_ticker_Update(self: PropertyGroup, context: Context,
     bakemaster.is_drag_lowpoly_data = False
     ...
 ```
+
+#### Empty lines
+
+In addition to `pep8`, you can insert an empty line in the following cases. The term _header_ is used to describe the text starting from `def` up to `:` when declaring a function):
+
+- After function declaration with a long header **if** you think it'll be easier to read through arguments with an empty line added
+
+    Example:
+
+    ```python
+    def get_group_icon(self, bakemaster: PropertyGroup, all=False
+                       ) -> typing.Union[int, list]:
+
+        if self.group_type == 'DECORATOR':
+            return bakemaster.get_icon('COLLECTION')
+
+        color_tags = ["", "_color_01", "_color_02", "_color_03", "_color_04",
+                      "_color_05", "_color_06", "_color_07", "_color_08"]
+
+        icon_raw = r'COLLECTION%s'
+    ```
+
+    ```python
+    def _bakehistory_add_entry(bakemaster):
+        new_item = bakemaster.bakehistory.add()
+        new_item.index = bakemaster.bakehistory_len
+        new_item.name += " %d" % (new_item.index + 1)
+        bakemaster.bakehistory_len += 1
+        bakemaster.bakehistory_reserved_index = new_item.index
+    ```
+
+- After class declaration expression **if** you think it'll be easier to read through it
+
+    Example:
+
+    ```python
+    class BM_PT_Preferences(AddonPreferences):
+
+        # dev: __package__ is 'BakeMaster.addon'
+        # end user: __package__ is 'BakeMaster'
+        bl_idname = __package__.split(".")[0]
+
+        # Addon Preferences Props
+
+        use_show_help: BoolProperty(
+            name="Show Help buttons",
+            description="Allow help buttons in panels' headers",
+            default=True)
+
+        ...
+    ```
+
+- If you write a description with docstrings, add an empty line just after it
+
+    Example:
+
+    ```python
+    class BM_OT_Global_WalkData_AddDropped(Operator):
+        """
+        Add dropped objects to given walk_data data.
+
+        Internal, not used in the UI, invoked from drop_name_Update.
+        """
+
+        bl_idname = 'bakemaster.global_walkdata_adddropped'
+        bl_label = "New item..."
+        bl_description = "Add dropped objects into as new items"
+        bl_options = {'INTERNAL', 'UNDO'}
+
+
+        def remove(self, bakemaster: PropertyGroup):
+            bakemaster.wh_remove(self.data, self.walk_data, self.index)
+
+        ...
+    ```
+
+    ```python
+    def get_is_decal(self) -> bool:
+        """
+        Return True if self is decal.
+        """
+
+        return self.lowpoly_index != -1 and self.is_decal
+    ```
+
+- For Property Definitions, you don't have to add an empty line between one-line properties related to one specific logic. For Property Definitions that cover multiple lines, add an empty line
+
+    Example:
+
+    ```python
+    class Container(BM_PropertyGroup_Helper):
+        name: StringProperty(
+            default="Object")
+
+        index: IntProperty(default=-1)
+        bakejob_index: IntProperty(default=-1)
+
+        is_group: BoolProperty(default=False)
+        parent_group_index: IntProperty(default=-1)
+        ui_indent_level: IntProperty(default=0)
+
+        is_expanded: BoolProperty(
+            name="Expand/Collapse",
+            default=True)
+
+        group_color_tag: StringProperty(default="")
+
+        group_old_type: StringProperty(default="DICTATOR")
+        group_type: EnumProperty(
+            name="Group Type",
+            description="Choose Group Type. Hover over values to see descriptions",
+            default='DICTATOR',
+            items=[('DICTATOR', "Dictator", "Group will dictate all settigs to its childs"),  # noqa: E501
+                   ('DECORATOR', "Decorator", "Make the Group for beauty only, it won't dictate any settings")],  # noqa: E501
+            update=prop_updates.Container_group_type_Update)
+
+        lowpoly_index: IntProperty(default=-1)
+        lowpoly_name: StringProperty(default="")
+        is_cage: BoolProperty(default=False)
+        is_decal: BoolProperty(default=False)
+
+        # UI Props
+        group_is_texset: BoolProperty(
+            name="Texture Set",
+            description="Make this Group a Texture Set where all child objects will share the same image for each map",  # noqa: E501
+            default=False,
+            update=prop_updates.Container_group_is_texset_Update)
+
+        use_bake: BoolProperty(
+            name="Include/Exclude Item from bake",
+            default=True,
+            update=prop_updates.Container_use_bake_Update)
+
+        ###
+
+        ...
+    ```
 
 #### License block
 
