@@ -9,10 +9,9 @@ Needless to say that working as one community for the project's perfectness is t
 ## List of Contents
 
 - [Useful Links](#useful-links)
-- [Installing Files](#installing-files)
-- [Editing Documentation](#editing-documentation)
-- [Editing Script Files](#editing-script-files)
-- [Contribute](#contribute)
+- [Creating a fork](#creating-a-fork)
+- [Keep your fork up to date](#keep-your-fork-up-to-date)
+- [Write some code](#write-some-code)
 - [Contacts](#contacts)
 
 ---
