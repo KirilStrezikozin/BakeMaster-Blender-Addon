@@ -334,6 +334,20 @@ class Global(BM_PropertyGroup_Helper):
         ...
 ```
 
+When declaring a Property Update method, name it like so: `PropertGroupName_PropertyName_Update` or `PropertyName_Update`. `Update` word should start with capital `U`
+
+```python
+def Container_use_bake_Update(self, context):
+    _generic_property_in_multi_selection_Update(
+        self, context, "containers", "use_bake")
+```
+
+```python
+def config_instruction_Update(self, _):
+    default = "Config: save/load all settings & setup:"
+    self.config_instruction = default
+```
+
 #### Type Hints
 
 Consider adding type hints only for function parameters and return values, don't add them for variables or class attributes.
@@ -487,6 +501,60 @@ In addition to `pep8`, you can insert an empty line in the following cases. The 
 
         ...
     ```
+
+#### Methods declaration order
+
+There's only one preference in that field: when declaring a `bpy.types.Operator` class, declare your methods in the following order:
+
+1. Property updates (if any, write them before defining class properties)
+2. Polls (if any)
+3. Custom methods
+4. `def execute(...)`
+5. `def invoke(...)`
+6. UI methods (if any, for `draw(...)` method)
+7. `def draw(...)`
+
+Example:
+
+```python
+# Correct
+
+
+class BM_OT_BakeHistory_Remove(Operator):
+    bl_idname = 'bakemaster.bakehistory_remove'
+    bl_label = "Remove"
+    bl_description = "Remove this bake from the history (choose whether to leave its baked content)"  # noqa: E501
+    bl_options = {'INTERNAL'}
+
+    def use_delete_Update(self, context: Context) -> None:
+        ...
+
+    index: IntProperty(default=-1)
+
+    use_delete: BoolProperty(
+        ... 
+        update=use_delete_Update)
+
+    use_delete_blender_only: BoolProperty(
+        ...)
+
+    def remove_poll(self, context):
+        ...
+
+    def execute(self, context):
+        ...
+        return {'FINISHED'}
+
+    def invoke(self, context, _):
+        if not self.remove_poll(context):
+            return {'CANCELLED'}
+
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=300)
+
+    def draw(self, _):
+        ...
+```
 
 #### License block
 
