@@ -38,9 +38,7 @@ from bpy.types import Object, PropertyGroup
 
 
 class Test_ba_populate(unittest.TestCase):
-    """
-    Default BakeMaster population to test Add, Remove, and Trash OTs.
-    """
+    """Populate BakeMaster to test Add, Remove, and Trash OTs."""
 
     obs = []
 
