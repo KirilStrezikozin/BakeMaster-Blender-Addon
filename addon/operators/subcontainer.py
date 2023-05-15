@@ -40,9 +40,6 @@ class BM_OT_Subcontainer_Trash(Operator):
     bakejob_index: IntProperty(default=-1)
     container_index: IntProperty(default=-1)
 
-    def invoke(self, context, _):
-        return self.execute(context)
-
     def execute(self, context):
         bakemaster = context.scene.bakemaster
 
@@ -50,6 +47,9 @@ class BM_OT_Subcontainer_Trash(Operator):
         container = bakemaster.get_container(bakejob, self.container_index)
         bakemaster.wh_trash(container, "subcontainers")
         return {'FINISHED'}
+
+    def invoke(self, context, _):
+        return self.execute(context)
 
 
 class BM_OT_Subcontainer_Toggle_Expand(Operator):

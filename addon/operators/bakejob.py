@@ -66,7 +66,7 @@ class BM_OT_BakeJob_Add(Operator):
 class BM_OT_BakeJob_Remove(Operator):
     bl_idname = 'bakemaster.bakejob_remove'
     bl_label = "Remove"
-    bl_description = "Remove selected BakeJobs from the list on the left"  # noqa: E501
+    bl_description = "Remove selected BakeJobs from the list on the left"
     bl_options = {'INTERNAL', 'UNDO'}
 
     index: IntProperty(default=-1)

@@ -96,7 +96,7 @@ class BM_OT_Container_Add(Operator):
 class BM_OT_Container_Remove(Operator):
     bl_idname = 'bakemaster.container_remove'
     bl_label = "Remove"
-    bl_description = "Remove selected Items from the list on the left"  # noqa: E501
+    bl_description = "Remove selected Items from the list on the left"
     bl_options = {'INTERNAL', 'UNDO'}
 
     bakejob_index: IntProperty(default=-1)
@@ -125,9 +125,6 @@ class BM_OT_Container_Trash(Operator):
 
     bakejob_index: IntProperty(default=-1)
 
-    def invoke(self, context, _):
-        return self.execute(context)
-
     def execute(self, context):
         bakemaster = context.scene.bakemaster
 
@@ -135,6 +132,9 @@ class BM_OT_Container_Trash(Operator):
             bakemaster.get_bakejob(bakemaster, self.bakejob_index),
             "containers")
         return {'FINISHED'}
+
+    def invoke(self, context, _):
+        return self.execute(context)
 
 
 class BM_OT_Container_Rename(Operator):
