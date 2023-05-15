@@ -269,21 +269,21 @@ You can and should use comments to:
 
     Example:
 
-        ```python
-        # Wrong commenting
+    ```python
+    # Wrong commenting
 
-        some_v = value #here i explain what it is
-        some_v2 = diff_value #that's gonna take so much time to explain what it does
-
-
-        # Correct commenting
+    some_v = value #here i explain what it is
+    some_v2 = diff_value #that's gonna take so much time to explain what it does
 
 
-        some_v = value  # here i explain what it is
+    # Correct commenting
 
-        # Try to make it simple.
-        informative_name = diff_value
-        ```
+
+    some_v = value  # here i explain what it is
+
+    # Try to make it simple.
+    informative_name = diff_value
+    ```
 
 > **Note**: If line is longer than 79 characters because of a comment or long string, add `# noqa: E501` to the end of it.
 
