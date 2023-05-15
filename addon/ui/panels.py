@@ -58,6 +58,7 @@ from .helpers import (
 
 
 class BM_PT_Preferences(AddonPreferences):
+
     # dev: __package__ is 'BakeMaster.addon'
     # end user: __package__ is 'BakeMaster'
     bl_idname = __package__.split(".")[0]
