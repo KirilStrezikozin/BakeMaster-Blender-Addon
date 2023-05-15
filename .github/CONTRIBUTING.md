@@ -314,7 +314,7 @@ def _check_walk_data_safety(data_name: str) -> None:
     ...
 ```
 
-But private methods and variables names in classes should be lead by two `_` underscores though.
+But private methods and variables names in classes should be led by two `_` underscores though.
 
 ```python
 # Correct
