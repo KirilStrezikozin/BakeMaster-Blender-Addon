@@ -893,6 +893,7 @@ class Global(BM_PropertyGroup_Helper):
         name="Short Bake Instruction",
         description="Press `ESC` key to cancel baking current map iteration.\n\nOpen Blender Console to see more information about the baking process and, if you face an unexpected Blender freeze, be able to press `Ctrl + C` (Windows), `Cmd + C` (Mac), `Super + C` (Linux) to abort the bake. Enable Prompt before freeze for more control",  # noqa: E501
         default="Short Bake Instruction",
+        update=prop_updates.Global_short_bake_instruction_Update,
         options={'SKIP_SAVE'})
 
     # BakeHistory Props
@@ -918,8 +919,9 @@ class Global(BM_PropertyGroup_Helper):
 
     presets_filepath: StringProperty(
         name="Presets Filepath",
-        description="Choose a folder on the disk containing Presets for BakeMaster (leave empty for default path). // is relative to this .blend file",  # noqa: E501
-        default="")
+        description="Choose a folder on the disk containing Presets for BakeMaster (leave empty for default path).\n// is relative to this .blend file",  # noqa: E501
+        default="",
+        subtype='DIR_PATH')
 
     # Preview Collections - Custom Icons Props
 

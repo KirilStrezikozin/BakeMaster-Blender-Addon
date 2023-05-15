@@ -677,6 +677,12 @@ def Subcontainer_group_type_Update(self, context):
 
 # UI Props' Updates
 
+def Global_short_bake_instruction_Update(self, _):
+    default = "Short Bake Instruction"
+    if self.short_bake_instruction != default:
+        self.short_bake_instruction = default
+
+
 def BakeJob_use_bake_Update(self, context):
     _generic_property_in_multi_selection_Update(
         self, context, "bakejobs", "use_bake")

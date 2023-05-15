@@ -68,9 +68,10 @@ class BM_OT_Helper_Free_Icons(Operator):
 
 
 class BM_OT_Helper_Help(Operator):
+    """Press to visit the according BakeMaster's online documentation page"""
+
     bl_idname = 'bakemaster.helper_help'
     bl_label = "Help"
-    bl_description = "Press to visit the according BakeMaster's online documentation page"  # noqa: E501
     bl_options = {'INTERNAL'}
 
     page_id: StringProperty()
@@ -80,11 +81,12 @@ class BM_OT_Helper_Help(Operator):
         base = "https://bakemaster-blender-addon.readthedocs.io/en/"
         urls = {
             '': r'%s/',
-            'bakejobs': r'%s/',
-            'objects': r'%s/',
-            'maps': r'%s/',
-            'bake': r'%s/',
-            'bakehistory': r'%s/',
+            'BM_PT_Setup': r'%s/',
+            'BM_PT_BakeJobs': r'%s/',
+            'BM_PT_Containers': r'%s/',
+            'BM_PT_Subcontainers': r'%s/',
+            'BM_PT_Bake': r'%s/',
+            'BM_PT_BakeHistory': r'%s/',
         }
 
         url = urls.get(self.page_id, r'%s/')
@@ -98,6 +100,18 @@ class BM_OT_Helper_Help(Operator):
     def invoke(self, context: Context, _: Event) -> set:
         self.addon_version = context.scene.bakemaster.get_addon_version()
         return self.execute(context)
+
+
+class BM_OT_Helper_Help_Config(BM_OT_Helper_Help):
+    """
+    Use config file as a super preset to save all settings, setup, presets,
+    and tables items (e.g Bake Jobs, Objects, Maps...). You can load
+    BakeMaster Config in another .blend file, and it will automatically
+    link objects.
+    """
+
+    bl_idname = 'bakemaster.helper_help_config'
+    bl_label = "Config: save/load all settings & setup"
 
 
 class BM_OT_Helper_FileChooseDialog(Operator, ImportHelper):
@@ -127,7 +141,8 @@ class BM_OT_Helper_FileChooseDialog(Operator, ImportHelper):
         if not self.config_lookup:
             return self.process_exit()
 
-        bpy_ops.bakemaster.config('EXEC_DEFAULT', action=self.config_action)
+        bpy_ops.bakemaster.bake_config(
+            'EXEC_DEFAULT', action=self.config_action)
         return {'FINISHED'}
 
 

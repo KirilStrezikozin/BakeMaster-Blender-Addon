@@ -31,13 +31,15 @@ import typing
 
 from datetime import datetime
 
-from bpy.types import Operator
+from bpy.types import Context, Event, Operator
+
 from bpy.props import (
     IntProperty,
     EnumProperty,
     BoolProperty,
-    StringProperty,
 )
+
+from bpy_extras.io_utils import ImportHelper
 
 
 # class F():
@@ -135,92 +137,7 @@ class BM_OT_UI_Bake_Generic(Operator):
         return True
 
 
-class BM_OT_Bake_Setup(Operator):
-    bl_idname = 'bakemaster.bake_setup'
-    bl_label = "Configure the Setup"
-    bl_description = "Choose a filepath for presets, manage the config (load/save all settings into a file)"  # noqa: E501
-    bl_options = {'INTERNAL'}
-
-    def config_instruction_update(self, _):
-        default = "Config: save/load all settings & setup:"
-        self.config_instruction = default
-
-    config_instruction: StringProperty(
-        name="What is Config?",
-        description="Use config file as a super preset to save all settings, setup, presets, and tables items (e.g Bake Jobs, Objects, Maps...). BakeMaster Config file can be loaded in another .blend file, and it will still remember where to pick Objects from to bake",  # noqa: E501
-        default="Config: save/load all settings & setup:",
-        update=config_instruction_update)
-
-    def execute(self, _):
-        return {'FINISHED'}
-
-    def invoke(self, context, _):
-        wm = context.window_manager
-        return wm.invoke_props_dialog(self, width=300)
-
-    def draw(self, context):
-        bakemaster = context.scene.bakemaster
-        layout = self.layout
-
-        layout.use_property_split = False
-        layout.use_property_decorate = False
-
-        if not bakemaster.config_is_attached:
-            row = layout.row(align=True)
-            row.prop(bakemaster, 'presets_filepath', text="Presets Dir")
-            p_fc = row.operator('bakemaster.helper_filechoosedialog', text="",
-                                icon='FILEBROWSER')
-            p_fc.filepath = bakemaster.presets_filepath
-            p_fc.prop_name = "presets_filepath"
-            p_fc.message = "Filepath for Presets set successfully"
-
-            layout.separator(factor=1.0)
-
-        col = layout.column(align=True)
-        row = col.row()
-        row.prop(self, "config_instruction", text="")
-        row.enabled = False
-        c_load_text = "Load"
-
-        if bakemaster.config_is_attached:
-            cf_row = col.row(align=True)
-            cf_row.prop(bakemaster, 'config_filepath')
-            c_fc = cf_row.operator('bakemaster.helper_filechoosedialog',
-                                   text="", icon='FILEBROWSER')
-            c_fc.filepath = bakemaster.config_filepath
-            c_fc.prop_name = "config_filepath"
-            c_fc.message = "Filepath for Config set successfully"
-            cf_row.enabled = False
-
-            c_load_text = "Reload"
-
-        row = col.row(align=True)
-
-        if bakemaster.config_is_attached:
-            row.operator('bakemaster.bake_config', text="Save").action = 'SAVE'
-        else:
-            c_save = row.operator('bakemaster.helper_filechoosedialog',
-                                  text="Save")
-            c_save.filepath = bakemaster.config_filepath
-            c_save.prop_name = "config_filepath"
-            c_save.config_lookup = True
-            c_save.config_action = 'SAVE'
-            c_save.message = "Config saved successfully"
-
-        c_load = row.operator('bakemaster.helper_filechoosedialog',
-                              text=c_load_text)
-        c_load.filepath = bakemaster.config_filepath
-        c_load.prop_name = "config_filepath"
-        c_load.config_lookup = True
-        c_load.config_action = 'LOAD'
-        c_load.message = "Config loaded successfully"
-
-        if bakemaster.config_is_attached:
-            row.operator('bakemaster.bake_config', text="",
-                         icon='UNLINKED').action = 'DETACH'
-
-
-class BM_OT_Bake_Config(Operator):
+class BM_OT_Bake_Config(Operator, ImportHelper):
     bl_idname = 'bakemaster.bake_config'
     bl_label = "Config"
     bl_description = "Load/Save/Detach Bake Configuration data. You can use config as a super preset that holds all settings and tables' items of the current BakeMaster session"  # noqa: E501
@@ -235,13 +152,13 @@ class BM_OT_Bake_Config(Operator):
                ('DETACH', "Detach", "")],
         options={'SKIP_SAVE'})
 
-    filepath: StringProperty(
-        name="Filepath",
-        description="Where to Save/Load a config from",
-        default="",
-        subtype='DIR_PATH')
+    # filepath: StringProperty(
+    #     name="Filepath",
+    #     description="Where to Save/Load a config from",
+    #     default="",
+    #     subtype='DIR_PATH')
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
 
         bakemaster.config_is_attached = self.action != 'DETACH'
@@ -251,8 +168,11 @@ class BM_OT_Bake_Config(Operator):
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
-    def invoke(self, context, _):
-        return self.execute(context)
+    def invoke(self, context: Context, event: Event) -> set:
+        if self.action == 'DETACH':
+            return self.execute(context)
+
+        return super().invoke(context, event)
 
 
 class BM_OT_Bake_One(BM_OT_UI_Bake_Generic):

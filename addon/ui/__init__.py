@@ -38,6 +38,7 @@ classes = (
     uilists.BM_UL_BakeHistory,
 
     panels.BM_PT_Preferences,
+    panels.BM_PT_Setup,
     panels.BM_PT_BakeJobs,
     panels.BM_PT_Containers,
     panels.BM_PT_Bake,

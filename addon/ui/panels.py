@@ -36,6 +36,8 @@ __all__ = [
         "BM_PT_BakeHistory",
 ]
 
+from os import path as os_path
+
 from bpy.types import (
     Context,
     AddonPreferences,
@@ -51,6 +53,7 @@ from .helpers import (
     get_uilist_rows as _get_uilist_rows,
     BM_UI_ms_draw,
     BM_PT_Helper,
+    Panel,
 )
 
 
@@ -157,6 +160,59 @@ class BM_PT_Preferences(AddonPreferences):
             col.prop(self, "developer_use_console_debug")
 
 
+class BM_PT_Setup(Panel):
+    """Choose a filepath for Presets, manage Config (load/save all settings into a file)"""  # noqa: E501
+
+    bl_label = "Configure Setup"
+    bl_idname = 'BM_PT_Setup'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'HEADER'
+
+    def draw(self, context: Context) -> None:
+        bakemaster = context.scene.bakemaster
+        layout = self.layout
+
+        layout.use_property_split = False
+        layout.use_property_decorate = False
+
+        col = layout.column()
+        # col.label(text="Setup")
+
+        # col.separator(factor=1.0)
+        subcol = col.column(align=True)
+        subcol.label(text="Presets")
+        subcol.prop(bakemaster, 'presets_filepath', text="Dir")
+
+        col.separator(factor=3.0)
+
+        subcol = col.column(align=True)
+
+        row = subcol.row(align=True)
+        row.label(text="Config")
+        row.operator('bakemaster.helper_help_config', text="",
+                     icon='HELP').page_id = self.bl_idname
+
+        if bakemaster.config_is_attached:
+            row = subcol.row(align=True)
+            box = row.box()
+            box.scale_y = 0.4
+            box.label(text=os_path.basename(bakemaster.config_filepath))
+
+            load_text = "Reload"
+        else:
+            load_text = "Load"
+
+        subcol.separator(factor=0.8)
+
+        row = subcol.row(align=True)
+        row.operator('bakemaster.bake_config', text="Save").action = 'SAVE'
+        row.operator('bakemaster.bake_config', text=load_text).action = 'LOAD'
+
+        if bakemaster.config_is_attached:
+            row.operator('bakemaster.bake_config', text="",
+                         icon='UNLINKED').action = 'DETACH'
+
+
 class BM_PT_BakeJobs(BM_PT_Helper, BM_UI_ms_draw):
     bl_label = "Bake Jobs"
     bl_idname = 'BM_PT_BakeJobs'
@@ -205,7 +261,7 @@ class BM_PT_BakeJobs(BM_PT_Helper, BM_UI_ms_draw):
             col.operator('bakemaster.bakejob_trash', text="", icon='TRASH')
 
         col.separator(factor=1.0)
-        col.operator('bakemaster.bake_setup', text="", icon='PREFERENCES')
+        col.popover(panel='BM_PT_Setup', text="", icon='PREFERENCES')
 
         if ml_rows == 0:
             return
