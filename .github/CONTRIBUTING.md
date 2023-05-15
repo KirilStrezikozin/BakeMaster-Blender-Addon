@@ -264,6 +264,26 @@ def _generic_ticker_Update(self: PropertyGroup, context: Context,
     ...
 ```
 
+```python
+class BM_OT_Global_WalkData_AddDropped(Operator):
+    """
+    Add dropped objects to given walk_data data.
+
+    Internal, not used in the UI, invoked from drop_name_Update.
+    """
+
+    bl_idname = 'bakemaster.global_walkdata_adddropped'
+    bl_label = "New item..."
+    bl_description = "Add dropped objects into as new items"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+
+    def remove(self, bakemaster: PropertyGroup):
+        bakemaster.wh_remove(self.data, self.walk_data, self.index)
+
+    ...
+```
+
 #### Naming conventions
 
 For functions and variables used in a submodule only, add one leading `_` underscore. This specifies their pseudo-privacy.
@@ -294,7 +314,7 @@ def _check_walk_data_safety(data_name: str) -> None:
     ...
 ```
 
-But private methods and variables names in classes should be lead by two `_` underscores.
+But private methods and variables names in classes should be lead by two `_` underscores though.
 
 ```python
 # Correct
