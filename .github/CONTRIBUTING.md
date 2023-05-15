@@ -12,6 +12,7 @@ Needless to say that working as one community for the project's perfectness is t
 - [Creating a fork](#creating-a-fork)
 - [Keep your fork up to date](#keep-your-fork-up-to-date)
 - [Write some code](#write-some-code)
+- [Code Style guide](#code-style-guide)
 - [Contacts](#contacts)
 
 ---
@@ -231,7 +232,7 @@ You can and should use comments to:
         ...
     ```
 
-- Describe what class if for (for example, for an Operator that's not used in the UI)
+- Describe what class is for (for example, for an Operator that's not used in the UI)
 
     Example:
 
