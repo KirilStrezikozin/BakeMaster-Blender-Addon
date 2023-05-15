@@ -27,181 +27,99 @@
 #
 # ##### END LICENSE BLOCK #####
 
-from os import (
-    path as os_path,
-    listdir as os_listdir,
-)
 from bpy import ops as bpy_ops
-import bpy.utils.previews as bpy_utils_previews
-from . import get as bm_get
-
-_ui_pcoll_open = {}
-
-
-def load_preview_collections():
-    """
-    Load custom icons into preview_collections.
-    """
-
-    icons_dir = os_path.join(os_path.dirname(os_path.dirname(__file__)),
-                             "icons")
-
-    if not os_path.exists(icons_dir):
-        print("BakeMaster: Internal warning: custom icons weren't found")
-        return None
-
-    # To avoid ResourceWarning on loading previously initialized instance
-    pcoll = _ui_pcoll_open.get("main")
-    if pcoll is not None:
-        return pcoll
-
-    pcoll = bpy_utils_previews.new()
-    _ui_pcoll_open["main"] = pcoll
-
-    for filename in os_listdir(icons_dir):
-        filepath = os_path.join(icons_dir, filename)
-        pcoll.load(filename, filepath, 'IMAGE')
-
-    return pcoll
+from bpy.types import (
+    Context,
+    PropertyGroup,
+    bpy_prop_collection as Collection,
+)
 
 
-def copy(item_from, data_to, to_index=-1, exclude={}):
-    """
-    Copy item_from data-block to item of to_index in iterable data_to.
-    If to_index is not given, a new data-block will be instanced.
+def _drag_empty_eval(self: PropertyGroup, data: PropertyGroup,
+                     containers: Collection, data_name: str) -> None:
 
-    Provide exclude{} dictionary with names of attrs to exclude.
-    Example (use when copying settings from parent group,
-    parent_group_index and ui_indent_level excluded by default):
-        {
-            "name": True,
-            "index": True,
-            "bakejob_index": True,
-            "is_group": True,
-            "is_expanded": True,
-            "group_type": True,
-            "group_is_texset": True,
-            "group_color_tag": True,
-            "lowpoly_index": True,
-            "lowpoly_name": True,
-            "is_cage": True,
-            "is_decal": True
-        }
-    Default exlude{} is:
-        {
-            "__annotations__": True,
-            "__doc__": True,
-            "__module__": True,
-            "bl_rna": True,
-            "id_data": True,
-            "rna_type": True,
-            "drop_name": True,
-            "drop_name_old": True,
-            "parent_group_index": True,
-            "ui_indent_level": True,
-            "has_drag_prompt": True,
-            "has_drop_prompt": True,
-            "is_drag_empty": True,
-            "is_drag_placeholder": True,
-            "is_drag_empty_placeholder": True,
-            "is_lowpoly_placeholder": True,
-            "ticker": True,
-            "drag_empty_ticker": True,
-            "lowpoly_ticker": True,
-            "is_selected": True
-        }
+    if self.get_is_last(data, data_name):
+        self.is_drag_empty = True
+    elif self.get_next_item(containers).ui_indent_level < self.ui_indent_level:
+        self.is_drag_empty = True
 
-    Used with containers, subcontainers.
-    """
 
-    exclude_attrs = {
-        "__annotations__": True,
-        "__doc__": True,
-        "__module__": True,
-        "bl_rna": True,
-        "id_data": True,
-        "rna_type": True,
-        "drop_name": True,
-        "drop_name_old": True,
-        "parent_group_index": True,
-        "ui_indent_level": True,
-        "has_drag_prompt": True,
-        "has_drop_prompt": True,
-        "is_drag_empty": True,
-        "is_drag_placeholder": True,
-        "is_drag_empty_placeholder": True,
-        "is_lowpoly_placeholder": True,
-        "ticker": True,
-        "drag_empty_ticker": True,
-        "lowpoly_ticker": True,
-        "is_selected": True
-    }
+def _is_drag_group_into_itself(
+        self: PropertyGroup, bakemaster: PropertyGroup, data: PropertyGroup,
+        containers: Collection, data_name: str) -> bool:
+    """Skip dragging group inside itself."""
 
-    data_attrs = {
-        "bakejobs": True,
-        "containers": True,
-        "subcontainers": True
-    }
+    if data_name != bakemaster.drag_data_from:
+        return False
 
-    if to_index != -1:
-        item_to = data_to[to_index]
-    else:
-        item_to = data_to.add()
+    # If no multi selection, self = self, check drag_from_index,
+    # otherwise self = first selected item, check first selected item index.
+    has_ms = bakemaster.wh_has_ms(data, data_name)
 
-    for attr in dir(item_from):
-        if exclude_attrs.get(attr, False) or exclude.get(attr, False):
-            continue
-
-        if not data_attrs.get(attr, False):
-            try:
-                setattr(item_to, attr, getattr(item_from, attr))
-            except (AttributeError, IndexError, TypeError,
-                    ValueError) as error:
-                print(f"BakeMaster Internal Warning at {copy}: {error} while setting {attr} attribute for {item_to}")  # noqa: E501
-
-            continue
-
-        # for containers only (attr == subcontainers)
-        # still, some safety adressed
-        try:
-            trash_ot = getattr(bpy_ops.bakemaster, '%s_trash' % attr)
-        except AttributeError:
-            continue
-        kwargs = {}
-        data_attr_parent = bm_get.walk_data_parent(attr)
-        if data_attr_parent != "":
-            kwargs["%s_index" % data_attr_parent[:-1]] = item_from.index
-            kwargs["bakejob_index"] = item_from.bakejob_index
-        trash_ot('INVOKE_DEFAULT', **kwargs)
-
-        # recursive copy to copy subcontainers from container
-        containers = getattr(item_from, attr)
+    abort_if_not_group = False
+    if has_ms:
         for container in containers:
-            _ = copy(container, containers)
+            if container.has_drop_prompt or not container.is_selected:
+                continue
+            elif not container.is_group:
+                continue
+            drag_from_index = container.index
+            break
+        else:
+            drag_from_index = bakemaster.drag_from_index
+            abort_if_not_group = True
+    else:
+        drag_from_index = bakemaster.drag_from_index
+        abort_if_not_group = True
 
-    return item_to
+    if abort_if_not_group and not containers[drag_from_index].is_group:
+        return False
+
+    if not all([self.index > drag_from_index,
+                data_name == bakemaster.drag_data_from]):
+        return False
+
+    m_gi, m_gl = data.resolve_mutual_group(
+        containers, self.index, self.ui_indent_level,
+        drag_from_index, containers[drag_from_index].ui_indent_level)
+
+    if m_gi == -1:
+        return False
+
+    if all([any([m_gi == drag_from_index,
+                 m_gi == containers[drag_from_index].parent_group_index]),
+            any([m_gl >= containers[drag_from_index].ui_indent_level,
+                 m_gl >= containers[drag_from_index].ui_indent_level - 1])
+            ]):
+        return True
+    return False
 
 
-def Generic_ticker_Update(self, context: not None, walk_data: str,
-                          double_click_ot_idname=""):
+def _generic_ticker_Update(self: PropertyGroup, context: Context,
+                           walk_data: str, double_click_ot_idname="") -> None:
     """
     Generic ticker property update.
 
-    walk_data is an attribute name of Collection Property that has uilist walk
-    features.
+    Parameters:
+        self - pointer to prop's PropertyGroup itself.
 
-    double_click_ot is a bl_idname of an operator that will be called on
-    double click event caught.
+        context - current data context.
+
+        walk_data - attribute name of Collection Property that
+                has uilist walk features.
+
+        double_click_ot - bl_idname of an operator that will be called on
+                double click event caught.
     """
 
     bakemaster = context.scene.bakemaster
     bakemaster.walk_data_name = walk_data
     bakemaster.is_drag_lowpoly_data = False
 
-    walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
-    data, containers, attr = walk_data_getter(bakemaster)
+    walk_data_getter = getattr(bakemaster, "get_active_%s" % walk_data)
+    data, containers, attr = walk_data_getter()
     if data is None:
-        print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")
+        bakemaster.log("pux0000", walk_data, self)
         return
 
     if all([bakemaster.is_double_click,
@@ -221,7 +139,7 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
     if all([bakemaster.allow_multi_select,
             any([not bakemaster.allow_drag_trans,
                  bakemaster.multi_select_event != ''])]):
-        Generic_multi_select(self, bakemaster, walk_data)
+        _generic_multi_select(self, bakemaster, walk_data)
         return
 
     if not bakemaster.allow_drag:
@@ -239,7 +157,7 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
         # Define bakemaster.allow_multi_selection_drag
         # (if one-block selection)
         setattr(bakemaster, "allow_multi_selection_drag",
-                bm_get.is_oneblock_multi_selection(
+                bakemaster.wh_is_oneblock_ms(
                     bakemaster, containers, attr))
         return
 
@@ -248,7 +166,8 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
                  walk_data != bakemaster.drag_data_from]),
             all([
                 bakemaster.allow_drag_trans,
-                bm_get.walk_data_child(walk_data) != bakemaster.drag_data_from,
+                bakemaster.get_wh_childs_name(
+                    walk_data) != bakemaster.drag_data_from,
                 not bakemaster.allow_multi_selection_drag,
                 ])]):
         return
@@ -262,8 +181,8 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
     #         self.index == getattr(data, "%s_active_index" % attr)]):
     #     return
 
-    if is_drag_group_into_itself(self, bakemaster, data, containers,
-                                 walk_data):
+    if _is_drag_group_into_itself(self, bakemaster, data, containers,
+                                  walk_data):
         return
 
     drag_to_index = bakemaster.get_drag_to_index(walk_data)
@@ -275,7 +194,7 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
     self.is_drag_placeholder = True
     self.is_drag_empty_placeholder = False
     self.is_lowpoly_placeholder = False
-    drag_empty_eval(self, data, containers, walk_data)
+    _drag_empty_eval(self, data, containers, walk_data)
 
     bakemaster.set_drag_to_index(walk_data, self.index)
     bakemaster.drag_data_to = walk_data
@@ -285,84 +204,32 @@ def Generic_ticker_Update(self, context: not None, walk_data: str,
         self.ticker = not ticker_old
 
 
-def is_drag_group_into_itself(self, bakemaster, data, containers, walk_data):
-    # Skip dragging group inside itself
-
-    if walk_data != bakemaster.drag_data_from:
-        return False
-
-    # If no multi selection, self = self, check drag_from_index,
-    # otherwise self = first selected item, check first selected item index.
-    has_selection, _ = bm_get.walk_data_multi_selection_data(
-        bakemaster, walk_data)
-
-    abort_if_not_group = False
-    if has_selection:
-        for container in containers:
-            if container.has_drop_prompt or not container.is_selected:
-                continue
-            elif not container.is_group:
-                continue
-            drag_from_index = container.index
-            break
-        else:
-            drag_from_index = bakemaster.drag_from_index
-            abort_if_not_group = True
-    else:
-        drag_from_index = bakemaster.drag_from_index
-        abort_if_not_group = True
-
-    if abort_if_not_group and not containers[drag_from_index].is_group:
-        return
-
-    if not all([self.index > drag_from_index,
-                walk_data == bakemaster.drag_data_from]):
-        return False
-
-    m_gi, m_gl = data.resolve_mutual_group(
-        containers, self.index, self.ui_indent_level,
-        drag_from_index, containers[drag_from_index].ui_indent_level)
-
-    if m_gi == -1:
-        return False
-
-    if all([any([m_gi == drag_from_index,
-                 m_gi == containers[drag_from_index].parent_group_index]),
-            any([m_gl >= containers[drag_from_index].ui_indent_level,
-                 m_gl >= containers[drag_from_index].ui_indent_level - 1])
-            ]):
-        return True
-    return False
-
-
-def drag_empty_eval(self, data, containers, walk_data):
-    if getattr(data, "%s_len" % walk_data) - 1 == self.index:
-        self.is_drag_empty = True
-    elif containers[
-            self.index + 1].ui_indent_level < self.ui_indent_level:
-        self.is_drag_empty = True
-
-
-def Generic_drag_empty_ticker_Update(self, context, walk_data):
+def _generic_drag_empty_ticker_Update(self: PropertyGroup, context: Context,
+                                      walk_data: str) -> None:
     """
     Generic drag_empty_ticker property update.
 
-    walk_data is an attribute name of Collection Property that has uilist walk
-    features.
+    Parameters:
+        self - pointer to prop's PropertyGroup itself.
+
+        context - context the prop update was called from.
+
+        walk_data - attribute name of Collection Property that
+                has uilist walk features.
     """
 
     bakemaster = context.scene.bakemaster
     bakemaster.walk_data_name = walk_data
     bakemaster.is_drag_lowpoly_data = False
 
-    walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
-    data, containers, _ = walk_data_getter(bakemaster)
+    walk_data_getter = getattr(bakemaster, "get_active_%s" % walk_data)
+    data, containers, _ = walk_data_getter()
     if data is None:
-        print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")
+        bakemaster.log("pux0000", walk_data, self)
         return
 
-    if is_drag_group_into_itself(self, bakemaster, data, containers,
-                                 walk_data):
+    if _is_drag_group_into_itself(self, bakemaster, data, containers,
+                                  walk_data):
         return
 
     drag_to_index = bakemaster.get_drag_to_index(walk_data)
@@ -374,7 +241,7 @@ def Generic_drag_empty_ticker_Update(self, context, walk_data):
     self.is_drag_placeholder = False
     self.is_drag_empty_placeholder = True
     self.is_lowpoly_placeholder = False
-    drag_empty_eval(self, data, containers, walk_data)
+    _drag_empty_eval(self, data, containers, walk_data)
 
     bakemaster.set_drag_to_index(walk_data, self.index)
     bakemaster.drag_data_to = walk_data
@@ -384,12 +251,18 @@ def Generic_drag_empty_ticker_Update(self, context, walk_data):
         self.drag_empty_ticker = not ticker_old
 
 
-def Generic_lowpoly_ticker_Update(self, context: not None, walk_data: str):
+def _generic_lowpoly_ticker_Update(self: PropertyGroup, context: Context,
+                                   walk_data: str) -> None:
     """
     Generic lowpoly_ticker property update.
 
-    walk_data is an attribute name of Collection Property that has uilist walk
-    features.
+    Parameters:
+        self - pointer to prop's PropertyGroup itself.
+
+        context - context the prop update was called from.
+
+        walk_data - attribute name of Collection Property that
+                has uilist walk features.
     """
 
     bakemaster = context.scene.bakemaster
@@ -400,14 +273,14 @@ def Generic_lowpoly_ticker_Update(self, context: not None, walk_data: str):
 
     bakemaster.walk_data_name = walk_data
 
-    walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
-    data, containers, _ = walk_data_getter(bakemaster)
+    walk_data_getter = getattr(bakemaster, "get_active_%s" % walk_data)
+    data, containers, _ = walk_data_getter()
     if data is None:
-        print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")
+        bakemaster.log("pux0000", walk_data, self)
         return
 
-    if is_drag_group_into_itself(self, bakemaster, data, containers,
-                                 walk_data):
+    if _is_drag_group_into_itself(self, bakemaster, data, containers,
+                                  walk_data):
         return
 
     bakemaster.is_drag_lowpoly_data = True
@@ -430,23 +303,29 @@ def Generic_lowpoly_ticker_Update(self, context: not None, walk_data: str):
         self.lowpoly_ticker = not ticker_old
 
 
-def Generic_active_index_Update(self, context: not None, walk_data: str):
+def _generic_active_index_Update(self: PropertyGroup, context: Context,
+                                 walk_data: str) -> None:
     """
     Generic active_index property update.
-    Revert to active_index_old when setting onto drag_emtpy and drop_prompt
+    Revert to active_index_old when setting props of drop_prompt
     containers.
 
-    walk_data is an attribute name of Collection Property that has uilist walk
-    features.
+    Parameters:
+        self - pointer to prop's PropertyGroup itself.
+
+        context - context the prop update was called from.
+
+        walk_data - attribute name of Collection Property that
+                has uilist walk features.
     """
 
     bakemaster = context.scene.bakemaster
     bakemaster.walk_data_name = walk_data
 
-    walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
-    data, containers, attr = walk_data_getter(bakemaster)
+    walk_data_getter = getattr(bakemaster, "get_active_%s" % walk_data)
+    data, containers, attr = walk_data_getter()
     if data is None:
-        print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")
+        bakemaster.log("pux0000", walk_data, self)
         return
     active_index = getattr(data, "%s_active_index" % attr)
 
@@ -468,22 +347,23 @@ def Generic_active_index_Update(self, context: not None, walk_data: str):
 
     setattr(data, "%s_active_index_old" % attr, active_index)
 
-    has_selection, _ = bm_get.walk_data_multi_selection_data(
-        bakemaster, walk_data)
-    if has_selection:
+    has_ms = bakemaster.wh_has_ms(data, walk_data)
+    if has_ms:
         containers[active_index].is_selected = True
 
 
-def Generic_drop_name_Update(self, context: not None, walk_data: str,
-                             adddropped_ot_idname: str):
+def _generic_drop_name_Update(self: PropertyGroup, context: Context,
+                              walk_data: str) -> None:
     """
     Generic drop_name property update.
 
-    walk_data is an attribute name of Collection Property that has uilist walk
-    features.
+    Parameters:
+        self - pointer to prop's PropertyGroup itself.
 
-    adddropped_ot_idname is a bl_idname of an operator that will be called on
-    drop.
+        context - context the prop update was called from.
+
+        walk_data - attribute name of Collection Property that
+                has uilist walk features.
     """
 
     bakemaster = context.scene.bakemaster
@@ -493,24 +373,31 @@ def Generic_drop_name_Update(self, context: not None, walk_data: str,
         return
 
     self.drop_name_old = self.drop_name
-    adddropped_ot = getattr(bpy_ops.bakemaster, adddropped_ot_idname)
-    adddropped_ot('INVOKE_DEFAULT', index=self.index, drop_name=self.drop_name)
+    bpy_ops.bakemaster.BM_OT_WalkData_AddDropped(
+        'INVOKE_DEFAULT', walk_data=walk_data, index=self.index,
+        drop_name=self.drop_name)
 
 
-def Generic_multi_select(self, bakemaster, walk_data: str):
+def _generic_multi_select(self: PropertyGroup, bakemaster: PropertyGroup,
+                          walk_data: str) -> None:
     """
     Generic multiple selection manifestor.
 
-    walk_data is an attribute name of Collection Property that has uilist walk
-    features.
+    Parameters:
+        self - pointer to prop's PropertyGroup itself.
 
-    If called in drag_end() to clear selection, self is None.
+        bakemaster - main PropertyGroup.
+
+        walk_data - attribute name of Collection Property that
+                has uilist walk features.
+
+    Call with None self to clear multi selection.
     """
 
-    walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
-    data, containers, attr = walk_data_getter(bakemaster)
+    walk_data_getter = getattr(bakemaster, "get_active_%s" % walk_data)
+    data, containers, attr = walk_data_getter()
     if data is None:
-        print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")
+        bakemaster.log("pux0000", walk_data, self)
         return
     active_index = getattr(data, "%s_active_index" % attr)
 
@@ -566,14 +453,22 @@ def Generic_multi_select(self, bakemaster, walk_data: str):
             container.is_selected = container.index in selection_range
 
 
-def Generic_property_in_multi_selection_Update(self, context, walk_data: str,
-                                               prop_name: str):
+def _generic_property_in_multi_selection_Update(
+        self: PropertyGroup, context: Context, walk_data: str, prop_name: str
+        ) -> None:
     """
     Generic property in multi selection update function. Lets set prop_name's
     property values in data's containers that are in multi selection.
 
-    walk_data is an attribute name of Collection Property that has uilist walk
-    features.
+    Parameters:
+        self - pointer to prop's PropertyGroup itself.
+
+        context - context the prop update was called from.
+
+        walk_data - attribute name of Collection Property that
+                has uilist walk features.
+
+        prop_name - name of the property to update value of.
     """
 
     bakemaster = context.scene.bakemaster
@@ -581,9 +476,14 @@ def Generic_property_in_multi_selection_Update(self, context, walk_data: str,
     if not bakemaster.allow_prop_in_multi_selection_update:
         return
 
-    has_selection, _ = bm_get.walk_data_multi_selection_data(
-        bakemaster, walk_data)
-    if not has_selection:
+    walk_data_getter = getattr(bakemaster, "get_active_%s" % walk_data)
+    data, containers, _ = walk_data_getter()
+    if data is None:
+        bakemaster.log("pux0000", walk_data, self)
+        return
+
+    has_ms = bakemaster.wh_has_ms(data, walk_data)
+    if not has_ms:
         return
 
     bakemaster.walk_data_name = walk_data
@@ -591,12 +491,6 @@ def Generic_property_in_multi_selection_Update(self, context, walk_data: str,
 
     # no recursive updates
     bakemaster.allow_prop_in_multi_selection_update = False
-
-    walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
-    data, containers, _ = walk_data_getter(bakemaster)
-    if data is None:
-        print(f"BakeMaster Internal Error: cannot resolve walk data at {self}")
-        return
 
     # foreach_get/set does not work for enum
     # see https://projects.blender.org/blender/blender/issues/92621
@@ -624,22 +518,37 @@ def Generic_property_in_multi_selection_Update(self, context, walk_data: str,
     bakemaster.allow_prop_in_multi_selection_update = True
 
 
-def Generic_group_type_change_Update(group, context, walk_data: str):
+def _generic_group_type_change_Update(self: PropertyGroup, context: Context,
+                                      walk_data: str) -> None:
     """
     If group_type changed to Decorator, copy settings from group to all its
     childs. If changed to Dictator, copy settings from the first child.
 
-    Attention: called on active container!
+    Parameters:
+        self - pointer to prop's PropertyGroup itself.
+
+        context - context the prop update was called from.
+
+        walk_data - attribute name of Collection Property that
+                has uilist walk features.
     """
 
-    if group.group_old_type == group.group_type or not group.is_group:
+    if self.group_old_type == self.group_type or not self.is_group:
         return
-    group.group_old_type = group.group_type
+    self.group_old_type = self.group_type
 
-    walk_data_getter = getattr(bm_get, "walk_data_get_%s" % walk_data)
-    data, containers, attr = walk_data_getter(context.scene.bakemaster)
+    bakemaster = context.scene.bakemaster
+
+    walk_data_getter = getattr(bakemaster, "get_active_%s" % walk_data)
+
+    kwargs = {}
+    if hasattr(self, "bakejob_index"):
+        kwargs["bakejob_index"] = self.bakejob_index
+    if hasattr(self, "container_index"):
+        kwargs["container_index"] = self.container_index
+    data, containers, attr = walk_data_getter(kwargs)
     if data is None:
-        print(f"BakeMaster Internal Error: cannot resolve walk data at {group}")  # noqa: E501
+        bakemaster.log("pux0000", walk_data, self)
         return
 
     exclude_copy = {
@@ -658,23 +567,23 @@ def Generic_group_type_change_Update(group, context, walk_data: str):
     }
 
     # changed to dictator
-    if group.group_type == 'DICTATOR':
-        if group.index >= getattr(data, "%s_len" % attr) - 1:
+    if self.group_type == 'DICTATOR':
+        if self.get_is_last(data, attr):
             return
-        container = containers[group.index + 1]
-        if container.ui_indent_level <= group.ui_indent_level:
+        container = self.get_next_item(containers)
+        if container.ui_indent_level <= self.ui_indent_level:
             return
 
-        _ = copy(container, containers, group.index, exclude_copy)
+        _ = bakemaster.wh_copy(container, containers, self.index, exclude_copy)
         return
 
     # changed to decorator
     forbid_copy_cache = {}
 
-    for index in range(group.index + 1, getattr(data, "%s_len" % attr)):
+    for index in range(self.index + 1, getattr(data, "%s_len" % attr)):
         container = containers[index]
 
-        if container.ui_indent_level <= group.ui_indent_level:
+        if container.ui_indent_level <= self.ui_indent_level:
             break
 
         # skip copying to items that have their own dictator groups
@@ -685,121 +594,119 @@ def Generic_group_type_change_Update(group, context, walk_data: str):
             forbid_copy_cache[str(index)] = True
             continue
 
-        _ = copy(group, containers, index, exclude_copy)
+        _ = bakemaster.wh_copy(self, containers, index, exclude_copy)
 
         if container.is_group and container.group_type == 'DECORATOR':
             container.use_bake = True
 
     # because group_type changed to Decorator and we don't need inactive ui
-    group.use_bake = True
+    self.use_bake = True
     # also reset group_color_tag to default white for Decorator Group
-    group.group_color_tag = ""
+    self.group_color_tag = ""
 
 
 def Global_bakejobs_active_index_Update(self, context):
-    Generic_active_index_Update(self, context, "bakejobs")
+    _generic_active_index_Update(self, context, "bakejobs")
 
 
 def BakeJob_drop_name_Update(self, context):
-    Generic_drop_name_Update(self, context, walk_data="bakejobs",
-                             adddropped_ot_idname="bakejobs_adddropped")
+    _generic_drop_name_Update(self, context, walk_data="bakejobs")
 
 
 def BakeJob_containers_active_index_Update(self, context):
-    Generic_active_index_Update(self, context, "containers")
+    _generic_active_index_Update(self, context, "containers")
 
 
 def BakeJob_ticker_Update(self, context):
-    Generic_ticker_Update(self, context, walk_data="bakejobs",
-                          double_click_ot_idname="bakejob_rename")
+    _generic_ticker_Update(self, context, walk_data="bakejobs",
+                           double_click_ot_idname="bakejob_rename")
 
 
 def BakeJob_drag_empty_ticker_Update(self, context):
-    Generic_drag_empty_ticker_Update(self, context, "bakejobs")
+    _generic_drag_empty_ticker_Update(self, context, "bakejobs")
 
 
 def BakeJob_lowpoly_ticker_Update(self, context):
-    Generic_lowpoly_ticker_Update(self, context, "bakejobs")
+    _generic_lowpoly_ticker_Update(self, context, "bakejobs")
 
 
 def BakeJob_group_type_Update(self, context):
-    Generic_group_type_change_Update(self, context, "bakejobs")
+    _generic_group_type_change_Update(self, context, "bakejobs")
 
 
 def Container_drop_name_Update(self, context):
-    Generic_drop_name_Update(self, context, walk_data="containers",
-                             adddropped_ot_idname="containers_adddropped")
+    _generic_drop_name_Update(self, context, walk_data="containers")
 
 
 def Container_subcontainers_active_index_Update(self, context):
-    Generic_active_index_Update(self, context, "subcontainers")
+    _generic_active_index_Update(self, context, "subcontainers")
 
 
 def Container_ticker_Update(self, context):
-    Generic_ticker_Update(self, context, walk_data="containers",
-                          double_click_ot_idname="container_rename")
+    _generic_ticker_Update(self, context, walk_data="containers",
+                           double_click_ot_idname="container_rename")
 
 
 def Container_drag_empty_ticker_Update(self, context):
-    Generic_drag_empty_ticker_Update(self, context, "containers")
+    _generic_drag_empty_ticker_Update(self, context, "containers")
 
 
 def Container_lowpoly_ticker_Update(self, context):
-    Generic_lowpoly_ticker_Update(self, context, "containers")
+    _generic_lowpoly_ticker_Update(self, context, "containers")
 
 
 def Container_group_type_Update(self, context):
-    Generic_group_type_change_Update(self, context, "containers")
+    _generic_group_type_change_Update(self, context, "containers")
 
 
 def Subcontainer_ticker_Update(self, context):
-    Generic_ticker_Update(self, context, walk_data="subcontainers")
+    _generic_ticker_Update(self, context, walk_data="subcontainers")
 
 
 def Subcontainer_drag_empty_ticker_Update(self, context):
-    Generic_drag_empty_ticker_Update(self, context, "subcontainers")
+    _generic_drag_empty_ticker_Update(self, context, "subcontainers")
 
 
 def Subcontainer_lowpoly_ticker_Update(self, context):
-    Generic_lowpoly_ticker_Update(self, context, "subcontainers")
+    _generic_lowpoly_ticker_Update(self, context, "subcontainers")
 
 
 def Subcontainer_group_type_Update(self, context):
-    Generic_group_type_change_Update(self, context, "subcontainers")
+    _generic_group_type_change_Update(self, context, "subcontainers")
 
 
 # UI Props' Updates
 
 def BakeJob_use_bake_Update(self, context):
-    Generic_property_in_multi_selection_Update(
+    _generic_property_in_multi_selection_Update(
         self, context, "bakejobs", "use_bake")
 
 
 def BakeJob_type_Update(self, context):
-    Generic_property_in_multi_selection_Update(
+    _generic_property_in_multi_selection_Update(
         self, context, "bakejobs", "type")
 
 
 def BakeJob_group_is_texset_Update(self, context):
-    Generic_property_in_multi_selection_Update(
+    _generic_property_in_multi_selection_Update(
         self, context, "bakejobs", "group_is_texset")
 
 
 def Container_use_bake_Update(self, context):
-    Generic_property_in_multi_selection_Update(
+    _generic_property_in_multi_selection_Update(
         self, context, "containers", "use_bake")
 
 
 def Container_group_is_texset_Update(self, context):
-    Generic_property_in_multi_selection_Update(
+    _generic_property_in_multi_selection_Update(
         self, context, "containers", "group_is_texset")
 
 
 def Subcontainer_use_bake_Update(self, context):
-    Generic_property_in_multi_selection_Update(
+    _generic_property_in_multi_selection_Update(
         self, context, "subcontainers", "use_bake")
 
 
 def Subcontainer_group_is_texset_Update(self, context):
-    Generic_property_in_multi_selection_Update(
+    _generic_property_in_multi_selection_Update(
         self, context, "subcontainers", "group_is_texset")

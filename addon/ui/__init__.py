@@ -27,26 +27,20 @@
 #
 # ##### END LICENSE BLOCK #####
 
-from bpy.types import (
-    Operator,
+from . import uilists
+from . import panels
+
+__all__ = ["classes"]
+
+classes = (
+    uilists.BM_UL_BakeJobs,
+    uilists.BM_UL_Containers,
+    uilists.BM_UL_BakeHistory,
+
+    panels.BM_PT_Preferences,
+    panels.BM_PT_BakeJobs,
+    panels.BM_PT_Containers,
+    panels.BM_PT_Bake,
+    panels.BM_PT_BakeControls,
+    panels.BM_PT_BakeHistory,
 )
-
-
-class BM_OT_Remove_PreviewCollections(Operator):
-    """
-    Remove Preview Collections of custom icons initialized in Global
-    Properties.
-    """
-    bl_idname = 'bakemaster.remove_previewcollections'
-    bl_label = "Remove Preview Collections"
-    bl_options = {'INTERNAL'}
-
-    def execute(self, context):
-        import bpy.utils.previews as bpy_utils_previews
-        preview_collections = context.scene.bakemaster.preview_collections
-
-        for pcoll in preview_collections.values():
-            bpy_utils_previews.remove(pcoll)
-
-        preview_collections.clear()
-        return {'FINISHED'}

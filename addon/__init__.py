@@ -27,38 +27,10 @@
 #
 # ##### END LICENSE BLOCK #####
 
-from bpy.utils import (
-    register_class as bpy_utils_register_class,
-    unregister_class as bpy_utils_unregister_class,
-)
-from bpy.types import Scene as bpy_types_Scene
-from bpy.props import PointerProperty
-from bpy import ops as bpy_ops
-from bpy.app.handlers import (
-    depsgraph_update_pre as bpy_depsgraph_update_pre,
-    persistent,
-)
-
-from . import ui_panels
-from . import properties
-from .operators import (
-    ui as operators_ui,
-    reg as operators_reg,
-)
-
-
-if "bpy_utils_register_class" in locals():
-    from importlib import reload as module_reload
-
-    module_reload(ui_panels)
-    module_reload(properties)
-    module_reload(operators_ui)
-    module_reload(operators_reg)
-
 bl_info = {
     "name": "BakeMaster",
     "description":
-        "Bake various PBR-based or Cycles maps with ease and comfort",
+        "Bake various PBR and other maps fast, with ease and comfort",
     "author": "kemplerart",
     "version": (3, 0, 0),
     "blender": (2, 83, 0),
@@ -69,115 +41,47 @@ bl_info = {
     "category": "Material"
 }
 
-classes = (
-    properties.Subcontainer,
-    properties.Container,
-    properties.BakeJob,
-    properties.BakeHistory,
-    properties.Global,
 
-    ui_panels.BM_PT_BakeJobs,
-    ui_panels.BM_PT_Containers,
-    ui_panels.BM_PT_Bake,
-    ui_panels.BM_PT_BakeControls,
-    ui_panels.BM_PT_BakeHistory,
+if "bpy" in locals():
+    import importlib
 
-    ui_panels.BM_PREFS_AddonPreferences,
-    ui_panels.BM_UL_BakeJobs,
-    ui_panels.BM_UL_Containers,
-    ui_panels.BM_UL_BakeHistory,
+    properties = importlib.reload(properties)
+    operators = importlib.reload(operators)
+    ui = importlib.reload(ui)
+else:
+    import bpy
 
-    operators_reg.BM_OT_Remove_PreviewCollections,
+    from . import (
+        properties,
+        operators,
+        ui,
+    )
 
-    operators_ui.BM_OT_Help,
-    operators_ui.BM_OT_UIList_Walk_Handler,
-    operators_ui.BM_OT_WalkData_Trans,
-    operators_ui.BM_OT_WalkData_Move,
-    operators_ui.BM_OT_WalkData_Move_Lowpoly_Data,
-    operators_ui.BM_OT_UI_Prop_Relinquish,
-
-    operators_ui.BM_OT_BakeJobs_Add,
-    operators_ui.BM_OT_BakeJobs_Remove,
-    operators_ui.BM_OT_BakeJobs_AddDropped,
-    operators_ui.BM_OT_BakeJobs_Trash,
-    operators_ui.BM_OT_BakeJob_Rename,
-    operators_ui.BM_OT_BakeJob_ToggleType,
-    operators_ui.BM_OT_BakeJobs_Merge,
-
-    operators_ui.BM_OT_Containers_Add,
-    operators_ui.BM_OT_Containers_Remove,
-    operators_ui.BM_OT_Containers_AddDropped,
-    operators_ui.BM_OT_Containers_Trash,
-    operators_ui.BM_OT_Container_Rename,
-    operators_ui.BM_OT_Containers_Toggle_Expand,
-    operators_ui.BM_OT_Containers_GroupOptions,
-    operators_ui.BM_OT_Containers_Group_SetIcon,
-    operators_ui.BM_OT_Containers_Group,
-    operators_ui.BM_OT_Containers_Ungroup,
-
-    operators_ui.BM_OT_Subcontainers_Trash,
-    operators_ui.BM_OT_Subcontainers_Toggle_Expand,
-
-    operators_ui.BM_OT_FileChooseDialog,
-    operators_ui.BM_OT_Setup,
-    operators_ui.BM_OT_Config,
-    operators_ui.BM_OT_Bake_One,
-    operators_ui.BM_OT_Bake_All,
-    operators_ui.BM_OT_Bake_Pause,
-    operators_ui.BM_OT_Bake_Stop,
-    operators_ui.BM_OT_Bake_Cancel,
-    operators_ui.BM_OT_BakeHistory_Rebake,
-    operators_ui.BM_OT_BakeHistory_Config,
-    operators_ui.BM_OT_BakeHistory_Remove,
-)
-
-_is_walk_handler_timer_started = False
+classes = properties.classes + operators.classes + ui.classes
 
 
-@persistent
-def BM_UIList_Walk_Handler_caller(_):
-    """
-    Walk Handler caller. After first invoke, if the Handler was cancelled,
-    try reinvoking every 5 seconds.
-    """
-
-    if operators_ui._walk_handler_invoked:
-        return
-
-    global _is_walk_handler_timer_started
-
-    time_diff = operators_ui.time() - operators_ui._walk_handler_invoke_time
-    if not any([time_diff > 5,
-                not _is_walk_handler_timer_started]):
-        return
-
-    _is_walk_handler_timer_started = True
-    operators_ui._walk_handler_invoke_time = operators_ui.time()
-    bpy_ops.bakemaster.uilist_walk_handler('INVOKE_DEFAULT')
-
-
-def register():
+def register() -> None:
     for cls in classes:
-        bpy_utils_register_class(cls)
-    bpy_types_Scene.bakemaster = PointerProperty(type=properties.Global)
+        bpy.utils.register_class(cls)
 
-    bpy_depsgraph_update_pre.append(BM_UIList_Walk_Handler_caller)
+    bpy.types.Scene.bakemaster = bpy.props.PointerProperty(
+        type=properties.properties.Global)
+
+    bpy.app.handlers.depsgraph_update_pre.append(operators.BM_call_WalkHandler)
 
 
-def unregister():
-    # remove custom icons
-    bpy_ops.bakemaster.remove_previewcollections('EXEC_DEFAULT')
+def unregister() -> None:
+    bpy.ops.bakemaster.helper_free_icons('EXEC_DEFAULT')
 
     for cls in reversed(classes):
-        bpy_utils_unregister_class(cls)
+        bpy.utils.unregister_class(cls)
 
-    # remove calls handlers
-    for item in bpy_depsgraph_update_pre:
-        if item.__name__ != "BM_UIList_Walk_Handler_caller":
+    for f in bpy.app.handlers.depsgraph_update_pre:
+        if f.__name__ != "BM_call_WalkHandler":
             continue
-        bpy_depsgraph_update_pre.remove(item)
+        bpy.app.handlers.depsgraph_update_pre.remove(f)
 
-    del bpy_types_Scene.bakemaster
+    del bpy.types.Scene.bakemaster
 
 
 if __name__ == "__main__":

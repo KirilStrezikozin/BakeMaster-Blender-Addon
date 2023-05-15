@@ -27,16 +27,14 @@
 #
 # ##### END LICENSE BLOCK #####
 
-import sys
+from . import properties
 
-lines = []
-with open(sys.argv[1], 'r+') as f:
-    lines = f.readlines()
-    f.writelines([])
+__all__ = ["classes"]
 
-with open(sys.argv[1], 'w') as f:
-    for line in lines:
-        if len(line.strip()) <= 79:
-            f.write(line)
-            continue
-        f.write(line.strip("\n") + "  # noqa: E501\n")
+classes = (
+    properties.Subcontainer,
+    properties.Container,
+    properties.BakeJob,
+    properties.BakeHistory,
+    properties.Global,
+)
