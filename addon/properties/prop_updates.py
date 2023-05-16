@@ -605,114 +605,115 @@ def _generic_group_type_change_Update(self: PropertyGroup, context: Context,
     self.group_color_tag = ""
 
 
-def Global_bakejobs_active_index_Update(self, context):
+def Global_bakejobs_active_index_Update(self, context: Context) -> None:
     _generic_active_index_Update(self, context, "bakejobs")
 
 
-def BakeJob_drop_name_Update(self, context):
+def BakeJob_drop_name_Update(self, context: Context) -> None:
     _generic_drop_name_Update(self, context, walk_data="bakejobs")
 
 
-def BakeJob_containers_active_index_Update(self, context):
+def BakeJob_containers_active_index_Update(self, context: Context) -> None:
     _generic_active_index_Update(self, context, "containers")
 
 
-def BakeJob_ticker_Update(self, context):
+def BakeJob_ticker_Update(self, context: Context) -> None:
     _generic_ticker_Update(self, context, walk_data="bakejobs",
                            double_click_ot_idname="bakejob_rename")
 
 
-def BakeJob_drag_empty_ticker_Update(self, context):
+def BakeJob_drag_empty_ticker_Update(self, context: Context) -> None:
     _generic_drag_empty_ticker_Update(self, context, "bakejobs")
 
 
-def BakeJob_lowpoly_ticker_Update(self, context):
+def BakeJob_lowpoly_ticker_Update(self, context: Context) -> None:
     _generic_lowpoly_ticker_Update(self, context, "bakejobs")
 
 
-def BakeJob_group_type_Update(self, context):
+def BakeJob_group_type_Update(self, context: Context) -> None:
     _generic_group_type_change_Update(self, context, "bakejobs")
 
 
-def Container_drop_name_Update(self, context):
+def Container_drop_name_Update(self, context: Context) -> None:
     _generic_drop_name_Update(self, context, walk_data="containers")
 
 
-def Container_subcontainers_active_index_Update(self, context):
+def Container_subcontainers_active_index_Update(self, context: Context
+                                                ) -> None:
     _generic_active_index_Update(self, context, "subcontainers")
 
 
-def Container_ticker_Update(self, context):
+def Container_ticker_Update(self, context: Context) -> None:
     _generic_ticker_Update(self, context, walk_data="containers",
                            double_click_ot_idname="container_rename")
 
 
-def Container_drag_empty_ticker_Update(self, context):
+def Container_drag_empty_ticker_Update(self, context: Context) -> None:
     _generic_drag_empty_ticker_Update(self, context, "containers")
 
 
-def Container_lowpoly_ticker_Update(self, context):
+def Container_lowpoly_ticker_Update(self, context: Context) -> None:
     _generic_lowpoly_ticker_Update(self, context, "containers")
 
 
-def Container_group_type_Update(self, context):
+def Container_group_type_Update(self, context: Context) -> None:
     _generic_group_type_change_Update(self, context, "containers")
 
 
-def Subcontainer_ticker_Update(self, context):
+def Subcontainer_ticker_Update(self, context: Context) -> None:
     _generic_ticker_Update(self, context, walk_data="subcontainers")
 
 
-def Subcontainer_drag_empty_ticker_Update(self, context):
+def Subcontainer_drag_empty_ticker_Update(self, context: Context) -> None:
     _generic_drag_empty_ticker_Update(self, context, "subcontainers")
 
 
-def Subcontainer_lowpoly_ticker_Update(self, context):
+def Subcontainer_lowpoly_ticker_Update(self, context: Context) -> None:
     _generic_lowpoly_ticker_Update(self, context, "subcontainers")
 
 
-def Subcontainer_group_type_Update(self, context):
+def Subcontainer_group_type_Update(self, context: Context) -> None:
     _generic_group_type_change_Update(self, context, "subcontainers")
 
 
 # UI Props' Updates
 
-def Global_short_bake_instruction_Update(self, _):
+def Global_short_bake_instruction_Update(self, _: Context) -> None:
     default = "Short Bake Instruction"
     if self.short_bake_instruction != default:
         self.short_bake_instruction = default
 
 
-def BakeJob_use_bake_Update(self, context):
+def BakeJob_use_bake_Update(self, context: Context) -> None:
     _generic_property_in_multi_selection_Update(
         self, context, "bakejobs", "use_bake")
 
 
-def BakeJob_type_Update(self, context):
+def BakeJob_type_Update(self, context: Context) -> None:
     _generic_property_in_multi_selection_Update(
         self, context, "bakejobs", "type")
 
 
-def BakeJob_group_is_texset_Update(self, context):
+def BakeJob_group_is_texset_Update(self, context: Context) -> None:
     _generic_property_in_multi_selection_Update(
         self, context, "bakejobs", "group_is_texset")
 
 
-def Container_use_bake_Update(self, context):
+def Container_use_bake_Update(self, context: Context) -> None:
     _generic_property_in_multi_selection_Update(
         self, context, "containers", "use_bake")
 
 
-def Container_group_is_texset_Update(self, context):
+def Container_group_is_texset_Update(self, context: Context) -> None:
     _generic_property_in_multi_selection_Update(
         self, context, "containers", "group_is_texset")
 
 
-def Subcontainer_use_bake_Update(self, context):
+def Subcontainer_use_bake_Update(self, context: Context) -> None:
     _generic_property_in_multi_selection_Update(
         self, context, "subcontainers", "use_bake")
 
 
-def Subcontainer_group_is_texset_Update(self, context):
+def Subcontainer_group_is_texset_Update(self, context: Context) -> None:
     _generic_property_in_multi_selection_Update(
         self, context, "subcontainers", "group_is_texset")
