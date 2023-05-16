@@ -140,7 +140,7 @@ class BM_PT_Preferences(AddonPreferences):
         col.prop(self, "default_bakejob_type", text="type")
         ###
 
-        # BakeJob
+        # Developer
         split = layout.split(factor=0.4)
 
         col_heading = split.column()
@@ -176,41 +176,34 @@ class BM_PT_Setup(Panel):
         layout.use_property_decorate = False
 
         col = layout.column()
-        # col.label(text="Setup")
 
-        # col.separator(factor=1.0)
+        # Presets
         subcol = col.column(align=True)
-        subcol.label(text="Presets")
+
+        row = subcol.row(align=True)
+        row.label(text="Presets")
+        row.operator('bakemaster.helper_help', text="",
+                     icon='HELP').page_id = 'BM_PT_Presets'
+
         subcol.prop(bakemaster, 'presets_filepath', text="Dir")
 
         col.separator(factor=3.0)
 
+        # Project
         subcol = col.column(align=True)
 
         row = subcol.row(align=True)
-        row.label(text="Config")
-        row.operator('bakemaster.helper_help_config', text="",
-                     icon='HELP').page_id = self.bl_idname
+        row.label(text="Project")
+        row.operator('bakemaster.helper_help_project', text="",
+                     icon='HELP').page_id = 'BM_PT_Project'
 
-        if bakemaster.config_is_attached:
-            row = subcol.row(align=True)
-            box = row.box()
-            box.scale_y = 0.4
-            box.label(text=os_path.basename(bakemaster.config_filepath))
+        subcol.prop(bakemaster, 'project_filepath', text="Dir")
 
-            load_text = "Reload"
-        else:
-            load_text = "Load"
-
-        subcol.separator(factor=0.8)
-
-        row = subcol.row(align=True)
-        row.operator('bakemaster.bake_config', text="Save").action = 'SAVE'
-        row.operator('bakemaster.bake_config', text=load_text).action = 'LOAD'
-
-        if bakemaster.config_is_attached:
-            row.operator('bakemaster.bake_config', text="",
-                         icon='UNLINKED').action = 'DETACH'
+        if bakemaster.project_filepath != "":
+            subcol.prop(bakemaster, 'use_create_project_subdir',
+                        text="Subfolder")
+            if bakemaster.use_create_project_subdir:
+                subcol.prop(bakemaster, 'project_subdir_name', text="Name")
 
 
 class BM_PT_BakeJobs(BM_PT_Helper, BM_UI_ms_draw):

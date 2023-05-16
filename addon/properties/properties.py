@@ -816,7 +816,7 @@ class BakeJob(BM_PropertyGroup_Helper):
     ###
 
 
-class BakeHistory(BM_PropertyGroup_Helper):
+class BakeHistory(PropertyGroup):
     name: StringProperty(
         name="Name of this recent bake",
         description="Double click to rename",
@@ -908,14 +908,23 @@ class Global(BM_PropertyGroup_Helper):
 
     bakehistory_reserved_index: IntProperty(default=-1)
 
-    # Configuration Props
+    # Setup Props
 
-    config_is_attached: BoolProperty(default=False)
+    project_filepath: StringProperty(
+        name="Bake Project Filepath",
+        description="Where to locate Bake Project files. // is relative to this .blend file",  # noqa: E501
+        default="",
+        subtype='DIR_PATH')
 
-    config_filepath: StringProperty(
-        name="Filepath",
-        description="Where to Save/Load a config from. // is relative to this .blend file",  # noqa: E501
-        default="")
+    use_create_project_subdir: BoolProperty(
+        name="Create Subfolder",
+        description="Browse Bake Project files in a subfolder. If it doesn't exist, a new one with the given name below will be created",  # noqa: E501
+        default=False)
+
+    project_subdir_name: StringProperty(
+        name="Subfolder Name",
+        description="How to name the subfolder",
+        default="Bakes")
 
     presets_filepath: StringProperty(
         name="Presets Filepath",
@@ -938,6 +947,8 @@ class Global(BM_PropertyGroup_Helper):
     def log(self, log_id: str, *args) -> None:
 
         log_ids = {
+            "o4x0000": r"BakeMaster: Info: bake poll failed because %s",
+            "o4x0001": r"BakeMaster: Info: bake history poll failed because %s",  # noqa: E501
             "mbx0001": r"BakeMaster: Internal Warning: file %s with %s icon isn't loaded",  # noqa: E501
             "mbx0002": r"BakeMaster: Internal Warning: no icons loaded to close",  # noqa: E501
             "mbx0003": r"BakeMaster: Internal Warning: %s while setting %s attribute for %s",  # noqa: E501

@@ -43,7 +43,7 @@ __all__ = ["classes", "BM_call_WalkHandler"]
 classes = (
     helpers.BM_OT_Helper_Free_Icons,
     helpers.BM_OT_Helper_Help,
-    helpers.BM_OT_Helper_Help_Config,
+    helpers.BM_OT_Helper_Help_Project,
     helpers.BM_OT_Helper_UI_Prop_Relinquish,
 
     walkhandler.BM_OT_WalkHandler,
@@ -77,7 +77,6 @@ classes = (
     bake.BM_OT_Bake_Toggle_Pause,
     bake.BM_OT_Bake_Stop,
     bake.BM_OT_Bake_Cancel,
-    bake.BM_OT_Bake_Config,
     bake.BM_OT_BakeHistory_Remove,
     bake.BM_OT_BakeHistory_Rebake,
     bake.BM_OT_BakeHistory_Config,

@@ -73,7 +73,8 @@ class BM_OT_Helper_Help(Operator):
         base = "https://bakemaster-blender-addon.readthedocs.io/en/"
         urls = {
             '': r'%s/',
-            'BM_PT_Setup': r'%s/',
+            'BM_PT_Presets': r'%s/',
+            'BM_PT_Project': r'%s/',
             'BM_PT_BakeJobs': r'%s/',
             'BM_PT_Containers': r'%s/',
             'BM_PT_Subcontainers': r'%s/',
@@ -94,16 +95,11 @@ class BM_OT_Helper_Help(Operator):
         return self.execute(context)
 
 
-class BM_OT_Helper_Help_Config(BM_OT_Helper_Help):
-    """
-    Use config file as a super preset to save all settings, setup, presets,
-    and tables items (e.g Bake Jobs, Objects, Maps...). You can load
-    BakeMaster Config in another .blend file, and it will automatically
-    link objects.
-    """
+class BM_OT_Helper_Help_Project(BM_OT_Helper_Help):
+    """Directory where baked Maps are going to be saved and linked (for Map Atlases). By choosing it, all bake output filepaths will be set up automatically. BakeMaster will analyse edited Maps and Objects faster to decrease time of rebakes."""  # noqa: E501
 
-    bl_idname = 'bakemaster.helper_help_config'
-    bl_label = "Config: save/load all settings & setup"
+    bl_idname = 'bakemaster.helper_help_project'
+    bl_label = "Bake Project. Press to read more"
 
 
 class BM_OT_Helper_UI_Prop_Relinquish(Operator):

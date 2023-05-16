@@ -142,47 +142,6 @@ class BM_OT_UI_Bake_Generic(Operator):
         bakemaster.bake_is_running = True
 
 
-class BM_OT_Bake_Config(Operator, ImportHelper):
-    bl_idname = 'bakemaster.bake_config'
-    bl_label = "Config"
-    bl_description = "Load/Save/Detach Bake Configuration data. You can use config as a super preset that holds all settings and tables' items of BakeMaster sessions"  # noqa: E501
-    bl_options = {'INTERNAL', 'UNDO'}
-
-    filename_ext = '.bakemaster_config'
-
-    filter_glob: StringProperty(
-        default='*.bakemaster_config',
-        options={'HIDDEN'})
-
-    action: EnumProperty(
-        name="Action",
-        description="Choose an action for the config. Hover over values to see descriptions",  # noqa: E501
-        default='LOAD',
-        items=[('LOAD', "Load", ""),
-               ('SAVE', "Save", ""),
-               ('DETACH', "Detach", "")],
-        options={'SKIP_SAVE'})
-
-    directory: StringProperty(subtype='DIR_PATH')
-
-    def execute(self, context: Context) -> set:
-        bakemaster = context.scene.bakemaster
-
-        bakemaster.config_is_attached = self.action != 'DETACH'
-        if self.filepath != "":
-            bakemaster.config_filepath = self.filepath
-
-        print(self.filepath, self.directory)
-        self.report({'WARNING'}, "Not implemented")
-        return {'FINISHED'}
-
-    def invoke(self, context: Context, event: Event) -> set:
-        if self.action == 'DETACH':
-            return self.execute(context)
-
-        return super().invoke(context, event)
-
-
 class BM_OT_Bake_One(BM_OT_UI_Bake_Generic):
     bl_idname = 'bakemaster.bake_one'
     bl_label = "Bake One"
