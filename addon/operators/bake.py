@@ -31,12 +31,13 @@ import typing
 
 from datetime import datetime
 
-from bpy.types import Context, Event, Operator
+from bpy.types import Context, Event, Operator, PropertyGroup
 
 from bpy.props import (
     IntProperty,
     EnumProperty,
     BoolProperty,
+    StringProperty,
 )
 
 from bpy_extras.io_utils import ImportHelper
@@ -45,7 +46,7 @@ from bpy_extras.io_utils import ImportHelper
 # class F():
 
 
-def _ui_bake_poll(bakemaster, bake_is_running: bool
+def _ui_bake_poll(bakemaster: PropertyGroup, bake_is_running: bool
                   ) -> typing.Tuple[bool, str]:
     if bake_is_running:
         message = "Another bake is running"
@@ -61,16 +62,17 @@ def _ui_bake_poll(bakemaster, bake_is_running: bool
     return True, ""
 
 
-def _ui_bakehistory_poll(ot_instance, bakemaster) -> typing.Tuple[bool, str]:
+def _ui_bakehistory_poll(ot_instance: Operator, bakemaster: PropertyGroup
+                         ) -> typing.Tuple[bool, str]:
     if ot_instance.index == -1:
-        message = "Internal Error: Cannot resolve item in Bake History"
+        message = "Cannot resolve item in Bake History"
         bakemaster.log("o4x0001", message)
         return False, message
 
     try:
         bakehistory = bakemaster.bakehistory[ot_instance.index]
     except IndexError:
-        message = "Internal Error: Cannot resolve item in Bake History"
+        message = "Cannot resolve item in Bake History"
         bakemaster.log("o4x0001", message)
         return False, message
 
@@ -82,15 +84,18 @@ def _ui_bakehistory_poll(ot_instance, bakemaster) -> typing.Tuple[bool, str]:
     return True, ""
 
 
-def _bakehistory_add_entry(bakemaster):
+def _bakehistory_add_entry(bakemaster: PropertyGroup) -> PropertyGroup:
     new_item = bakemaster.bakehistory.add()
     new_item.index = bakemaster.bakehistory_len
     new_item.name += " %d" % (new_item.index + 1)
     bakemaster.bakehistory_len += 1
     bakemaster.bakehistory_reserved_index = new_item.index
 
+    return new_item
 
-def _bakehistory_remove_entry(bakemaster, remove_index: int):
+
+def _bakehistory_remove_entry(bakemaster: PropertyGroup, remove_index: int
+                              ) -> None:
     if bakemaster.bakehistory_reserved_index > remove_index:
         bakemaster.bakehistory_reserved_index -= 1
     for index in range(remove_index + 1, bakemaster.bakehistory_len):
@@ -99,7 +104,7 @@ def _bakehistory_remove_entry(bakemaster, remove_index: int):
     bakemaster.bakehistory_len -= 1
 
 
-def _bakehistory_unblock_reserved_entry(bakemaster):
+def _bakehistory_unblock_reserved_entry(bakemaster: PropertyGroup) -> None:
     if bakemaster.bakehistory_reserved_index == -1:
         return
 
@@ -120,13 +125,7 @@ class BM_OT_UI_Bake_Generic(Operator):
 
     bl_options = {'INTERNAL'}
 
-    def props_set_explicit(self, bakemaster):
-        bakemaster.bake_trigger_stop = False
-        bakemaster.bake_trigger_cancel = False
-        bakemaster.bake_hold_on_pause = False
-        bakemaster.bake_is_running = True
-
-    def bake_poll(self, context):
+    def bake_poll(self, context: Context) -> bool:
         bakemaster = context.scene.bakemaster
 
         bake_is_running = bakemaster.bake_is_running
@@ -136,12 +135,24 @@ class BM_OT_UI_Bake_Generic(Operator):
             return False
         return True
 
+    def props_set_explicit(self, bakemaster: PropertyGroup) -> None:
+        bakemaster.bake_trigger_stop = False
+        bakemaster.bake_trigger_cancel = False
+        bakemaster.bake_hold_on_pause = False
+        bakemaster.bake_is_running = True
+
 
 class BM_OT_Bake_Config(Operator, ImportHelper):
     bl_idname = 'bakemaster.bake_config'
     bl_label = "Config"
-    bl_description = "Load/Save/Detach Bake Configuration data. You can use config as a super preset that holds all settings and tables' items of the current BakeMaster session"  # noqa: E501
+    bl_description = "Load/Save/Detach Bake Configuration data. You can use config as a super preset that holds all settings and tables' items of BakeMaster sessions"  # noqa: E501
     bl_options = {'INTERNAL', 'UNDO'}
+
+    filename_ext = '.bakemaster_config'
+
+    filter_glob: StringProperty(
+        default='*.bakemaster_config',
+        options={'HIDDEN'})
 
     action: EnumProperty(
         name="Action",
@@ -152,11 +163,7 @@ class BM_OT_Bake_Config(Operator, ImportHelper):
                ('DETACH', "Detach", "")],
         options={'SKIP_SAVE'})
 
-    # filepath: StringProperty(
-    #     name="Filepath",
-    #     description="Where to Save/Load a config from",
-    #     default="",
-    #     subtype='DIR_PATH')
+    directory: StringProperty(subtype='DIR_PATH')
 
     def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
@@ -165,6 +172,7 @@ class BM_OT_Bake_Config(Operator, ImportHelper):
         if self.filepath != "":
             bakemaster.config_filepath = self.filepath
 
+        print(self.filepath, self.directory)
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
@@ -188,22 +196,22 @@ class BM_OT_Bake_One(BM_OT_UI_Bake_Generic):
                ('OBJECT', "Object", "Bake selected Objects"),
                ('BAKEJOB', "Bake Job", "Bake selected BakeJobs")])
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
         self.props_set_explicit(bakemaster)
-        _bakehistory_add_entry(bakemaster)
+        _ = _bakehistory_add_entry(bakemaster)
 
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         if not self.bake_poll(context):
             return {'CANCELLED'}
 
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
-    def draw(self, _):
+    def draw(self, _: Context) -> None:
         row = self.layout.row(align=True)
         row.prop(self, 'action', expand=True)
 
@@ -214,15 +222,15 @@ class BM_OT_Bake_All(Operator):
     bl_description = "Bake the whole setup (all BakeJobs, all Maps for all Objects)"  # noqa: E501
     bl_options = {'INTERNAL'}
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
         self.props_set_explicit(bakemaster)
-        _bakehistory_add_entry(bakemaster)
+        _ = _bakehistory_add_entry(bakemaster)
 
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         if not self.bake_poll(context):
             return {'CANCELLED'}
 
@@ -235,24 +243,24 @@ class BM_OT_Bake_Toggle_Pause(Operator):
     bl_description = "Pause/Resume the bake"
     bl_options = {'INTERNAL'}
 
-    def pause_poll(self, context):
+    def pause_poll(self, context: Context) -> bool:
         bakemaster = context.scene.bakemaster
         bake_is_running = bakemaster.bake_is_running
         poll_success, _ = _ui_bake_poll(bakemaster, not bake_is_running)
         return poll_success
 
-    def props_set_explicit(self, bakemaster):
+    def props_set_explicit(self, bakemaster: PropertyGroup) -> None:
         is_paused = bakemaster.bake_hold_on_pause
         bakemaster.bake_hold_on_pause = not is_paused
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
         self.props_set_explicit(bakemaster)
 
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         if not self.pause_poll(context):
             return {'CANCELLED'}
 
@@ -265,19 +273,19 @@ class BM_OT_Bake_Stop(Operator):
     bl_description = "Stop and save what's been baked"
     bl_options = {'INTERNAL'}
 
-    def stop_poll(self, context):
+    def stop_poll(self, context: Context) -> bool:
         bakemaster = context.scene.bakemaster
         bake_is_running = bakemaster.bake_is_running
         poll_success, _ = _ui_bake_poll(bakemaster, not bake_is_running)
         return poll_success
 
-    def props_set_explicit(self, bakemaster):
+    def props_set_explicit(self, bakemaster: PropertyGroup) -> None:
         bakemaster.bake_trigger_stop = True
         bakemaster.bake_trigger_cancel = False
         bakemaster.bake_hold_on_pause = False
         bakemaster.bake_is_running = False
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
         self.props_set_explicit(bakemaster)
         _bakehistory_unblock_reserved_entry(bakemaster)
@@ -286,7 +294,7 @@ class BM_OT_Bake_Stop(Operator):
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         if not self.stop_poll(context):
             return {'CANCELLED'}
 
@@ -299,19 +307,19 @@ class BM_OT_Bake_Cancel(Operator):
     bl_description = "Cancel - stop and erase what's been baked"
     bl_options = {'INTERNAL'}
 
-    def cancel_poll(self, context):
+    def cancel_poll(self, context: Context) -> bool:
         bakemaster = context.scene.bakemaster
         bake_is_running = bakemaster.bake_is_running
         poll_success, _ = _ui_bake_poll(bakemaster, not bake_is_running)
         return poll_success
 
-    def props_set_explicit(self, bakemaster):
+    def props_set_explicit(self, bakemaster: PropertyGroup) -> None:
         bakemaster.bake_trigger_stop = False
         bakemaster.bake_trigger_cancel = True
         bakemaster.bake_hold_on_pause = False
         bakemaster.bake_is_running = False
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
         self.props_set_explicit(bakemaster)
         _bakehistory_unblock_reserved_entry(bakemaster)
@@ -320,7 +328,7 @@ class BM_OT_Bake_Cancel(Operator):
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         if not self.cancel_poll(context):
             return {'CANCELLED'}
 
@@ -343,7 +351,7 @@ class BM_OT_BakeHistory_Rebake(Operator):
                ('FULL_OVERWRITE', "Full Overwrite", "Rebake and overwrite all initially baked content of this bake in the history"),  # noqa: E501
                ('SMART_OVERWRITE', "Smart Rebake", "Compare baked content of this bake in the history and the current setup and settings. Bake what's been added and rebake what's changed")])  # noqa: E501
 
-    def rebake_poll(self, context):
+    def rebake_poll(self, context: Context) -> bool:
         bakemaster = context.scene.bakemaster
 
         poll_success, message = _ui_bakehistory_poll(self, bakemaster)
@@ -358,22 +366,19 @@ class BM_OT_BakeHistory_Rebake(Operator):
             return False
         return True
 
-    def execute(self, _):
+    def execute(self, _: Context) -> set:
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         if not self.rebake_poll(context):
             return {'CANCELLED'}
 
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
-    def draw(self, _):
-        layout = self.layout
-        layout.use_property_split = False
-        layout.use_property_decorate = False
-        layout.prop(self, 'action')
+    def draw(self, _: Context) -> set:
+        self.layout.prop(self, 'action')
 
 
 class BM_OT_BakeHistory_Config(Operator):
@@ -391,7 +396,7 @@ class BM_OT_BakeHistory_Config(Operator):
         items=[('REPLACE', "Replace", "Replace all current settings and setup (e.g. BakeJobs, Objects, Maps, all settings) with the settings and setup of this bake in the history"),  # noqa: E501
                ('SAVE', "Save", "Save the settings and setup of this bake in the history to a separate file on your disk")])  # noqa: E501
 
-    def config_poll(self, context):
+    def config_poll(self, context: Context) -> bool:
         bakemaster = context.scene.bakemaster
 
         poll_success, message = _ui_bakehistory_poll(self, bakemaster)
@@ -403,18 +408,18 @@ class BM_OT_BakeHistory_Config(Operator):
             return False
         return True
 
-    def execute(self, _):
+    def execute(self, _: Context) -> set:
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         if not self.config_poll(context):
             return {'CANCELLED'}
 
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
-    def draw(self, _):
+    def draw(self, _: Context) -> None:
         self.layout.prop(self, "action", text="", expand=True)
 
 
@@ -436,7 +441,7 @@ class BM_OT_BakeHistory_Remove(Operator):
         description="Leave baked files on the disk and only delete them from this .blend file",  # noqa: E501
         default=False)
 
-    def remove_poll(self, context):
+    def remove_poll(self, context: Context) -> bool:
         bakemaster = context.scene.bakemaster
 
         poll_success, message = _ui_bakehistory_poll(self, bakemaster)
@@ -445,7 +450,7 @@ class BM_OT_BakeHistory_Remove(Operator):
             return False
         return True
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
 
         _bakehistory_remove_entry(bakemaster, self.index)
@@ -455,14 +460,14 @@ class BM_OT_BakeHistory_Remove(Operator):
         self.report({'WARNING'}, "Not implemented")
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         if not self.remove_poll(context):
             return {'CANCELLED'}
 
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
-    def draw(self, _):
+    def draw(self, _: Context) -> None:
         layout = self.layout
 
         layout.prop(self, "use_delete")

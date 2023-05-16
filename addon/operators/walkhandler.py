@@ -28,10 +28,11 @@
 # ##### END LICENSE BLOCK #####
 
 from time import time
+import typing
 
 from bpy import ops as bpy_ops
 
-from bpy.types import Operator, Scene
+from bpy.types import Context, Operator, PropertyGroup, Scene, bpy_prop_collection
 
 from bpy.props import (
     IntProperty,
@@ -48,7 +49,7 @@ _is_walk_handler_timer_started = False
 
 
 @persistent
-def call_WalkHandler(_: Scene):
+def call_WalkHandler(_: Scene) -> None:
     """
     Walk Handler caller. After the first invoke, if Handler was cancelled,
     try to reinvoke every 5 seconds.
@@ -83,14 +84,14 @@ class BM_OT_WalkHandler(Operator):
 
     _handler = None
 
-    def cancel(self, _):
+    def cancel(self, _: Context) -> None:
         cls = self.__class__
         cls._handler = None
 
         global _walk_handler_invoked
         _walk_handler_invoked = False
 
-    def handler_poll(self):
+    def handler_poll(self) -> bool:
         cls = self.__class__
         if cls._handler is not None:
             return False
@@ -99,7 +100,10 @@ class BM_OT_WalkHandler(Operator):
         global _walk_handler_invoked
         return not _walk_handler_invoked
 
-    def get_containers(self, bakemaster: not None):
+    def get_containers(self, bakemaster: PropertyGroup
+                       ) -> typing.Union[None, typing.Tuple[
+                           PropertyGroup, bpy_prop_collection, str]]:
+
         if bakemaster.walk_data_name == "":
             return None
 
@@ -109,7 +113,7 @@ class BM_OT_WalkHandler(Operator):
             return None
         return data, containers, attr
 
-    def reset_props(self, bakemaster):
+    def reset_props(self, bakemaster: PropertyGroup) -> None:
         self.is_dropping = False
         self.is_dragging = False
 

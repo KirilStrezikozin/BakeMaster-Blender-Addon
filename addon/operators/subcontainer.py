@@ -27,7 +27,7 @@
 #
 # ##### END LICENSE BLOCK #####
 
-from bpy.types import Operator
+from bpy.types import Context, Event, Operator
 from bpy.props import IntProperty
 
 
@@ -40,7 +40,7 @@ class BM_OT_Subcontainer_Trash(Operator):
     bakejob_index: IntProperty(default=-1)
     container_index: IntProperty(default=-1)
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
 
         bakejob = bakemaster.get_bakejob(bakemaster, self.bakejob_index)
@@ -48,7 +48,7 @@ class BM_OT_Subcontainer_Trash(Operator):
         bakemaster.wh_trash(container, "subcontainers")
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         return self.execute(context)
 
 
@@ -61,7 +61,7 @@ class BM_OT_Subcontainer_Toggle_Expand(Operator):
     container_index: IntProperty(default=-1)
     index: IntProperty(default=-1)
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
         bakejob = bakemaster.get_bakejob(bakemaster, self.bakejob_index)
         container = bakemaster.get_container(bakejob, self.container_index)
@@ -80,5 +80,5 @@ class BM_OT_Subcontainer_Toggle_Expand(Operator):
         subcontainer.is_expanded = not subcontainer.is_expanded
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         return self.execute(context)

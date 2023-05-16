@@ -27,7 +27,7 @@
 #
 # ##### END LICENSE BLOCK #####
 
-from bpy.types import Operator
+from bpy.types import Context, Event, Operator
 from bpy.props import (
     IntProperty,
     BoolProperty,
@@ -43,7 +43,7 @@ class BM_OT_BakeJob_Add(Operator):
 
     index: IntProperty(default=-1)
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
 
         bakemaster.wh_disable_drag(bakemaster, bakemaster.bakejobs, "bakejobs")
@@ -59,7 +59,7 @@ class BM_OT_BakeJob_Add(Operator):
         bakemaster.wh_recalc_indexes(bakemaster, "bakejobs")
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         return self.execute(context)
 
 
@@ -71,16 +71,16 @@ class BM_OT_BakeJob_Remove(Operator):
 
     index: IntProperty(default=-1)
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
-        status, message = bakemaster.wh_remove(bakemaster, "bakejobs",
-                                               self.index)
+        status, message = bakemaster.wh_remove(
+            bakemaster, "bakejobs", self.index)
 
         if message:
             self.report({'INFO'}, message)
         return status
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         return self.execute(context)
 
 
@@ -90,12 +90,12 @@ class BM_OT_BakeJob_Trash(Operator):
     bl_description = "Remove all BakeJobs from the list on the left"
     bl_options = {'INTERNAL', 'UNDO'}
 
-    def invoke(self, context, _):
-        return self.execute(context)
-
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
         return bakemaster.wh_trash(bakemaster, "bakejobs")
+
+    def invoke(self, context: Context, _: Event) -> set:
+        return self.execute(context)
 
 
 class BM_OT_BakeJob_Rename(Operator):
@@ -114,14 +114,14 @@ class BM_OT_BakeJob_Rename(Operator):
 
     bakejob = None
 
-    def execute(self, _):
+    def execute(self, _: Context) -> set:
         if self.bakejob is None:
             return {'CANCELLED'}
 
         self.bakejob.name = self.new_name
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         bakemaster = context.scene.bakemaster
 
         self.bakejob = bakemaster.get_bakejob(bakemaster, self.index)
@@ -134,7 +134,7 @@ class BM_OT_BakeJob_Rename(Operator):
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
-    def draw(self, _):
+    def draw(self, _: Context) -> set:
         self.layout.prop(self, "new_name")
 
 
@@ -144,12 +144,12 @@ class BM_OT_BakeJob_Change_Type(Operator):
     bl_description = "Change BakeJob type"
     bl_options = {'INTERNAL', 'UNDO'}
 
-    def type_objects_update(self, _):
+    def type_objects_update(self, _: Context) -> None:
         if self.type_maps is not self.type_objects:
             return
         self.type_maps = not self.type_objects
 
-    def type_maps_update(self, _):
+    def type_maps_update(self, _: Context) -> None:
         if self.type_objects is not self.type_maps:
             return
         self.type_objects = not self.type_maps
@@ -172,7 +172,7 @@ class BM_OT_BakeJob_Change_Type(Operator):
 
     bakejob = None
 
-    def execute(self, _):
+    def execute(self, _: Context) -> set:
         if self.bakejob is None:
             return {'CANCELLED'}
 
@@ -182,7 +182,7 @@ class BM_OT_BakeJob_Change_Type(Operator):
             self.bakejob.type = 'MAPS'
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         bakemaster = context.scene.bakemaster
 
         self.bakejob = bakemaster.get_bakejob(bakemaster, self.index)
@@ -200,7 +200,7 @@ class BM_OT_BakeJob_Change_Type(Operator):
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=100)
 
-    def draw(self, context):
+    def draw(self, context: Context) -> None:
         bakemaster = context.scene.bakemaster
 
         icon_objects = bakemaster.get_icon('OBJECTS')
@@ -218,7 +218,7 @@ class BM_OT_BakeJob_Merge(Operator):
 
     bakejob = None
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
         if self.bakejob is None:
             return {'CANCELLED'}
@@ -253,7 +253,7 @@ class BM_OT_BakeJob_Merge(Operator):
         bakemaster.wh_recalc_indexes(bakemaster, "bakejobs")
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         bakemaster = context.scene.bakemaster
 
         if not bakemaster.wh_has_ms(bakemaster, "bakejobs"):

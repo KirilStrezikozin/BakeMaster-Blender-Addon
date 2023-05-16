@@ -27,18 +27,10 @@
 #
 # ##### END LICENSE BLOCK #####
 
-from os import path as os_path
-
-from bpy import ops as bpy_ops
 
 from bpy.types import Context, Event, Operator
 
-from bpy.props import (
-    BoolProperty,
-    StringProperty,
-)
-
-from bpy_extras.io_utils import ImportHelper
+from bpy.props import StringProperty
 
 
 class BM_OT_Helper_Free_Icons(Operator):
@@ -112,38 +104,6 @@ class BM_OT_Helper_Help_Config(BM_OT_Helper_Help):
 
     bl_idname = 'bakemaster.helper_help_config'
     bl_label = "Config: save/load all settings & setup"
-
-
-class BM_OT_Helper_FileChooseDialog(Operator, ImportHelper):
-    bl_idname = 'bakemaster.helper_filechoosedialog'
-    bl_label = "Choose a filepath"
-    bl_description = "Open a file browser, hold Shift to open the file, Alt to browse containing directory"  # noqa: E501
-    bl_options = {'INTERNAL'}
-
-    prop_name: StringProperty(options={'HIDDEN'})
-
-    config_lookup: BoolProperty(default=False, options={'HIDDEN'})
-    config_action: StringProperty(options={'HIDDEN'})
-
-    message: StringProperty(options={'HIDDEN'})
-
-    def process_exit(self) -> set:
-        if self.message != "":
-            self.report({'INFO'}, self.message)
-        return {'FINISHED'}
-
-    def execute(self, context: Context) -> set:
-        if os_path.isfile(self.filepath):
-            self.filepath = os_path.dirname(self.filepath)
-        # no safe check if property is invalid
-        setattr(context.scene.bakemaster, self.prop_name, self.filepath)
-
-        if not self.config_lookup:
-            return self.process_exit()
-
-        bpy_ops.bakemaster.bake_config(
-            'EXEC_DEFAULT', action=self.config_action)
-        return {'FINISHED'}
 
 
 class BM_OT_Helper_UI_Prop_Relinquish(Operator):

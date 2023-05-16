@@ -27,7 +27,8 @@
 #
 # ##### END LICENSE BLOCK #####
 
-from bpy.types import Operator
+import typing
+from bpy.types import Context, Event, Operator, PropertyGroup
 from bpy.props import (
     IntProperty,
     StringProperty,
@@ -43,7 +44,7 @@ class BM_OT_Container_Add(Operator):
     bakejob_index: IntProperty(default=-1)
     new_name: StringProperty()
 
-    def add(self, bakejob, name: str):
+    def add(self, bakejob: PropertyGroup, name: str) -> PropertyGroup:
         new_container = bakejob.containers.add()
         new_container.index = bakejob.containers_len
         new_container.bakejob_index = bakejob.index
@@ -52,7 +53,7 @@ class BM_OT_Container_Add(Operator):
         bakejob.containers_active_index = new_container.index
         bakejob.containers_len += 1
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
 
         bakejob = bakemaster.get_bakejob(bakemaster, self.bakejob_index)
@@ -79,7 +80,7 @@ class BM_OT_Container_Add(Operator):
                 add_errors += 1
                 continue
 
-            self.add(bakejob, name)
+            _ = self.add(bakejob, name)
 
         if add_errors:
             self.report(
@@ -89,7 +90,7 @@ class BM_OT_Container_Add(Operator):
         bakemaster.wh_recalc_indexes(bakejob, "containers")
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         return self.execute(context)
 
 
@@ -102,7 +103,7 @@ class BM_OT_Container_Remove(Operator):
     bakejob_index: IntProperty(default=-1)
     index: IntProperty(default=-1)
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
 
         status, message = bakemaster.wh_remove(
@@ -113,7 +114,7 @@ class BM_OT_Container_Remove(Operator):
             self.report({'INFO'}, message)
         return status
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         return self.execute(context)
 
 
@@ -125,7 +126,7 @@ class BM_OT_Container_Trash(Operator):
 
     bakejob_index: IntProperty(default=-1)
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
 
         bakemaster.wh_trash(
@@ -133,7 +134,7 @@ class BM_OT_Container_Trash(Operator):
             "containers")
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         return self.execute(context)
 
 
@@ -160,7 +161,7 @@ class BM_OT_Container_Rename(Operator):
     container = None
     bakejob_type = ''
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
 
         if self.container is None:
@@ -184,7 +185,7 @@ class BM_OT_Container_Rename(Operator):
 
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         bakemaster = context.scene.bakemaster
 
         bakejob = bakemaster.get_bakejob(bakemaster)
@@ -204,7 +205,7 @@ class BM_OT_Container_Rename(Operator):
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
-    def draw(self, _):
+    def draw(self, _: Context) -> None:
         if self.container is None:
             return
 
@@ -224,7 +225,7 @@ class BM_OT_Container_Toggle_Expand(Operator):
     bakejob_index: IntProperty(default=-1)
     index: IntProperty(default=-1)
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
 
         bakejob = bakemaster.get_bakejob(bakemaster, self.bakejob_index)
@@ -243,7 +244,7 @@ class BM_OT_Container_Toggle_Expand(Operator):
         container.is_expanded = not container.is_expanded
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         return self.execute(context)
 
 
@@ -258,10 +259,10 @@ class BM_OT_Container_Group_Options(Operator):
 
     container = None
 
-    def execute(self, _):
+    def execute(self, _: Context) -> set:
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         bakemaster = context.scene.bakemaster
 
         bakejob = bakemaster.get_bakejob(bakemaster, self.bakejob_index)
@@ -277,7 +278,7 @@ class BM_OT_Container_Group_Options(Operator):
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=300)
 
-    def draw(self, context):
+    def draw(self, context: Context) -> None:
         if self.container is None:
             return
 
@@ -317,14 +318,14 @@ class BM_OT_Container_Group_Set_Icon(Operator):
 
     container = None
 
-    def execute(self, _):
+    def execute(self, _: Context) -> set:
         if self.container is None:
             return {'CANCELLED'}
 
         self.container.group_color_tag = self.new_color_tag
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         bakemaster = context.scene.bakemaster
 
         bakejob = bakemaster.get_bakejob(bakemaster, self.bakejob_index)
@@ -352,8 +353,10 @@ class BM_OT_Container_Group(Operator):
     group_insert_index = -1
     last_selected_index = -1
 
-    def eval_group(self, bakemaster, container, s_group_level,
-                   curr_group_level, p_continue_selection):
+    def eval_group(self, bakemaster: PropertyGroup, container: PropertyGroup,
+                   s_group_level: int, curr_group_level: int,
+                   p_continue_selection: bool) -> typing.Tuple[bool, str]:
+
         if self.group_insert_index == -1:
             print(f"BakeMaster Internal Warning: group_insert_index is not defined at {self}")  # noqa: E501
             return False, 'TRYAGAIN_ERROR'
@@ -382,7 +385,8 @@ class BM_OT_Container_Group(Operator):
 
         return False, ''
 
-    def add_group_item(self, bakejob, group_level):
+    def add_group_item(self, bakejob: PropertyGroup, group_level: int
+                       ) -> PropertyGroup:
         name = "Group"
 
         new_group = bakejob.containers.add()
@@ -397,7 +401,9 @@ class BM_OT_Container_Group(Operator):
         bakejob.containers.move(bakejob.containers_len,
                                 self.group_insert_index)
 
-    def execute(self, context):
+        return new_group
+
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
 
         bakejob = bakemaster.get_bakejob(bakemaster, self.bakejob_index)
@@ -459,13 +465,13 @@ class BM_OT_Container_Group(Operator):
 
         for container in to_group:
             container.ui_indent_level += 1
-        self.add_group_item(bakejob, s_group_level)
+        _ = self.add_group_item(bakejob, s_group_level)
 
         bakemaster.wh_recalc_indexes(bakejob, "containers", parent_props=[
             ["bakejob_index", bakejob.index]])
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         self.group_insert_index = -1
         self.last_selected_index = -1
         return self.execute(context)
@@ -484,7 +490,9 @@ class BM_OT_Container_Ungroup(Operator):
     s_ungroup_level = -1  # inital ungrouping level
     new_active_index = -1
 
-    def ungroup(self, bakemaster, bakejob, container):
+    def ungroup(self, bakemaster: PropertyGroup, bakejob: PropertyGroup,
+                container: PropertyGroup) -> None:
+
         if self.s_ungroup_level == -1:
             bakemaster.log("ogx0002")
         container.ui_indent_level = self.s_ungroup_level
@@ -518,8 +526,10 @@ class BM_OT_Container_Ungroup(Operator):
         _ = bakemaster.wh_copy(parent_container, bakejob.containers,
                                container.index, exclude_copy)
 
-    def ungroup_has_selection_errors(self, has_selection, container,
-                                     last_selected_index):
+    def ungroup_has_selection_errors(
+            self, has_selection: bool, container: PropertyGroup,
+            last_selected_index: int) -> typing.Tuple[int, str]:
+
         if not all([has_selection and container.is_selected]):
             return last_selected_index, ''
 
@@ -530,7 +540,10 @@ class BM_OT_Container_Ungroup(Operator):
             return last_selected_index, 'LEVEL_ERROR'
         return container.index, ''
 
-    def ungroup_is_finished(self, has_selection, container, f_group_index):
+    def ungroup_is_finished(self, has_selection: bool,
+                            container: PropertyGroup, f_group_index: int
+                            ) -> bool:
+
         selection_passed = all(
             [has_selection, not container.is_selected,
              container.ui_indent_level <= self.s_ungroup_level])
@@ -546,7 +559,7 @@ class BM_OT_Container_Ungroup(Operator):
              ])
         return selection_passed or active_container_passed
 
-    def execute(self, context):
+    def execute(self, context: Context) -> set:
         bakemaster = context.scene.bakemaster
 
         bakejob = bakemaster.get_bakejob(bakemaster, self.bakejob_index)
@@ -621,7 +634,7 @@ class BM_OT_Container_Ungroup(Operator):
         bakemaster.wh_recalc_indexes(bakejob, "containers")
         return {'FINISHED'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         self.s_ungroup_level = -1
         self.new_active_index = -1
         return self.execute(context)

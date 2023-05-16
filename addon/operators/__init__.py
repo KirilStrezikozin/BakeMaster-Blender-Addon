@@ -44,7 +44,6 @@ classes = (
     helpers.BM_OT_Helper_Free_Icons,
     helpers.BM_OT_Helper_Help,
     helpers.BM_OT_Helper_Help_Config,
-    helpers.BM_OT_Helper_FileChooseDialog,
     helpers.BM_OT_Helper_UI_Prop_Relinquish,
 
     walkhandler.BM_OT_WalkHandler,
