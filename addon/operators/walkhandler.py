@@ -27,12 +27,19 @@
 #
 # ##### END LICENSE BLOCK #####
 
-from time import time
 import typing
+
+from time import time
 
 from bpy import ops as bpy_ops
 
-from bpy.types import Context, Operator, PropertyGroup, Scene, bpy_prop_collection
+from bpy.types import (
+    Context,
+    Operator,
+    PropertyGroup,
+    Scene,
+    bpy_prop_collection,
+)
 
 from bpy.props import (
     IntProperty,
@@ -42,37 +49,25 @@ from bpy.props import (
 
 from bpy.app.handlers import persistent
 
-_walk_handler_invoked = False
-_walk_handler_invoke_time = 0
 
-_is_walk_handler_timer_started = False
+_is_wh_invoked = False
+_wh_last_invoke_time = 0
 
 
 @persistent
 def call_WalkHandler(_: Scene) -> None:
     """
-    Walk Handler caller. After the first invoke, if Handler was cancelled,
-    try to reinvoke every 5 seconds.
+    WalkHandler caller. After the first invoke, if WalkHandler was cancelled,
+    try to reinvoke every 5 seconds (5 seconds as such to avoid recursion).
     """
 
-    global _walk_handler_invoked
-    global _walk_handler_invoke_time
+    global _is_wh_invoked
+    global _wh_last_invoke_time
 
-    if _walk_handler_invoked:
+    if not time() - _wh_last_invoke_time > 5 or _is_wh_invoked:
         return
 
-    global _is_walk_handler_timer_started
-
-    invoke_time = _walk_handler_invoke_time
-    time_diff = time() - invoke_time
-
-    if not any([time_diff > 5,
-                not _is_walk_handler_timer_started]):
-        return
-
-    _is_walk_handler_timer_started = True
-    _walk_handler_invoke_time = time()
-
+    _wh_last_invoke_time = time()
     bpy_ops.bakemaster.walkhandler('INVOKE_DEFAULT')
 
 
@@ -88,8 +83,8 @@ class BM_OT_WalkHandler(Operator):
         cls = self.__class__
         cls._handler = None
 
-        global _walk_handler_invoked
-        _walk_handler_invoked = False
+        global _is_wh_invoked
+        _is_wh_invoked = False
 
     def handler_poll(self) -> bool:
         cls = self.__class__
@@ -97,8 +92,8 @@ class BM_OT_WalkHandler(Operator):
             return False
         cls._handler = self
 
-        global _walk_handler_invoked
-        return not _walk_handler_invoked
+        global _is_wh_invoked
+        return not _is_wh_invoked
 
     def get_containers(self, bakemaster: PropertyGroup
                        ) -> typing.Union[None, typing.Tuple[
@@ -529,10 +524,11 @@ class BM_OT_WalkHandler(Operator):
         if not self.handler_poll():
             return {'CANCELLED'}
 
-        global _walk_handler_invoked
-        _walk_handler_invoked = True
-        global _walk_handler_invoke_time
-        _walk_handler_invoke_time = time()
+        global _is_wh_invoked
+        global _wh_last_invoke_time
+
+        _is_wh_invoked = True
+        _wh_last_invoke_time = time()
 
         wm = context.window_manager
         wm.modal_handler_add(self)
