@@ -35,8 +35,10 @@ from bpy import ops as bpy_ops
 
 from bpy.types import (
     Context,
+    Event,
     Operator,
     PropertyGroup,
+    Region,
     Scene,
     bpy_prop_collection,
 )
@@ -73,18 +75,11 @@ def call_WalkHandler(_: Scene) -> None:
 
 class BM_OT_WalkHandler(Operator):
     bl_idname = 'bakemaster.walkhandler'
-    bl_label = "BakeMaster Walk Handler"
-    bl_description = "User Interface Walk Handler for operating Drag, Drop, Multi Selection"  # noqa: E501
+    bl_label = "BakeMaster WalkHandler"
+    bl_description = "UI WalkHandler for operating Drag, Drop, and Multi Selection"  # noqa: E501
     bl_options = {'INTERNAL'}
 
     _handler = None
-
-    def cancel(self, _: Context) -> None:
-        cls = self.__class__
-        cls._handler = None
-
-        global _is_wh_invoked
-        _is_wh_invoked = False
 
     def handler_poll(self) -> bool:
         cls = self.__class__
@@ -95,6 +90,14 @@ class BM_OT_WalkHandler(Operator):
         global _is_wh_invoked
         return not _is_wh_invoked
 
+    def cancel(self, _: Context) -> None:
+        cls = self.__class__
+        cls._handler = None
+
+        global _is_wh_invoked
+        _is_wh_invoked = False
+
+    # TODO: replace with j bakemaster.get_active_... call?
     def get_containers(self, bakemaster: PropertyGroup
                        ) -> typing.Union[None, typing.Tuple[
                            PropertyGroup, bpy_prop_collection, str]]:
@@ -108,6 +111,7 @@ class BM_OT_WalkHandler(Operator):
             return None
         return data, containers, attr
 
+    # TODO: cleanup
     def reset_props(self, bakemaster: PropertyGroup) -> None:
         self.is_dropping = False
         self.is_dragging = False
@@ -141,14 +145,13 @@ class BM_OT_WalkHandler(Operator):
         bakemaster.is_double_click = False
         bakemaster.last_left_click_ticker = False
 
-    def is_cursor_in_region(self, region, event):
-        # area as region is acceptable
-        if all([region.x <= event.mouse_x <= region.x + region.width,
-                region.y <= event.mouse_y <= region.y + region.height]):
-            return True
-        else:
-            return False
+    # TODO: used?
+    def is_cursor_in_region(self, region: Region, event: Event) -> bool:
 
+        return all([region.x <= event.mouse_x <= region.x + region.width,
+                    region.y <= event.mouse_y <= region.y + region.height])
+
+    # TODO: used?
     def get_uiarea_of_type(self, screen: not None, area_type: str):
         for area in screen.areas:
             if area is None:
@@ -468,7 +471,7 @@ class BM_OT_WalkHandler(Operator):
 
         self.drag_end(bakemaster)
 
-    def modal(self, context, event):
+    def modal(self, context: Context, event: Event) -> set:
         if 'TIMER' in event.type:
             return {'PASS_THROUGH'}
 
@@ -478,8 +481,10 @@ class BM_OT_WalkHandler(Operator):
         if not bakemaster.allow_drag and self.is_dragging:
             self.is_dragging = False
 
+        # TODO: eval from prop_updates only, just check here
         self.set_last_left_click_ticker(bakemaster)
 
+        # TODO: rename query_events_end -> dp_wait_end
         if self.query_events_end:
             self.remove_drop_prompts(bakemaster)
             self.query_events_end = False
@@ -515,12 +520,13 @@ class BM_OT_WalkHandler(Operator):
             self.events_end(bakemaster)
             return {'PASS_THROUGH'}
 
+        # TODO: rename wait_events_end -> events_wait_end
         self.wait_events_end = True
         if not bakemaster.allow_drag:
             self.is_dropping = True
         return {'PASS_THROUGH'}
 
-    def invoke(self, context, _):
+    def invoke(self, context: Context, _: Event) -> set:
         if not self.handler_poll():
             return {'CANCELLED'}
 
@@ -532,8 +538,45 @@ class BM_OT_WalkHandler(Operator):
 
         wm = context.window_manager
         wm.modal_handler_add(self)
+
         self.reset_props(context.scene.bakemaster)
         return {'RUNNING_MODAL'}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class BM_OT_Global_WalkData_AddDropped(Operator):
