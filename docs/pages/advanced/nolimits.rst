@@ -16,6 +16,9 @@
 .. |containers| image:: ../../_static/images/pages/advanced/nolimits/containers_504x684.gif
     :alt: Containers
 
+.. |colormanagement| image:: ../../_static/images/pages/advanced/nolimits/0_cm_fullpanel.png
+    :alt: Color Management
+
 .. |openaddonprefs| image:: ../../_static/images/pages/advanced/nolimits/openaddonprefs_320x277.gif
     :alt: How to open Addon Preferences
 
@@ -78,27 +81,27 @@ With SSAA, BakeMaster bakes at a higher resolution and then downscales back to t
 
     <div class="content-gallery">
         <div class="content">
-            <img src="../../_static/images/pages/advanced/nolimits/0_ssaa_1x1.png" alt="Albedo, not denoised">
+            <img src="../../_static/images/pages/advanced/nolimits/0_ssaa_1x1.png" alt="1x1 SSAA">
             <div class="content-description">
                 <p>1K (1024x1024)</p>
                 <p>No SSAA</p>
-                <p>1s</p>
+                <p>Took 1s to bake</p>
             </div>
         </div>
         <div class="content">
-            <img src="../../_static/images/pages/advanced/nolimits/0_ssaa_2x2.png" alt="Albedo, denoised">
+            <img src="../../_static/images/pages/advanced/nolimits/1_ssaa_2x2.png" alt="2x2 SSAA">
             <div class="content-description">
                 <p>1K (1024x1024)</p>
                 <p>2x2 SSAA</p>
-                <p>3s</p>
+                <p>Took 3s to bake</p>
             </div>
         </div>
         <div class="content">
-            <img src="../../_static/images/pages/advanced/nolimits/0_ssaa_8x8.png" alt="Albedo, denoised">
+            <img src="../../_static/images/pages/advanced/nolimits/2_ssaa_8x8.png" alt="8x8 SSAA">
             <div class="content-description">
                 <p>1K (1024x1024)</p>
                 <p>8x8 SSAA</p>
-                <p>4m</p>
+                <p>Took 4m to bake</p>
             </div>
         </div>
     </div>
@@ -424,6 +427,31 @@ Containers become available when `Name Matching <../start/objects.html#name-matc
                     <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-1', 1)" onselectstart="return false">&#10095;</a>
                 </div>
             </div>
+
+Color Management
+=================
+
+You can see and control color management settings for your bakes in the `Output -> Color Management` section. BakeMaster officially supports sRGB, ACES, and XYZ color spaces, the name of which you can see in the panel's top.
+
+.. admonition:: Default Rules
+    :class: important
+
+    ``Default Rules`` show what default color spaces are used for baked images, as well as file format and bit depth, all of which you can tweak.
+
+    By default, BakeMaster uses standard widely accepted configurations, and you can choose preferable ones that meet your specific needs.
+
+    | The chosen settings get applied to new Maps that you're adding.
+    | To update existing, run ``Quick Apply``.
+
+|colormanagement|
+
+.. admonition:: Scene Color Management
+    :class: important
+
+    If you want your scene color management settings to be applied to bakes, `Apply Scene` is the way. By turning it on, you can, for example, add Filmic view transform to baked textures if the scene has got one.
+
+    Ticking `Compositor` will run bakes through compositor nodes. This is helpful when you've got additional color management set up in compositor (e.g. custom color adjustments, etc.) and want it to affect baked images.
+
 
 Addon Preferences
 =================
