@@ -1,6 +1,6 @@
 # ##### BEGIN LICENSE BLOCK #####
 #
-# "BakeMaster" Blender Add-on (version 2.0.2)
+# "BakeMaster" Blender Add-on (version 2.5.0)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
 # This License permits you to use this software for any purpose including
@@ -27,12 +27,11 @@
 #
 # ##### END LICENSE BLOCK #####
 
-
 bl_info = {
     "name" : "BakeMaster",
-    "description" : "Bake various PBR-based or Cycles maps with ease and comfort",
+    "description" : "Bake various PBR, Masks, and Cycles maps with ease and comfort.",
     "author" : "kemplerart",
-    "version" : (2, 0, 2),
+    "version" : (2, 5, 0),
     "blender" : (2, 83, 0),
     "location" : "View3D > Sidebar > BakeMaster",
     "warning" : "",
@@ -120,6 +119,8 @@ classes = (
     BM_MT_CHNLP_Presets,
     BM_PT_BAKE_Presets,
     BM_MT_BAKE_Presets,
+    BM_PT_CM_Presets,
+    BM_MT_CM_Presets,
 
     BM_OT_Table_of_Objects,
     BM_OT_Table_of_Objects_Add,
@@ -152,6 +153,7 @@ classes = (
     BM_OT_CreateArtificialUniContainer_DeselectAll,
     BM_OT_CreateArtificialUniContainer,
     BM_OT_ITEM_and_MAP_Format_MatchResolution,
+    BM_OT_CM_ApplyRules,
     BM_OT_ReportMessage,
     BM_OT_Help,
 
@@ -166,6 +168,7 @@ classes = (
     BM_OT_MAP_Preset_Add,
     BM_OT_CHNLP_Preset_Add,
     BM_OT_BAKE_Preset_Add,
+    BM_OT_CM_Preset_Add,
 
     BM_ALEP_Object,
     BM_ALEP_Map,
@@ -175,7 +178,6 @@ classes = (
     BM_Map,
     BM_Object_Highpoly,
     BM_Object_ChannelPack,
-    # BM_Object_BatchNamingKeyword,
     BM_Object,
     BM_SceneProps_TextureSet_Object_SubObject,
     BM_SceneProps_TextureSet_Object,
