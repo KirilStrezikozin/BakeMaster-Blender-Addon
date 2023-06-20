@@ -1,6 +1,6 @@
 # ##### BEGIN LICENSE BLOCK #####
 #
-# "BakeMaster" Blender Add-on (version 2.0.2)
+# "BakeMaster" Blender Add-on (version 2.5.0)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
 # This License permits you to use this software for any purpose including
@@ -27,18 +27,21 @@
 #
 # ##### END LICENSE BLOCK #####
 
-
 import bpy
 from .operators import *
 from .operator_bake import BM_OT_ITEM_Bake
-from .utils import BM_Object_Get
+from .utils import BM_Object_Get, BM_template_list_get_rows
 from .presets import *
+
 
 class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
     bl_idname = __package__
 
     def draw(self, context):
         bm_props = context.scene.bm_props
+        self.layout.use_property_split = True
+        self.layout.use_property_decorate = False
+
         layout = self.layout.column(align=True)
         layout.prop(bm_props, 'global_lowpoly_tag')
         layout.prop(bm_props, 'global_highpoly_tag')
@@ -50,7 +53,7 @@ class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
         layout.prop(bm_props, 'global_use_hide_notbaked')
         layout = self.layout.column(align=True)
         layout.prop(bm_props, 'global_bake_match_maps_type')
-        
+
 class BM_ALEP_UL_Objects_Item(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, active_data, active_propname, index):
         source_object = [object for object in context.scene.bm_table_of_objects if object.global_object_name == item.object_name]
@@ -313,11 +316,6 @@ class BM_UL_Table_of_Maps_Item(bpy.types.UIList):
         else:
             uv_container = object
 
-        if item.global_map_type == 'DECAL' and object.bake_save_internal:
-            layout.active = False
-            icon = 'RESTRICT_RENDER_ON'
-            props_column_use_bake.enabled = False
-
         if uv_container.uv_bake_data == 'VERTEX_COLORS':
             if item.global_map_type != 'VERTEX_COLOR_LAYER':
                 layout.active = False
@@ -362,21 +360,13 @@ class BM_UL_Table_of_Objects_Item_ChannelPack(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         index_value = item.global_channelpack_index
 
-        # channel pack inactive if internal bake
-        object = context.scene.bm_table_of_objects[item.global_channelpack_object_index]
-        if object.bake_save_internal:
-            layout.active = False
-            text = " (External Bake only)"
-        else:
-            text = ""
-
         layout.emboss = 'NONE'
         row = layout.row()
         split = row.split(factor=0.1*len(str(index_value)))
         index_column = split.column()
         index_column.label(text=str(index_value))
         layout.emboss = 'NORMAL'
-        split.column().prop(item, 'global_channelpack_name', text=text)
+        split.column().prop(item, 'global_channelpack_name', text="")
 
     def draw_filter(self, context, layout):
         pass
@@ -668,13 +658,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
             decal_box = layout.box()
             decal_box.use_property_split = True
             decal_box.use_property_decorate = False
-            # inactive if baking internally
-            if object.bake_save_internal:
-                decal_box.active = False
-                text = " (External Bake only)"
-            else:
-                text = ""
-            
+
             # decal header
             decal_box_header = decal_box.row(align=True)
             decal_box_header.use_property_split = False
@@ -682,7 +666,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
             icon = 'TRIA_DOWN' if scene.bm_props.global_is_decal_panel_expanded else 'TRIA_RIGHT'
             decal_box_header.prop(scene.bm_props, 'global_is_decal_panel_expanded', text="", icon=icon)
             decal_box_header.emboss = 'NORMAL'
-            decal_box_header.label(text="Decal" + text)
+            decal_box_header.label(text="Decal")
             BM_PT_DECAL_Presets.draw_panel_header(decal_box_header)
 
             # decal body
@@ -727,10 +711,6 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
 
                 if object.hl_use_unique_per_map is False or draw_all is False:
                     # highpoly
-                    if len(object.hl_highpoly_table) > 1:
-                        rows = len(object.hl_highpoly_table)
-                    else:
-                        rows = 1
                     hl_box_highpoly_frame = hl_box.split(factor=0.4)
                     hl_box_highpoly_frame.column()
                     hl_box_highpoly = hl_box_highpoly_frame.column()
@@ -741,6 +721,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                     hl_box_highpoly.label(text=label)
                     if hl_draw:
                         hl_box_highpoly_table = hl_box_highpoly.column().row()
+                        rows = BM_template_list_get_rows(object.hl_highpoly_table, 1, 1, 5, True)
                         hl_box_highpoly_table.template_list('BM_UL_Table_of_Objects_Item_Highpoly', "", object, 'hl_highpoly_table', object, 'hl_highpoly_table_active_index', rows=rows)
                         hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
                         hl_highpoly_table_column.operator(BM_OT_ITEM_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
@@ -762,7 +743,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                         if object.hl_decals_use_separate_texset:
                             hl_box_decal.prop(object, 'hl_decals_separate_texset_prefix')
                     # cage
-                    if len(object.hl_highpoly_table) and draw_all:
+                    if len(object.hl_highpoly_table):
                         hl_box_cage = hl_box.column(align=True)
                         # hl_box_cage.prop(object, 'hl_cage_type')
                         # if object.hl_cage_type == 'STANDARD':
@@ -905,16 +886,12 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
         object = BM_Object_Get(None, context)[0]
-    
+
         # maps table
         maps_table_box = layout.box()
         maps_table_row = maps_table_box.row()
 
-        if len(object.global_maps) > 4:
-            rows = len(object.global_maps)
-        else:
-            rows = 4
-        
+        rows = BM_template_list_get_rows(object.global_maps, 4, 0, 5, False)
         maps_table_row.template_list('BM_UL_Table_of_Maps_Item', "", object, 'global_maps', object, 'global_maps_active_index', rows=rows)
         maps_table_column = maps_table_row.column(align=True)
         maps_table_column.operator(BM_OT_ITEM_Maps.bl_idname, text="", icon='ADD').control = 'ADD'
@@ -957,38 +934,53 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 if scene.bm_props.global_is_format_panel_expanded:
                     format_box.prop(object, 'out_use_unique_per_map')
                     # format
-                    format_box_column = format_box.column(align=True)
+                    format_box_column = format_box.column()
                     format_box_column.prop(format_prop_collection, 'out_file_format')
-                    # if format_prop_collection.out_file_format == 'PSD':
-                        # format_box_column.prop(format_prop_collection, 'out_psd_include')
-                    if format_prop_collection.out_file_format == 'OPEN_EXR':
-                        format_box_column.prop(format_prop_collection, 'out_exr_codec')
-                    elif format_prop_collection.out_file_format == 'PNG':
-                        format_box_column.prop(format_prop_collection, 'out_compression')
-                    format_box_column = format_box.column(align=True)
-                    format_box_column.prop(format_prop_collection, 'out_res', text="Resolution")
+                    format_box_res_column = format_box_column.column(align=True)
+                    format_box_res_column.prop(format_prop_collection, 'out_res', text="Resolution")
                     if format_prop_collection.out_res == 'CUSTOM':
-                        format_box_column.prop(format_prop_collection, 'out_res_height')
-                        format_box_column.prop(format_prop_collection, 'out_res_width')
-                        format_split = format_box_column.split(factor=0.4)
+                        format_box_res_column.prop(format_prop_collection, 'out_res_height')
+                        format_box_res_column.prop(format_prop_collection, 'out_res_width')
+                        format_split = format_box_res_column.split(factor=0.4)
                         format_split.column()
                         format_split.column().operator(BM_OT_ITEM_and_MAP_Format_MatchResolution.bl_idname, icon='FULLSCREEN_ENTER')
                     # elif format_prop_collection.out_res == 'TEXEL':
                         # format_box_column.prop(format_prop_collection, 'out_texel_density_value')
                         # format_box_column.prop(format_prop_collection, 'out_texel_density_match')
+                    format_box_column.row().prop(format_prop_collection, 'out_bit_depth', expand=True)
+                    format_box_column = format_box.column(align=True)
+                    if format_prop_collection.out_file_format == 'TARGA':
+                        format_box_column.prop(format_prop_collection, 'out_tga_use_raw')
+                    elif format_prop_collection.out_file_format == 'DPX':
+                        format_box_column.prop(format_prop_collection, 'out_dpx_use_log')
+                    elif format_prop_collection.out_file_format == 'TIFF':
+                        format_box_column.prop(format_prop_collection, 'out_tiff_compression')
+                    # elif format_prop_collection.out_file_format == 'PSD':
+                        # format_box_column.prop(format_prop_collection, 'out_psd_include')
+                    elif format_prop_collection.out_file_format == 'OPEN_EXR':
+                        format_box_column.prop(format_prop_collection, 'out_exr_codec')
+                    elif format_prop_collection.out_file_format == 'PNG':
+                        format_box_column.prop(format_prop_collection, 'out_compression')
+                    elif format_prop_collection.out_file_format == 'JPEG':
+                        format_box_column.prop(format_prop_collection, 'out_quality')
+                    if out_alpha_isAllowed(format_prop_collection):
+                        format_box_column = format_box.column(align=True)
+                        format_box_alpha_row = format_box_column.row()
+                        format_box_alpha_row.prop(format_prop_collection, 'out_use_alpha')
+                        if format_prop_collection.out_use_alpha:
+                            format_box_column.prop(format_prop_collection, 'out_use_transbg')
+                        format_box_alpha_row.enabled = not format_prop_collection.out_use_transbg
                     format_box_column = format_box.column(align=True)
                     if bpy.app.version >= (3, 1, 0):
                         format_box_column.prop(format_prop_collection, 'out_margin_type')
                     format_box_column.prop(format_prop_collection, 'out_margin')
-                    format_box_column = format_box.column(align=True)
-                    format_box_column.prop(format_prop_collection, 'out_use_32bit')
-                    format_box_column.prop(format_prop_collection, 'out_use_alpha')
-                    format_box_column.prop(format_prop_collection, 'out_use_transbg')
                     if format_prop_collection.uv_type == 'TILED':
                         format_box_column = format_box.column(align=True)
                         format_box_column.prop(format_prop_collection, 'out_udim_start_tile', text="Start Tile")
                         format_box_column.prop(format_prop_collection, 'out_udim_end_tile', text="End Tile")
-                    format_box.prop(format_prop_collection, 'out_super_sampling_aa')
+                    format_box_ssaa_row = format_box.row(align=True)
+                    format_box_ssaa_row.prop(format_prop_collection, 'out_super_sampling_aa')
+                    format_box_ssaa_row.active = format_prop_collection.out_super_sampling_aa != '1'
                     format_box_column = format_box.column(align=True)
                     format_box_column.prop(format_prop_collection, 'out_use_adaptive_sampling')
                     if format_prop_collection.out_use_adaptive_sampling:
@@ -997,9 +989,8 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                         format_box_column.prop(format_prop_collection, 'out_min_samples')
                     else:
                         format_box_column.prop(format_prop_collection, 'out_samples')
-                    format_box_denoise_prop = format_box.row()
-                    format_box_denoise_prop.prop(format_prop_collection, 'out_use_denoise')            
-                    format_box_denoise_prop.active = not object.bake_save_internal
+                    format_box_column = format_box.column(align=True)
+                    format_box_column.prop(format_prop_collection, 'out_use_denoise')            
 
             # map settings column
             map_settings_column = maps_table_box.column()
@@ -1018,8 +1009,6 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 if map.global_map_type == 'NORMAL' and map.map_normal_data == 'MULTIRES':
                     map_settings_column.enabled = False
                 elif map.global_map_type == 'DISPLACEMENT' and map.map_displacement_data in ['HIGHPOLY', 'MULTIRES']:
-                    map_settings_column.enabled = False
-            if map.global_map_type == 'DECAL' and object.bake_save_internal:
                     map_settings_column.enabled = False
 
             # map settings body
@@ -1043,7 +1032,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 pass
             else:
                 map_settings_column_preview = map_settings_column.row()
-                map_settings_column_preview.prop(map, 'map_%s_use_preview' % map.global_map_type, text="Preview (Full Version)")
+                map_settings_column_preview.prop(map, 'map_%s_use_preview' % map.global_map_type)
                 if any([object.nm_is_universal_container, object.hl_is_highpoly, object.hl_is_cage]):
                     map_settings_column_preview.active = False
             try:
@@ -1127,7 +1116,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 row.prop(map, 'map_cycles_use_pass_direct', toggle=True)
                 row.prop(map, 'map_cycles_use_pass_indirect', toggle=True)
                 row.prop(map, 'map_cycles_use_pass_color', toggle=True)
-            
+
             # Object-based Maps
             elif map.global_map_type == 'NORMAL':
                 try:
@@ -1136,6 +1125,10 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 except NameError:
                     pass
                 map_settings_column.prop(map, 'map_normal_data')
+
+                if map.map_normal_data == 'MULTIRES':
+                    map_settings_column.prop(map, 'map_normal_multires_subdiv_levels')
+
                 map_settings_column.prop(map, 'map_normal_space')
                 map_settings_column.prop(map, 'map_normal_preset')
                 if map.map_normal_preset == 'CUSTOM':
@@ -1156,24 +1149,34 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                 map_settings_column.prop(map, 'map_displacement_result')
                 if map.map_displacement_data == 'HIGHPOLY':
                     map_settings_column.prop(map, 'map_displacement_subdiv_levels')
-                    try:
-                        object_pointer = scene.objects[object.global_object_name]
-                        face_count = len(object_pointer.data.polygons) * 4 ** map.map_displacement_subdiv_levels # future face count
-                        map_settings_column.label(text="Face count while baking: " + str(face_count))
-                    except KeyError:
-                        pass
-        
+
+                    object_pointer = scene.objects.get(object.global_object_name, None)
+                    if object.hl_is_lowpoly and object_pointer is not None:
+                        face_count = len(object_pointer.data.polygons) * 4 ** map.map_displacement_subdiv_levels
+
+                        face_count_split = map_settings_column.split(factor=0.4)
+                        face_count_split.column()
+                        face_count_col = face_count_split.column(align=True)
+                        face_count_col.label(text="Lowpoly face count:  " + str(face_count))
+
+                        first_highpoly = None
+                        if object.hl_use_unique_per_map and len(map.hl_highpoly_table):
+                            first_highpoly = scene.objects.get(map.hl_highpoly_table[0].global_object_name, None)
+                        elif not object.hl_use_unique_per_map and len(object.hl_highpoly_table):
+                            first_highpoly = scene.objects.get(object.hl_highpoly_table[0].global_object_name, None)
+                        if first_highpoly is not None:
+                            face_count_h = str(len(first_highpoly.data.polygons))
+                        else:
+                            face_count_h = "-"
+                        face_count_col.label(text="Highpoly face count:  " + face_count_h)
+
+                elif map.map_displacement_data == 'MULTIRES':
+                    map_settings_column.prop(map, 'map_displacement_multires_subdiv_levels')
+                    map_settings_column.prop(map, 'map_displacement_use_lowres_mesh')
+
             elif map.global_map_type == 'VECTOR_DISPLACEMENT':
                 map_settings_column.prop(map, 'map_vector_displacement_use_negative')
                 map_settings_column.prop(map, 'map_vector_displacement_result')
-                # if map.map_vector_displacement_result == 'MODIFIER':
-                #     map_settings_column.prop(map, 'map_vector_displacement_subdiv_levels')
-                #     try:
-                #         object_pointer = scene.objects[object.global_object_name]
-                #         face_count = len(object_pointer.data.polygons) * 4 ** map.map_vector_displacement_subdiv_levels # future face count
-                #         map_settings_column.label(text="Face count while baking: " + str(face_count))
-                #     except KeyError:
-                #         pass
 
             # Masks and Details Maps
             elif map.global_map_type == 'AO':
@@ -1318,10 +1321,6 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
 
                     # hl body
                     if scene.bm_props.local_is_hl_panel_expanded:
-                        if len(map.hl_highpoly_table) > 1:
-                            rows = len(map.hl_highpoly_table)
-                        else:
-                            rows = 1
                         hl_box_highpoly_frame = hl_box.split(factor=0.4)
                         hl_box_highpoly_frame.column()
                         hl_box_highpoly = hl_box_highpoly_frame.column()
@@ -1332,6 +1331,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                             hl_box_highpoly.label(text=label)
                         if hl_draw:
                             hl_box_highpoly_table = hl_box_highpoly.column().row()
+                            rows = BM_template_list_get_rows(map.hl_highpoly_table, 1, 1, 5, True)
                             hl_box_highpoly_table.template_list('BM_UL_Table_of_Maps_Item_Highpoly', "", map, 'hl_highpoly_table', map, 'hl_highpoly_table_active_index', rows=rows)
                             hl_highpoly_table_column = hl_box_highpoly_table.column(align=True)
                             hl_highpoly_table_column.operator(BM_OT_MAP_Highpoly_Table_Add.bl_idname, text="", icon='ADD')
@@ -1411,9 +1411,12 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
     bl_label = " "
     bl_idname = 'BM_PT_Item_Output'
     bl_options = {'DEFAULT_CLOSED'}
-    
+
     @classmethod
-    def poll(cls, context):
+    def poll(cls, _):
+        return True
+
+    def bake_output_poll(self, context):
         object = BM_Object_Get(None, context)
         if object[0].nm_is_universal_container:
             return object[0].nm_uni_container_is_global
@@ -1427,15 +1430,128 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
                     return not object1.nm_uni_container_is_global
         return object[1]
 
-    def draw_header(self, context):
+    def draw_header(self, _):
         label = "Output"
         self.layout.label(text=label)
+
+    def draw_cm_section(self, context, layout):
+        scene = context.scene
+        bm_props = scene.bm_props
+
+        # color management
+        cm_box = layout.box()
+        cm_box.use_property_split = True
+        cm_box.use_property_decorate = False
+
+        # color management header
+        cm_box_header = cm_box.row()
+        cm_box_header.use_property_split = False
+        cm_box_header.emboss = 'NONE'
+        icon = 'TRIA_DOWN' if bm_props.global_is_colormanagement_panel_expanded else 'TRIA_RIGHT'
+        cm_box_header.prop(bm_props, 'global_is_colormanagement_panel_expanded', text="", icon=icon)
+        cm_box_header.emboss = 'NORMAL'
+        cm_box_header.label(text="Color Management")
+        BM_PT_CM_Presets.draw_panel_header(cm_box_header)
+
+        # bake output body
+        if bm_props.global_is_colormanagement_panel_expanded:
+            cm_cs_row = cm_box.row()
+            cm_cs_row.prop(bm_props, 'cm_color_space')
+            cm_cs_row.active = bm_props.cm_color_space != 'DEFAULT'
+
+            cm_label_split = cm_box.split(factor=0.4)
+            cm_label_split.column()
+            cm_label_col = cm_label_split.column()
+            if bm_props.cm_color_space == 'DEFAULT':
+                cm_warn_col = cm_label_col.column(align=True)
+                cm_warn_col.label(text="Unsupported scene color space.")
+                cm_warn_col.label(text="Default will be used.")
+                cm_warn_col.enabled = False
+            cm_label_col.separator(factor=1.0)
+            cm_heading_col = cm_label_col.column(align=True)
+            cm_heading_col.label(text="Default Rules:")
+
+            cs_id = bm_props.cm_color_space.lower()
+
+            # Color Texture
+            cm_tex_split = cm_box.split(factor=0.4)
+            cm_tex_hcol = cm_tex_split.column()
+            cm_tex_hcol_row = cm_tex_hcol.row()
+            cm_tex_hcol_row.alignment = 'RIGHT'
+            cm_tex_hcol_row.label(text="Color Texture")
+
+            cm_tex_column = cm_tex_split.column(align=False)
+            cm_tex_column.use_property_split = False
+            cm_tex_column.prop(
+                bm_props, f'cm_{cs_id}_texture_color_space', text="")
+            cm_tex_column.prop(
+                bm_props, f'cm_{cs_id}_texture_file_format', text="")
+            cm_tex_column.row().prop(
+                bm_props, f'cm_{cs_id}_texture_bit_depth', expand=True)
+
+            # Data Texture
+            cm_tex_split = cm_box.split(factor=0.4)
+            cm_tex_hcol = cm_tex_split.column()
+            cm_tex_hcol_row = cm_tex_hcol.row()
+            cm_tex_hcol_row.alignment = 'RIGHT'
+            cm_tex_hcol_row.label(text="Data Texture")
+
+            cm_tex_column = cm_tex_split.column(align=False)
+            cm_tex_column.use_property_split = False
+            cm_tex_column.prop(
+                bm_props, f'cm_{cs_id}_data_color_space', text="")
+            cm_tex_column.prop(
+                bm_props, f'cm_{cs_id}_data_file_format', text="")
+            cm_tex_column.row().prop(
+                bm_props, f'cm_{cs_id}_data_bit_depth', expand=True)
+
+            # Linear Texture
+            cm_tex_split = cm_box.split(factor=0.4)
+            cm_tex_hcol = cm_tex_split.column()
+            cm_tex_hcol_row = cm_tex_hcol.row()
+            cm_tex_hcol_row.alignment = 'RIGHT'
+            cm_tex_hcol_row.label(text="Linear Texture")
+
+            cm_tex_column = cm_tex_split.column(align=False)
+            cm_tex_column.use_property_split = False
+            cm_tex_column.prop(
+                bm_props, f'cm_{cs_id}_linear_color_space', text="")
+            cm_tex_column.prop(
+                bm_props, f'cm_{cs_id}_linear_file_format', text="")
+            cm_tex_column.row().prop(
+                bm_props, f'cm_{cs_id}_linear_bit_depth', expand=True)
+
+            linear_cs_ff = getattr(bm_props, f'cm_{cs_id}_linear_file_format')
+            cm_tex_split.active = (scene.bm_props.cm_use_linear_exr
+                                   or linear_cs_ff != 'OPEN_EXR')
+
+            # cm_box.separator(factor=1.0)
+
+            cm_cs_column = cm_box.column(align=True)
+            cm_cs_column.prop(bm_props, 'cm_use_linear_exr')
+            if bm_props.cm_color_space == 'sRGB':
+                cm_cs_column.prop(bm_props, 'cm_use_linear_srgb')
+
+            cm_ot_split = cm_box.split(factor=0.4)
+            cm_ot_split.column()
+            cm_ot_split.column().row().operator(
+                BM_OT_CM_ApplyRules.bl_idname, icon='CHECKMARK')
+
+            cm_box.separator(factor=1.0)
+
+            cm_cs_column = cm_box.column(align=True)
+            cm_cs_column.prop(bm_props, 'cm_use_apply_scene')
+            cm_cs_column.prop(bm_props, 'cm_use_compositor')
 
     def draw(self, context):
         layout = self.layout
         scene = context.scene
+        bm_props = scene.bm_props
         object = BM_Object_Get(None, context)[0]
 
+        if not self.bake_output_poll(context):
+            self.draw_cm_section(context, layout)
+            return
 
         # channel packing
         if len(object.global_maps):
@@ -1447,20 +1563,16 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
             chnlpack_box_header = chnlpack_box.row()
             chnlpack_box_header.use_property_split = False
             chnlpack_box_header.emboss = 'NONE'
-            icon = 'TRIA_DOWN' if scene.bm_props.global_is_chnlpack_panel_expanded else 'TRIA_RIGHT'
-            chnlpack_box_header.prop(scene.bm_props, 'global_is_chnlpack_panel_expanded', text="", icon=icon)
+            icon = 'TRIA_DOWN' if bm_props.global_is_chnlpack_panel_expanded else 'TRIA_RIGHT'
+            chnlpack_box_header.prop(bm_props, 'global_is_chnlpack_panel_expanded', text="", icon=icon)
             chnlpack_box_header.emboss = 'NORMAL'
             chnlpack_box_header.label(text="Channel Packing")
 
             # channel packing body
-            if scene.bm_props.global_is_chnlpack_panel_expanded:
+            if bm_props.global_is_chnlpack_panel_expanded:
                 row = chnlpack_box.row()
 
-                if len(object.chnlp_channelpacking_table) > 4:
-                    rows = len(object.chnlp_channelpacking_table)
-                else:
-                    rows = 4
-        
+                rows = BM_template_list_get_rows(object.chnlp_channelpacking_table, 4, 0, 5, False)
                 row.template_list('BM_UL_Table_of_Objects_Item_ChannelPack', "", object, 'chnlp_channelpacking_table', object, 'chnlp_channelpacking_table_active_index', rows=rows)
                 chnlpack_box_column = row.column(align=True)
                 chnlpack_box_column.operator(BM_OT_ITEM_ChannelPack_Table_Add.bl_idname, text="", icon='ADD')
@@ -1477,7 +1589,7 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
                     col.use_property_split = False
                     col.prop(channel_pack, 'global_channelpack_type')
                     col.separator(factor=1.0)
-                    
+
                     chnlp_data = {
                         'R1G1B' : ['R', 'G', 'B'],
                         'RGB1A' : ['RGB', 'A'],
@@ -1490,7 +1602,7 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
                         'A' : 'EVENT_A',
                         'RGB' : 'IMAGE_RGB',
                     }
-                    
+
                     chnlp_type = channel_pack.global_channelpack_type
                     for prop in chnlp_data[chnlp_type]:
                         prop_use_channel = '{}_use_{}'.format(chnlp_type, prop)
@@ -1511,67 +1623,15 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
         bake_box_header = bake_box.row()
         bake_box_header.use_property_split = False
         bake_box_header.emboss = 'NONE'
-        icon = 'TRIA_DOWN' if scene.bm_props.global_is_bakeoutput_panel_expanded else 'TRIA_RIGHT'
-        bake_box_header.prop(scene.bm_props, 'global_is_bakeoutput_panel_expanded', text="", icon=icon)
+        icon = 'TRIA_DOWN' if bm_props.global_is_bakeoutput_panel_expanded else 'TRIA_RIGHT'
+        bake_box_header.prop(bm_props, 'global_is_bakeoutput_panel_expanded', text="", icon=icon)
         bake_box_header.emboss = 'NORMAL'
         bake_box_header.label(text="Bake Output")
         BM_PT_BAKE_Presets.draw_panel_header(bake_box_header)
 
         # bake output body
-        if scene.bm_props.global_is_bakeoutput_panel_expanded:
-            # # batch naming            
-            # bake_box_batchname_split = bake_box.split(factor=0.001)
-            # bake_box_batchname_split.column()
-            # bake_box_batchname_frame = bake_box_batchname_split.column()
-            # bake_box_batchname_header = bake_box_batchname_frame.row()
-            # bake_box_batchname_header.use_property_split = False
-            # bake_box_batchname_header.emboss = 'NONE'
-            # icon = 'TRIA_DOWN' if scene.bm_props.local_is_batchname_panel_expanded else 'TRIA_RIGHT'
-            # bake_box_batchname_header.prop(scene.bm_props, 'local_is_batchname_panel_expanded', text="", icon=icon)
-            # bake_box_batchname_header.emboss = 'NORMAL'
-            # bake_box_batchname_header.label(text="Batch Naming")
-            # BM_PT_MapsConfigurator_Presets.draw_panel_header(bake_box_batchname_header)
-
-            # if scene.bm_props.local_is_batchname_panel_expanded:
-            #     bake_box_column = bake_box_batchname_frame.column(align=True)
-            #     bake_box_column.use_property_split = False
-            #     bake_box_column_row = bake_box_column.row()
-            #     bake_box_column_row.prop(object, 'bake_batch_name_use_custom', text="")
-            #     bake_box_column_row_prop = bake_box_column_row.column(align=True)
-            #     bake_box_column_row_prop.prop(object, 'bake_batch_name_custom', text="Custom")
-            #     bake_box_column_row_prop.enabled = object.bake_batch_name_use_custom
-            #     if object.bake_batch_name_use_custom is False:
-            #         bake_box_row = bake_box_batchname_frame.row()
-            #         if len(object.bake_batch_name_table) > 5:
-            #             rows = len(object.bake_batch_name_table)
-            #         else:
-            #             rows = 5
-            #         bake_box_row.template_list('BM_UL_Table_of_Objects_Item_BatchNamingTable_Item', "", object, 'bake_batch_name_table', object, 'bake_batch_name_table_active_index', rows=rows)
-            #         bake_box_column = bake_box_row.column(align=True)
-            #         bake_box_column.operator(BM_OT_ITEM_BatchNamingTable_Add.bl_idname, text="", icon='ADD')
-            #         bake_box_column.operator(BM_OT_ITEM_BatchNamingTable_Remove.bl_idname, text="", icon='REMOVE')
-            #         bake_box_column.separator(factor=1.0)
-            #         bake_box_column.separator(factor=1.0)
-            #         bake_box_column.emboss = 'NONE'
-            #         bake_box_column.operator(BM_OT_ITEM_BatchNamingTable_Trash.bl_idname, text="", icon='TRASH')
-
-            #         if len(object.bake_batch_name_table):
-            #             keyword = object.bake_batch_name_table[object.bake_batch_name_table_active_index]
-            #             bake_box_column = bake_box_batchname_frame.column(align=True)
-            #             if keyword.global_keyword in ["OBJECT_NAME", "CONTAINER_NAME", "PACK_NAME", "TEXSET_NAME", "MAP_NAME", "MAP_SSAA", "MAP_NORMAL", "MAP_UV", "ENGINE"]:
-            #                 bake_box_column.prop(keyword, 'global_use_caps')
-            #             if keyword.global_keyword == 'MAP_RES':
-            #                 bake_box_column.prop(keyword, 'mapres_use_k')
-            #             elif keyword.global_keyword == 'MAP_RES':
-            #                 bake_box_column.prop(keyword, 'mapres_use_k')
-            #             elif keyword.global_keyword == 'MAP_TRANS':
-            #                 bake_box_column.prop(keyword, 'maptrans_custom')
-            #             elif keyword.global_keyword == 'MAP_DENOISE':
-            #                 bake_box_column.prop(keyword, 'mapdenoise_custom')
-            #             elif keyword.global_keyword == 'AUTO_UV':
-            #                 bake_box_column.prop(keyword, 'autouv_custom')
-                # bake_box.separator(factor=1.0)
-
+        if bm_props.global_is_bakeoutput_panel_expanded:
+            # batch naming            
             bake_box_column = bake_box.column(align=True)
             bake_box_column.prop(object, 'bake_batchname')
             bake_box_column.prop(object, 'bake_batchname_use_caps')
@@ -1595,20 +1655,29 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
                 bake_layout_device.active = True
             else:
                 bake_layout_device.active = context.preferences.addons['cycles'].preferences.has_active_device()
+
+            if bpy.app.version >= (3, 4, 0):
+                bake_box_column = bake_box.column(align=True)
+                bake_box_column.prop(object, 'bake_view_from')
+
+            bake_box_column = bake_box.column(align=True)
             bake_box_column.prop(object, 'bake_create_material')
             bake_box_column.prop(object, 'bake_assign_modifiers')
-            # bake_box_column.prop(scene.bm_props, 'global_bake_use_save_log')
+            # bake_box_column.prop(bm_props, 'global_bake_use_save_log')
 
             bake_box_column = bake_box.column(align=True)
             bake_box_column.prop(object, 'bake_hide_when_inactive')
             if object.bake_hide_when_inactive is False:
                 bake_box_column.prop(object, 'bake_vg_index')
 
+        self.draw_cm_section(context, layout)
+
+
 class BM_PT_TextureSetsBase(bpy.types.Panel):
     bl_label = " "
     bl_idname = 'BM_PT_TextureSets'
     bl_options = {'DEFAULT_CLOSED'}
-    
+
     @classmethod
     def poll(cls, context):
         return len(context.scene.bm_table_of_objects) > 0
@@ -1631,7 +1700,8 @@ class BM_PT_TextureSetsBase(bpy.types.Panel):
             rows = len(bm_props.global_texturesets_table)
         else:
             rows = 3
-        
+
+        rows = BM_template_list_get_rows(bm_props.global_texturesets_table, 3, 3, 5, True)
         texsets_row.template_list('BM_UL_Table_of_TextureSets', "", bm_props, 'global_texturesets_table', bm_props, 'global_texturesets_active_index', rows=rows)
         texsets_column = texsets_row.column(align=True)
         texsets_column.operator(BM_OT_SCENE_TextureSets_Table_Add.bl_idname, text="", icon='ADD')
@@ -1647,11 +1717,7 @@ class BM_PT_TextureSetsBase(bpy.types.Panel):
             texset = bm_props.global_texturesets_table[bm_props.global_texturesets_active_index]
             texset_objects_row = texsets_box.row()
 
-            if len(texset.global_textureset_table_of_objects) > 3:
-                rows = len(texset.global_textureset_table_of_objects)
-            else:
-                rows = 3
-        
+            rows = BM_template_list_get_rows(texset.global_textureset_table_of_objects, 3, 3, 5, True)
             texset_objects_row.template_list('BM_UL_TextureSets_Objects_Table_Item', "", texset, 'global_textureset_table_of_objects', texset, 'global_textureset_table_of_objects_active_index', rows=rows)
             texset_objects_column = texset_objects_row.column(align=True)
             
@@ -1671,18 +1737,14 @@ class BM_PT_TextureSetsBase(bpy.types.Panel):
             texset_objects_column.emboss = 'NONE'
             texset_objects_column.operator(BM_OT_SCENE_TextureSets_Objects_Table_Trash.bl_idname, text="", icon='TRASH')
 
-
             # texset options
             if len(texset.global_textureset_table_of_objects):
                 # texset object subitems
                 item = texset.global_textureset_table_of_objects[texset.global_textureset_table_of_objects_active_index]
                 if context.scene.bm_props.global_use_name_matching and context.scene.bm_table_of_objects[item.global_source_object_index].nm_is_universal_container:
                     texsets_box.label(text="Container's Objects to include")
-                    if len(item.global_object_name_subitems) > 3:
-                        rows = len(item.global_object_name_subitems)
-                    else:
-                        rows = 3
                     texset_box_texset_item_subitems_row = texsets_box.row()
+                    rows = BM_template_list_get_rows(item.global_object_name_subitems, 3, 3, 5, True)
                     texset_box_texset_item_subitems_row.template_list('BM_UL_TextureSets_Objects_Table_Item_SubItem', "", item, 'global_object_name_subitems', item, 'global_object_name_subitems_active_index', rows=rows)
                     texset_box_texset_item_subitems_row.operator(BM_OT_SCENE_TextureSets_Objects_Table_InvertSubItems.bl_idname, text="", icon='CHECKBOX_HLT')
 
@@ -1694,7 +1756,8 @@ class BM_PT_TextureSetsBase(bpy.types.Panel):
                 if texset.uvp_use_uv_repack:
                     texset_column.prop(texset, 'uvp_use_islands_rotate')
                     texset_column.prop(texset, 'uvp_pack_margin')
-            
+                    texset_column.prop(texset, 'uvp_use_average_islands_scale')
+
                 texset_row = texsets_box.row()
                 texset_row.use_property_split = True
                 texset_row.use_property_decorate = False
