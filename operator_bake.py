@@ -1,6 +1,6 @@
 # ##### BEGIN LICENSE BLOCK #####
 #
-# "BakeMaster" Blender Add-on (version 2.0.2)
+# "BakeMaster" Blender Add-on (version 2.5.0)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
 # This License permits you to use this software for any purpose including
@@ -31,26 +31,28 @@
 import bpy
 from .labels import BM_Labels
 
+
 class BM_OT_ITEM_Bake(bpy.types.Operator):
     bl_idname = 'bakemaster.item_bake'
     bl_label = "BakeMaster Bake Operator"
     bl_description = BM_Labels.OPERATOR_ITEM_BAKE_DESCRIPTION
     bl_options = {'UNDO'}
 
-    wait_delay = 0.1 # Time Step interval in seconds between timer events
-    report_delay = 2.0 # delay between each status report, seconds
-    _version_current = bpy.app.version # Blender version for compatibility checks
+    wait_delay = 0.1  # Time Step interval in seconds between timer events
+    report_delay = 1.0  # delay between each status report, seconds
+    _version_current = bpy.app.version  # for compatibility checks
     _handler = None
     _timer = None
 
-    control : bpy.props.EnumProperty(
-        items = [('BAKE_ALL', "Bake All", "Bake maps for all objects added"),
-                 ('BAKE_THIS', "Bake This", "Bake maps only for the current object or container")])
+    control: bpy.props.EnumProperty(
+        items=[('BAKE_ALL', "Bake All", "Bake maps for all objects added"),
+               ('BAKE_THIS', "Bake This",
+                "Bake maps only for the current object or container")])
 
     @classmethod
     def is_running(cls):
         return cls._handler is not None
-    
-    def invoke(self, context, event):
-        self.report({'INFO'}, "Upgrade to Full Version")
+
+    def invoke(self, context, _):
+        self.report({'ERROR'}, "Bake isn't available. Upgrade to Full Version")
         return {'FINISHED'}
