@@ -1,6 +1,6 @@
 # ##### BEGIN LICENSE BLOCK #####
 #
-# "BakeMaster" Blender Add-on (version 2.0.2)
+# "BakeMaster" Blender Add-on (version 2.5.0)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
 # This License permits you to use this software for any purpose including
@@ -26,7 +26,6 @@
 # see <http://www.gnu.org/licenses/>.
 #
 # ##### END LICENSE BLOCK #####
-
 
 import bpy
 import webbrowser
@@ -1310,60 +1309,12 @@ class BM_OT_SCENE_TextureSets_Objects_Table_InvertSubItems(bpy.types.Operator):
             subitem.global_object_include_in_texset = False if subitem.global_object_include_in_texset else True
         return {'FINISHED'}
 
-# class BM_OT_ITEM_BatchNamingTable_Add(bpy.types.Operator):
-#     bl_idname = 'bakemaster.item_batchnamingtable_add'
-#     bl_label = ""
-#     bl_description = "Add keyword to the Batch Naming convention"
-#     bl_options = {'INTERNAL', 'UNDO'}
-
-#     def execute(self, context):
-#         object = BM_Object_Get(None, context)[0]
-#         new_item = object.bake_batch_name_table.add()
-#         new_item.global_keyword_index = len(object.bake_batch_name_table) - 1
-#         new_item.global_keyword_old = new_item.global_keyword
-#         BM_BATCHNAMINGKEY_PROPS_global_keyword_UpdateOrder(context)
-#         object.bake_batch_name_table_active_index = len(object.bake_batch_name_table) - 1
-#         return {'FINISHED'}
-
-# class BM_OT_ITEM_BatchNamingTable_Remove(bpy.types.Operator):
-#     bl_idname = 'bakemaster.item_batchnamingtable_remove'
-#     bl_label = ""
-#     bl_description = "Remove keyword from the Batch Naming convention"
-#     bl_options = {'INTERNAL', 'UNDO'}
-
-#     def execute(self, context):
-#         object = BM_Object_Get(None, context)[0]
-#         keyword = object.bake_batch_name_table[object.bake_batch_name_table_active_index]
-#         for keyword1 in object.bake_batch_name_table:
-#             if keyword1.global_keyword_index > keyword.global_keyword_index:
-#                 keyword1.global_keyword_index -= 1
-#         object.bake_batch_name_table.remove(object.bake_batch_name_table_active_index)
-#         BM_BATCHNAMINGKEY_PROPS_global_keyword_UpdateOrder(context)
-#         if object.bake_batch_name_table_active_index > 0:
-#             object.bake_batch_name_table_active_index -= 1
-#         return {'FINISHED'}
-
-# class BM_OT_ITEM_BatchNamingTable_Trash(bpy.types.Operator):
-#     bl_idname = 'bakemaster.item_batchnamingtable_trash'
-#     bl_label = ""
-#     bl_description = "Remove all keywords from the Batch Naming convention"
-#     bl_options = {'INTERNAL', 'UNDO'}
-
-#     def execute(self, context):
-#         object = BM_Object_Get(None, context)[0]
-#         to_remove = []
-#         for index, keyword in enumerate(object.bake_batch_name_table):
-#             to_remove.append(index)
-#         for index in sorted(to_remove, reverse=True):
-#             object.bake_batch_name_table.remove(index)
-#         object.bake_batch_name_table_active_index = 0
-#         return {'FINISHED'}
 class BM_OT_ITEM_BatchNaming_Preview(bpy.types.Operator):
     bl_idname = 'bakemaster.item_batchnaming_preview'
     bl_label = "Preview Batch Name"
-    bl_description = "Preview how the configured batch naming convention will look in the output image filename.\n(Demo, values for each keyword might be different for each baked map's image file)"
+    bl_description = "Preview how the configured batch naming convention will look in the output image filename.\n(Previewed on active selected map, values for each keyword may differ for each baked map)"
     bl_options = {'INTERNAL'}
-    
+
     def execute(self, context):
         object = BM_Object_Get(None, context)[0]
         preview = BM_ITEM_PROPS_bake_batchname_GetPreview(object, context)
@@ -1564,19 +1515,26 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
         else:
             for object1 in context.scene.bm_table_of_objects:
                 if object1.nm_is_universal_container:
-                    items = [item for item in bm_props.global_alep_objects if item.object_name == object1.nm_container_name]
+                    items = [item for item in bm_props.global_alep_objects if item.object_name == object1.nm_container_name + " Container"]
                 else:
                     items = [item for item in bm_props.global_alep_objects if item.object_name == object1.global_object_name]
                 if len(items) == 0:
                     continue
+
                 if items[0].use_affect is False:
                     continue
-
                 try:
                     setattr(object1, prop, prop_value_real)
                 except TypeError:
                     self.report({'ERROR'}, "Cannot apply property, aborting")
-                    return {'FINISHED'}
+                if object1.nm_is_universal_container:
+                    for object2 in context.scene.bm_table_of_objects:
+                        if object2.nm_item_uni_container_master_index == object1.nm_master_index and object2.nm_is_local_container is False:
+                            try:
+                                setattr(object2, prop, prop_value_real)
+                            except TypeError:
+                                self.report({'ERROR'}, "Cannot apply property, aborting")
+                            
 
         self.report({'INFO'}, "Property succesfully applied")
         return {'FINISHED'}
@@ -1604,10 +1562,8 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
         items_box.use_property_decorate = False
         if prop_is_map:
             if bm_props.global_alep_affect_objects is False and len(object.global_maps):
-                rows = len(bm_props.global_alep_maps)
-
-                #items_box.template_list('BM_ALEP_UL_Maps_Item', "", bm_props, 'global_alep_maps', bm_props, 'global_alep_maps_active_index', rows=rows)
                 table = items_box.column().row()
+                rows = BM_template_list_get_rows(bm_props.global_alep_maps, 1, 1, 5, True)
                 table.template_list('BM_ALEP_UL_Maps_Item', "", bm_props, 'global_alep_maps', bm_props, 'global_alep_maps_active_index', rows=rows)
                 column = table.column(align=True)
                 column.operator(BM_OT_ApplyLastEditedProp_SelectAll.bl_idname, text="", icon='WORLD')
@@ -1617,10 +1573,8 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
                 items_box.label(text="Object has no maps")
 
         if (prop_is_map and bm_props.global_alep_affect_objects) or prop_is_map is False:
-            rows = len(bm_props.global_alep_objects)
-
-            #items_box.template_list('BM_ALEP_UL_Objects_Item', "", bm_props, 'global_alep_objects', bm_props, 'global_alep_objects_active_index', rows=rows)
             table = items_box.column().row()
+            rows = BM_template_list_get_rows(bm_props.global_alep_objects, 1, 1, 5, True)
             table.template_list('BM_ALEP_UL_Objects_Item', "", bm_props, 'global_alep_objects', bm_props, 'global_alep_objects_active_index', rows=rows)
             column = table.column(align=True)
             column.operator(BM_OT_ApplyLastEditedProp_SelectAll.bl_idname, text="", icon='WORLD')
@@ -1663,6 +1617,7 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
             'NORMAL' : "Normal",
             'DISPLACEMENT' : "Displacement",
             'VECTOR_DISPLACEMENT' : "Vector Displacement",
+            'DECAL' : "Decal",
             'POSITION' : "Position",
             'AO' : "AO",
             'CAVITY' : "Cavity",
@@ -1706,7 +1661,8 @@ class BM_OT_ApplyLastEditedProp(bpy.types.Operator):
                 elif object1.nm_is_universal_container and object1.nm_uni_container_is_global:
                     add_object = True
                     global_uni_c_master_index = object1.nm_master_index
-                elif not any([object1.hl_is_highpoly, object1.hl_is_cage, object1.nm_item_uni_container_master_index == global_uni_c_master_index, object1.nm_is_local_container]) and object1.nm_item_uni_container_master_index != -1:
+                # elif not any([object1.hl_is_highpoly, object1.hl_is_cage, object1.nm_item_uni_container_master_index == global_uni_c_master_index, object1.nm_is_local_container]) and object1.nm_item_uni_container_master_index != -1:
+                elif not any([object1.hl_is_highpoly, object1.hl_is_cage, object1.nm_is_local_container]) and object1.nm_item_uni_container_master_index != -1:
                     add_object = True
             elif not any([object1.hl_is_highpoly, object1.hl_is_cage]):
                 add_object = True
@@ -1866,8 +1822,8 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
         items_box = layout.box()
         items_box.use_property_split = True
         items_box.use_property_decorate = False
-        rows = len(bm_props.global_cauc_objects)
         table = items_box.column().row()
+        rows = BM_template_list_get_rows(bm_props.global_cauc_objects, 1, 1, 5, True)
         table.template_list('BM_CAUC_UL_Objects_Item', "", bm_props, 'global_cauc_objects', bm_props, 'global_cauc_objects_active_index', rows=rows)
         column = table.column(align=True)
         column.operator(BM_OT_CreateArtificialUniContainer_DeselectAll.bl_idname, text="", icon='CHECKBOX_HLT')
@@ -1961,8 +1917,8 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
         layout.label(text="Select Resolution:")
         layout.use_property_split = True
         layout.use_property_decorate = False
-        rows = len(bm_props.global_fmr_items)
         table = layout.column().row()
+        rows = BM_template_list_get_rows(bm_props.global_fmr_items, 1, 1, 5, True)
         table.template_list('BM_FMR_UL_Item', "", bm_props, 'global_fmr_items', bm_props, 'global_fmr_items_active_index', rows=rows)
 
     def invoke(self, context, event):
@@ -2006,6 +1962,35 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
                 new_item.socket_and_node_name = "{}/{}".format(socket.name, socket.node.name)
 
         return wm.invoke_props_dialog(self, width=400)
+
+class BM_OT_CM_ApplyRules(bpy.types.Operator):
+    bl_label = "Quick Apply"
+    bl_description = "Set default file format and bit depth, which are configured in rules above, for all maps"
+    bl_idname = "bakemaster.cm_apply_rules"
+    bl_options = {'INTERNAL'}
+
+    def get_defaults(self, context, map, out_container):
+        _, _, file_format, bit_depth = map_image_getDefaults(
+            context, map, out_container)
+        return file_format, bit_depth
+
+    def execute(self, context):
+        for object in context.scene.bm_table_of_objects:
+            for map in object.global_maps:
+                out_container = object
+                if object.out_use_unique_per_map:
+                    out_container = map
+
+                file_format, bit_depth = self.get_defaults(
+                    context, map, out_container)
+
+                out_container.out_file_format = file_format
+                out_container.out_bit_depth = bit_depth
+
+        return {'FINISHED'}
+
+    def invoke(self, context, _):
+        return self.execute(context)
 
 class BM_OT_ReportMessage(bpy.types.Operator):
     bl_label = "BakeMaster Message"
