@@ -74,6 +74,35 @@ Supersample anti-aliasing
 
 With SSAA, BakeMaster bakes at a higher resolution and then downscales back to the chosen map resolution. Such a technique results in smoother and jaggy-free images (not always noticeable). Enable SSAA in the map's `Format Settings <../start/maps.html#format-settings>`__.
 
+.. raw:: html
+
+    <div class="content-gallery">
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/nolimits/0_ssaa_1x1.png" alt="Albedo, not denoised">
+            <div class="content-description">
+                <p>1K (1024x1024)</p>
+                <p>No SSAA</p>
+                <p>1s</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/nolimits/0_ssaa_2x2.png" alt="Albedo, denoised">
+            <div class="content-description">
+                <p>1K (1024x1024)</p>
+                <p>2x2 SSAA</p>
+                <p>3s</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/nolimits/0_ssaa_8x8.png" alt="Albedo, denoised">
+            <div class="content-description">
+                <p>1K (1024x1024)</p>
+                <p>8x8 SSAA</p>
+                <p>4m</p>
+            </div>
+        </div>
+    </div>
+
 Channel Packing
 ===============
 
