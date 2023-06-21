@@ -1858,12 +1858,13 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
 
     def available(self, context, object):
         # return None if won't be able to grab resolution
+
         if any([object.nm_is_universal_container, object.nm_is_local_container]):
-            return None
+            return []
 
         source_objects = [obj for obj in context.scene.objects if obj.name == object.global_object_name]
         if len(source_objects) == 0:
-            return None
+            return []
 
         source_object = source_objects[0]
         materials = []
@@ -1874,7 +1875,7 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
             else:
                 materials.append(material)
         if len(source_object.data.materials) == len_of_none:
-            return None
+            return []
 
         # return not None materials
         return materials
@@ -1913,7 +1914,7 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
         if len(bm_props.global_fmr_items) == 0:
             layout.label(text="No Images found")
             return
-        
+
         layout.label(text="Select Resolution:")
         layout.use_property_split = True
         layout.use_property_decorate = False
@@ -1921,7 +1922,7 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
         rows = BM_template_list_get_rows(bm_props.global_fmr_items, 1, 1, 5, True)
         table.template_list('BM_FMR_UL_Item', "", bm_props, 'global_fmr_items', bm_props, 'global_fmr_items_active_index', rows=rows)
 
-    def invoke(self, context, event):
+    def invoke(self, context, _):
         wm = context.window_manager
         bm_props = context.scene.bm_props
 
@@ -1935,10 +1936,13 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
 
         object = BM_Object_Get(None, context)[0]
         materials = self.available(context, object)
-        if materials is None:
-            self.report({'ERROR'}, "Unavailable. Object has no materials or is Container")
-            return {'FINISHED'}
-        
+
+        # if materials is None:
+        #     self.report({'ERROR'}, "Unavailable. Object has no materials or is Container")
+        #     return {'CANCELED'}
+
+        added_names = []
+
         # add found image textures
         for material in materials:
             material.use_nodes = True
@@ -1951,15 +1955,26 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
                 # add image item to items
                 new_item = bm_props.global_fmr_items.add()
                 new_item.image_name = node.image.name
+                added_names.append(node.image.name)
                 new_item.image_res = "x".join(map(str, tuple(node.image.size)))
-                new_item.image_height = tuple(node.image.size)[0]
-                new_item.image_width = tuple(node.image.size)[1]
+                new_item.image_width = tuple(node.image.size)[0]
+                new_item.image_height = tuple(node.image.size)[1]
 
                 if len(node.outputs[0].links) == 0:
                     continue
-                
+
                 socket = node.outputs[0].links[0].to_socket
                 new_item.socket_and_node_name = "{}/{}".format(socket.name, socket.node.name)
+
+        for image in bpy.data.images:
+            if image.name in added_names:
+                continue
+
+            new_item = bm_props.global_fmr_items.add()
+            new_item.image_name = image.name
+            new_item.image_res = "x".join(map(str, tuple(image.size)))
+            new_item.image_width = tuple(image.size)[0]
+            new_item.image_height = tuple(image.size)[1]
 
         return wm.invoke_props_dialog(self, width=400)
 
