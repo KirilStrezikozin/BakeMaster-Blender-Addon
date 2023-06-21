@@ -41,9 +41,9 @@ Contact and chat
 
 Reach the author directly
     | ``kirilstrezikozin@gmail.com``
-    | `telegram <https://t.me/kemplerart>`__
+    | `telegram <https://t.me/heiskempler>`__
     | `instagram <https://www.instagram.com/kemplerart/>`__
-    | discord username: ``kemplerart#1586``
+    | discord username: ``heiskempler``
 
 
 Special thanks

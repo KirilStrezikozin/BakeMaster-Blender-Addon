@@ -16,9 +16,6 @@
 .. |containers| image:: ../../_static/images/pages/advanced/nolimits/containers_504x684.gif
     :alt: Containers
 
-.. |colormanagement| image:: ../../_static/images/pages/advanced/nolimits/0_cm_fullpanel.png
-    :alt: Color Management
-
 .. |openaddonprefs| image:: ../../_static/images/pages/advanced/nolimits/openaddonprefs_320x277.gif
     :alt: How to open Addon Preferences
 
@@ -51,7 +48,9 @@ Baking with a low sample count might result in image noise. Enable denoising (no
     </div>
 
 .. caution:: 
-     Note that *on some occasions* denoising maps like Albedo or Normal mightn't be a good idea as it might blur out some sharp details.
+    It may not be a good idea to denoise maps like Normal because might blur out some important details.
+
+    It's recommended to avoid using it with other maps like Albedo when colors have sharp details and you want to preserve them. You can always add two similar maps and stick with the one that looks the best.
 
 .. raw:: html
 
@@ -72,10 +71,13 @@ Baking with a low sample count might result in image noise. Enable denoising (no
         </div>
     </div>
 
+.. seealso:: 
+    `Comparison between denoised/not denoised bakes <../advanced/improve.html#what-s-the-best-sample-count>`__ and how much time they took to bake.
+
 Supersample anti-aliasing
 =========================
 
-With SSAA, BakeMaster bakes at a higher resolution and then downscales back to the chosen map resolution. Such a technique results in smoother and jaggy-free images (not always noticeable). Enable SSAA in the map's `Format Settings <../start/maps.html#format-settings>`__.
+With SSAA, BakeMaster bakes at a higher resolution and then downscales back to the chosen map resolution. Such technique smoothes out very contrasted edges and makes images jaggy-free. Enable SSAA in the map's `Format Settings <../start/maps.html#format-settings>`__.
 
 .. raw:: html
 
@@ -105,6 +107,9 @@ With SSAA, BakeMaster bakes at a higher resolution and then downscales back to t
             </div>
         </div>
     </div>
+
+.. note::
+   SSAA increases the bake time as if you were to manually increase the resolution.
 
 Channel Packing
 ===============
@@ -428,31 +433,6 @@ Containers become available when `Name Matching <../start/objects.html#name-matc
                 </div>
             </div>
 
-Color Management
-=================
-
-You can see and control color management settings for your bakes in the `Output -> Color Management` section. BakeMaster officially supports sRGB, ACES, and XYZ color spaces, the name of which you can see in the panel's top.
-
-.. admonition:: Default Rules
-    :class: important
-
-    ``Default Rules`` show what default color spaces are used for baked images, as well as file format and bit depth, all of which you can tweak.
-
-    By default, BakeMaster uses standard widely accepted configurations, and you can choose preferable ones that meet your specific needs.
-
-    | The chosen settings get applied to new Maps that you're adding.
-    | To update existing, run ``Quick Apply``.
-
-|colormanagement|
-
-.. admonition:: Scene Color Management
-    :class: important
-
-    If you want your scene color management settings to be applied to bakes, `Apply Scene` is the way. By turning it on, you can, for example, add Filmic view transform to baked textures if the scene has got one.
-
-    Ticking `Compositor` will run bakes through compositor nodes. This is helpful when you've got additional color management set up in compositor (e.g. custom color adjustments, etc.) and want it to affect baked images.
-
-
 Addon Preferences
 =================
 
@@ -524,7 +504,7 @@ Some influential settings sit in the addon preferences.
                 <img src="../../_static/images/pages/advanced/nolimits/8_addonprefs_version.png" alt="Addon Version">
                 <div class="slideshow-description">
                     <b>Addon Version</b>
-                    <p>BakeMaster version you use.</p>
+                    <p>BakeMaster version you're using.</p>
                 </div>
             </div>
         </div>
