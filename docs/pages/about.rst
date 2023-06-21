@@ -38,6 +38,20 @@ Have complex materials? Never worry about the nodes again: toggle a couple of se
             <div class="content column active">
                 <div class="slideshow-description">
                     <p>```<em>
+                        I am saving so much time and it does it all with one click of a button. I love it and recommend anyone to invest into it.
+                    </em>```</p>
+                </div>
+            </div>
+            <div class="content column">
+                <div class="slideshow-description">
+                    <p>```<em>
+                        One of the best baking tool for Blender right now (that works with UDIM like a charm) with frequent updates and a simple and efficient interface.
+                    </em>```</p>
+                </div>
+            </div>
+            <div class="content column">
+                <div class="slideshow-description">
+                    <p>```<em>
                         This addon makes me feel like I know what I'm doing.
                     </em>```</p>
                 </div>
@@ -46,6 +60,27 @@ Have complex materials? Never worry about the nodes again: toggle a couple of se
                 <div class="slideshow-description">
                     <p>```<em>
                         Great and simple!
+                    </em>```</p>
+                </div>
+            </div>
+            <div class="content column">
+                <div class="slideshow-description">
+                    <p>```<em>
+                        I am using this nonstop. Best investment for me.
+                    </em>```</p>
+                </div>
+            </div>
+            <div class="content column">
+                <div class="slideshow-description">
+                    <p>```<em>
+                        Some of the best help I've ever gotten.
+                    </em>```</p>
+                </div>
+            </div>
+            <div class="content column">
+                <div class="slideshow-description">
+                    <p>```<em>
+                        Easy to use and great time saver. Also dev is very helpful in case of some problems and questions.
                     </em>```</p>
                 </div>
             </div>
@@ -79,6 +114,11 @@ Have complex materials? Never worry about the nodes again: toggle a couple of se
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 2)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 3)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 4)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 5)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 6)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 7)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 8)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-0', 9)"></span>
             </div>
             <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-0', 1)" onselectstart="return false">&#10095;</a>
         </div>

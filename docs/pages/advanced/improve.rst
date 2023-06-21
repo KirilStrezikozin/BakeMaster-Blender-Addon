@@ -446,7 +446,6 @@ Configuration
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 8)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 9)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 10)"></span>
-                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 11)"></span>
             </div>
             <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-2', 1)" onselectstart="return false">&#10095;</a>
         </div>
