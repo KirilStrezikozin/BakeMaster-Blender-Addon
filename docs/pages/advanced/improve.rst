@@ -1,8 +1,8 @@
 .. |understandingcage_howcageworks| image:: ../../_static/images/pages/advanced/improve/understandingcage_howcageworks_700x400.gif
     :alt: How Cage works
 
-.. |colormanagement| image:: ../../_static/images/pages/advanced/nolimits/0_cm_fullpanel.png
-    :alt: Color Management
+.. |colormanagement| image:: ../../_static/images/pages/advanced/improve/0_cm_panel_srgb.png
+   :alt: Color Management
 
 ================
 Get Best Results
@@ -232,8 +232,6 @@ Color Management
 
 Configuring the color management of your bakes is essential to ensure that your textures have the desired color scheme. Color management is indispensable to keep in mind if you create maps for professional or commercial purposes, as color accuracy can be crucial in these contexts. By accessing the Output panel and expanding the Color Management section, you can easily modify the color settings to achieve the desired results.
 
-.. TODO: image with srgb color management
-
 |colormanagement|
 
 .. seealso::
@@ -253,13 +251,11 @@ In order for textures to shade models in a correct and realistic way, their colo
 
     If you opt to use a different color space, you can still bake, but please bear in mind that you may not have the same level of customization as with the three options mentioned above.
 
-.. TODO: image with default color space
-
 .. raw:: html
 
     <div class="content-gallery">
         <div class="content">
-            <img src="../../_static/images/pages/advanced/nolimits/0_pbrs.png" alt="Diffuse">
+            <img src="../../_static/images/pages/advanced/improve/1_cm_panel_color_space.png" alt="Color Space">
             <div class="content-description">
                 <p>The name of the color space used in your scene will appear at the panel's top</p>
             </div>
@@ -353,7 +349,108 @@ Configuration
 .. caution::
     Be careful when making changes and ensure that you have a good understanding of the subject matter before proceeding.
 
-.. TODO: slideshow with settings
+.. raw:: html
+
+    <div class="slideshow" id="slideshow-2">
+        <div class="content-wrapper">
+            <div class="content row active">
+                <img src="../../_static/images/pages/advanced/improve/2_cm_panel_color_space.png" alt="">
+                <div class="slideshow-description">
+                    <b>Color Space</b>
+                    <p>The Color Space of your scene</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/improve/2_cm_panel_texture.png" alt="Color Texture Settings">
+                <div class="slideshow-description">
+                    <b>Color Texture Settings</b>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/improve/2_cm_panel_texture_color_space.png" alt="Color Texture Color Space">
+                <div class="slideshow-description">
+                    <b>Color Texture Color Space</b>
+                    <p>Default color space for color textures containing containing color data</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/improve/2_cm_panel_texture_file_format.png" alt="Color Texture File Format">
+                <div class="slideshow-description">
+                    <b>Color Texture File Format</b>
+                    <p>Default file format for color textures</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/improve/2_cm_panel_texture_bit_depth.png" alt="Color Texture Bit Depth">
+                <div class="slideshow-description">
+                    <b>Color Texture Bit Depth</b>
+                    <p>Default color depth for color textures</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/improve/2_cm_panel_data_and_linear_settings.png" alt="Data and Linear Texture settings">
+                <div class="slideshow-description">
+                    <b>Data and Linear Texture settings</b>
+                    <p>Similar to Color Texture settings</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/improve/2_cm_panel_linear_exr.png" alt="Linear EXR">
+                <div class="slideshow-description">
+                    <b>Linear EXR</b>
+                    <p>If checked, if Map's file format is EXR, the output colorspace will be chosen from the Linear Texture category</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/improve/2_cm_panel_linear_srgb.png" alt="Linear sRGB">
+                <div class="slideshow-description">
+                    <b>Linear sRGB</b>
+                    <p>Tick this and set any linear color space for either Color, Data, or Linear Texture above. This will bake textures in linearized sRGB - without gamma correction</p>
+                    <p>If your color space is ACES, your workaround is to choose <code>Utility - sRGB - Linear</code> for any category to achieve the same result</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/improve/2_cm_panel_quick_apply.png" alt="Quick Apply">
+                <div class="slideshow-description">
+                    <b>Quick Apply</b>
+                    <p>Your configured rules get applied to new Maps when you're adding them. To apply to all existing, click this button</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/improve/2_cm_panel_apply_scene.png" alt="Apply Scene">
+                <div class="slideshow-description">
+                    <b>Apply Scene</b>
+                    <p>Apply scene color management settings configured in the Properties tab like View Transform, Exposure, Gamma, and Curves</p>
+                </div>
+            </div>
+            <div class="content row">
+                <img src="../../_static/images/pages/advanced/improve/2_cm_panel_compositor.png" alt="Compositor">
+                <div class="slideshow-description">
+                    <b>Compositor</b>
+                    <p>Tick to run bakes through nodes in Compositor screen.</p>
+                    <p>Helpful when you have additional color management set up there that you want to apply to all bakes</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <a class="prev" onclick="slideshow_setSlideByRelativeId('slideshow-2', -1)" onselectstart="return false">&#10094;</a>
+            <div class="controls">
+                <span class="dot active" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 0)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 1)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 2)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 3)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 4)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 5)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 6)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 7)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 8)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 9)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 10)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-2', 11)"></span>
+            </div>
+            <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-2', 1)" onselectstart="return false">&#10095;</a>
+        </div>
+    </div>
 
 sRGB
 ----
@@ -362,30 +459,70 @@ sRGB is Blender's default Display Device and the most wide-spread elsewhere curr
 
 For sRGB color space, it is recommended to stick to *sRGB* for ``Color Texture`` and *Non-color* for ``Data Texture``. This ensures that color textures are saved and displayed to match how end user sees them on screen; and non-color data textures are treated as is with no color transformation to properly provide mesh or other information.
 
-.. TODO: gallery with color and data textures in srgb
+.. raw:: html
+
+    <div class="content-gallery">
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/improve/3_cm_image_noapplyscene.png" alt="sRGB Color Texture">
+            <div class="content-description">
+                <p>sRGB Color Texture</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/improve/4_cm_normal_nolinearsrgb.png" alt="Non-color Data Texture">
+            <div class="content-description">
+                <p>Non-color Data Texture</p>
+            </div>
+        </div>
+    </div>
 
 .. admonition:: Advanced - Linear sRGB
     :class: important
 
     This isn't a very popular format, but sRGB can be also linearized. This means sRGB textures won't have gamma correction applied.
 
-    By enabling this option and choosing a preferable Linear color space for ``Color Texture``, baked textures will look as if they were in Linear, not sRGB color space:
+    By enabling this option and choosing a preferable Linear color space for ``Color Texture`` or ``Data Texture``, baked textures will look as if they were in Linear, not sRGB color space:
     
-    .. TODO: gallery with comparison
+    .. raw:: html
+
+        <div class="content-gallery">
+            <div class="content">
+                <img src="../../_static/images/pages/advanced/improve/4_cm_normal_nolinearsrgb.png" alt="Linear sRGB unchecked">
+                <div class="content-description">
+                    <p>Linear sRGB unchecked</p>
+                    <p>Good to view on your monitor</p>
+                </div>
+            </div>
+            <div class="content">
+                <img src="../../_static/images/pages/advanced/improve/4_cm_normal_linearsrgb.png" alt="Linear sRGB">
+                <div class="content-description">
+                    <p>Linear sRGB</p>
+                    <p>No gamma correction</p>
+                </div>
+            </div>
+        </div>
 
 ACES
 ----
 
 The Academy Color Encoding System (ACES) is a standardized and comprehensive color management tool that simplifies the process of managing colors during production. It is designed to handle various input sources such as film and computer graphics, and it guarantees consistency and reliability throughout the production process. When images are converted to the ACES standard, teams can work together seamlessly, regardless of the source of the images, and attain consistent and predictable color results. The ACES system provides a dependable workspace for artists, who can now concentrate on their creative work without worrying about technical issues or color inconsistencies.
 
-.. TODO: comparison between filmic and aces
+.. figure:: ../../_static/images/pages/advanced/improve/6_cm_aces_vs_filmic.jpeg
+   :alt: ACES vs Filmic
 
-This documentation does not cover all the aspects and principles of ACES. Instead, it offers a practical approach to setting up BakeMaster for texture baking in the ACES color space. This way, you can avoid going in circles and achieve your desired results efficiently.
+   `Image source <https://devtalk.blender.org/t/blender-support-for-aces-academy-color-encoding-system/13972>`__
 
-.. TODO: aces logo and gamut
+
+This documentation does not cover all the aspects and principles of ACES. Instead, it offers a practical approach to setting up BakeMaster for texture baking in the ACES color space. This way, you can avoid going round in circles and achieve your desired results efficiently.
 
 .. seealso::
    `Blender Support for ACES <https://devtalk.blender.org/t/blender-support-for-aces-academy-color-encoding-system/13972>`__. `Introduction to ACES <https://acescolorspace.com/>`__. `Sony Pictures Imageworks Color Pipeline <https://opencolorio.readthedocs.io/en/latest/concepts/overview/overview.html#sony-pictures-imageworks-color-pipeline>`__.
+
+.. figure:: ../../_static/images/pages/advanced/improve/7_cm_aces_gamut.png
+   :scale: 50 %
+   :alt: ACES Gamut
+
+   `Image source <https://acescolorspace.com/>`__
 
 .. admonition:: BakeMaster and ACES
     :class: important
@@ -402,7 +539,26 @@ This documentation does not cover all the aspects and principles of ACES. Instea
     1. Color Texture: ``ACES - ACEScg`` color space, ``16-bit`` bit depth, ``EXR`` or ``TIFF`` file format.
     2. Data Texture: ``Utility - Raw`` color space, half-float ``Float 16`` bit depth, ``EXR`` file format.
 
-    .. TODO: gallery: one - aces somewhat like srgb; second - good aces setup, note that it's an example
+.. raw:: html
+
+    <div class="content-gallery">
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/improve/5_cm_aces_default_panel.png" alt="Default ACES config">
+            <div class="content-description">
+                <p>Default ACES config</p>
+                <p>sRGB Color Texture,</p>
+                <p>Raw (Linear) Data Texture</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/improve/5_cm_aces_acescg_panel.png" alt="ACES-compliant ACEScg config">
+            <div class="content-description">
+                <p>ACES-compliant ACEScg config</p>
+                <p>16-bit Linear Color Texture,</p>
+                <p>half-float floating 16-bit ACEScg Data Texture</p>
+            </div>
+        </div>
+    </div>
 
 Scene's and Compositor's effect
 -------------------------------
@@ -412,7 +568,24 @@ Scene's and Compositor's effect
 
     If you want your scene color management settings to be applied to bakes, ``Apply Scene`` is the way. By turning it on, you can, for example, add Filmic view transform to baked textures if the scene has got one and other settings like Exposure, Gamma, Curves configured in the *Properties -> Color Management*.
 
-    .. TODO: gallery with comparison
+    .. raw:: html
+
+        <div class="content-gallery">
+            <div class="content">
+                <img src="../../_static/images/pages/advanced/improve/3_cm_image_noapplyscene.png" alt="Apply Scene unchecked">
+                <div class="content-description">
+                    <p>Apply Scene unchecked</p>
+                    <p>No effect</p>
+                </div>
+            </div>
+            <div class="content">
+                <img src="../../_static/images/pages/advanced/improve/3_cm_image_applyscene.png" alt="Apply Scene checked">
+                <div class="content-description">
+                    <p>Apply Scene checked</p>
+                    <p>Filmic View Transform, 0.9 Exposure</p>
+                </div>
+            </div>
+        </div>
 
 .. admonition:: Compositor Nodes
     :class: important
