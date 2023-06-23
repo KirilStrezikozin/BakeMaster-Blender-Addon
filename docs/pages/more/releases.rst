@@ -10,7 +10,7 @@ All BakeMaster Releases and Changelogs are listed on this page. Each new release
 .. admonition:: Tag
     :class: important
 
-    `2.5.0 - June 21st, 2023 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/releases>`__
+    `2.5.0 - June 23rd, 2023 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/releases>`__
 
 **Fixes:**
 
