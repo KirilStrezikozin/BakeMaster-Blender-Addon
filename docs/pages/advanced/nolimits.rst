@@ -48,7 +48,9 @@ Baking with a low sample count might result in image noise. Enable denoising (no
     </div>
 
 .. caution:: 
-     Note that *on some occasions* denoising maps like Albedo or Normal mightn't be a good idea as it might blur out some sharp details.
+    It may not be a good idea to denoise maps like Normal because might blur out some important details.
+
+    It's recommended to avoid using it with other maps like Albedo when colors have sharp details and you want to preserve them. You can always add two similar maps and stick with the one that looks the best.
 
 .. raw:: html
 
@@ -69,10 +71,45 @@ Baking with a low sample count might result in image noise. Enable denoising (no
         </div>
     </div>
 
+.. seealso:: 
+    `Comparison between denoised/not denoised bakes <../advanced/improve.html#what-s-the-best-sample-count>`__ and how much time they took to bake.
+
 Supersample anti-aliasing
 =========================
 
-With SSAA, BakeMaster bakes at a higher resolution and then downscales back to the chosen map resolution. Such a technique results in smoother and jaggy-free images (not always noticeable). Enable SSAA in the map's `Format Settings <../start/maps.html#format-settings>`__.
+With SSAA, BakeMaster bakes at a higher resolution and then downscales back to the chosen map resolution. Such technique smoothes out very contrasted edges and makes images jaggy-free. Enable SSAA in the map's `Format Settings <../start/maps.html#format-settings>`__.
+
+.. raw:: html
+
+    <div class="content-gallery">
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/nolimits/0_ssaa_1x1.png" alt="1x1 SSAA">
+            <div class="content-description">
+                <p>1K (1024x1024)</p>
+                <p>No SSAA</p>
+                <p>Took 1s to bake</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/nolimits/1_ssaa_2x2.png" alt="2x2 SSAA">
+            <div class="content-description">
+                <p>1K (1024x1024)</p>
+                <p>2x2 SSAA</p>
+                <p>Took 3s to bake</p>
+            </div>
+        </div>
+        <div class="content">
+            <img src="../../_static/images/pages/advanced/nolimits/2_ssaa_8x8.png" alt="8x8 SSAA">
+            <div class="content-description">
+                <p>1K (1024x1024)</p>
+                <p>8x8 SSAA</p>
+                <p>Took 4m to bake</p>
+            </div>
+        </div>
+    </div>
+
+.. note::
+   SSAA increases the bake time as if you were to manually increase the resolution.
 
 Channel Packing
 ===============
@@ -467,7 +504,7 @@ Some influential settings sit in the addon preferences.
                 <img src="../../_static/images/pages/advanced/nolimits/8_addonprefs_version.png" alt="Addon Version">
                 <div class="slideshow-description">
                     <b>Addon Version</b>
-                    <p>BakeMaster version you use.</p>
+                    <p>BakeMaster version you're using.</p>
                 </div>
             </div>
         </div>

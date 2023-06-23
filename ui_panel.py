@@ -1,6 +1,6 @@
 # ##### BEGIN LICENSE BLOCK #####
 #
-# "BakeMaster" Blender Add-on (version 2.0.2)
+# "BakeMaster" Blender Add-on (version 2.5.0)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
 # This License permits you to use this software for any purpose including
@@ -26,7 +26,6 @@
 # see <http://www.gnu.org/licenses/>.
 #
 # ##### END LICENSE BLOCK #####
-
 
 import bpy
 from .ui_panel_base import *

@@ -1,6 +1,6 @@
 # ##### BEGIN LICENSE BLOCK #####
 #
-# "BakeMaster" Blender Add-on (version 2.0.2)
+# "BakeMaster" Blender Add-on (version 2.5.0)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
 # This License permits you to use this software for any purpose including
@@ -26,7 +26,6 @@
 # see <http://www.gnu.org/licenses/>.
 #
 # ##### END LICENSE BLOCK #####
-
 
 class BM_Labels:
     # INFO Messages:
@@ -67,7 +66,7 @@ class BM_Labels:
 
     # URLs
     # different documentation versions may have different pages setup
-    __addon_version__ = "dev-2.0.0"
+    __addon_version__ = "2.5.0"
     URL_HELP_MAIN = "https://bakemaster-blender-addon.readthedocs.io/en/%s/" % __addon_version__
     URL_HELP_OBJS = "https://bakemaster-blender-addon.readthedocs.io/en/%s/pages/start/objects.html" % __addon_version__
     URL_HELP_MAPS = "https://bakemaster-blender-addon.readthedocs.io/en/%s/pages/start/maps.html" % __addon_version__

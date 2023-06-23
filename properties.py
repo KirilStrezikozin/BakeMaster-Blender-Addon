@@ -1,6 +1,6 @@
 # ##### BEGIN LICENSE BLOCK #####
 #
-# "BakeMaster" Blender Add-on (version 2.0.2)
+# "BakeMaster" Blender Add-on (version 2.5.0)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
 # This License permits you to use this software for any purpose including
@@ -26,7 +26,6 @@
 # see <http://www.gnu.org/licenses/>.
 #
 # ##### END LICENSE BLOCK #####
-
 
 import bpy
 from .utils import *
@@ -153,7 +152,12 @@ class BM_SceneProps_TextureSet(bpy.types.PropertyGroup):
         default=0.01,
         min=0.0,
         max=1.0)
-    
+
+    uvp_use_average_islands_scale : bpy.props.BoolProperty(
+        name="Average Islands Scale",
+        description="Average the size of separate UV islands, based on their area in 3D space. It is recommended to apply object(s) scale beforehand",
+        default=True)
+
     global_textureset_naming : bpy.props.EnumProperty(
         name="Naming",
         description="Choose output Image texture naming format",
@@ -161,7 +165,7 @@ class BM_SceneProps_TextureSet(bpy.types.PropertyGroup):
         items=[('EACH_OBJNAME', "Each Object Name", "Include each texture set object name in the output texture set image"),
                ('TEXSET_INDEX', "Texture Set Index", "Name output texture set image in the format: TextureSet_index"),
                ('TEXSET_NAME', "Texture Set Name", "Output texture name will be as Texture Set name")])
-    
+
     global_textureset_table_of_objects : bpy.props.CollectionProperty(type=BM_SceneProps_TextureSet_Object)
 
     global_textureset_table_of_objects_active_index : bpy.props.IntProperty(
@@ -173,12 +177,236 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Mesh Object to bake maps for",
         default=0,
         update=BM_ActiveIndexUpdate)
-    
+
+# Name Matching
     global_use_name_matching : bpy.props.BoolProperty(
         name="Toggle Name Matching",
         description="If on, High, Lowpoly, and Cage objects will be grouped by their matched names.\nProperties like Highpoly object and Cage will be set automatically if possible, maps and other settings can be configured by the top-parent container",
         default=False,
         update=BM_SCENE_PROPS_global_use_name_matching_Update)
+
+# Color Management
+    cm_color_space : bpy.props.EnumProperty(
+        name="Color Space",
+        description="Baked textures Color Space. Bake won't be able to proceed if none of these color spaces are available",
+        items=BM_SCENE_PROPS_cm_color_space_Items)
+
+    # Texture settings
+
+    cm_aces_texture_color_space : bpy.props.EnumProperty(
+        name="Color",
+        description="Color Space of baked color textures containing color data (e.g. Diffuse, Albedo, Base Color, ColorIDs maps etc.)",
+        items=BM_SCENE_PROPS_cm_texture_color_space_Items)
+
+    cm_aces_texture_file_format : bpy.props.EnumProperty(
+        name="File Format",
+        description="Default image file format for color textures",
+        items=BM_SCENE_PROPS_texture_file_format_Items,
+        update=BM_SCENE_PROPS_cm_aces_texture_file_format_Update)
+
+    cm_aces_texture_bit_depth : bpy.props.EnumProperty(
+        name="Color Depth",
+        description="Default image color depth for color textures",
+        items=BM_SCENE_PROPS_cm_aces_texture_bit_depth_Items)
+
+    cm_aces_data_color_space : bpy.props.EnumProperty(
+        name="Data",
+        description="Color Space of baked data textures containing non-color data (e.g. Normal, Metalness, Roughness, Displacement, AO maps etc.)",
+        items=BM_SCENE_PROPS_cm_data_color_space_Items)
+
+    cm_aces_data_file_format : bpy.props.EnumProperty(
+        name="File Format",
+        description="Default image file format for data textures",
+        items=BM_SCENE_PROPS_data_file_format_Items,
+        update=BM_SCENE_PROPS_cm_aces_data_file_format_Update)
+
+    cm_aces_data_bit_depth : bpy.props.EnumProperty(
+        name="Color Depth",
+        description="Default image color depth for data textures",
+        items=BM_SCENE_PROPS_cm_aces_data_bit_depth_Items)
+
+    cm_aces_linear_color_space : bpy.props.EnumProperty(
+        name="Linear",
+        description="Color Space of baked data textures containing linear color data. Used for EXR file formats if Linear EXR is ticked below",
+        items=BM_SCENE_PROPS_cm_linear_color_space_Items)
+
+    cm_aces_linear_file_format : bpy.props.EnumProperty(
+        name="File Format",
+        description="Default image file format for linear textures",
+        items=BM_SCENE_PROPS_linear_file_format_Items,
+        update=BM_SCENE_PROPS_cm_aces_linear_file_format_Update)
+
+    cm_aces_linear_bit_depth : bpy.props.EnumProperty(
+        name="Color Depth",
+        description="Default image color depth for linear textures",
+        items=BM_SCENE_PROPS_cm_aces_linear_bit_depth_Items)
+
+    cm_srgb_texture_color_space : bpy.props.EnumProperty(
+        name="Color",
+        description="Color Space of baked color textures containing color data (e.g. Diffuse, Albedo, Base Color, ColorIDs maps etc.)",
+        items=BM_SCENE_PROPS_cm_texture_color_space_Items)
+
+    cm_srgb_texture_file_format : bpy.props.EnumProperty(
+        name="File Format",
+        description="Default image file format for color textures",
+        items=BM_SCENE_PROPS_texture_file_format_Items,
+        update=BM_SCENE_PROPS_cm_srgb_texture_file_format_Update)
+
+    cm_srgb_texture_bit_depth : bpy.props.EnumProperty(
+        name="Color Depth",
+        description="Default image color depth for color textures",
+        items=BM_SCENE_PROPS_cm_srgb_texture_bit_depth_Items)
+
+    cm_srgb_data_color_space : bpy.props.EnumProperty(
+        name="Data",
+        description="Color Space of baked data textures containing non-color data (e.g. Normal, Metalness, Roughness, Displacement, AO maps etc.)",
+        items=BM_SCENE_PROPS_cm_data_color_space_Items)
+
+    cm_srgb_data_file_format : bpy.props.EnumProperty(
+        name="File Format",
+        description="Default image file format for data textures",
+        items=BM_SCENE_PROPS_data_file_format_Items,
+        update=BM_SCENE_PROPS_cm_srgb_data_file_format_Update)
+
+    cm_srgb_data_bit_depth : bpy.props.EnumProperty(
+        name="Color Depth",
+        description="Default image color depth for data textures",
+        items=BM_SCENE_PROPS_cm_srgb_data_bit_depth_Items)
+
+    cm_srgb_linear_color_space : bpy.props.EnumProperty(
+        name="Linear",
+        description="Color Space of baked data textures containing linear color data. Used for EXR file formats if Linear EXR is ticked below",
+        items=BM_SCENE_PROPS_cm_linear_color_space_Items)
+
+    cm_srgb_linear_file_format : bpy.props.EnumProperty(
+        name="File Format",
+        description="Default image file format for linear textures",
+        items=BM_SCENE_PROPS_linear_file_format_Items,
+        update=BM_SCENE_PROPS_cm_srgb_linear_file_format_Update)
+
+    cm_srgb_linear_bit_depth : bpy.props.EnumProperty(
+        name="Color Depth",
+        description="Default image color depth for linear textures",
+        items=BM_SCENE_PROPS_cm_srgb_linear_bit_depth_Items)
+
+    cm_xyz_texture_color_space : bpy.props.EnumProperty(
+        name="Color",
+        description="Color Space of baked color textures containing color data (e.g. Diffuse, Albedo, Base Color, ColorIDs maps etc.)",
+        items=BM_SCENE_PROPS_cm_texture_color_space_Items)
+
+    cm_xyz_texture_file_format : bpy.props.EnumProperty(
+        name="File Format",
+        description="Default image file format for color textures",
+        items=BM_SCENE_PROPS_texture_file_format_Items,
+        update=BM_SCENE_PROPS_cm_xyz_texture_file_format_Update)
+
+    cm_xyz_texture_bit_depth : bpy.props.EnumProperty(
+        name="Color Depth",
+        description="Default image color depth for color textures",
+        items=BM_SCENE_PROPS_cm_xyz_texture_bit_depth_Items)
+
+    cm_xyz_data_color_space : bpy.props.EnumProperty(
+        name="Data",
+        description="Color Space of baked data textures containing non-color data (e.g. Normal, Metalness, Roughness, Displacement, AO maps etc.)",
+        items=BM_SCENE_PROPS_cm_data_color_space_Items)
+
+    cm_xyz_data_file_format : bpy.props.EnumProperty(
+        name="File Format",
+        description="Default image file format for data textures",
+        items=BM_SCENE_PROPS_data_file_format_Items,
+        update=BM_SCENE_PROPS_cm_xyz_data_file_format_Update)
+
+    cm_xyz_data_bit_depth : bpy.props.EnumProperty(
+        name="Color Depth",
+        description="Default image color depth for data textures",
+        items=BM_SCENE_PROPS_cm_xyz_data_bit_depth_Items)
+
+    cm_xyz_linear_color_space : bpy.props.EnumProperty(
+        name="Linear",
+        description="Color Space of baked data textures containing linear color data. Used for EXR file formats if Linear EXR is ticked below",
+        items=BM_SCENE_PROPS_cm_linear_color_space_Items)
+
+    cm_xyz_linear_file_format : bpy.props.EnumProperty(
+        name="File Format",
+        description="Default image file format for linear textures",
+        items=BM_SCENE_PROPS_linear_file_format_Items,
+        update=BM_SCENE_PROPS_cm_xyz_linear_file_format_Update)
+
+    cm_xyz_linear_bit_depth : bpy.props.EnumProperty(
+        name="Color Depth",
+        description="Default image color depth for linear textures",
+        items=BM_SCENE_PROPS_cm_xyz_linear_bit_depth_Items)
+
+    cm_default_texture_color_space : bpy.props.EnumProperty(
+        name="Color",
+        description="Color Space of baked color textures containing color data (e.g. Diffuse, Albedo, Base Color, ColorIDs maps etc.)",
+        items=BM_SCENE_PROPS_cm_texture_color_space_Items)
+
+    cm_default_texture_file_format : bpy.props.EnumProperty(
+        name="File Format",
+        description="Default image file format for color textures",
+        items=BM_SCENE_PROPS_texture_file_format_Items,
+        update=BM_SCENE_PROPS_cm_default_texture_file_format_Update)
+
+    cm_default_texture_bit_depth : bpy.props.EnumProperty(
+        name="Color Depth",
+        description="Default image color depth for color textures",
+        items=BM_SCENE_PROPS_cm_default_texture_bit_depth_Items)
+
+    cm_default_data_color_space : bpy.props.EnumProperty(
+        name="Data",
+        description="Color Space of baked data textures containing non-color data (e.g. Normal, Metalness, Roughness, Displacement, AO maps etc.)",
+        items=BM_SCENE_PROPS_cm_data_color_space_Items)
+
+    cm_default_data_file_format : bpy.props.EnumProperty(
+        name="File Format",
+        description="Default image file format for data textures",
+        items=BM_SCENE_PROPS_data_file_format_Items,
+        update=BM_SCENE_PROPS_cm_default_data_file_format_Update)
+
+    cm_default_data_bit_depth : bpy.props.EnumProperty(
+        name="Color Depth",
+        description="Default image color depth for data textures",
+        items=BM_SCENE_PROPS_cm_default_data_bit_depth_Items)
+
+    cm_default_linear_color_space : bpy.props.EnumProperty(
+        name="Linear",
+        description="Color Space of baked data textures containing linear color data. Used for EXR file formats if Linear EXR is ticked below",
+        items=BM_SCENE_PROPS_cm_linear_color_space_Items)
+
+    cm_default_linear_file_format : bpy.props.EnumProperty(
+        name="File Format",
+        description="Default image file format for linear textures",
+        items=BM_SCENE_PROPS_linear_file_format_Items,
+        update=BM_SCENE_PROPS_cm_default_linear_file_format_Update)
+
+    cm_default_linear_bit_depth : bpy.props.EnumProperty(
+        name="Color Depth",
+        description="Default image color depth for linear textures",
+        items=BM_SCENE_PROPS_cm_default_linear_bit_depth_Items)
+
+    ###
+
+    cm_use_linear_exr : bpy.props.BoolProperty(
+        name="Linear EXR",
+        description="Save OpenEXR images in a Linear color space",
+        default=False)
+
+    cm_use_linear_srgb : bpy.props.BoolProperty(
+        name="Linear sRGB",
+        description="Save linear textures in linearized sRGB color space (sRGB without gamma correction). For this to work, set default linear color space for either Color, Data, or Linear texture above",
+        default=False)
+
+    cm_use_apply_scene : bpy.props.BoolProperty(
+        name="Apply Scene",
+        description="Apply scene render color management settings configured in the properties tab to all baked textures. For display image formats like PNG, apply view and display transform. For intermediate image formats like OpenEXR, use the default render output color space",
+        default=False,
+        update=BM_SCENE_PROPS_cm_use_apply_scene_Update)
+
+    cm_use_compositor : bpy.props.BoolProperty(
+        name="Compositor",
+        description="Apply Compositor color management to all baked textures",
+        default=False)
 
     global_last_edited_prop : bpy.props.StringProperty(default="")
     global_last_edited_prop_name : bpy.props.StringProperty(default="")
@@ -247,6 +475,10 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Expand/Collapse Bake Output Settings panel",
         default=False)
 
+    global_is_colormanagement_panel_expanded : bpy.props.BoolProperty(
+        name="Expand/Collapse Color Management Settings panel",
+        default=False)
+
     local_is_hl_panel_expanded : bpy.props.BoolProperty(
         name="Expand/Collapse High to Lowpoly Settings panel",
         default=False)
@@ -267,7 +499,7 @@ class BM_SceneProps(bpy.types.PropertyGroup):
 
     global_use_bake_overwrite : bpy.props.BoolProperty(
         name="Overwrite",
-        description="If checked, old bake files in the output directory will be overwritten by the new ones if they have the same name",
+        description="Overwrite previously baked files in the output directories and this .blend file if their file names match the ones that will be baked",
         default=False)
 
     global_use_bakemaster_reset : bpy.props.BoolProperty(
@@ -493,14 +725,30 @@ class BM_Map(bpy.types.PropertyGroup):
     out_file_format : bpy.props.EnumProperty(
         name="File Format",
         description="File format of output image files",
-        default='PNG',
-        items=[('BMP', "BMP", "Output image in bitmap format"),
-               ('PNG', "PNG", "Output image in common PNG format. Best file format for true-color images that need perfect tone balance. Default Blender image format.\n\Pros: can contain Alpha Channel"),
-               ('JPEG', "JPEG", "Output image in JPEG format. Uncompressed file format and takes the most amount of data and is the exact representation of the image. \n\nCons: With every edit and resave the image quality will deteriorate.\nPros: lightweight"),
-               ('TIFF', "TIFF", "Output image in TIFF format. Photographic file standard in print"),
-               ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps")],
-               # ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps with PSD set as file format for current Object will be saved to a single .psd file")],
+        items=BM_SCENE_PROPS_file_format_Items,
         update=BM_MAP_PROPS_out_file_format_Update)
+
+    out_tga_use_raw : bpy.props.BoolProperty(
+        name="Targa Raw",
+        description="Output image in uncompressed TGA format, larger file size. Otherwise, lossless compression is performed",
+        default=False,
+        update=BM_MAP_PROPS_out_tga_use_raw_Update)
+
+    out_dpx_use_log : bpy.props.BoolProperty(
+        name="Log",
+        description="Convert to logarithmic color space",
+        default=False,
+        update=BM_MAP_PROPS_out_dpx_use_log_Update)
+
+    out_tiff_compression : bpy.props.EnumProperty(
+        name="Compression",
+        description="Compression mode for TIFF",
+        default='DEFLATE',
+        items=[('NONE', "None", ""),
+               ('DEFLATE', "Deflate", ""),
+               ('LZW', "LZW", ""),
+               ('PACKBITS', "Pack Bits", "")],
+        update=BM_MAP_PROPS_out_tiff_compression_Update)
 
     # out_psd_include : bpy.props.EnumProperty(
         # name="PSD includes",
@@ -514,13 +762,13 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Codec settigns for OpenEXR file format. Choose between lossless and lossy compression",
         default='ZIP',
         items=[('NONE', "None", ""),
-               ('PXR24', "Pxr24 (Lossy)", ""),
-               ('ZIP', "ZIP (Lossless)", ""),
-               ('PIZ', "PIZ (lossless)", ""),
-               ('RLE', "RLE (lossless)", ""),
-               ('ZIPS', "ZIPS (lossless)", ""),
-               ('DWAA', "DWAA (lossy)", ""),
-               ('DWAB', "DWAB (lossy)", "")],
+               ('PXR24', "Pxr24 (Lossy)", "Lossy algorithm from Pixar, converting 32-bit floats to 24-bit floats"),
+               ('ZIP', "ZIP (Lossless)", "Standard lossless compression using Zlib, operating on 16 scanlines at a time"),
+               ('PIZ', "PIZ (lossless)", "Lossless wavelet compression. Compresses images with grain well"),
+               ('RLE', "RLE (lossless)", "Run-length encoded, lossless, works well when scanlines have same values"),
+               ('ZIPS', "ZIPS (lossless)", "Standard lossless compression using Zlib, operating on a single scanline at a time"),
+               ('DWAA', "DWAA (lossy)", "JPEG-like lossy algorithm from DreamWorks; compresses blocks 32 scanlines together"),
+               ('DWAB', "DWAB (lossy)", "Same as DWAA but compresses blocks of 256 scanlines")],
         update=BM_MAP_PROPS_out_exr_codec_Update)
 
     out_compression : bpy.props.IntProperty(
@@ -531,6 +779,15 @@ class BM_Map(bpy.types.PropertyGroup):
         max=100,
         subtype='PERCENTAGE',
         update=BM_MAP_PROPS_out_compression_Update)
+
+    out_quality : bpy.props.IntProperty(
+        name="Quality",
+        description="Similar to Compression but is used for JPEG based file formats. The quality is a percentage, 0% being the maximum amount of compression and 100% is no compression",
+        default=90,
+        min=0,
+        max=100,
+        subtype='PERCENTAGE',
+        update=BM_MAP_PROPS_out_quality_Update)
 
     out_res : bpy.props.EnumProperty(
         name="Map Texture Resolution",
@@ -594,11 +851,11 @@ class BM_Map(bpy.types.PropertyGroup):
                ('EXTEND', "Extend", "Extend face border pixels outwards")],
         update=BM_MAP_PROPS_out_margin_type_Update)
 
-    out_use_32bit : bpy.props.BoolProperty(
-        name="32bit",
-        description="Create image texture with 32 bit floating point depth.\nStores more color data in the image this way",
-        default=False,
-        update=BM_MAP_PROPS_out_use_32bit_Update)
+    out_bit_depth : bpy.props.EnumProperty(
+        name="Color Depth",
+        description="Baked image bit depth. Lower - less data stored, smaller file size. Higher - more data stored, larger file size",
+        items=BM_MAP_PROPS_out_bit_depth_Items,
+        update=BM_MAP_PROPS_out_bit_depth_Update)
 
     out_use_alpha : bpy.props.BoolProperty(
         name="Alpha",
@@ -1063,6 +1320,16 @@ class BM_Map(bpy.types.PropertyGroup):
         items=BM_MAP_PROPS_map_normal_data_Items,
         update=BM_MAP_PROPS_map_normal_data_Update)
 
+    map_normal_multires_subdiv_levels : bpy.props.IntProperty(
+        name="Base Level",
+        description="The base subdivision level defines the base lowpoly multires subdivision level to calculate normal map details against. 0 is recommended",
+        default=0,
+        min=0,
+        max=255,
+        soft_min=0,
+        soft_max=10,
+        update=BM_MAP_PROPS_map_normal_multires_subdiv_levels_Update)
+
     map_normal_space : bpy.props.EnumProperty(
         name="Normal Space",
         description="Choose normal space for baking",
@@ -1167,13 +1434,31 @@ class BM_Map(bpy.types.PropertyGroup):
         update=BM_MAP_PROPS_map_displacement_result_Update)
 
     map_displacement_subdiv_levels : bpy.props.IntProperty(
-        name="Subdivision Levels",
-        description="The subdivision level defines the level of details.\nThe lower - the faster, but less details",
-        default=1,
-        min=1,
-        max=10,
+        name="Subdivision Level",
+        description="The subdivision level defines how many times to subdivide the Lowpoly to capture displacement details.\nThe lower - the faster, less captured details. The higher - the slower, more captured details.\nIt is recommended to keep the subdivided lowpoly face count (modifiers ignored) close to the highpoly face count (the first from the table is shown)",
+        default=0,
+        min=0,
+        max=11,
+        soft_min=0,
+        soft_max=6,
         update=BM_MAP_PROPS_map_displacement_subdiv_levels_Update)
-    
+
+    map_displacement_multires_subdiv_levels : bpy.props.IntProperty(
+        name="Base Level",
+        description="The base subdivision level defines the base lowpoly multires subdivision level to calculate displacement details against. 0 is recommended",
+        default=0,
+        min=0,
+        max=255,
+        soft_min=0,
+        soft_max=10,
+        update=BM_MAP_PROPS_map_displacement_multires_subdiv_levels_Update)
+
+    map_displacement_use_lowres_mesh : bpy.props.BoolProperty(
+        name="Low Resolution Mesh",
+        description="Calculate heights against unsubdivided low resolution mesh. Otherwise, high resolution details are scattered onto low resolution mesh",
+        default=False,
+        update=BM_MAP_PROPS_map_displacement_use_lowres_mesh_Update)
+
 # Vector Displacement Map Props
     map_VECTOR_DISPLACEMENT_prefix : bpy.props.StringProperty(
         name="Prefix",
@@ -1332,7 +1617,7 @@ class BM_Map(bpy.types.PropertyGroup):
     map_cavity_black_point : bpy.props.FloatProperty(
         name="Blacks",
         description="Shadow point location on the map color gradient spectrum",
-        default=0,
+        default=0.35,
         min=0.0,
         max=1.0,
         precision=3,
@@ -1341,7 +1626,7 @@ class BM_Map(bpy.types.PropertyGroup):
     map_cavity_white_point : bpy.props.FloatProperty(
         name="Whites",
         description="Highlight point location on the map color gradient spectrum",
-        default=1,
+        default=0.540,
         min=0.0,
         max=1.0,
         precision=3,
@@ -1350,7 +1635,7 @@ class BM_Map(bpy.types.PropertyGroup):
     map_cavity_power : bpy.props.FloatProperty(
         name="Power",
         description="Cavity map power value", 
-        default=2.5,
+        default=2.7,
         update=BM_MAP_PROPS_map_cavity_power_Update)
         
     map_cavity_use_invert : bpy.props.FloatProperty(
@@ -2291,14 +2576,30 @@ class BM_Object(bpy.types.PropertyGroup):
     out_file_format : bpy.props.EnumProperty(
         name="File Format",
         description="File format of output image files",
-        default='PNG',
-        items=[('BMP', "BMP", "Output image in bitmap format"),
-               ('PNG', "PNG", "Output image in common PNG format. Best file format for true-color images that need perfect tone balance. Default Blender image format.\n\Pros: can contain Alpha Channel"),
-               ('JPEG', "JPEG", "Output image in JPEG format. Uncompressed file format and takes the most amount of data and is the exact representation of the image. \n\nCons: With every edit and resave the image quality will deteriorate.\nPros: lightweight"),
-               ('TIFF', "TIFF", "Output image in TIFF format. Photographic file standard in print"),
-               ('OPEN_EXR', "EXR", "Output image in EXR format. High-dynamic-range bitmap image file for storing large range of color. Common for Displacement and Normal-like maps")],
-               # ('PSD', "PSD", "Output image in Photoshop PSD layers. All baked maps for current Object will be saved to a single .psd file")],
+        items=BM_SCENE_PROPS_file_format_Items,
         update=BM_ITEM_PROPS_out_file_format_Update)
+
+    out_tga_use_raw : bpy.props.BoolProperty(
+        name="Targa Raw",
+        description="Output image in uncompressed TGA format, larger file size. Otherwise, lossless compression is performed",
+        default=False,
+        update=BM_ITEM_PROPS_out_tga_use_raw_Update)
+
+    out_dpx_use_log : bpy.props.BoolProperty(
+        name="Log",
+        description="Convert to logarithmic color space",
+        default=False,
+        update=BM_ITEM_PROPS_out_dpx_use_log_Update)
+
+    out_tiff_compression : bpy.props.EnumProperty(
+        name="Compression",
+        description="Compression mode for TIFF",
+        default='DEFLATE',
+        items=[('NONE', "None", ""),
+               ('DEFLATE', "Deflate", ""),
+               ('LZW', "LZW", ""),
+               ('PACKBITS', "Pack Bits", "")],
+        update=BM_ITEM_PROPS_out_tiff_compression_Update)
 
     # out_psd_include : bpy.props.EnumProperty(
         # name="PSD includes",
@@ -2313,13 +2614,13 @@ class BM_Object(bpy.types.PropertyGroup):
         description="Codec settigns for OpenEXR file format. Choose between lossless and lossy compression",
         default='ZIP',
         items=[('NONE', "None", ""),
-               ('PXR24', "Pxr24 (Lossy)", ""),
-               ('ZIP', "ZIP (Lossless)", ""),
-               ('PIZ', "PIZ (lossless)", ""),
-               ('RLE', "RLE (lossless)", ""),
-               ('ZIPS', "ZIPS (lossless)", ""),
-               ('DWAA', "DWAA (lossy)", ""),
-               ('DWAB', "DWAB (lossy)", "")],
+               ('PXR24', "Pxr24 (Lossy)", "Lossy algorithm from Pixar, converting 32-bit floats to 24-bit floats"),
+               ('ZIP', "ZIP (Lossless)", "Standard lossless compression using Zlib, operating on 16 scanlines at a time"),
+               ('PIZ', "PIZ (lossless)", "Lossless wavelet compression. Compresses images with grain well"),
+               ('RLE', "RLE (lossless)", "Run-length encoded, lossless, works well when scanlines have same values"),
+               ('ZIPS', "ZIPS (lossless)", "Standard lossless compression using Zlib, operating on a single scanline at a time"),
+               ('DWAA', "DWAA (lossy)", "JPEG-like lossy algorithm from DreamWorks; compresses blocks 32 scanlines together"),
+               ('DWAB', "DWAB (lossy)", "Same as DWAA but compresses blocks of 256 scanlines")],
         update=BM_ITEM_PROPS_out_exr_codec_Update)
 
     out_compression : bpy.props.IntProperty(
@@ -2330,6 +2631,15 @@ class BM_Object(bpy.types.PropertyGroup):
         max=100,
         subtype='PERCENTAGE',
         update=BM_ITEM_PROPS_out_compression_Update)
+
+    out_quality : bpy.props.IntProperty(
+        name="Quality",
+        description="Similar to Compression but is used for JPEG based file formats. The quality is a percentage, 0% being the maximum amount of compression and 100% is no compression",
+        default=90,
+        min=0,
+        max=100,
+        subtype='PERCENTAGE',
+        update=BM_ITEM_PROPS_out_quality_Update)
 
     out_res : bpy.props.EnumProperty(
         name="Map Texture Resolution",
@@ -2393,11 +2703,11 @@ class BM_Object(bpy.types.PropertyGroup):
                ('EXTEND', "Extend", "Extend face border pixels outwards")],
         update=BM_ITEM_PROPS_out_margin_type_Update)
 
-    out_use_32bit : bpy.props.BoolProperty(
-        name="32bit",
-        description="Create image texture with 32 bit floating point depth.\nStores more color data in the image this way",
-        default=False,
-        update=BM_ITEM_PROPS_out_use_32bit_Update)
+    out_bit_depth : bpy.props.EnumProperty(
+        name="Color Depth",
+        description="Baked image bit depth. Lower - less data stored, smaller file size. Higher - more data stored, larger file size",
+        items=BM_ITEM_PROPS_out_bit_depth_Items,
+        update=BM_ITEM_PROPS_out_bit_depth_Update)
 
     out_use_alpha : bpy.props.BoolProperty(
         name="Alpha",
@@ -2635,6 +2945,14 @@ class BM_Object(bpy.types.PropertyGroup):
         items=[('GPU', "GPU", "Use GPU compute device for baking, configured in the system tab in the user preferences"),
                ('CPU', "CPU", "Use CPU for baking")],
         update=BM_ITEM_PROPS_bake_device_Update)
+
+    bake_view_from : bpy.props.EnumProperty(
+        name="Bake View From",
+        description="Source of reflection ray directions",
+        default='ABOVE_SURFACE',
+        items=[('ABOVE_SURFACE', "Above Surface", "Cast rays from above the surface"),
+               ('ACTIVE_CAMERA', "Active Camera", "Use the active camera’s position to cast rays")],
+        update=BM_ITEM_PROPS_bake_view_from_Update)
 
     bake_hide_when_inactive : bpy.props.BoolProperty(
         name="Hide when Inactive",

@@ -1,6 +1,6 @@
 # ##### BEGIN LICENSE BLOCK #####
 #
-# "BakeMaster" Blender Add-on (version 2.0.2)
+# "BakeMaster" Blender Add-on (version 2.5.0)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
 # This License permits you to use this software for any purpose including
@@ -26,7 +26,6 @@
 # see <http://www.gnu.org/licenses/>.
 #
 # ##### END LICENSE BLOCK #####
-
 
 import bpy
 import os
@@ -61,6 +60,7 @@ def BM_Presets_FolderSetup():
     presets_makedir(bm_presets_dir_path, "PRESETS_MAP_map")
     presets_makedir(bm_presets_dir_path, "PRESETS_CHNLP_chnlp")
     presets_makedir(bm_presets_dir_path, "PRESETS_BAKE_bake")
+    presets_makedir(bm_presets_dir_path, "PRESETS_CM_cm")
 
 ###########################################################
 ### Presets Bases ###
@@ -155,7 +155,7 @@ class BM_AddPresetBase():
                 return {'CANCELLED'}
 
             filepath = os.path.join(target_path, filename) + ext
-            
+
             # preset with this name already exists
             if os.path.isfile(filepath):
                 self.report({'INFO'}, "Preset exists. Overwriting")
@@ -190,9 +190,9 @@ class BM_AddPresetBase():
                             # to simple lists to repr()
                             try:
                                 value = value[:]
-                            except:
+                            except Exception:
                                 pass
-                            
+
                             except_for_in_rna_all = [x for x in except_for if rna_path_step.find(x) != -1]
                             except_for_in_rna = bool(len(except_for_in_rna_all))
                             if add_except and except_type and except_for_in_rna:
@@ -370,6 +370,7 @@ class BM_AddPresetBase():
                                     # "map_NORMAL_use_preview",
                                     "map_normal_data",
                                     "map_normal_space",
+                                    "map_normal_multires_subdiv_levels",
                                     "map_normal_preset",
                                     "map_normal_custom_preset",
                                     "map_normal_r",
@@ -381,6 +382,8 @@ class BM_AddPresetBase():
                                     "map_displacement_data",
                                     "map_displacement_result",
                                     "map_displacement_subdiv_levels",
+                                    "map_displacement_multires_subdiv_levels",
+                                    "map_displacement_use_lowres_mesh",
 
                                     "map_VECTOR_DISPLACEMENT_prefix",
                                     # "map_VECTOR_DISPLACEMENT_use_preview",
@@ -523,12 +526,12 @@ class BM_AddPresetBase():
                     file_preset.close()
 
             preset_menu_class.bl_label = bpy.path.display_name(filename)
-        
+
         # removing preset
         else:
             if self.remove_active is True:
                 name = preset_menu_class.bl_label
-            
+
             # fairly sloppy but convenient.
             filepath = bpy.utils.preset_find(name, self.preset_subdir, ext=ext)
 
@@ -603,11 +606,10 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.hl_max_ray_distance",
         # "bm_item.hl_cage",
 
-        "bm_item.uv_use_unique_per_map",
         "bm_item.uv_bake_data",
         "bm_item.uv_bake_target",
         # "bm_item.uv_active_layer",
-        "bm_item.uv_type",
+        # "bm_item.uv_type",
         "bm_item.uv_snap_islands_to_pixels",
         "bm_item.uv_use_auto_unwrap",
         "bm_item.uv_auto_unwrap_angle_limit",
@@ -629,18 +631,22 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 
         "bm_item.out_use_denoise",
         "bm_item.out_file_format",
+        "bm_item.out_tga_use_raw",
+        "bm_item.out_dpx_use_log",
+        "bm_item.out_tiff_compression",
         "bm_item.out_exr_codec",
         "bm_item.out_compression",
+        "bm_item.out_quality",
         "bm_item.out_res",
         "bm_item.out_res_height",
         "bm_item.out_res_width",
         "bm_item.out_margin",
         "bm_item.out_margin_type",
-        "bm_item.out_use_32bit",
+        "bm_item.out_bit_depth",
         "bm_item.out_use_alpha",
         "bm_item.out_use_transbg",
-        # "bm_item.out_udim_start_tile",
-        # "bm_item.out_udim_end_tile",
+        "bm_item.out_udim_start_tile",
+        "bm_item.out_udim_end_tile",
         "bm_item.out_super_sampling_aa",
         "bm_item.out_samples",
         "bm_item.out_use_adaptive_sampling",
@@ -649,7 +655,7 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.out_use_unique_per_map",
 
         "bm_item.bake_save_internal",
-        # "bm_item.bake_output_filepath",
+        "bm_item.bake_output_filepath",
         "bm_item.bake_create_subfolder",
         "bm_item.bake_subfolder_name",
         "bm_item.bake_batchname",
@@ -657,8 +663,9 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.bake_create_material",
         "bm_item.bake_assign_modifiers",
         "bm_item.bake_device",
+        "bm_item.bake_view_from",
         "bm_item.bake_hide_when_inactive",
-        # "bm_item.bake_vg_index",
+        "bm_item.bake_vg_index",
     ]
 
 class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
@@ -690,11 +697,10 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.hl_max_ray_distance",
         # "bm_item.hl_cage",
 
-        "bm_item.uv_use_unique_per_map",
         "bm_item.uv_bake_data",
         "bm_item.uv_bake_target",
         # "bm_item.uv_active_layer",
-        "bm_item.uv_type",
+        # "bm_item.uv_type",
         "bm_item.uv_snap_islands_to_pixels",
         "bm_item.uv_use_auto_unwrap",
         "bm_item.uv_auto_unwrap_angle_limit",
@@ -750,7 +756,7 @@ class BM_OT_HL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     preset_tag = "hl"
 
     preset_values = [
-        # "bm_map.hl_use_unique_per_map",
+        # "bm_item.hl_use_unique_per_map",
         # "bm_map.hl_highpoly_table",
         "bm_item.hl_decals_use_separate_texset",
         "bm_item.hl_decals_separate_texset_prefix",
@@ -785,7 +791,7 @@ class BM_OT_UV_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.uv_auto_unwrap_angle_limit",
         "bm_item.uv_auto_unwrap_island_margin",
         "bm_item.uv_auto_unwrap_use_scale_to_bounds",
-        "bm_map.uv_use_unique_per_map",
+        # "bm_item.uv_use_unique_per_map",
     ]
 
 class BM_OT_CSH_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
@@ -831,24 +837,27 @@ class BM_OT_OUT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     preset_values = [
         "bm_map.out_use_denoise",
         "bm_map.out_file_format",
+        "bm_map.out_tga_use_raw",
+        "bm_map.out_dpx_use_log",
+        "bm_map.out_tiff_compression",
         "bm_map.out_exr_codec",
         "bm_map.out_compression",
+        "bm_map.out_quality",
         "bm_map.out_res",
         "bm_map.out_res_height",
         "bm_map.out_res_width",
         "bm_map.out_margin",
         "bm_map.out_margin_type",
-        "bm_map.out_use_32bit",
+        "bm_map.out_bit_depth",
         "bm_map.out_use_alpha",
         "bm_map.out_use_transbg",
-        # "bm_map.out_udim_start_tile",
-        # "bm_map.out_udim_end_tile",
+        "bm_map.out_udim_start_tile",
+        "bm_map.out_udim_end_tile",
         "bm_map.out_super_sampling_aa",
         "bm_map.out_samples",
         "bm_map.out_use_adaptive_sampling",
         "bm_map.out_adaptive_threshold",
         "bm_map.out_min_samples",
-        "bm_map.out_use_unique_per_map",
     ]
 
 class BM_OT_FULL_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
@@ -958,6 +967,7 @@ class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         #bm_map. "map_NORMAL_use_preview",
         "bm_map.map_normal_data",
         "bm_map.map_normal_space",
+        "bm_map.map_normal_multires_subdiv_levels",
         "bm_map.map_normal_preset",
         "bm_map.map_normal_custom_preset",
         "bm_map.map_normal_r",
@@ -969,6 +979,8 @@ class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_map.map_displacement_data",
         "bm_map.map_displacement_result",
         "bm_map.map_displacement_subdiv_levels",
+        "bm_map.map_displacement_multires_subdiv_levels",
+        "bm_map.map_displacement_use_lowres_mesh",
 
         "bm_map.map_VECTOR_DISPLACEMENT_prefix",
         #bm_map. "map_VECTOR_DISPLACEMENT_use_preview",
@@ -1134,7 +1146,7 @@ class BM_OT_BAKE_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 
     preset_values = [
         "bm_item.bake_save_internal",
-        # "bm_item.bake_output_filepath",
+        "bm_item.bake_output_filepath",
         "bm_item.bake_create_subfolder",
         "bm_item.bake_subfolder_name",
         "bm_item.bake_batchname",
@@ -1142,8 +1154,33 @@ class BM_OT_BAKE_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.bake_create_material",
         "bm_item.bake_assign_modifiers",
         "bm_item.bake_device",
+        "bm_item.bake_view_from",
         "bm_item.bake_hide_when_inactive",
-        # "bm_item.bake_vg_index",
+        "bm_item.bake_vg_index",
+    ]
+
+class BM_OT_CM_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
+    bl_idname = "bakemaster.cm_preset_add"
+    bl_label = "Color Management Preset"
+    bl_description = "Add or Remove Color Management Preset"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    preset_menu = 'BM_MT_CM_Presets'
+    preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_CM_cm')
+
+    preset_defines = [
+        "bm_props = bpy.context.scene.bm_props",
+    ]
+
+    preset_values = [
+        "bm_props.cm_use_apply_scene",
+        "bm_props.cm_color_space",
+        "bm_props.cm_aces_texture_color_space",
+        "bm_props.cm_aces_data_color_space",
+        "bm_props.cm_srgb_texture_color_space",
+        "bm_props.cm_srgb_data_color_space",
+        "bm_props.cm_xyz_texture_color_space",
+        "bm_props.cm_xyz_data_color_space",
+        "bm_props.cm_use_compositor",
     ]
 
 ###########################################################
@@ -1363,6 +1400,22 @@ class BM_MT_BAKE_Presets(bpy.types.Menu):
     
     draw = bpy.types.Menu.draw_preset
 
+class BM_PT_CM_Presets(BM_PresetPanel, bpy.types.Panel):
+    bl_label = "Color Management Preset"
+    preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_CM_cm')
+    preset_operator = "bakemaster.execute_preset_bakemaster"
+    preset_add_operator = "bakemaster.cm_preset_add"
+    preset_operator_defaults = {
+        "menu_idname" : 'BM_MT_CM_Presets',
+        "preset_label" : bl_label,
+    }
+class BM_MT_CM_Presets(bpy.types.Menu):
+    bl_label = "Bake Preset"
+    preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_CM_cm')
+    preset_operator = "bakemaster.execute_preset_bakemaster"
+    
+    draw = bpy.types.Menu.draw_preset
+
 ###########################################################
 ### Execute Preset ###
 ###########################################################
@@ -1396,7 +1449,12 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
 
         # change the menu title to the most recently chosen option
         preset_class = getattr(bpy.types, self.menu_idname)
-        preset_class.bl_label = bpy.path.display_name(basename(filepath), title_case=False)
+        try:
+            preset_class.bl_label = bpy.path.display_name(
+                basename(filepath), title_case=False)
+        except TypeError:
+            preset_class.bl_label = bpy.path.display_name(
+                basename(filepath))
 
         ext = splitext(filepath)[1].lower()
 
@@ -1421,7 +1479,7 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
                             continue
                         if items[0].use_affect is False:
                             continue
-                        
+
                         # load preset
                         context.scene.bm_props.global_active_index = index
                         bpy.utils.execfile(filepath)
