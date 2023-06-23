@@ -156,6 +156,7 @@ Key features
   * Channel Pack maps the way you prefer
   * Group objects into bake jobs
   * Turn on Denoising and Supersample AA, for UDIMs too
+  * Supports ACES out of the box, Default Rules & Color Management for pro artists
   * Bake Decals separately and onto objects
   * Bake from and to Vertex Colors
   * Fastest ID Map
@@ -200,6 +201,9 @@ Key features
                 <img src="../_static/images/pages/about/10_keyfeatures.png" alt="Turn on Denoising and Supersample AA, for UDIMs too">
             </div>
             <div class="content column">
+                <img src="../_static/images/pages/about/10_1_keyfeatures.png" alt="Supports ACES out of the box, Default Rules & Color Management for pro artists">
+            </div>
+            <div class="content column">
                 <img src="../_static/images/pages/about/11_keyfeatures.png" alt="Bake Decals separately and onto objects">
             </div>
             <div class="content column">
@@ -234,6 +238,7 @@ Key features
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 13)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 14)"></span>
                 <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 15)"></span>
+                <span class="dot inactive" onclick="slideshow_setSlideByAbsoluteId('slideshow-1', 16)"></span>
             </div>
             <a class="next" onclick="slideshow_setSlideByRelativeId('slideshow-1', 1)" onselectstart="return false">&#10095;</a>
         </div>
