@@ -6,9 +6,9 @@
 .. |teaser| image:: ./_static/images/pages/about/teaser_1920x1080.png
     :alt: Teaser
 
-============================
-BakeMaster 2.0 Documentation
-============================
+==============================
+BakeMaster 2.5.1 Documentation
+==============================
 
 |teaser|
 

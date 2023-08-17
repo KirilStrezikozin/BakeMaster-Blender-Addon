@@ -19,5 +19,7 @@ BakeMaster is compatible with the following Blender versions:
 * ``Blender 3.2``
 * ``Blender 3.3``
 * ``Blender 3.4``
+* ``Blender 3.5``
+* ``Blender 3.6``
 
 Using the addon on versions higher than specified may cause errors. If you face any compatibility errors, please `inform <../more/connect.html>`__.

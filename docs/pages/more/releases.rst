@@ -4,6 +4,20 @@ Releases
 
 All BakeMaster Releases and Changelogs are listed on this page. Each new release comes with new features, improvements, or fixes. For clarity, each section has a ``tag`` to identify the changes.
 
+2.5.1 Release
+=============
+
+.. admonition:: Tag
+    :class: important
+
+    `2.5.1 - August 17th, 2023 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/releases>`__
+
+**Fixes:**
+
+#. Separate decals setting had no effect and decals were always baked onto separate images (`issue-39 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/39>`__).
+
+`Features <https://bakemaster-blender-addon.readthedocs.io/en/2.5.1/pages/about.html#key-features>`__.
+
 2.5.0 Release
 =============
 
