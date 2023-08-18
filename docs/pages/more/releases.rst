@@ -4,6 +4,25 @@ Releases
 
 All BakeMaster Releases and Changelogs are listed on this page. Each new release comes with new features, improvements, or fixes. For clarity, each section has a ``tag`` to identify the changes.
 
+2.5.2 Release
+=============
+
+.. admonition:: Tag
+    :class: important
+
+    `2.5.2 - August 18th, 2023 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/releases>`__
+
+**Fixes:**
+
+#. Global presets did not include map formats (`issue-41 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/41>`__).
+#. Full Object Preset caused blender to crash (`issue-44 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/44>`__).
+
+**New Features:**
+
+#. Texture upscaling by factor (`issue-43 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/43>`__).
+
+`Features <https://bakemaster-blender-addon.readthedocs.io/en/2.5.2/pages/about.html#key-features>`__.
+
 2.5.1 Release
 =============
 

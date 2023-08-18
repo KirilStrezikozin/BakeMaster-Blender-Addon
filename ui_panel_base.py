@@ -1,6 +1,6 @@
 # ##### BEGIN LICENSE BLOCK #####
 #
-# "BakeMaster" Blender Add-on (version 2.5.1)
+# "BakeMaster" Blender Add-on (version 2.5.2)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
 # This License permits you to use this software for any purpose including
@@ -978,9 +978,13 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                         format_box_column = format_box.column(align=True)
                         format_box_column.prop(format_prop_collection, 'out_udim_start_tile', text="Start Tile")
                         format_box_column.prop(format_prop_collection, 'out_udim_end_tile', text="End Tile")
-                    format_box_ssaa_row = format_box.row(align=True)
+                    format_box_scalecol = format_box.column(align=True)
+                    format_box_ssaa_row = format_box_scalecol.row(align=True)
                     format_box_ssaa_row.prop(format_prop_collection, 'out_super_sampling_aa')
                     format_box_ssaa_row.active = format_prop_collection.out_super_sampling_aa != '1'
+                    format_box_upscale_row = format_box_scalecol.row(align=True)
+                    format_box_upscale_row.prop(format_prop_collection, 'out_upscaling')
+                    format_box_upscale_row.active = format_prop_collection.out_upscaling != '1'
                     format_box_column = format_box.column(align=True)
                     format_box_column.prop(format_prop_collection, 'out_use_adaptive_sampling')
                     if format_prop_collection.out_use_adaptive_sampling:
