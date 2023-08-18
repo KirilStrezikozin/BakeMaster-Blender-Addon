@@ -1,6 +1,6 @@
 # ##### BEGIN LICENSE BLOCK #####
 #
-# "BakeMaster" Blender Add-on (version 2.5.1)
+# "BakeMaster" Blender Add-on (version 2.5.2)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
 # This License permits you to use this software for any purpose including
@@ -895,6 +895,17 @@ class BM_Map(bpy.types.PropertyGroup):
                ('8', "8x8", "Bake at 8x the chosen resolution and then downscale"),
                ('16', "16x16", "Bake at 16x the chosen resolution and then downscale")],
         update=BM_MAP_PROPS_out_super_sampling_aa_Update)
+
+    out_upscaling : bpy.props.EnumProperty(
+        name="Upscaling",
+        description="Upscaling factor. Bake at a lower resolution and upscale image resolution by the chosen factor after. Results in decreased baked time to get a higher resolution, but be aware that blurring might appear",
+        default='1',
+        items=[('1', "1x1", "No upscaling. Bake and save with chosen resolution"),
+               ('2', "2x2", "Bake at the chosen resolution and then upscale by 2x"),
+               ('4', "4x4", "Bake at the chosen resolution and then upscale by 4x"),
+               ('8', "8x8", "Bake at the chosen resolution and then upscale by 8x"),
+               ('16', "16x16", "Bake at the chosen resolution and then upscale by 16x")],
+        update=BM_MAP_PROPS_out_upscaling_Update)
 
     out_samples : bpy.props.IntProperty(
         name="Bake Samples",
@@ -2747,6 +2758,17 @@ class BM_Object(bpy.types.PropertyGroup):
                ('8', "8x8", "Bake at 8x the chosen resolution and then downscale"),
                ('16', "16x16", "Bake at 16x the chosen resolution and then downscale")],
         update=BM_ITEM_PROPS_out_super_sampling_aa_Update)
+
+    out_upscaling : bpy.props.EnumProperty(
+        name="Upscaling",
+        description="Upscaling factor. Bake at a lower resolution and upscale image resolution by the chosen factor after. Results in decreased baked time to get a higher resolution, but be aware that blurring might appear",
+        default='1',
+        items=[('1', "1x1", "No upscaling. Bake and save with chosen resolution"),
+               ('2', "2x2", "Bake at the chosen resolution and then upscale by 2x"),
+               ('4', "4x4", "Bake at the chosen resolution and then upscale by 4x"),
+               ('8', "8x8", "Bake at the chosen resolution and then upscale by 8x"),
+               ('16', "16x16", "Bake at the chosen resolution and then upscale by 16x")],
+        update=BM_ITEM_PROPS_out_upscaling_Update)
 
     out_samples : bpy.props.IntProperty(
         name="Bake Samples",

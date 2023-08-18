@@ -1,6 +1,6 @@
 # ##### BEGIN LICENSE BLOCK #####
 #
-# "BakeMaster" Blender Add-on (version 2.5.1)
+# "BakeMaster" Blender Add-on (version 2.5.2)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
 # This License permits you to use this software for any purpose including
@@ -204,6 +204,8 @@ class BM_AddPresetBase():
                                     file_preset.write("\t%s = %r\n" % (rna_path_step, 'NONE'))
                                 elif "_data" in except_for_in_rna_all:
                                     file_preset.write("\tpass\n")
+                                elif "out_bit_depth" in except_for_in_rna_all:
+                                    file_preset.write("\tpass\n")
 
                             else:
                                 file_preset.write("%s = %r\n" % (rna_path_step, value))
@@ -234,7 +236,7 @@ class BM_AddPresetBase():
 
                     add_except = False
                     except_type = ""
-                    except_for = []
+                    except_for = ["out_bit_depth"]
                     if hasattr(self, "preset_tag"):
                         # add try except TypeError for channel pack maps for chnl preset
                         if getattr(self, "preset_tag") in ["full_object", "chnlp"]:
@@ -495,6 +497,41 @@ class BM_AddPresetBase():
                                     # "map_WIREFRAME_use_preview",
                                     "map_wireframemask_line_thickness",
                                     "map_wireframemask_use_invert",
+
+                                    "out_use_denoise",
+                                    "out_file_format",
+                                    "out_tga_use_raw",
+                                    "out_dpx_use_log",
+                                    "out_tiff_compression",
+                                    "out_exr_codec",
+                                    "out_compression",
+                                    "out_quality",
+                                    "out_res",
+                                    "out_res_height",
+                                    "out_res_width",
+                                    "out_margin",
+                                    "out_margin_type",
+                                    "out_bit_depth",
+                                    "out_use_alpha",
+                                    "out_use_transbg",
+                                    "out_udim_start_tile",
+                                    "out_udim_end_tile",
+                                    "out_super_sampling_aa",
+                                    "out_upscaling",
+                                    "out_samples",
+                                    "out_use_adaptive_sampling",
+                                    "out_adaptive_threshold",
+                                    "out_min_samples",
+
+                                    "uv_bake_data",
+                                    "uv_bake_target",
+                                    # "uv_active_layer",
+                                    "uv_type",
+                                    "uv_snap_islands_to_pixels",
+
+                                    "hl_cage_type",
+                                    "hl_cage_extrusion",
+                                    "hl_max_ray_distance",
                                 }
                                 for key in map_data:
                                     self.preset_values.append("bm_item.global_maps[%d].%s" % (map_index, key))
@@ -596,7 +633,6 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.decal_upper_coordinate",
         "bm_item.decal_boundary_offset",
 
-        # "bm_item.hl_use_unique_per_map",
         # "bm_item.hl_highpoly_table",
         "bm_item.hl_decals_use_separate_texset",
         "bm_item.hl_decals_separate_texset_prefix",
@@ -605,6 +641,7 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.hl_cage_extrusion",
         "bm_item.hl_max_ray_distance",
         # "bm_item.hl_cage",
+        "bm_item.hl_use_unique_per_map",
 
         "bm_item.uv_bake_data",
         "bm_item.uv_bake_target",
@@ -648,6 +685,7 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.out_udim_start_tile",
         "bm_item.out_udim_end_tile",
         "bm_item.out_super_sampling_aa",
+        "bm_item.out_upscaling",
         "bm_item.out_samples",
         "bm_item.out_use_adaptive_sampling",
         "bm_item.out_adaptive_threshold",
@@ -687,7 +725,6 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.decal_upper_coordinate",
         "bm_item.decal_boundary_offset",
 
-        # "bm_item.hl_use_unique_per_map",
         # "bm_item.hl_highpoly_table",
         "bm_item.hl_decals_use_separate_texset",
         "bm_item.hl_decals_separate_texset_prefix",
@@ -696,11 +733,12 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.hl_cage_extrusion",
         "bm_item.hl_max_ray_distance",
         # "bm_item.hl_cage",
+        "bm_item.hl_use_unique_per_map",
 
         "bm_item.uv_bake_data",
         "bm_item.uv_bake_target",
         # "bm_item.uv_active_layer",
-        # "bm_item.uv_type",
+        "bm_item.uv_type",
         "bm_item.uv_snap_islands_to_pixels",
         "bm_item.uv_use_auto_unwrap",
         "bm_item.uv_auto_unwrap_angle_limit",
@@ -854,6 +892,7 @@ class BM_OT_OUT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_map.out_udim_start_tile",
         "bm_map.out_udim_end_tile",
         "bm_map.out_super_sampling_aa",
+        "bm_map.out_upscaling",
         "bm_map.out_samples",
         "bm_map.out_use_adaptive_sampling",
         "bm_map.out_adaptive_threshold",
@@ -1425,7 +1464,7 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
     """Execute BakeMaster preset"""
     bl_idname = "bakemaster.execute_preset_bakemaster"
     bl_label = "Load BakeMaster Preset"
-    bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
+    bl_options = {'INTERNAL', 'UNDO'}
 
     filepath: bpy.props.StringProperty(
         subtype='FILE_PATH',

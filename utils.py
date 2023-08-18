@@ -1,6 +1,6 @@
 # ##### BEGIN LICENSE BLOCK #####
 #
-# "BakeMaster" Blender Add-on (version 2.5.1)
+# "BakeMaster" Blender Add-on (version 2.5.2)
 # Copyright (C) 2023 Kiril Strezikozin aka kemplerart
 #
 # This License permits you to use this software for any purpose including
@@ -689,6 +689,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             # 'out_udim_start_tile' : self.out_udim_start_tile,
             # 'out_udim_end_tile' : self.out_udim_end_tile,
             'out_super_sampling_aa': self.out_super_sampling_aa,
+            'out_upscaling': self.out_upscaling,
             'out_samples': self.out_samples,
             'out_use_adaptive_sampling': self.out_use_adaptive_sampling,
             'out_adaptive_threshold': self.out_adaptive_threshold,
@@ -783,6 +784,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                         # 'out_udim_start_tile' : map.out_udim_start_tile,
                         # 'out_udim_end_tile' : map.out_udim_end_tile,
                         'out_super_sampling_aa': map.out_super_sampling_aa,
+                        'out_upscaling': map.out_upscaling,
                         'out_samples': map.out_samples,
                         'out_use_adaptive_sampling': map.out_use_adaptive_sampling,
                         'out_adaptive_threshold': map.out_adaptive_threshold,
@@ -1757,7 +1759,7 @@ def BM_SCENE_PROPS_cm_linear_color_space_Items(self, context):
 ###############################################################
 
 
-def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context, object=None, map=None, global_active_index=None, decal_texset_tag=""):
+def BM_ITEM_PROPS_bake_batchname_GetPreview(container, context, object=None, map=None, global_active_index=None, decal_texset_tag=""):
     # funcs for data get
     def get_objectname(container):
         if not any([container.nm_is_universal_container, container.nm_is_local_container]):
@@ -1845,47 +1847,53 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context, object=None, map=None
         else:
             return map.map_normal_custom_preset
 
-    if object is None:
-        object = BM_Object_Get(self, context)[0]
-        if len(object.global_maps) == 0:
-            # self.bake_batchname_preview = "*Object has no Maps*"
+    if container is None:
+        container = BM_Object_Get(None, context)[0]
+        if len(container.global_maps) == 0:
+            # container.bake_batchname_preview = "*Object has no Maps*"
             return "*Object has no Maps*"
-        map = object.global_maps[object.global_maps_active_index]
+        map = container.global_maps[container.global_maps_active_index]
         global_active_index = context.scene.bm_props.global_active_index
 
+    if object is None:
+        object = container
+    if map is None:
+        map = container.global_maps[container.global_maps_active_index]
+
     # get out_container
-    out_container = object
-    if object.out_use_unique_per_map:
+    out_container = container
+    if container.out_use_unique_per_map:
         out_container = map
     # get uv_container
-    uv_container = object
-    if object.uv_use_unique_per_map:
+    uv_container = container
+    if container.uv_use_unique_per_map:
         uv_container = map
 
     gen_keywords_values = {
         "$objectindex": global_active_index,
         "$objectname": get_objectname(object),
-        "$containername": get_containername(self),
-        "$packname": get_packname(self, map),
-        "$texsetname": get_texsetname(self),
+        "$containername": get_containername(container),
+        "$packname": get_packname(container, map),
+        "$texsetname": get_texsetname(container),
         "$mapindex": map.global_map_index,
         "$mapname": getattr(map, 'map_{}_prefix'.format(map.global_map_type)),
         "$mapres": get_mapres(out_container),
         "$mapbit": f"{out_container.out_bit_depth}bit",
         "$maptrans": "transbg" if out_container.out_use_transbg else "",
         "$mapssaa": out_container.out_super_sampling_aa,
+        "$mapupscale": out_container.out_upscaling,
         "$mapsamples": out_container.out_samples,
         "$mapdenoise": "denoised" if out_container.out_use_denoise else "",
         "$mapnormal": get_mapnormal(map),
         "$mapuv": uv_container.uv_active_layer,
-        "$engine": self.bake_device,
-        "$autouv": "autouv" if self.uv_use_auto_unwrap else "",
+        "$engine": container.bake_device,
+        "$autouv": "autouv" if container.uv_use_auto_unwrap else "",
     }
 
     preview = ""
     temp_preview = ""
     finding_keyword = False
-    for index, char in enumerate(self.bake_batchname):
+    for index, char in enumerate(container.bake_batchname):
         # adding chars until $ found - means that we need to insert keyword
         if finding_keyword is False:
             if char == '$':
@@ -1905,21 +1913,21 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(self, context, object=None, map=None
             try:
                 gen_keywords_values[temp_preview.lower()]
             except KeyError:
-                if index == len(self.bake_batchname) - 1:
+                if index == len(container.bake_batchname) - 1:
                     preview += temp_preview
             else:
                 # keyword found, add its value to preview
                 if gen_keywords_values[temp_preview.lower()] is None:
                     finding_keyword = False
                     continue
-                if self.bake_batchname_use_caps:
+                if container.bake_batchname_use_caps:
                     preview += str(
                         gen_keywords_values[temp_preview.lower()]).upper()
                 else:
                     preview += str(gen_keywords_values[temp_preview.lower()])
                 finding_keyword = False
 
-    # self.bake_batchname_preview = preview
+    # container.bake_batchname_preview = preview
 
     # limit to max 63 characters
     # take decal prefix into account
@@ -2756,6 +2764,7 @@ def BM_ITEM_PROPS_out_use_unique_per_map_Update(self, context):
             'out_udim_start_tile': object.out_udim_start_tile,
             'out_udim_end_tile': object.out_udim_end_tile,
             'out_super_sampling_aa': object.out_super_sampling_aa,
+            'out_upscaling': object.out_upscaling,
             'out_use_adaptive_sampling': object.out_use_adaptive_sampling,
             'out_adaptive_treshold': object.out_adaptive_threshold,
             'out_samples': object.out_samples,
@@ -5084,6 +5093,12 @@ def BM_MAP_PROPS_out_super_sampling_aa_Update(self, context):
         self, "out_super_sampling_aa"), True)
 
 
+def BM_MAP_PROPS_out_upscaling_Update(self, context):
+    name = "Map Format: Upscaling"
+    BM_LastEditedProp_Write(context, name, "out_upscaling", getattr(
+        self, "out_upscaling"), True)
+
+
 def BM_MAP_PROPS_out_samples_Update(self, context):
     name = "Map Format: Bake Samples"
     BM_LastEditedProp_Write(context, name, "out_samples",
@@ -6276,6 +6291,12 @@ def BM_ITEM_PROPS_out_super_sampling_aa_Update(self, context):
     name = "Object Format: SuperSampling AA"
     BM_LastEditedProp_Write(context, name, "out_super_sampling_aa", getattr(
         self, "out_super_sampling_aa"), False)
+
+
+def BM_ITEM_PROPS_out_upscaling_Update(self, context):
+    name = "Object Format: Upscaling"
+    BM_LastEditedProp_Write(context, name, "out_upscaling", getattr(
+        self, "out_upscaling"), True)
 
 
 def BM_ITEM_PROPS_out_samples(self, context):
