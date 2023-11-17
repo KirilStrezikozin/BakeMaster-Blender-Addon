@@ -3209,14 +3209,15 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
             if map_tag == "AO":
                 use_default = getattr(map, "map_%s_use_default" % map_tag)
                 if use_default:
+                    # commented values are legacy
                     samples = 16
                     distance = 1
                     only_local = False
                     black_point = 0
-                    white_point = 0.8
-                    opacity = 0.67
-                    brightness = -0.3
-                    contrast = 0.3
+                    white_point = 1.0  # 0.8
+                    opacity = 1.0  # 0.67
+                    brightness = 0  # -0.3
+                    contrast = 0  # 0.3
                     invert = 0
                 else:
                     samples = map.map_ao_samples
