@@ -4,7 +4,7 @@
 <h1 id="page-top">
     <a href="#page-top">
         Welcome to <br />
-        BakeMaster 2.5.2 Blender Add-on
+        BakeMaster 2.6.0 Blender Add-on
     </a>
 </h1>
 
