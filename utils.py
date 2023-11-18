@@ -4084,7 +4084,7 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
         'CLEARCOAT': ['Clearcoat'],
         'IOR': ['IOR'],
         'TRANSMISSION': ['Transmission'],
-        'EMISSION': ['Emission'],
+        'EMISSION': ['Emission', 'Emission Color'],
         'ALPHA': ['Alpha'],
         'NORMAL': ['Normal'],
         'DISPLACEMENT': ['Displacement'],
@@ -4105,6 +4105,7 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
             'IOR': [getattr(socket, "default_value")] * 3,
             'Transmission': [getattr(socket, "default_value")] * 3,
             'Emission': getattr(socket, "default_value"),
+            'Emission Color': getattr(socket, "default_value"),
             'Normal': [0.5, 0.5, 1],
             'Displacement': [0.0] * 3,
         }
