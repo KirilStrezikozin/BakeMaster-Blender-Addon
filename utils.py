@@ -1647,6 +1647,7 @@ def BM_SCENE_PROPS_cm_color_space_Items(_, context):
     cm_srgb = ('sRGB', "sRGB",
                "RGB display space using Rec. 709 chromaticities and a D65 white point. Used by most displays")
     cm_xyz = ('XYZ', "XYZ", "XYZ Linear space commonly used by digital projectors")
+    cm_displayp3 = ('sRGB', "Display P3", "Apple's Display P3 with sRGB compound (piece-wise) encoding transfer function, common on Mac devices")
     cm_default = ('DEFAULT', scene_color_space, "Default scene color space")
 
     if scene_color_space == 'sRGB':
@@ -1655,6 +1656,8 @@ def BM_SCENE_PROPS_cm_color_space_Items(_, context):
         items = [cm_aces]
     elif scene_color_space == 'XYZ':
         items = [cm_xyz]
+    elif scene_color_space == 'Display P3':
+        items = [cm_displayp3]
     else:
         items = [cm_default]
 
@@ -1664,21 +1667,45 @@ def BM_SCENE_PROPS_cm_color_space_Items(_, context):
 def texture_color_space_Items(self, _, default=0):
     color_space = self.cm_color_space
 
-    if color_space == "sRGB":
-        items_lookup = [
-            ("sRGB", "sRGB", "sRGB display space"),
-            ("Non-Color", "Non-Color",
-             "Color space used for images which contains non-color data (i.e. normal maps)"),
-            ("Linear", "Linear", "Rec. 709 (Full Range), Blender native linear space"),
-            ("Linear ACES", "Linear ACES", "ACES2065-1 linear space"),
-            ("Linear ACEScg", "Linear ACEScg", "ACEScg linear space"),
-            ("Filmic Log", "Filmic Log",
-             "Log based filmic shaper with 16.5 stops of latitude, and 25 stops of dynamic range"),
-            ("Filmic sRGB", "Filmic sRGB",
-             "sRGB display space with Filmic view transform"),
-            ("XYZ", "XYZ", "Linear XYZ space"),
-            ("Raw", "Raw", "Does not automatically convert to linear, same as Non-Color")
-        ]
+    if color_space == "sRGB" or color_space == "Display P3":
+        if bpy.app.version >= (4, 0, 0):
+            items_lookup = [
+                ("sRGB", "sRGB", "sRGB IEC 61966-2-1 compound (piece-wise) encoding"),
+                ("Non-Color", "Non-Color", "Generic data that is not color, will not apply any color transform (e.g. normal maps)"),
+                ("Linear Rec.709", "Linear Rec.709", "Linear BT.709 with illuminant D65 white point"),
+                ("Rec.2020", "Rec.2020", "BT.2020 2.4 Exponent EOTF Display"),
+                ("Rec.1886", "Rec.1886", "BT.1886 2.4 Exponent EOTF Display, commonly used for TVs"),
+                ("Linear Rec.2020", "Linear Rec.2020", "Linear BT.2020 with illuminant D65 white point"),
+                ("Linear FilmLight E-Gamut", "Linear FilmLight E-Gamut", "Linear E-Gamut with illuminant D65 white point"),
+                ("Linear DCI-P3 D65", "Linear DCI-P3 D65", "Linear DCI-P3 with illuminant D65 white point"),
+                ("Linear CIE-XYZ E", "Linear CIE-XYZ E", "1931 CIE XYZ standard with assumed illuminant E white point"),
+                ("Linear CIE-XYZ D65", "Linear CIE-XYZ D65", "1931 CIE XYZ with adapted illuminant D65 white point"),
+                ("Filmic sRGB", "Filmic sRGB", "sRGB display space with Filmic view transform"),
+                ("Filmic Log", "Filmic Log", "Log based Filmic sharper with 16.5 stops of latitude, and 25 stops of dynamic range"),
+                ("Display P3", "Display P3", "Apple's Display P3 with sRGB compound (piece-wise) encoding transfer function, common on Mac devices"),
+                ("AgX Log", "AgX Log", "Log Encoding with Chroma inset and rotation, and with 25 stops of Dynamic Range"),
+                ("AgX Base sRGB", "AgX Base sRGB", "AgX Base Image Encoding for sRGB Display"),
+                ("AgX Base Rec.2020", "AgX Base Rec.2020", "AgX Base Image Encoding for BT.2020 Display"),
+                ("AgX Base Rec.1886", "AgX Base Rec.1886", "AgX Base Image Encoding for Rec.1886 Display"),
+                ("AgX Base Display P3", "AgX Base Display P3", "AgX Base Image Encoding for Display P3"),
+                ("ACEScg", "ACEScg", "Linear AP1 with ACES white point"),
+                ("ACES2065-1", "ACES2065-1", "Linear AP0 with ACES white point"),
+            ]
+        else:
+            items_lookup = [
+                ("sRGB", "sRGB", "sRGB display space"),
+                ("Non-Color", "Non-Color",
+                "Color space used for images which contains non-color data (i.e. normal maps)"),
+                ("Linear", "Linear", "Rec. 709 (Full Range), Blender native linear space"),
+                ("Linear ACES", "Linear ACES", "ACES2065-1 linear space"),
+                ("Linear ACEScg", "Linear ACEScg", "ACEScg linear space"),
+                ("Filmic Log", "Filmic Log",
+                "Log based filmic shaper with 16.5 stops of latitude, and 25 stops of dynamic range"),
+                ("Filmic sRGB", "Filmic sRGB",
+                "sRGB display space with Filmic view transform"),
+                ("XYZ", "XYZ", "Linear XYZ space"),
+                ("Raw", "Raw", "Does not automatically convert to linear, same as Non-Color")
+            ]
     elif color_space == "ACES":
         items_lookup = [
             ("Utility - sRGB - Texture", "Utility - sRGB - Texture",

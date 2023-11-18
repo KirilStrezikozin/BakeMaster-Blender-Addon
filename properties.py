@@ -1060,7 +1060,7 @@ class BM_Map(bpy.types.PropertyGroup):
     map_pass_type : bpy.props.EnumProperty(
         name="Pass",
         description="Choose BSDF node pass to bake to image texture",
-        default='BASE_COLOR',
+        default=0,
         items=BM_MAP_PROPS_map_pass_type_Items,
         update=BM_MAP_PROPS_map_pass_type_Update)
 
