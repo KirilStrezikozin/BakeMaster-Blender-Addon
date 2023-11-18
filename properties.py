@@ -1061,19 +1061,7 @@ class BM_Map(bpy.types.PropertyGroup):
         name="Pass",
         description="Choose BSDF node pass to bake to image texture",
         default='BASE_COLOR',
-        items=[('BASE_COLOR', "Base Color", ""),
-               ('SS_COLOR', "Subsurface Color", ""),
-               ('METALLIC', "Metallic", ""),
-               ('SPECULAR', "Specular", ""),
-               ('ROUGHNESS', "Roughness", ""),
-               ('ANISOTROPIC', "Anisotropic", ""),
-               ('SHEEN', "Sheen", ""),
-               ('CLEARCOAT', "Clearcoat", ""),
-               ('IOR', "IOR", ""),
-               ('TRANSMISSION', "Transmission", ""),
-               ('EMISSION', "Emission", ""),
-               ('ALPHA', "Alpha", ""),
-               ('NORMAL', "Normal", "")],
+        items=BM_MAP_PROPS_map_pass_type_Items,
         update=BM_MAP_PROPS_map_pass_type_Update)
 
 # Decal Pass Map Props

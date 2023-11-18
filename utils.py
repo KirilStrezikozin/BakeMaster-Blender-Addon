@@ -2851,6 +2851,36 @@ def BM_MAP_PROPS_map_type_Items(self, context):
     return items
 
 
+def BM_MAP_PROPS_map_pass_type_Items(self, context):
+    if bpy.app.version >= (4, 0, 0):
+        return [('BASE_COLOR', "Base Color", ""),
+                ('METALLIC', "Metallic", ""),
+                ('SPECULAR', "Specular Tint", ""),
+                ('ROUGHNESS', "Roughness", ""),
+                ('ANISOTROPIC', "Anisotropic", ""),
+                ('SHEEN', "Sheen Weight", ""),
+                ('CLEARCOAT', "Coat Weight", ""),
+                ('IOR', "IOR", ""),
+                ('TRANSMISSION', "Transmission Weight", ""),
+                ('EMISSION', "Emission Color", ""),
+                ('ALPHA', "Alpha", ""),
+                ('NORMAL', "Normal", "")]
+    else:
+        return [('BASE_COLOR', "Base Color", ""),
+                ('SS_COLOR', "Subsurface Color", ""),
+                ('METALLIC', "Metallic", ""),
+                ('SPECULAR', "Specular", ""),
+                ('ROUGHNESS', "Roughness", ""),
+                ('ANISOTROPIC', "Anisotropic", ""),
+                ('SHEEN', "Sheen", ""),
+                ('CLEARCOAT', "Clearcoat", ""),
+                ('IOR', "IOR", ""),
+                ('TRANSMISSION', "Transmission", ""),
+                ('EMISSION', "Emission", ""),
+                ('ALPHA', "Alpha", ""),
+                ('NORMAL', "Normal", "")]
+
+
 def BM_MAP_PROPS_map_vertexcolor_layer_Items(self, context):
     object = BM_Object_Get(self, context)
     if object[1] is False:
