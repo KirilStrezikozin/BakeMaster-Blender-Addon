@@ -390,7 +390,7 @@ class BM_SceneProps(bpy.types.PropertyGroup):
     cm_use_linear_exr : bpy.props.BoolProperty(
         name="Linear EXR",
         description="Save OpenEXR images in a Linear color space",
-        default=False)
+        default=True)
 
     cm_use_linear_srgb : bpy.props.BoolProperty(
         name="Linear sRGB",

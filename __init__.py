@@ -28,16 +28,17 @@
 # ##### END LICENSE BLOCK #####
 
 bl_info = {
-    "name" : "BakeMaster",
-    "description" : "Bake various PBR, Masks, and Cycles maps with ease and comfort.",
-    "author" : "Kiril Strezikozin (aka kemplerart)",
-    "version" : (2, 6, 0),
-    "blender" : (2, 83, 0),
-    "location" : "View3D > Sidebar > BakeMaster",
-    "warning" : "",
-    "wiki_url": "",
-    "tracker_url": "",
-    "category" : "Material"
+    "name": "BakeMaster",
+    "description": "Bake various PBR, Masks, and Cycles maps with ease and "
+                   "comfort",
+    "author": "Kiril Strezikozin (aka kemplerart)",
+    "version": (2, 6, 0),
+    "blender": (2, 83, 0),
+    "location": "View3D > Sidebar > BakeMaster",
+    "warning": "",
+    "wiki_url": "https://bakemaster-blender-addon.readthedocs.io/en/latest/",
+    "tracker_url": "https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/new/choose",
+    "category": "Material"
 }
 
 if "bpy" in locals():
