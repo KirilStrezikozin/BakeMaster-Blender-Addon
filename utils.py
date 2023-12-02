@@ -4650,7 +4650,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context):
                 ns.remove(n)
 
         # removing custom bm_materials
-        for i in reversed(o_remove_mats):
+        for i in o_remove_mats:
             o_mats.pop(index=i)
 
     # remove custom mats from data too
