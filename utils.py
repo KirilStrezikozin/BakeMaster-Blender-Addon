@@ -4371,9 +4371,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
 
     map, objects = data
 
-    # deselect all objects
-    for ob in context.scene.objects:
-        ob.select_set(False)
+    bpy.ops.object.select_all(action='DESELECT')
     bpy.ops.object.mode_set(mode='OBJECT')
 
     for object in objects:
@@ -4386,6 +4384,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
         if map_tag == 'MASK':
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.select_mode(type='VERT')
+            bpy.ops.mesh.select_all(action='DESELECT')
 
             vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(
                 object.vertex_groups, "bm_material_backup_COLOR1")
@@ -4394,18 +4393,16 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
                 object.vertex_groups) - 1
 
             if map.map_mask_data == 'VERTEX_GROUPS':
-                bpy.ops.mesh.select_all(action='DESELECT')
                 for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
                     object.vertex_groups.active_index = vrtx_group_index
-                    if vrtx_group.name.lower().find(map.map_mask_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_") == -1:
+                    if vrtx_group.name.lower().find(map.map_mask_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_material_backup") == -1:
                         bpy.ops.object.vertex_group_select()
 
-            if map.map_mask_data == 'MATERIALS':
-                bpy.ops.mesh.select_all(action='DESELECT')
+            elif map.map_mask_data == 'MATERIALS':
                 for mat_index, material in enumerate(object.data.materials):
                     if material is None:
                         continue
-                    if material.name.lower().find(map.map_mask_materials_name_contains) != -1 and material.name.lower().find("bm_") == -1:
+                    if material.name.lower().find(map.map_mask_materials_name_contains) != -1 and material.name.lower().find("bm_material_backup") == -1:
                         object.active_material_index = mat_index
                         bpy.ops.object.material_slot_select()
 
@@ -4469,7 +4466,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
 
                 for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
                     object.vertex_groups.active_index = vrtx_group_index
-                    if vrtx_group.name.lower().find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_") == -1:
+                    if vrtx_group.name.lower().find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_material_backup") == -1:
                         bpy.ops.object.vertex_group_select()
 
                 bpy.ops.mesh.select_all(action='INVERT')
@@ -4478,7 +4475,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
                 tag_index = 0
                 for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
                     object.vertex_groups.active_index = vrtx_group_index
-                    if vrtx_group.name.lower().find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_") == -1:
+                    if vrtx_group.name.lower().find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_material_backup") == -1:
                         bpy.ops.mesh.select_all(action='DESELECT')
                         bpy.ops.object.vertex_group_select()
 
@@ -4505,7 +4502,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
                 pass
 
             # mesh islands - assign material for each saved mesh island
-            if map.map_matid_data == 'MESH_ISLANDS':
+            elif map.map_matid_data == 'MESH_ISLANDS':
                 # Add all vertices to "unprocessed" list.
                 # While (unprocessed verts remain):
                 # Deselect all vertices
@@ -4550,7 +4547,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
                 bpy.ops.object.mode_set(mode='EDIT')
 
             # highpolies - add material and assign in to the whole object
-            if map.map_matid_data == 'OBJECTS':
+            elif map.map_matid_data == 'OBJECTS':
                 bpy.ops.mesh.select_all(action='DESELECT')
                 bpy.ops.mesh.select_all(action='SELECT')
 

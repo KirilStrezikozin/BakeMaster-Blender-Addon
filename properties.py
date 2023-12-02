@@ -1845,11 +1845,10 @@ class BM_Map(bpy.types.PropertyGroup):
 
     map_mask_data : bpy.props.EnumProperty(
         name="Data",
-        description="Data type for detecting mask black and white parts",
-        default='SELECTION',
-        items=[('SELECTION', "Selection", "Color selected mesh faces in one color, unselected in another"),
-               ('VERTEX_GROUPS', "Vertex Groups", "Color specified vertex groups in one color, other in another"),
-               ('MATERIALS', "Materials", "Color specified object materials in one color, other in another")],
+        description="Data type for detecting mask's black and white parts",
+        default='MATERIALS',
+        items=[('VERTEX_GROUPS', "Vertex Groups", "Color specified vertex groups in one color, others in another"),
+               ('MATERIALS', "Materials", "Color specified object materials in one color, others in another")],
         update=BM_MAP_PROPS_map_mask_data_Update)
     
     map_mask_vertex_groups_name_contains : bpy.props.StringProperty(
