@@ -1,33 +1,40 @@
-# ##### BEGIN LICENSE BLOCK #####
+# BEGIN LICENSE & COPYRIGHT BLOCK.
 #
-# "BakeMaster" Blender Add-on (version 2.6.0)
-# Copyright (C) Kiril Strezikozin (aka kemplerart) from 2022
+# Copyright (C) 2022-2023 Kiril Strezikozin
+# BakeMaster Blender Add-on (version 2.6.0a3)
 #
-# This License permits you to use this software for any purpose including
-# personal, educational, and commercial; You are allowed to modify it to suit
-# your needs, and to redistribute the software or any modifications you make
-# to it, as long as you follow the terms of this License and the
-# GNU General Public License as published by the Free Software Foundation,
-# either version 3 of the License, or (at your option) any later version.
+# This file is a part of BakeMaster Blender Add-on, a plugin for texture
+# baking in open-source Blender 3d modelling software.
+# The author can be contacted at <kirilstrezikozin@gmail.com>.
 #
-# This License grants permission to redistribute this software to
-# UNLIMITED END USER SEATS (OPEN SOURCE VARIANT) defined by the
-# acquired License type. A redistributed copy of this software
-# must follow and share similar rights of free software and usage
-# specifications determined by the GNU General Public License.
+# Redistribution and use for any purpose including personal, educational, and
+# commercial, with or without modification, are permitted provided
+# that the following conditions are met:
+#
+# 1. The current acquired License allows copies/redistributions of this
+#    software be made to UNLIMITED END USER SEATS (OPEN SOURCE LICENSE).
+# 2. Redistributions of this source code or partial usage of this source code
+#    must follow the terms of this license and retain the above copyright
+#    notice, and the following disclaimer.
+# 3. The name of the author may be used to endorse or promote products derived
+#    from this software. In such a case, a prior written permission from the
+#    author is required.
 #
 # This program is free software and is distributed in the hope that it will be
 # useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License in
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE
+# AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# You should have received a copy of the GNU General Public License in the
 # GNU.txt file along with this program. If not,
 # see <http://www.gnu.org/licenses/>.
 #
-# ##### END LICENSE BLOCK #####
+# END LICENSE & COPYRIGHT BLOCK.
 
 import bpy
+import colorsys
 from .labels import BM_Labels
 
 ###############################################################
@@ -752,7 +759,6 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                         'global_map_index': map_index + 1,
                         'global_use_bake': map.global_use_bake,
                         'global_map_type': map.global_map_type,
-                        'global_affect_by_hl': map.global_affect_by_hl,
 
                         # 'hl_use_cage' : map.hl_use_cage,
                         'hl_cage_type': map.hl_cage_type,
@@ -1109,7 +1115,7 @@ def BM_TEXSET_OBJECT_PROPS_global_object_name_Update(self, context):
                     new_subitem = self.global_object_name_subitems.add()
                     new_subitem.global_object_name = subitem.global_object_name
                     new_subitem.global_object_index = len(
-                        self.global_object_name_subitems)
+                        self.global_object_name_subitems) - 1
                     new_subitem.global_source_object_index = index
 
         BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
@@ -1174,7 +1180,7 @@ def BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index):
                         new_subitem = object.global_object_name_subitems.add()
                         new_subitem.global_object_name = subitem.global_object_name
                         new_subitem.global_object_index = len(
-                            object.global_object_name_subitems)
+                            object.global_object_name_subitems) - 1
                         new_subitem.global_source_object_index = index
 
             BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
@@ -1393,8 +1399,7 @@ def map_get_container(map, context):
 
 
 def map_image_getDefaults(context, map=None, out_container=None,
-                          ignore_exr=False, tex_type='',
-                          ommit_linear_srgb=False):
+                          ignore_exr=False, tex_type=''):
     # Get default image color space, file format, bit depth.
     # Parameters:
     # tex_type - give texture type directly in {'color', 'data', 'linear'}.
@@ -1459,11 +1464,6 @@ def map_image_getDefaults(context, map=None, out_container=None,
     bit_depth = ''
     if hasattr(bm_props, bit_attr):
         bit_depth = getattr(bm_props, bit_attr)
-
-    if (bm_props.cm_use_linear_srgb and bm_props.cm_color_space != 'ACES'
-        and colorspace.lower().find("linear") != -1
-            and not ommit_linear_srgb):
-        tex_type = 'texture_linear'
 
     return tex_type.upper(), colorspace, file_format, bit_depth
 
@@ -1820,7 +1820,8 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(container, context, object=None, map
         return None
 
     def get_texsetname(container):
-        if not any([container.nm_is_universal_container, container.nm_is_local_container]):
+        if not any([container.nm_is_universal_container,
+                    container.nm_is_local_container]):
             container_name = container.global_object_name
         else:
             container_name = container.nm_container_name
@@ -1858,7 +1859,7 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(container, context, object=None, map
                                 else:
                                     return_name += "%s_" % obj1.global_object_name
                             return return_name[:-1]
-            return None
+        return None
 
     def get_mapres(map_pass):
         if map_pass.out_res == 'CUSTOM':
@@ -2991,34 +2992,103 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
 # Map Preview Funcs
 
 
-def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
-    object_item_full = BM_Object_Get(self, context)
-    if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
-        return
-    object_item = object_item_full[0]
-    if len(object_item.global_maps) == 0:
-        return
-    if getattr(BM_Map_Get(self, object_item), "map_%s_use_preview" % map_tag) is False:
-        return
-    map = BM_Map_Get(self, object_item)
+def BM_MAP_PROPS_MapPreview_Data_getHighpolies(sc, bm_obj):
+    highpolies = set()
 
-    # collecting objects for which update bm_nodes
-    source_object = [
-        object for object in context.scene.objects if object.name == object_item.global_object_name]
-    if len(source_object) == 0:
-        return
-
-    if map.global_affect_by_hl:
-        highpolies = map.hl_highpoly_table if object_item.hl_use_unique_per_map else object_item.hl_highpoly_table
+    if bm_obj.hl_use_unique_per_map:
+        for bm_map in bm_obj.global_maps:
+            for highpoly in bm_map.hl_highpoly_table:
+                try:
+                    highpolies.add(sc.objects[highpoly.global_object_name])
+                except KeyError:
+                    pass
     else:
-        highpolies = []
-    objects = [source_object[0]] if len(highpolies) == 0 else []
-    for highpoly in highpolies:
-        source_highpoly = [
-            object for object in context.scene.objects if object.name == highpoly.global_object_name]
-        if len(source_highpoly) == 0:
-            continue
-        objects.append(source_highpoly[0])
+        for highpoly in bm_obj.hl_highpoly_table:
+            try:
+                highpolies.add(sc.objects[highpoly.global_object_name])
+            except KeyError:
+                pass
+
+    return highpolies
+
+
+def BM_MAP_PROPS_MapPreview_getData(self, context, map_tag="",
+                                    check_maps_with_data=False):
+    sc = context.scene
+    bm_obj_wrp = BM_Object_Get(self, context)
+
+    if any([not bm_obj_wrp[1] and not bm_obj_wrp[0].nm_is_universal_container,
+            bm_obj_wrp[0].nm_is_local_container]):
+        return None
+
+    bm_obj = bm_obj_wrp[0]
+
+    if len(bm_obj.global_maps) == 0:
+        return None
+    elif map_tag != "" and getattr(
+            BM_Map_Get(self, bm_obj), "map_%s_use_preview" % map_tag) is False:
+        return None
+
+    highpolies = set()
+    lowpolies = set()
+
+    if bm_obj.nm_is_universal_container:
+        for bm_obj1 in sc.bm_table_of_objects:
+            if all([bm_obj1.nm_item_uni_container_master_index == bm_obj.nm_master_index,
+                    bm_obj1.nm_is_local_container is False]):
+                if not any([bm_obj1.hl_is_lowpoly, bm_obj1.hl_is_cage,
+                            bm_obj1.hl_is_decal]):
+                    try:
+                        highpolies.add(sc.objects[bm_obj1.global_object_name])
+                    except KeyError:
+                        pass
+                if not any([bm_obj1.hl_is_cage, bm_obj1.hl_is_decal,
+                            bm_obj1.hl_is_highpoly]):
+                    try:
+                        lowpolies.add(sc.objects[bm_obj1.global_object_name])
+                    except KeyError:
+                        pass
+    else:
+        highpolies_temp = BM_MAP_PROPS_MapPreview_Data_getHighpolies(
+            sc, bm_obj)
+        if len(highpolies_temp):
+            highpolies.update(highpolies_temp)
+        else:
+            try:
+                lowpolies.add(sc.objects[bm_obj.global_object_name])
+            except KeyError:
+                pass
+
+    bm_map = BM_Map_Get(self, bm_obj)
+
+    select_highpoly = False
+    if len(highpolies) != 0:
+        select_highpoly = True
+    if bm_map.global_map_type == 'DISPLACEMENT':
+        if bm_map.map_displacement_data == 'HIGHPOLY':
+            select_highpoly = False
+        elif bm_map.map_displacement_data == 'MULTIRES':
+            select_highpoly = False
+    elif bm_map.global_map_type == 'NORMAL':
+        if bm_map.map_normal_data == 'MULTIRES':
+            select_highpoly = False
+        elif bm_map.map_normal_data == 'MATERIAL':
+            select_highpoly = False
+
+    if check_maps_with_data and select_highpoly:
+        preview_objs = highpolies
+    else:
+        preview_objs = lowpolies if len(highpolies) == 0 else highpolies
+
+    return bm_map, preview_objs
+
+
+def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
+    data = BM_MAP_PROPS_MapPreview_getData(self, context, map_tag)
+    if data is None:
+        return
+
+    map, objects = data
 
     # which bm_nodes' values will change
     nodes_names_data = {
@@ -3096,13 +3166,9 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
         ],
     }
 
-    map = BM_Map_Get(self, object_item)
-
     # for id, loop over materials with COLORI in the name
     # because need to calculate size of color stepping
     if map_tag == "ID":
-        import colorsys
-
         for object in objects:
             color_mats = []
             for material in object.data.materials:
@@ -3518,32 +3584,11 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
 
 
 def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
-    object_item_full = BM_Object_Get(self, context)
-    if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
+    data = BM_MAP_PROPS_MapPreview_getData(self, context, map_tag)
+    if data is None:
         return
-    object_item = object_item_full[0]
-    if len(object_item.global_maps) == 0:
-        return
-    if getattr(BM_Map_Get(self, object_item), "map_%s_use_preview" % map_tag) is False:
-        return
-    map = BM_Map_Get(self, object_item)
 
-    # collecting objects for which add bm_nodes
-    source_object = [
-        object for object in context.scene.objects if object.name == object_item.global_object_name]
-    if len(source_object) == 0:
-        return
-    if map.global_affect_by_hl:
-        highpolies = map.hl_highpoly_table if object_item.hl_use_unique_per_map else object_item.hl_highpoly_table
-    else:
-        highpolies = []
-    objects = [source_object[0]] if len(highpolies) == 0 else []
-    for highpoly in highpolies:
-        source_highpoly = [
-            object for object in context.scene.objects if object.name == highpoly.global_object_name]
-        if len(source_highpoly) == 0:
-            continue
-        objects.append(source_highpoly[0])
+    _, objects = data
 
     # nodes data
     nodes_data = {
@@ -4069,54 +4114,12 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
 
 
 def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
-    object_item_full = BM_Object_Get(self, context)
-    if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
-        return
-    object_item = object_item_full[0]
-    if len(object_item.global_maps) == 0:
-        return
-    map = BM_Map_Get(self, object_item)
-    if getattr(map, "map_%s_use_preview" % map_tag) is False:
+    data = BM_MAP_PROPS_MapPreview_getData(
+        self, context, map_tag, check_maps_with_data=True)
+    if data is None:
         return
 
-    # collecting objects for which add bm_nodes
-    source_object = [
-        object for object in context.scene.objects if object.name == object_item.global_object_name]
-    if len(source_object) == 0:
-        return
-    if map.global_affect_by_hl:
-        highpolies = map.hl_highpoly_table if object_item.hl_use_unique_per_map else object_item.hl_highpoly_table
-    else:
-        highpolies = []
-    objects = [source_object[0]] if len(highpolies) == 0 else []
-
-    select_highpoly = False
-    if len(highpolies) != 0 and map.global_affect_by_hl:
-        select_highpoly = True
-    if map.global_map_type == 'DISPLACEMENT':
-        if map.map_displacement_data == 'HIGHPOLY':
-            select_highpoly = False
-        if map.map_displacement_data == 'MULTIRES':
-            select_highpoly = False
-        elif len(highpolies) != 0:
-            select_highpoly = True
-    if map.global_map_type == 'NORMAL':
-        if map.map_normal_data == 'MULTIRES':
-            select_highpoly = False
-        if map.map_normal_data == 'MATERIAL':
-            select_highpoly = False
-        elif len(highpolies) != 0:
-            select_highpoly = True
-
-    if select_highpoly:
-        for highpoly in highpolies:
-            source_highpoly = [
-                object for object in context.scene.objects if object.name == highpoly.global_object_name]
-            if len(source_highpoly) == 0:
-                continue
-            objects.append(source_highpoly[0])
-    elif source_object[0] not in objects:
-        objects.append(source_object[0])
+    map, objects = data
 
     map_type_origin = map_tag
     if map_tag == 'PASS':
@@ -4362,35 +4365,11 @@ def BM_IterableData_GetNewUniqueName_Simple(data, name_starter):
 
 
 def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
-    object_item_full = BM_Object_Get(self, context)
-    if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
-        return
-    object_item = object_item_full[0]
-    if len(object_item.global_maps) == 0:
-        return
-    map = BM_Map_Get(self, object_item)
-    if getattr(map, "map_%s_use_preview" % map_tag) is False:
+    data = BM_MAP_PROPS_MapPreview_getData(self, context, map_tag)
+    if data is None:
         return
 
-    # collecting objects for which add bm_nodes
-    source_object = [
-        object for object in context.scene.objects if object.name == object_item.global_object_name]
-    if len(source_object) == 0:
-        return
-    if map.global_affect_by_hl:
-        highpolies = map.hl_highpoly_table if object_item.hl_use_unique_per_map else object_item.hl_highpoly_table
-    else:
-        highpolies = []
-    objects = [source_object[0]] if len(highpolies) == 0 else []
-    for highpoly in highpolies:
-        source_highpoly = [
-            object for object in context.scene.objects if object.name == highpoly.global_object_name]
-        if len(source_highpoly) == 0:
-            continue
-        objects.append(source_highpoly[0])
-
-    if len(objects) == 0:
-        return
+    map, objects = data
 
     # deselect all objects
     for ob in context.scene.objects:
@@ -4587,33 +4566,11 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
 
 
 def BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(self, context):
-    object_item = BM_Object_Get(self, context)
-    if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
+    data = BM_MAP_PROPS_MapPreview_getData(self, context)
+    if data is None:
         return
 
-    # collecting objects from which remove bm_nodes
-    source_object = [object for object in context.scene.objects if object.name
-                     == object_item[0].global_object_name]
-    if len(source_object) == 0:
-        return
-    objects = [source_object[0]]
-    highpolies = object_item[0].hl_highpoly_table
-    for highpoly in highpolies:
-        source_highpoly = [
-            object for object in context.scene.objects if object.name == highpoly.global_object_name]
-        if len(source_highpoly) == 0:
-            continue
-        objects.append(source_highpoly[0])
-    for map in object_item[0].global_maps:
-        for highpoly in map.hl_highpoly_table:
-            source_highpoly = [
-                object for object in context.scene.objects if object.name == highpoly.global_object_name]
-            if len(source_highpoly) == 0:
-                continue
-            objects.append(source_highpoly[0])
-
-    if len(objects) == 0:
-        return
+    _, objects = data
 
     # deselect all objects
     for ob in context.scene.objects:
@@ -4657,59 +4614,48 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(self, context):
 
 
 def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context):
-    object_item = BM_Object_Get(self, context)
-    if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
+    data = BM_MAP_PROPS_MapPreview_getData(self, context)
+    if data is None:
         return
 
-    # collecting objects from which remove bm_nodes
-    source_object = [object for object in context.scene.objects if object.name
-                     == object_item[0].global_object_name]
-    if len(source_object) == 0:
-        return
-    objects = [source_object[0]]
-    highpolies = object_item[0].hl_highpoly_table
-    for highpoly in highpolies:
-        source_highpoly = [
-            object for object in context.scene.objects if object.name == highpoly.global_object_name]
-        if len(source_highpoly) == 0:
-            continue
-        objects.append(source_highpoly[0])
-    for map in object_item[0].global_maps:
-        for highpoly in map.hl_highpoly_table:
-            source_highpoly = [
-                object for object in context.scene.objects if object.name == highpoly.global_object_name]
-            if len(source_highpoly) == 0:
-                continue
-            objects.append(source_highpoly[0])
+    _, objects = data
 
     # removing bm_nodes
-    remove_mats = []
+    remove_mats = set()
     for object in objects:
-        mats_to_remove = []
-        for mat_index, material in enumerate(object.data.materials):
-            if material is None:
-                continue
-            if material.name.find('BM_CustomMaterial') != -1:
-                remove_mats.append(material)
-                mats_to_remove.append(mat_index)
+
+        o_remove_mats = []
+        o_mats = object.data.materials
+
+        for i in range(len(o_mats) - 1, -1, -1):
+            mat = o_mats[i]
+
+            if mat is None:
                 continue
 
-            material.use_nodes = True
-            to_remove = []
-            for index, node in enumerate(material.node_tree.nodes):
+            if mat.name.find('BM_CustomMaterial') != -1:
+                remove_mats.add(mat)
+                o_remove_mats.append(i)
+                continue
+
+            mat.use_nodes = True
+            ns = mat.node_tree.nodes
+            ns_to_remove = []
+
+            for node in ns:
                 if node.name.find('BM_') != -1:
-                    to_remove.append(index)
-            for index in sorted(to_remove, reverse=True):
-                material.node_tree.nodes.remove(
-                    material.node_tree.nodes[index])
+                    ns_to_remove.append(node)
+
+            for n in reversed(ns_to_remove):
+                ns.remove(n)
 
         # removing custom bm_materials
-        for mat_index in sorted(mats_to_remove, reverse=True):
-            object.data.materials.pop(index=mat_index)
+        for i in reversed(o_remove_mats):
+            o_mats.pop(index=i)
 
     # remove custom mats from data too
-    for material in remove_mats:
-        bpy.data.materials.remove(material)
+    for mat in remove_mats:
+        bpy.data.materials.remove(mat)
 
 
 # the same, no attention to bm mats removal, because they are not added anyway
@@ -4990,12 +4936,6 @@ def BM_MAP_PROPS_global_map_type_Update(self, context):
     name = "Map: Map type"
     BM_LastEditedProp_Write(context, name, "global_map_type",
                             getattr(self, "global_map_type"), True)
-
-
-def BM_MAP_PROPS_global_affect_by_hl_Update(self, context):
-    name = "Map: Affect by Highpoly"
-    BM_LastEditedProp_Write(context, name, "global_affect_by_hl", getattr(
-        self, "global_affect_by_hl"), True)
 
 
 def BM_MAP_PROPS_hl_cage_type_Update(self, context):

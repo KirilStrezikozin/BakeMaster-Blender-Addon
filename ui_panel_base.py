@@ -1,31 +1,37 @@
-# ##### BEGIN LICENSE BLOCK #####
+# BEGIN LICENSE & COPYRIGHT BLOCK.
 #
-# "BakeMaster" Blender Add-on (version 2.6.0)
-# Copyright (C) Kiril Strezikozin (aka kemplerart) from 2022
+# Copyright (C) 2022-2023 Kiril Strezikozin
+# BakeMaster Blender Add-on (version 2.6.0a3)
 #
-# This License permits you to use this software for any purpose including
-# personal, educational, and commercial; You are allowed to modify it to suit
-# your needs, and to redistribute the software or any modifications you make
-# to it, as long as you follow the terms of this License and the
-# GNU General Public License as published by the Free Software Foundation,
-# either version 3 of the License, or (at your option) any later version.
+# This file is a part of BakeMaster Blender Add-on, a plugin for texture
+# baking in open-source Blender 3d modelling software.
+# The author can be contacted at <kirilstrezikozin@gmail.com>.
 #
-# This License grants permission to redistribute this software to
-# UNLIMITED END USER SEATS (OPEN SOURCE VARIANT) defined by the
-# acquired License type. A redistributed copy of this software
-# must follow and share similar rights of free software and usage
-# specifications determined by the GNU General Public License.
+# Redistribution and use for any purpose including personal, educational, and
+# commercial, with or without modification, are permitted provided
+# that the following conditions are met:
+#
+# 1. The current acquired License allows copies/redistributions of this
+#    software be made to UNLIMITED END USER SEATS (OPEN SOURCE LICENSE).
+# 2. Redistributions of this source code or partial usage of this source code
+#    must follow the terms of this license and retain the above copyright
+#    notice, and the following disclaimer.
+# 3. The name of the author may be used to endorse or promote products derived
+#    from this software. In such a case, a prior written permission from the
+#    author is required.
 #
 # This program is free software and is distributed in the hope that it will be
 # useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License in
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE
+# AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# You should have received a copy of the GNU General Public License in the
 # GNU.txt file along with this program. If not,
 # see <http://www.gnu.org/licenses/>.
 #
-# ##### END LICENSE BLOCK #####
+# END LICENSE & COPYRIGHT BLOCK.
 
 import bpy
 from .operators import *
@@ -181,12 +187,14 @@ class BM_UL_Table_of_Objects_Item(bpy.types.UIList):
                 try:
                     context.scene.objects[item.global_object_name]
                 except (KeyError, AttributeError, UnboundLocalError):
-                    row.label(text=item.global_object_name, icon='GHOST_DISABLED')
+                    row_name = row.row(align=True)
+                    row_name.prop(item, 'global_object_name', text="", icon='GHOST_DISABLED', emboss=False)
+                    row_name.emboss = 'NONE'
                     if not any([item.nm_is_universal_container, item.nm_is_local_container, item.nm_is_detached]):
                         row.prop(item, 'global_use_bake', text="", icon='RESTRICT_RENDER_ON', emboss=False)
                     else:
                         item_draw_ghost = True
-                    row.enabled = False
+                    row.active = False
                 # normal object
                 else:
                     icons = ['MESH_PLANE', 'VIEW_ORTHO', 'SELECT_SET']
@@ -198,7 +206,9 @@ class BM_UL_Table_of_Objects_Item(bpy.types.UIList):
                         icon = 'OUTLINER_OB_MESH'
                     if (item.hl_is_highpoly and item.hl_is_decal) or item.decal_is_decal:
                         icon = 'XRAY'
-                    row.label(text=item.global_object_name, icon=icon)
+                    row_name = row.row(align=True)
+                    row_name.prop(item, 'global_object_name', text="", icon=icon, emboss=False)
+                    row_name.emboss = 'NONE'
             
             # drawing containers
             else:
@@ -233,9 +243,11 @@ class BM_UL_Table_of_Objects_Item(bpy.types.UIList):
             try:
                 context.scene.objects[item.global_object_name]
             except (KeyError, AttributeError, UnboundLocalError):
-                row.label(text=item.global_object_name, icon='GHOST_DISABLED')
+                row_name = row.row(align=True)
+                row_name.prop(item, 'global_object_name', text="", icon='GHOST_DISABLED', emboss=False)
+                row_name.emboss = 'NONE'
                 row.prop(item, 'global_use_bake', text="", icon='RESTRICT_RENDER_ON', emboss=False)
-                row.enabled = False
+                row.active = False
             # normal object
             else:
                 icons = ['MESH_PLANE', 'VIEW_ORTHO', 'SELECT_SET']
@@ -247,7 +259,9 @@ class BM_UL_Table_of_Objects_Item(bpy.types.UIList):
                     icon = 'OUTLINER_OB_MESH'
                 if (item.hl_is_highpoly and item.hl_is_decal) or item.decal_is_decal:
                     icon = 'XRAY'
-                row.label(text=item.global_object_name, icon=icon)
+                row_name = row.row(align=True)
+                row_name.prop(item, 'global_object_name', text="", icon=icon, emboss=False)
+                row_name.emboss = 'NONE'
 
                 if item.global_use_bake:
                     icon = 'RESTRICT_RENDER_OFF'
@@ -435,8 +449,8 @@ class BM_UL_TextureSets_Objects_Table_Item_SubItem(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         index_value = item.global_object_index
         split_factor = 1-0.05*3 if len(str(index_value)) < 4 else len(str(index_value))
-        
-        source_object = [object for object in context.scene.bm_table_of_objects if object.global_object_name == item.global_object_name][0]
+
+        source_object = context.scene.bm_table_of_objects[item.global_source_object_index]
 
         icon = ''
         if source_object.hl_is_lowpoly:
@@ -461,7 +475,8 @@ class BM_UL_TextureSets_Objects_Table_Item_SubItem(bpy.types.UIList):
         name_column.prop(item, 'global_object_include_in_texset', text="")
         row.emboss = 'NONE'
         name_column_row = name_column.row()
-        name_column_row.label(text=item.global_object_name, icon=icon)
+        name_column_row.prop(source_object, 'global_object_name', text="", icon=icon, emboss=False)
+        name_column_row.emboss = 'NONE'
         index_column = split.column()
         index_column.label(text=str(index_value))
         row.active = item.global_object_include_in_texset
@@ -484,7 +499,7 @@ class BM_UL_Table_of_Objects_Item_BatchNamingTable_Item(bpy.types.UIList):
         pass
 
 class BM_PT_MainBase(bpy.types.Panel):
-    bl_label = "BakeMaster"
+    bl_label = "BakeMaster v2.6.0a3"
     bl_idname = 'BM_PT_Main'
 
     def draw(self, context):
@@ -905,96 +920,100 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
         # map settings
         if len(object.global_maps):
             map = BM_Map_Get(None, object)
-            # format 
-            if (object.uv_use_unique_per_map is False and object.uv_bake_target != 'VERTEX_COLORS') or (object.uv_use_unique_per_map and map.uv_bake_target != 'VERTEX_COLORS'):
-                format_box = layout.box()
-                format_box.use_property_split = True
-                format_box.use_property_decorate = False
+            # format
+            format_box = layout.box()
+            format_box.use_property_split = True
+            format_box.use_property_decorate = False
 
-                # format header
-                format_box_header = format_box.row()
-                format_box_header.use_property_split = False
-                format_box_header.emboss = 'NONE'
-                icon = 'TRIA_DOWN' if scene.bm_props.global_is_format_panel_expanded else 'TRIA_RIGHT'
-                format_box_header.prop(scene.bm_props, 'global_is_format_panel_expanded', text="", icon=icon)
-                format_box_header.emboss = 'NORMAL'
+            label = "Format"
+            if (object.uv_use_unique_per_map is False and object.uv_bake_target == 'VERTEX_COLORS') or (object.uv_use_unique_per_map and map.uv_bake_target == 'VERTEX_COLORS'):
+                format_box.active = False
+                label += " (Ignored, baking to Vertex Colors)"
 
-                # draw format for all maps
-                if object.out_use_unique_per_map is False:
-                    format_box_header.label(text="Format")
-                    BM_PT_OUT_Presets.draw_panel_header(format_box_header)
-                    format_prop_collection = object
-                # draw format unique per map
+            # format header
+            format_box_header = format_box.row()
+            format_box_header.use_property_split = False
+            format_box_header.emboss = 'NONE'
+            icon = 'TRIA_DOWN' if scene.bm_props.global_is_format_panel_expanded else 'TRIA_RIGHT'
+            format_box_header.prop(scene.bm_props, 'global_is_format_panel_expanded', text="", icon=icon)
+            format_box_header.emboss = 'NORMAL'
+
+            # draw format for all maps
+            if object.out_use_unique_per_map is False:
+                format_box_header.label(text=label)
+                BM_PT_OUT_Presets.draw_panel_header(format_box_header)
+                format_prop_collection = object
+            # draw format unique per map
+            else:
+                format_box_header.label(text="Map " + label)
+                BM_PT_OUT_Presets.draw_panel_header(format_box_header)
+                format_prop_collection = map
+
+            # format body
+            if scene.bm_props.global_is_format_panel_expanded:
+                format_box.prop(object, 'out_use_unique_per_map')
+                # format
+                format_box_column = format_box.column()
+                format_box_column.prop(format_prop_collection, 'out_file_format')
+                format_box_res_column = format_box_column.column(align=True)
+                format_box_res_column.prop(format_prop_collection, 'out_res', text="Resolution")
+                if format_prop_collection.out_res == 'CUSTOM':
+                    format_box_res_column.prop(format_prop_collection, 'out_res_height')
+                    format_box_res_column.prop(format_prop_collection, 'out_res_width')
+                    format_split = format_box_res_column.split(factor=0.4)
+                    format_split.column()
+                    format_split.column().operator(BM_OT_ITEM_and_MAP_Format_MatchResolution.bl_idname, icon='FULLSCREEN_ENTER')
+                # elif format_prop_collection.out_res == 'TEXEL':
+                    # format_box_column.prop(format_prop_collection, 'out_texel_density_value')
+                    # format_box_column.prop(format_prop_collection, 'out_texel_density_match')
+                format_box_column.row().prop(format_prop_collection, 'out_bit_depth', expand=True)
+                format_box_column = format_box.column(align=True)
+                if format_prop_collection.out_file_format == 'TARGA':
+                    format_box_column.prop(format_prop_collection, 'out_tga_use_raw')
+                elif format_prop_collection.out_file_format == 'DPX':
+                    format_box_column.prop(format_prop_collection, 'out_dpx_use_log')
+                elif format_prop_collection.out_file_format == 'TIFF':
+                    format_box_column.prop(format_prop_collection, 'out_tiff_compression')
+                # elif format_prop_collection.out_file_format == 'PSD':
+                    # format_box_column.prop(format_prop_collection, 'out_psd_include')
+                elif format_prop_collection.out_file_format == 'OPEN_EXR':
+                    format_box_column.prop(format_prop_collection, 'out_exr_codec')
+                elif format_prop_collection.out_file_format == 'PNG':
+                    format_box_column.prop(format_prop_collection, 'out_compression')
+                elif format_prop_collection.out_file_format == 'JPEG':
+                    format_box_column.prop(format_prop_collection, 'out_quality')
+                if out_alpha_isAllowed(format_prop_collection):
+                    format_box_column = format_box.column(align=True)
+                    format_box_alpha_row = format_box_column.row()
+                    format_box_alpha_row.prop(format_prop_collection, 'out_use_alpha')
+                    if format_prop_collection.out_use_alpha:
+                        format_box_column.prop(format_prop_collection, 'out_use_transbg')
+                    format_box_alpha_row.enabled = not format_prop_collection.out_use_transbg
+                format_box_column = format_box.column(align=True)
+                if bpy.app.version >= (3, 1, 0):
+                    format_box_column.prop(format_prop_collection, 'out_margin_type')
+                format_box_column.prop(format_prop_collection, 'out_margin')
+                if format_prop_collection.uv_type == 'TILED':
+                    format_box_column = format_box.column(align=True)
+                    format_box_column.prop(format_prop_collection, 'out_udim_start_tile', text="Start Tile")
+                    format_box_column.prop(format_prop_collection, 'out_udim_end_tile', text="End Tile")
+                format_box_scalecol = format_box.column(align=True)
+                format_box_ssaa_row = format_box_scalecol.row(align=True)
+                format_box_ssaa_row.prop(format_prop_collection, 'out_super_sampling_aa')
+                format_box_ssaa_row.active = format_prop_collection.out_super_sampling_aa != '1'
+                format_box_upscale_row = format_box_scalecol.row(align=True)
+                format_box_upscale_row.prop(format_prop_collection, 'out_upscaling')
+                format_box_upscale_row.active = format_prop_collection.out_upscaling != '1'
+                format_box_column = format_box.column(align=True)
+                format_box_column.prop(format_prop_collection, 'out_use_adaptive_sampling')
+                if format_prop_collection.out_use_adaptive_sampling:
+                    format_box_column.prop(format_prop_collection, 'out_adaptive_threshold')
+                    format_box_column.prop(format_prop_collection, 'out_samples', text="Bake Max Samples")
+                    format_box_column.prop(format_prop_collection, 'out_min_samples')
                 else:
-                    format_box_header.label(text="Map Format")
-                    BM_PT_OUT_Presets.draw_panel_header(format_box_header)
-                    format_prop_collection = map
-
-                # format body
-                if scene.bm_props.global_is_format_panel_expanded:
-                    format_box.prop(object, 'out_use_unique_per_map')
-                    # format
-                    format_box_column = format_box.column()
-                    format_box_column.prop(format_prop_collection, 'out_file_format')
-                    format_box_res_column = format_box_column.column(align=True)
-                    format_box_res_column.prop(format_prop_collection, 'out_res', text="Resolution")
-                    if format_prop_collection.out_res == 'CUSTOM':
-                        format_box_res_column.prop(format_prop_collection, 'out_res_height')
-                        format_box_res_column.prop(format_prop_collection, 'out_res_width')
-                        format_split = format_box_res_column.split(factor=0.4)
-                        format_split.column()
-                        format_split.column().operator(BM_OT_ITEM_and_MAP_Format_MatchResolution.bl_idname, icon='FULLSCREEN_ENTER')
-                    # elif format_prop_collection.out_res == 'TEXEL':
-                        # format_box_column.prop(format_prop_collection, 'out_texel_density_value')
-                        # format_box_column.prop(format_prop_collection, 'out_texel_density_match')
-                    format_box_column.row().prop(format_prop_collection, 'out_bit_depth', expand=True)
-                    format_box_column = format_box.column(align=True)
-                    if format_prop_collection.out_file_format == 'TARGA':
-                        format_box_column.prop(format_prop_collection, 'out_tga_use_raw')
-                    elif format_prop_collection.out_file_format == 'DPX':
-                        format_box_column.prop(format_prop_collection, 'out_dpx_use_log')
-                    elif format_prop_collection.out_file_format == 'TIFF':
-                        format_box_column.prop(format_prop_collection, 'out_tiff_compression')
-                    # elif format_prop_collection.out_file_format == 'PSD':
-                        # format_box_column.prop(format_prop_collection, 'out_psd_include')
-                    elif format_prop_collection.out_file_format == 'OPEN_EXR':
-                        format_box_column.prop(format_prop_collection, 'out_exr_codec')
-                    elif format_prop_collection.out_file_format == 'PNG':
-                        format_box_column.prop(format_prop_collection, 'out_compression')
-                    elif format_prop_collection.out_file_format == 'JPEG':
-                        format_box_column.prop(format_prop_collection, 'out_quality')
-                    if out_alpha_isAllowed(format_prop_collection):
-                        format_box_column = format_box.column(align=True)
-                        format_box_alpha_row = format_box_column.row()
-                        format_box_alpha_row.prop(format_prop_collection, 'out_use_alpha')
-                        if format_prop_collection.out_use_alpha:
-                            format_box_column.prop(format_prop_collection, 'out_use_transbg')
-                        format_box_alpha_row.enabled = not format_prop_collection.out_use_transbg
-                    format_box_column = format_box.column(align=True)
-                    if bpy.app.version >= (3, 1, 0):
-                        format_box_column.prop(format_prop_collection, 'out_margin_type')
-                    format_box_column.prop(format_prop_collection, 'out_margin')
-                    if format_prop_collection.uv_type == 'TILED':
-                        format_box_column = format_box.column(align=True)
-                        format_box_column.prop(format_prop_collection, 'out_udim_start_tile', text="Start Tile")
-                        format_box_column.prop(format_prop_collection, 'out_udim_end_tile', text="End Tile")
-                    format_box_scalecol = format_box.column(align=True)
-                    format_box_ssaa_row = format_box_scalecol.row(align=True)
-                    format_box_ssaa_row.prop(format_prop_collection, 'out_super_sampling_aa')
-                    format_box_ssaa_row.active = format_prop_collection.out_super_sampling_aa != '1'
-                    format_box_upscale_row = format_box_scalecol.row(align=True)
-                    format_box_upscale_row.prop(format_prop_collection, 'out_upscaling')
-                    format_box_upscale_row.active = format_prop_collection.out_upscaling != '1'
-                    format_box_column = format_box.column(align=True)
-                    format_box_column.prop(format_prop_collection, 'out_use_adaptive_sampling')
-                    if format_prop_collection.out_use_adaptive_sampling:
-                        format_box_column.prop(format_prop_collection, 'out_adaptive_threshold')
-                        format_box_column.prop(format_prop_collection, 'out_samples', text="Bake Max Samples")
-                        format_box_column.prop(format_prop_collection, 'out_min_samples')
-                    else:
-                        format_box_column.prop(format_prop_collection, 'out_samples')
-                    format_box_column = format_box.column(align=True)
-                    format_box_column.prop(format_prop_collection, 'out_use_denoise')            
+                    format_box_column.prop(format_prop_collection, 'out_samples')
+                format_box_column = format_box.column(align=True)
+                format_box_column.prop(format_prop_collection, 'out_use_denoise')            
 
             # map settings column
             map_settings_column = maps_table_box.column()
@@ -1037,7 +1056,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
             else:
                 map_settings_column_preview = map_settings_column.row()
                 map_settings_column_preview.prop(map, 'map_%s_use_preview' % map.global_map_type)
-                if any([object.nm_is_universal_container, object.hl_is_highpoly, object.hl_is_cage]):
+                if any([object.hl_is_highpoly, object.hl_is_cage]):
                     map_settings_column_preview.active = False
             try:
                 getattr(map, 'map_%s_use_default' % map.global_map_type)
@@ -1533,8 +1552,6 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
 
             cm_cs_column = cm_box.column(align=True)
             cm_cs_column.prop(bm_props, 'cm_use_linear_exr')
-            if bm_props.cm_color_space == 'sRGB':
-                cm_cs_column.prop(bm_props, 'cm_use_linear_srgb')
 
             cm_ot_split = cm_box.split(factor=0.4)
             cm_ot_split.column()

@@ -1,0 +1,2 @@
+fake-bpy-module-3.4
+pyclean

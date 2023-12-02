@@ -1,31 +1,37 @@
-# ##### BEGIN LICENSE BLOCK #####
+# BEGIN LICENSE & COPYRIGHT BLOCK.
 #
-# "BakeMaster" Blender Add-on (version 2.6.0)
-# Copyright (C) Kiril Strezikozin (aka kemplerart) from 2022
+# Copyright (C) 2022-2023 Kiril Strezikozin
+# BakeMaster Blender Add-on (version 2.6.0a3)
 #
-# This License permits you to use this software for any purpose including
-# personal, educational, and commercial; You are allowed to modify it to suit
-# your needs, and to redistribute the software or any modifications you make
-# to it, as long as you follow the terms of this License and the
-# GNU General Public License as published by the Free Software Foundation,
-# either version 3 of the License, or (at your option) any later version.
+# This file is a part of BakeMaster Blender Add-on, a plugin for texture
+# baking in open-source Blender 3d modelling software.
+# The author can be contacted at <kirilstrezikozin@gmail.com>.
 #
-# This License grants permission to redistribute this software to
-# UNLIMITED END USER SEATS (OPEN SOURCE VARIANT) defined by the
-# acquired License type. A redistributed copy of this software
-# must follow and share similar rights of free software and usage
-# specifications determined by the GNU General Public License.
+# Redistribution and use for any purpose including personal, educational, and
+# commercial, with or without modification, are permitted provided
+# that the following conditions are met:
+#
+# 1. The current acquired License allows copies/redistributions of this
+#    software be made to UNLIMITED END USER SEATS (OPEN SOURCE LICENSE).
+# 2. Redistributions of this source code or partial usage of this source code
+#    must follow the terms of this license and retain the above copyright
+#    notice, and the following disclaimer.
+# 3. The name of the author may be used to endorse or promote products derived
+#    from this software. In such a case, a prior written permission from the
+#    author is required.
 #
 # This program is free software and is distributed in the hope that it will be
 # useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License in
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE
+# AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# You should have received a copy of the GNU General Public License in the
 # GNU.txt file along with this program. If not,
 # see <http://www.gnu.org/licenses/>.
 #
-# ##### END LICENSE BLOCK #####
+# END LICENSE & COPYRIGHT BLOCK.
 
 import bpy
 from .utils import *
@@ -595,12 +601,6 @@ class BM_Map(bpy.types.PropertyGroup):
         update=BM_MAP_PROPS_global_map_type_Update)
     
     global_map_index : bpy.props.IntProperty()
-
-    global_affect_by_hl : bpy.props.BoolProperty(
-        name="Affect by High to Lowpoly Settings",
-        description="Use High to Lowpoly Settigns for baking this map. If checked, bake will be performed from highpoly to lowpoly, otherwise just bake lowpoly",
-        default=True,
-        update=BM_MAP_PROPS_global_affect_by_hl_Update)
 
     global_map_object_index : bpy.props.IntProperty(default=-1)
     
@@ -1524,7 +1524,7 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Bake texture map using default settings",
         default=True,
         update=BM_MAP_PROPS_map_AO_use_default_Update)
-    
+
     map_ao_samples: bpy.props.IntProperty(
         name="Samples",
         description="Tracing samples count. Affects the quality.\nKeep as low as possible for optimal performance",
@@ -1552,7 +1552,7 @@ class BM_Map(bpy.types.PropertyGroup):
     map_ao_white_point : bpy.props.FloatProperty(
         name="Whites",
         description="Highlight point location on the map color gradient spectrum",
-        default=0.8,
+        default=1.0,
         min=0,
         max=1,
         precision=3,
@@ -1560,21 +1560,21 @@ class BM_Map(bpy.types.PropertyGroup):
 
     map_ao_brightness : bpy.props.FloatProperty(
         name="Brightness",
-        default=-0.3,
+        default=0,
         min=-100.0,
         max=100.0,
         update=BM_MAP_PROPS_map_ao_brightness_Update)
 
     map_ao_contrast : bpy.props.FloatProperty(
         name="Contrast", 
-        default=0.3,
+        default=0,
         min=-100.0,
         max=100.0,
         update=BM_MAP_PROPS_map_ao_contrast_Update)
 
     map_ao_opacity : bpy.props.FloatProperty(
         name="Opacity", 
-        default=0.67,
+        default=1.0,
         min=0.0,
         max=1.0,
         update=BM_MAP_PROPS_map_ao_opacity_Update)
