@@ -3575,12 +3575,18 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
                           nodes[map_nodes[4]].inputs[0])
 
             if map_tag == "MASK":
-                for i in range(1, 3):
-                    if material.name.find("BM_CustomMaterial_") != -1 and material.name.find("COLOR%d" % i) != -1:
-                        nodes[map_nodes[0]].outputs[0].default_value = getattr(
-                            map, "map_mask_color%d" % i)
-                        nodes[map_nodes[1]
-                              ].inputs[0].default_value = map.map_mask_use_invert
+                if material.name.find(
+                        map.map_mask_materials_name_contains) != -1:
+                    nodes[map_nodes[0]
+                          ].outputs[0].default_value = getattr(
+                              map, "map_mask_color1")
+                else:
+                    nodes[map_nodes[0]
+                          ].outputs[0].default_value = getattr(
+                              map, "map_mask_color2")
+
+                nodes[map_nodes[1]
+                      ].inputs[0].default_value = map.map_mask_use_invert
 
 
 def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
@@ -4374,14 +4380,15 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
     bpy.ops.object.select_all(action='DESELECT')
     bpy.ops.object.mode_set(mode='OBJECT')
 
-    for object in objects:
-        # set object as active in the scene
-        object.select_set(True)
-        context.view_layer.objects.active = object
+    if map_tag == 'MASK' and map.map_mask_data == 'VERTEX_GROUPS':
+        for object in objects:
+            # set object as active in the scene
+            object.select_set(True)
+            context.view_layer.objects.active = object
 
-        # for mask add vertex group containing selection
-        map_mask_selection_color1_vrtx_group_index = 0
-        if map_tag == 'MASK':
+            # for mask add vertex group containing selection
+            map_mask_selection_color1_vrtx_group_index = 0
+
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.select_mode(type='VERT')
             bpy.ops.mesh.select_all(action='DESELECT')
@@ -4392,57 +4399,23 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
             map_mask_selection_color1_vrtx_group_index = len(
                 object.vertex_groups) - 1
 
-            if map.map_mask_data == 'VERTEX_GROUPS':
-                for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
-                    object.vertex_groups.active_index = vrtx_group_index
-                    if vrtx_group.name.lower().find(map.map_mask_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_material_backup") == -1:
-                        bpy.ops.object.vertex_group_select()
-
-            elif map.map_mask_data == 'MATERIALS':
-                for mat_index, material in enumerate(object.data.materials):
-                    if material is None:
-                        continue
-                    if material.name.lower().find(map.map_mask_materials_name_contains) != -1 and material.name.lower().find("bm_material_backup") == -1:
-                        object.active_material_index = mat_index
-                        bpy.ops.object.material_slot_select()
+            for i, vrtx_group in enumerate(object.vertex_groups):
+                object.vertex_groups.active_index = i
+                if (vrtx_group.name.lower().find(
+                    map.map_mask_vertex_groups_name_contains) != -1
+                        and vrtx_group.name.lower().find(
+                            "bm_material_backup") == -1):
+                    bpy.ops.object.vertex_group_select()
 
             bpy.ops.object.vertex_group_assign()
 
-        # enter edit mode
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_mode(type='VERT')
-
-        if map_tag == 'ID' and map.map_matid_data in ['MATERIALS']:
-            pass
-        else:
-            for mat_index, material in enumerate(object.data.materials):
-                # set current material as active
-                object.active_material_index = mat_index
-
-                if material is None:
-                    continue
-
-                # add vertex group, deselect mesh, select current material mesh selection, assign it to created vertex group
-                vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(
-                    object.vertex_groups, "bm_material_backup_%s" % material.name)
-                object.vertex_groups.new(name=vrtx_group_name)
-
-                bpy.ops.mesh.select_all(action='DESELECT')
-                bpy.ops.object.material_slot_select()
-                bpy.ops.object.vertex_group_assign()
-
-            bpy.ops.mesh.select_all(action='DESELECT')
-
-        bpy.ops.mesh.select_all(action='DESELECT')
-        # for mask assign saved selection vertex group to color1 material
-        if map_tag == 'MASK':
             # assign mat for color1
             new_mat = bpy.data.materials.new(
                 "BM_CustomMaterial_%s_%s_COLOR1" % (object.name, map_tag))
             object.data.materials.append(new_mat)
             object.active_material_index = len(object.data.materials) - 1
             object.vertex_groups.active_index = map_mask_selection_color1_vrtx_group_index
-            bpy.ops.object.vertex_group_select()
+            bpy.ops.mesh.select_all(action='SELECT')
             bpy.ops.object.material_slot_assign()
 
             # assign mat for color2
@@ -4450,83 +4423,61 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
                 "BM_CustomMaterial_%s_%s_COLOR2" % (object.name, map_tag))
             object.data.materials.append(new_mat)
             object.active_material_index = len(object.data.materials) - 1
-            bpy.ops.mesh.select_all(action='INVERT')
+            bpy.ops.mesh.select_all(action='DESELECT')
+            bpy.ops.object.vertex_group_select()
             bpy.ops.object.material_slot_assign()
 
-        # for id
-        if map_tag == 'ID':
-            # vertex groups - add materials for vertex groups
-            if map.map_matid_data == 'VERTEX_GROUPS':
-                vrtx_group_for_inverted_selection_index = 0
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_mode(type='VERT')
+
+        # Save a reference to object's material slot selections to object's
+        # vertex groups.
+        if ((map_tag == 'ID' and map.map_matid_data != 'MATERIALS')
+                or (map_tag == 'MASK' and map.map_mask_data != 'MATERIALS')):
+            for mat_index, material in enumerate(object.data.materials):
+                object.active_material_index = mat_index
+
+                if material is None:
+                    continue
+
                 vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(
-                    object.vertex_groups, "bm_material_backup_COLOR")
-                vrtx_group_for_inverted_selection_index = len(
-                    object.vertex_groups) - 1
+                    object.vertex_groups,
+                    "bm_material_backup_%s" % material.name)
                 object.vertex_groups.new(name=vrtx_group_name)
-
-                for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
-                    object.vertex_groups.active_index = vrtx_group_index
-                    if vrtx_group.name.lower().find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_material_backup") == -1:
-                        bpy.ops.object.vertex_group_select()
-
-                bpy.ops.mesh.select_all(action='INVERT')
+                bpy.ops.mesh.select_all(action='DESELECT')
+                bpy.ops.object.material_slot_select()
                 bpy.ops.object.vertex_group_assign()
 
-                tag_index = 0
-                for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
-                    object.vertex_groups.active_index = vrtx_group_index
-                    if vrtx_group.name.lower().find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_material_backup") == -1:
-                        bpy.ops.mesh.select_all(action='DESELECT')
-                        bpy.ops.object.vertex_group_select()
+        bpy.ops.mesh.select_all(action='DESELECT')
 
-                        new_mat = bpy.data.materials.new(
-                            "BM_CustomMaterial_%s_%s_COLOR%d" % (object.name, map_tag, tag_index))
-                        object.data.materials.append(new_mat)
-                        object.active_material_index = len(
-                            object.data.materials) - 1
-                        bpy.ops.object.material_slot_assign()
-                        tag_index += 1
+        if map_tag != 'ID':
+            bpy.ops.object.mode_set(mode='OBJECT')
+            return
 
-                bpy.ops.mesh.select_all(action='DESELECT')
-                object.vertex_groups.active_index = vrtx_group_for_inverted_selection_index
-                bpy.ops.object.vertex_group_select()
-                new_mat = bpy.data.materials.new(
-                    "BM_CustomMaterial_%s_%s_COLOR%d" % (object.name, map_tag, tag_index))
-                object.data.materials.append(new_mat)
-                object.active_material_index = len(object.data.materials) - 1
-                bpy.ops.object.material_slot_assign()
-                tag_index += 1
+        # vertex groups - add materials for vertex groups
+        if map.map_matid_data == 'VERTEX_GROUPS':
+            vrtx_group_for_inverted_selection_index = 0
+            vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(
+                object.vertex_groups, "bm_material_backup_COLOR")
+            vrtx_group_for_inverted_selection_index = len(
+                object.vertex_groups) - 1
+            object.vertex_groups.new(name=vrtx_group_name)
 
-            # materials - no mats to add, current will be used
-            if map.map_matid_data == 'MATERIALS':
-                pass
+            for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
+                object.vertex_groups.active_index = vrtx_group_index
+                if vrtx_group.name.lower().find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_material_backup") == -1:
+                    bpy.ops.object.vertex_group_select()
 
-            # mesh islands - assign material for each saved mesh island
-            elif map.map_matid_data == 'MESH_ISLANDS':
-                # Add all vertices to "unprocessed" list.
-                # While (unprocessed verts remain):
-                # Deselect all vertices
-                # Select any one unprocessed vert
-                # Call select_linked
-                # assign new material to selection
-                # Remove all selected verts from unprocessed list
-                tag_index = 0
-                vertices_processed = [False] * len(object.data.vertices)
-                while True:
+            bpy.ops.mesh.select_all(action='INVERT')
+            bpy.ops.object.vertex_group_assign()
+
+            tag_index = 0
+            for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
+                object.vertex_groups.active_index = vrtx_group_index
+                if vrtx_group.name.lower().find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_material_backup") == -1:
                     bpy.ops.mesh.select_all(action='DESELECT')
-                    bpy.ops.object.mode_set(mode='OBJECT')
-                    v_u = -1
-                    for index in range(len(vertices_processed)):
-                        if vertices_processed[index] is False:
-                            v_u = index
-                            break
-                    if v_u == -1:
-                        break
-                    object.data.vertices[v_u].select = True
-                    bpy.ops.object.mode_set(mode='EDIT')
-                    bpy.ops.mesh.select_linked()
+                    bpy.ops.object.vertex_group_select()
 
-                    # add material
                     new_mat = bpy.data.materials.new(
                         "BM_CustomMaterial_%s_%s_COLOR%d" % (object.name, map_tag, tag_index))
                     object.data.materials.append(new_mat)
@@ -4535,31 +4486,78 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
                     bpy.ops.object.material_slot_assign()
                     tag_index += 1
 
-                    # vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(object.vertex_groups, "bm_material_backup_COLOR%d" % tag_index)
-                    # object.vertex_groups.new(name=vrtx_group_name)
-                    # bpy.ops.object.vertex_group_assign()
-                    # tag_index += 1
+            bpy.ops.mesh.select_all(action='DESELECT')
+            object.vertex_groups.active_index = vrtx_group_for_inverted_selection_index
+            bpy.ops.object.vertex_group_select()
+            new_mat = bpy.data.materials.new(
+                "BM_CustomMaterial_%s_%s_COLOR%d" % (object.name, map_tag, tag_index))
+            object.data.materials.append(new_mat)
+            object.active_material_index = len(object.data.materials) - 1
+            bpy.ops.object.material_slot_assign()
+            tag_index += 1
 
-                    for index, v in enumerate(object.data.vertices):
-                        if v.select:
-                            vertices_processed[index] = True
+        # materials - no mats to add, current will be used
+        if map.map_matid_data == 'MATERIALS':
+            pass
 
-                bpy.ops.object.mode_set(mode='EDIT')
-
-            # highpolies - add material and assign in to the whole object
-            elif map.map_matid_data == 'OBJECTS':
+        # mesh islands - assign material for each saved mesh island
+        elif map.map_matid_data == 'MESH_ISLANDS':
+            # Add all vertices to "unprocessed" list.
+            # While (unprocessed verts remain):
+            # Deselect all vertices
+            # Select any one unprocessed vert
+            # Call select_linked
+            # assign new material to selection
+            # Remove all selected verts from unprocessed list
+            tag_index = 0
+            vertices_processed = [False] * len(object.data.vertices)
+            while True:
                 bpy.ops.mesh.select_all(action='DESELECT')
-                bpy.ops.mesh.select_all(action='SELECT')
+                bpy.ops.object.mode_set(mode='OBJECT')
+                v_u = -1
+                for index in range(len(vertices_processed)):
+                    if vertices_processed[index] is False:
+                        v_u = index
+                        break
+                if v_u == -1:
+                    break
+                object.data.vertices[v_u].select = True
+                bpy.ops.object.mode_set(mode='EDIT')
+                bpy.ops.mesh.select_linked()
 
                 # add material
                 new_mat = bpy.data.materials.new(
-                    "BM_CustomMaterial_%s_%s_COLOR" % (object.name, map_tag))
+                    "BM_CustomMaterial_%s_%s_COLOR%d" % (object.name, map_tag, tag_index))
                 object.data.materials.append(new_mat)
-                object.active_material_index = len(object.data.materials) - 1
+                object.active_material_index = len(
+                    object.data.materials) - 1
                 bpy.ops.object.material_slot_assign()
+                tag_index += 1
 
-        # exit edit mode
-        bpy.ops.object.mode_set(mode='EDIT', toggle=True)
+                # vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(object.vertex_groups, "bm_material_backup_COLOR%d" % tag_index)
+                # object.vertex_groups.new(name=vrtx_group_name)
+                # bpy.ops.object.vertex_group_assign()
+                # tag_index += 1
+
+                for index, v in enumerate(object.data.vertices):
+                    if v.select:
+                        vertices_processed[index] = True
+
+            bpy.ops.object.mode_set(mode='EDIT')
+
+        # highpolies - add material and assign in to the whole object
+        elif map.map_matid_data == 'OBJECTS':
+            bpy.ops.mesh.select_all(action='DESELECT')
+            bpy.ops.mesh.select_all(action='SELECT')
+
+            # add material
+            new_mat = bpy.data.materials.new(
+                "BM_CustomMaterial_%s_%s_COLOR" % (object.name, map_tag))
+            object.data.materials.append(new_mat)
+            object.active_material_index = len(object.data.materials) - 1
+            bpy.ops.object.material_slot_assign()
+
+        bpy.ops.object.mode_set(mode='OBJECT')
 
 
 def BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(self, context):
