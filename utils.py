@@ -3186,7 +3186,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
             elif len(color_mats) == 1:
                 step = 1
             else:
-                step = round(1 / (len(color_mats) - 1), 3)
+                step = round(1 / len(color_mats), 3)
 
             # getting colors
             colors = []
