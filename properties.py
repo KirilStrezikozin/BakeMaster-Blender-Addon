@@ -1824,11 +1824,11 @@ class BM_Map(bpy.types.PropertyGroup):
                ('GRAYSCALE', "Grayscale", "Color each group by unique Grayscale Color")],
         update=BM_MAP_PROPS_map_matid_algorithm_Update)
     
-    map_matid_jilter : bpy.props.IntProperty(
-        name="Jilter",
-        description="Shuffle the order of colors. Leave 0 for no shuffle",
+    map_matid_seed : bpy.props.IntProperty(
+        name="Seed",
+        description="Shuffle the order of colors. Identical order is guaranteed for the same seed. Leave 0 for no shuffle",
         default=0,
-        update=BM_MAP_PROPS_map_matid_jilter_Update)
+        update=BM_MAP_PROPS_map_matid_seed_Update)
 
 # Mask Map Props
     map_MASK_prefix : bpy.props.StringProperty(

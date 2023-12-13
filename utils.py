@@ -938,7 +938,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                         'map_matid_data': map.map_matid_data,
                         'map_matid_vertex_groups_name_contains': map.map_matid_vertex_groups_name_contains,
                         'map_matid_algorithm': map.map_matid_algorithm,
-                        'map_matid_jilter': map.map_matid_jilter,
+                        'map_matid_seed': map.map_matid_seed,
 
                         'map_MASK_prefix': map.map_MASK_prefix,
                         # 'map_MASK_use_preview' : map.map_MASK_use_preview,
@@ -3277,20 +3277,16 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
 
                     color[2] += v_step
 
-            # jiltering colors
-            # (dev) debug and read .prefs/lazy_array_shuffle to see how that works
-            # this array_jilter is not very good and results in loads of repitive patterns
-            def lazy_array_jilter(array, jilter):
-                # time complexity is O(n)
-                # in this case jilter will not affect array, so return
-                if jilter == 0:
+            # shuffling colors
+            def array_seed_shuffle(array, seed):
+                if seed == 0:
                     return array
                 length = len(array)
-                if length % jilter == 0:
+                if length % seed == 0:
                     return array
 
                 for i in range(len(array)):
-                    new_pos = i + jilter
+                    new_pos = i + seed
                     if new_pos >= length:
                         new_pos %= length
 
@@ -3300,10 +3296,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
 
                 return array
 
-            colors = lazy_array_jilter(colors, map.map_matid_jilter)
-            # if map.map_matid_jilter != 0:
-            # import numpy
-            # numpy.random.shuffle(colors)
+            colors = array_seed_shuffle(colors, map.map_matid_seed)
 
             # loop through needed materials
             for mat_index, material in enumerate(color_mats):
@@ -5758,10 +5751,10 @@ def BM_MAP_PROPS_map_matid_algorithm_Update(self, context):
         self.map_ID_use_preview = True
 
 
-def BM_MAP_PROPS_map_matid_jilter_Update(self, context):
-    name = "Map: ID algorithm"
-    BM_LastEditedProp_Write(context, name, "map_matid_algorithm", getattr(
-        self, "map_matid_algorithm"), True)
+def BM_MAP_PROPS_map_matid_seed_Update(self, context):
+    name = "Map: ID seed"
+    BM_LastEditedProp_Write(context, name, "map_matid_seed", getattr(
+        self, "map_matid_seed"), True)
     BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'ID')
 
 
