@@ -34,6 +34,7 @@
 # END LICENSE & COPYRIGHT BLOCK.
 
 import bpy
+import math
 import colorsys
 from .labels import BM_Labels
 
@@ -3278,23 +3279,22 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
                     color[2] += v_step
 
             # shuffling colors
-            def array_seed_shuffle(array, seed):
+            def array_seed_shuffle(arr, seed):
                 if seed == 0:
-                    return array
-                length = len(array)
-                if length % seed == 0:
-                    return array
+                    return arr
 
-                for i in range(len(array)):
-                    new_pos = i + seed
-                    if new_pos >= length:
-                        new_pos %= length
+                i = len(arr)
+                while 0 != i:
+                    x = math.sin(seed) * 10000
+                    i_new = math.floor((x - math.floor(x)) * i)
+                    seed += 1
+                    i -= 1
 
-                    c = array[i]
-                    array[i] = array[new_pos]
-                    array[new_pos] = c
+                    c = arr[i]
+                    arr[i] = arr[i_new]
+                    arr[i_new] = c
 
-                return array
+                return arr
 
             colors = array_seed_shuffle(colors, map.map_matid_seed)
 
