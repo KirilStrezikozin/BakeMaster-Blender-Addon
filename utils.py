@@ -3170,6 +3170,11 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
     # for id, loop over materials with COLORI in the name
     # because need to calculate size of color stepping
     if map_tag == "ID":
+
+        def rd(seed):
+            x = math.sin(seed) * 10000
+            return x - math.floor(x)
+
         for object in objects:
             color_mats = []
             for material in object.data.materials:
@@ -3189,25 +3194,31 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
             else:
                 step = round(1 / len(color_mats), 3)
 
+            clr0 = rd(map.map_matid_seed)
+
             # getting colors
             colors = []
             if map.map_matid_algorithm == 'GRAYSCALE':
-                color = [0.0, 0.0, 1.0]
+                color = [0.0, 0.0, clr0]
                 for i in range(len(color_mats)):
                     rgb = list(colorsys.hsv_to_rgb(
                         color[0], color[1], color[2]))
                     rgb.append(1.0)
                     colors.append(tuple(rgb))
                     color[2] -= step
+                    if color[2] < 0:
+                        color[2] = 1.0 - step
 
             if map.map_matid_algorithm == 'HUE':
-                color = [1.0, 1.0, 1.0]
+                color = [clr0, 1.0, 1.0]
                 for i in range(len(color_mats)):
                     rgb = list(colorsys.hsv_to_rgb(
                         color[0], color[1], color[2]))
                     rgb.append(1.0)
                     colors.append(tuple(rgb))
                     color[0] -= step
+                    if color[0] < 0:
+                        color[0] = 1.0 - step
 
             if map.map_matid_algorithm == 'RANDOM':
                 # (dev) debug .prefs/rgb_color_scatter.py to see how this works
@@ -3285,8 +3296,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
 
                 i = len(arr)
                 while 0 != i:
-                    x = math.sin(seed) * 10000
-                    i_new = math.floor((x - math.floor(x)) * i)
+                    i_new = math.floor(rd(seed) * i)
                     seed += 1
                     i -= 1
 
