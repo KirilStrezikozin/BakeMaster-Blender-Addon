@@ -3200,7 +3200,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
             colors = []
             if map.map_matid_algorithm == 'GRAYSCALE':
                 color = [0.0, 0.0, clr0]
-                for i in range(len(color_mats)):
+                for _ in range(len(color_mats)):
                     rgb = list(colorsys.hsv_to_rgb(
                         color[0], color[1], color[2]))
                     rgb.append(1.0)
@@ -3211,7 +3211,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
 
             if map.map_matid_algorithm == 'HUE':
                 color = [clr0, 1.0, 1.0]
-                for i in range(len(color_mats)):
+                for _ in range(len(color_mats)):
                     rgb = list(colorsys.hsv_to_rgb(
                         color[0], color[1], color[2]))
                     rgb.append(1.0)
@@ -3221,73 +3221,20 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
                         color[0] = 1.0 - step
 
             if map.map_matid_algorithm == 'RANDOM':
-                # (dev) debug .prefs/rgb_color_scatter.py to see how this works
-                # given variables
-                # number of points to scatter aka colors to get, > 0
-                Points = len(color_mats)
-                SOrbit = 4  # value indicating at what number of scattered points the first Saturation orbit should end, > 0
-                VOrbit = 24  # value indicating at what number of scattered points the first Value orbit should end, > 0
-                MinOrbit = 2  # minimum on SOrbit = SOrbit / MinOrbit, same for minimum on VOrbit, float > 0
+                seed = 1 if not map.map_matid_seed else map.map_matid_seed
+                i = len(color_mats)
+                while 0 != i:
+                    rd_hex = hex(abs(math.floor(
+                        math.sin(seed) * 16777215)))[2::]
+                    rd_hex += "0" * max(0, 6 - len(rd_hex))
 
-                def get_orbit_size(orbit_capacity, points):
-                    n = 1
-                    new_points = [1]
-                    points_cache = 1
-                    while points_cache < points:
-                        # minimum n of points on the current V orbit
-                        minimum = int(orbit_capacity / MinOrbit)
-                        # how many points left in total
-                        points_left = points - points_cache
-                        can_contain = points_left - \
-                            ((points_left - orbit_capacity) + minimum)
-                        # if left more than orbit can contain, add orbit_capacity
-                        if points_left - orbit_capacity >= orbit_capacity:
-                            points_cache += orbit_capacity
-                            new_points.append(orbit_capacity)
-                        elif can_contain >= minimum and can_contain <= points_left:
-                            points_cache += can_contain
-                            new_points.append(can_contain)
-                        else:
-                            points_cache += points_left
-                            new_points.append(points_left)
-                        orbit_capacity *= 2
-                        n += 1
-                    return n, sorted(new_points)
+                    # hex to rgb
+                    colors.append((*tuple(
+                        int(rd_hex[c:c + 2], 16) / 255 for c in (0, 2, 4)),
+                        1))
 
-                n_v, v_points = get_orbit_size(VOrbit, Points)
-
-                if n_v - 1 == 0:
-                    v_step = 0
-                else:
-                    v_step = round(1 / (n_v - 1), 3)
-
-                color = [1.0, 0.0, 0.0]
-                for v_orbit_size in v_points:
-                    color[1] = 0.0
-                    n_s, s_points = get_orbit_size(SOrbit, v_orbit_size)
-
-                    if n_s - 1 == 0:
-                        s_step = 0
-                    else:
-                        s_step = round(1 / (n_s - 1), 3)
-
-                    for s_orbit_size in s_points:
-                        color[0] = 1.0
-                        if s_orbit_size - 1 == 0:
-                            h_step = 0
-                        else:
-                            h_step = round(1 / s_orbit_size, 3)
-
-                        for i in range(s_orbit_size):
-                            rgb = list(colorsys.hsv_to_rgb(
-                                color[0], color[1], color[2]))
-                            rgb.append(1.0)
-                            colors.append(tuple(rgb))
-                            color[0] -= h_step
-
-                        color[1] += s_step
-
-                    color[2] += v_step
+                    seed += 1
+                    i -= 1
 
             # shuffling colors
             def array_seed_shuffle(arr, seed):
