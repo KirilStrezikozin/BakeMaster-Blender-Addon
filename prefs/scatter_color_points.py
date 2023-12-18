@@ -3,10 +3,20 @@ import math
 import bmesh
 
 
+def root(n, power=3):
+    if n <= 1 or 0 == power:
+        return ()
+    
+    d = math.ceil(n ** (1 / power))
+    n /= d
+    power -= 1
+    return (d, *root(n, power))
+
+
 def verts():
     res = []
 
-    n = 12
+    n = 180
     s_max = 1.0
     v_max = 1.0
     r = s_max
@@ -14,12 +24,15 @@ def verts():
     v_cylinder = math.pi * r ** 2 * v_max
     v_v = v_cylinder / n
     
-    for z in range(n):
-        for y in range(n):
-            for x in range(n):
-                z1 = z * v_max / (n - 1)
-                y1 = y * s_max * 2 / (n - 1)
-                x1 = x * s_max * 2 / (n - 1)
+    dimensions = root(n) or n
+    print(math.prod(dimensions))
+    
+    for z in range(dimensions[2]):
+        for y in range(dimensions[1]):
+            for x in range(dimensions[0]):
+                z1 = z * v_max / (dimensions[2] - 1)
+                y1 = y * s_max * 2 / (dimensions[1] - 1)
+                x1 = x * s_max * 2 / (dimensions[0] - 1)
                 res.append((x1, y1, z1))
     return res
 
