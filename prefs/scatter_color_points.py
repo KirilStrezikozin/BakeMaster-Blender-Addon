@@ -6,11 +6,22 @@ import bmesh
 def verts():
     res = []
 
-    n = 1200
-    r = 1
-    
+    n = 12
     s_max = 1.0
     v_max = 1.0
+    r = s_max
+    
+    v_cylinder = math.pi * r ** 2 * v_max
+    v_v = v_cylinder / n
+    
+    for z in range(n):
+        for y in range(n):
+            for x in range(n):
+                z1 = z * v_max / (n - 1)
+                y1 = y * s_max * 2 / (n - 1)
+                x1 = x * s_max * 2 / (n - 1)
+                res.append((x1, y1, z1))
+    return res
 
     a0 = 0  # pcloud rotation angle, can be seeded
     phi = (1 + 5 ** 0.5) / 2
