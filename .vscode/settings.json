@@ -1,6 +1,5 @@
 {
     "files.autoSave": "afterDelay",
-    "workbench.colorTheme": "Monokai Alt",
     "files.exclude": {
         "**/.git": true,
         "**/__pycache__": true
@@ -11,7 +10,7 @@
         {
             "language": "markdown",
             "scheme": "file",
-            // "pattern": "*.{md,txt,rst}"
+            "pattern": "*.{md,txt,rst}"
         },
         {
             "language": "restructuredtext",
