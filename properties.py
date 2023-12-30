@@ -1866,7 +1866,7 @@ class BM_Map(bpy.types.PropertyGroup):
     map_mask_color1 : bpy.props.FloatVectorProperty(
         name="Color1",
         description="What color to use as Color1 for masking",
-        default=(0, 0, 0, 1),
+        default=(1, 1, 1, 1),
         size=4,
         min=0,
         max=1,
@@ -1877,7 +1877,7 @@ class BM_Map(bpy.types.PropertyGroup):
     map_mask_color2 : bpy.props.FloatVectorProperty(
         name="Color2",
         description="What color to use as Color2 for masking",
-        default=(1, 1, 1, 1),
+        default=(0, 0, 0, 1),
         size=4,
         min=0,
         max=1,
