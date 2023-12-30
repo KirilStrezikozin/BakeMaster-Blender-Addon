@@ -3084,6 +3084,79 @@ def BM_MAP_PROPS_MapPreview_getData(self, context, map_tag="",
     return bm_map, preview_objs
 
 
+def clr__rd(seed: int):
+    x = math.sin(seed) * 10000
+    return x - math.floor(x)
+
+
+def clr__arr_shuffle(arr: list, seed: int):
+    if seed == 0:
+        return arr
+
+    i = len(arr)
+    while 0 != i:
+        i_new = math.floor(clr__rd(seed) * i)
+        seed += 1
+        i -= 1
+
+        c = arr[i]
+        arr[i] = arr[i_new]
+        arr[i_new] = c
+
+    return arr
+
+
+def ID_getColors(map, ln_color_mats: int):
+    if ln_color_mats == 1:
+        step = 1
+    else:
+        step = round(1 / ln_color_mats, 3)
+
+    clr0 = clr__rd(map.map_matid_seed)
+
+    colors = []
+    if map.map_matid_algorithm == 'GRAYSCALE':
+        color = [0.0, 0.0, clr0]
+        for _ in range(ln_color_mats):
+            rgb = list(colorsys.hsv_to_rgb(
+                color[0], color[1], color[2]))
+            rgb.append(1.0)
+            colors.append(tuple(rgb))
+            color[2] -= step
+            if color[2] < 0:
+                color[2] = 1.0 - step
+
+    if map.map_matid_algorithm == 'HUE':
+        color = [clr0, 1.0, 1.0]
+        for _ in range(ln_color_mats):
+            rgb = list(colorsys.hsv_to_rgb(
+                color[0], color[1], color[2]))
+            rgb.append(1.0)
+            colors.append(tuple(rgb))
+            color[0] -= step
+            if color[0] < 0:
+                color[0] = 1.0 - step
+
+    if map.map_matid_algorithm == 'RANDOM':
+        seed = 1 if not map.map_matid_seed else map.map_matid_seed
+        i = ln_color_mats
+        while 0 != i:
+            rd_hex = hex(abs(math.floor(
+                math.sin(seed) * 16777215)))[2::]
+            rd_hex += "0" * max(0, 6 - len(rd_hex))
+
+            # hex to rgb
+            colors.append((*tuple(
+                int(rd_hex[c:c + 2], 16) / 255 for c in (0, 2, 4)),
+                1))
+
+            seed += 1
+            i -= 1
+
+    colors = clr__arr_shuffle(colors, map.map_matid_seed)
+    return colors
+
+
 def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
     data = BM_MAP_PROPS_MapPreview_getData(self, context, map_tag)
     if data is None:
@@ -3171,17 +3244,35 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
     # because need to calculate size of color stepping
     if map_tag == "ID":
 
-        def rd(seed):
-            x = math.sin(seed) * 10000
-            return x - math.floor(x)
+        if map.map_matid_data == 'OBJECTS':
+            ln_color_mats = len(objects)
+
+            colors = ID_getColors(map, ln_color_mats)
+
+            clr_index = 0
+            for object in objects:
+                for material in object.data.materials:
+                    if material is None:
+                        continue
+                    material.use_nodes = True
+                    nodes = material.node_tree.nodes
+                    map_nodes = nodes_names_data[map_tag]
+
+                    color = colors[clr_index]
+                    nodes[map_nodes[0]].inputs[0].default_value = color
+
+                clr_index += 1
+
+            return
 
         k_neg_tags = 0
         for object in objects:
+
             color_mats = []
             for material in object.data.materials:
                 if material is None:
                     continue
-                if map.map_matid_data in ['MATERIALS', 'OBJECTS']:
+                if map.map_matid_data == 'MATERIALS':
                     color_mats.append((False, material))
                     continue
 
@@ -3202,71 +3293,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
             if ln_color_mats == 0:
                 continue
 
-            elif ln_color_mats == 1:
-                step = 1
-            else:
-                step = round(1 / ln_color_mats, 3)
-
-            clr0 = rd(map.map_matid_seed)
-
-            # getting colors
-            colors = []
-            if map.map_matid_algorithm == 'GRAYSCALE':
-                color = [0.0, 0.0, clr0]
-                for _ in range(ln_color_mats):
-                    rgb = list(colorsys.hsv_to_rgb(
-                        color[0], color[1], color[2]))
-                    rgb.append(1.0)
-                    colors.append(tuple(rgb))
-                    color[2] -= step
-                    if color[2] < 0:
-                        color[2] = 1.0 - step
-
-            if map.map_matid_algorithm == 'HUE':
-                color = [clr0, 1.0, 1.0]
-                for _ in range(ln_color_mats):
-                    rgb = list(colorsys.hsv_to_rgb(
-                        color[0], color[1], color[2]))
-                    rgb.append(1.0)
-                    colors.append(tuple(rgb))
-                    color[0] -= step
-                    if color[0] < 0:
-                        color[0] = 1.0 - step
-
-            if map.map_matid_algorithm == 'RANDOM':
-                seed = 1 if not map.map_matid_seed else map.map_matid_seed
-                i = ln_color_mats
-                while 0 != i:
-                    rd_hex = hex(abs(math.floor(
-                        math.sin(seed) * 16777215)))[2::]
-                    rd_hex += "0" * max(0, 6 - len(rd_hex))
-
-                    # hex to rgb
-                    colors.append((*tuple(
-                        int(rd_hex[c:c + 2], 16) / 255 for c in (0, 2, 4)),
-                        1))
-
-                    seed += 1
-                    i -= 1
-
-            # shuffling colors
-            def array_seed_shuffle(arr, seed):
-                if seed == 0:
-                    return arr
-
-                i = len(arr)
-                while 0 != i:
-                    i_new = math.floor(rd(seed) * i)
-                    seed += 1
-                    i -= 1
-
-                    c = arr[i]
-                    arr[i] = arr[i_new]
-                    arr[i_new] = c
-
-                return arr
-
-            colors = array_seed_shuffle(colors, map.map_matid_seed)
+            colors = ID_getColors(map, ln_color_mats)
 
             # loop through needed materials
             mat_index = 0
