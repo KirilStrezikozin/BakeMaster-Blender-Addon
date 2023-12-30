@@ -3175,24 +3175,37 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
             x = math.sin(seed) * 10000
             return x - math.floor(x)
 
+        k_neg_tags = 0
         for object in objects:
             color_mats = []
             for material in object.data.materials:
                 if material is None:
                     continue
                 if map.map_matid_data in ['MATERIALS', 'OBJECTS']:
-                    color_mats.append(material)
-                else:
-                    if material.name.find("BM_CustomMaterial_") != -1 and material.name.find("COLOR") != -1:
-                        color_mats.append(material)
+                    color_mats.append((False, material))
+                    continue
 
-            if len(color_mats) == 0:
+                mn = material.name
+                mn_hastag = (mn.find("BM_CustomMaterial_") != -1
+                             and mn.find("COLOR") != -1)
+
+                if not mn_hastag:
+                    continue
+
+                mn_tag = int(mn[mn.find("COLOR") + len("COLOR")::])
+                has_negtag = -1 == mn_tag
+                color_mats.append((has_negtag, material))
+                if (has_negtag):
+                    k_neg_tags += 1
+
+            ln_color_mats = len(color_mats) - k_neg_tags
+            if ln_color_mats == 0:
                 continue
 
-            elif len(color_mats) == 1:
+            elif ln_color_mats == 1:
                 step = 1
             else:
-                step = round(1 / len(color_mats), 3)
+                step = round(1 / ln_color_mats, 3)
 
             clr0 = rd(map.map_matid_seed)
 
@@ -3200,7 +3213,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
             colors = []
             if map.map_matid_algorithm == 'GRAYSCALE':
                 color = [0.0, 0.0, clr0]
-                for _ in range(len(color_mats)):
+                for _ in range(ln_color_mats):
                     rgb = list(colorsys.hsv_to_rgb(
                         color[0], color[1], color[2]))
                     rgb.append(1.0)
@@ -3211,7 +3224,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
 
             if map.map_matid_algorithm == 'HUE':
                 color = [clr0, 1.0, 1.0]
-                for _ in range(len(color_mats)):
+                for _ in range(ln_color_mats):
                     rgb = list(colorsys.hsv_to_rgb(
                         color[0], color[1], color[2]))
                     rgb.append(1.0)
@@ -3222,7 +3235,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
 
             if map.map_matid_algorithm == 'RANDOM':
                 seed = 1 if not map.map_matid_seed else map.map_matid_seed
-                i = len(color_mats)
+                i = ln_color_mats
                 while 0 != i:
                     rd_hex = hex(abs(math.floor(
                         math.sin(seed) * 16777215)))[2::]
@@ -3256,11 +3269,19 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
             colors = array_seed_shuffle(colors, map.map_matid_seed)
 
             # loop through needed materials
-            for mat_index, material in enumerate(color_mats):
+            mat_index = 0
+            for has_negtag, material in color_mats:
                 material.use_nodes = True
                 nodes = material.node_tree.nodes
                 map_nodes = nodes_names_data[map_tag]
-                nodes[map_nodes[0]].inputs[0].default_value = colors[mat_index]
+
+                if has_negtag:
+                    color = (0, 0, 0, 1)
+                else:
+                    color = colors[mat_index]
+                    mat_index += 1
+
+                nodes[map_nodes[0]].inputs[0].default_value = color
 
         return
 
@@ -4407,22 +4428,15 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
 
         # vertex groups - add materials for vertex groups
         if map.map_matid_data == 'VERTEX_GROUPS':
-            vrtx_group_for_inverted_selection_index = 0
-            vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(
-                object.vertex_groups, "bm_material_backup_COLOR")
-            vrtx_group_for_inverted_selection_index = len(
-                object.vertex_groups) - 1
-            object.vertex_groups.new(name=vrtx_group_name)
+            tag_index = -1
+            bpy.ops.mesh.select_all(action='SELECT')
+            new_mat = bpy.data.materials.new(
+                "BM_CustomMaterial_%s_%s_COLOR%d" % (object.name, map_tag, tag_index))
+            object.data.materials.append(new_mat)
+            object.active_material_index = len(object.data.materials) - 1
+            bpy.ops.object.material_slot_assign()
+            tag_index += 1
 
-            for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
-                object.vertex_groups.active_index = vrtx_group_index
-                if vrtx_group.name.lower().find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_material_backup") == -1:
-                    bpy.ops.object.vertex_group_select()
-
-            bpy.ops.mesh.select_all(action='INVERT')
-            bpy.ops.object.vertex_group_assign()
-
-            tag_index = 0
             for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
                 object.vertex_groups.active_index = vrtx_group_index
                 if vrtx_group.name.lower().find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_material_backup") == -1:
@@ -4436,16 +4450,6 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
                         object.data.materials) - 1
                     bpy.ops.object.material_slot_assign()
                     tag_index += 1
-
-            bpy.ops.mesh.select_all(action='DESELECT')
-            object.vertex_groups.active_index = vrtx_group_for_inverted_selection_index
-            bpy.ops.object.vertex_group_select()
-            new_mat = bpy.data.materials.new(
-                "BM_CustomMaterial_%s_%s_COLOR%d" % (object.name, map_tag, tag_index))
-            object.data.materials.append(new_mat)
-            object.active_material_index = len(object.data.materials) - 1
-            bpy.ops.object.material_slot_assign()
-            tag_index += 1
 
         # materials - no mats to add, current will be used
         if map.map_matid_data == 'MATERIALS':
