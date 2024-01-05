@@ -70,7 +70,6 @@ def BM_Map_Get(self, object):
 ### Name Matching Funcs ###
 ###############################################################
 
-
 def BM_Table_of_Objects_NameMatching_GetAllObjectNames(context):
     names = []
     for object in context.scene.bm_table_of_objects:
@@ -4384,8 +4383,9 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
         context.view_layer.objects.active = object
 
         # save materials
-        if ((map_tag == 'ID' and map.map_matid_data != 'MATERIALS')
-                or (map_tag == 'MASK' and map.map_mask_data != 'MATERIALS')):
+        if ((map_tag == 'ID' and map.map_matid_data not in [
+            'OBJECTS', 'MATERIALS']) or (
+                map_tag == 'MASK' and map.map_mask_data != 'MATERIALS')):
             bpy.ops.object.mode_set(mode='EDIT')
 
             for mat_index, material in enumerate(object.data.materials):
@@ -4527,17 +4527,7 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
 
             bpy.ops.object.mode_set(mode='EDIT')
 
-        # highpolies - add material and assign in to the whole object
-        elif map.map_matid_data == 'OBJECTS':
-            bpy.ops.mesh.select_all(action='DESELECT')
-            bpy.ops.mesh.select_all(action='SELECT')
-
-            # add material
-            new_mat = bpy.data.materials.new(
-                "BM_CustomMaterial_%s_%s_COLOR" % (object.name, map_tag))
-            object.data.materials.append(new_mat)
-            object.active_material_index = len(object.data.materials) - 1
-            bpy.ops.object.material_slot_assign()
+            # nothing to do for OBJECTS data
 
         bpy.ops.object.mode_set(mode='OBJECT')
 
