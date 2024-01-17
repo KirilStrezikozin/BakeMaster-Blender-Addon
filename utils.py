@@ -3264,48 +3264,52 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
 
             return
 
-        k_neg_tags = 0
+        ln_color_mats = 0
         for object in objects:
-
-            color_mats = []
             for material in object.data.materials:
                 if material is None:
                     continue
-                if map.map_matid_data == 'MATERIALS':
-                    color_mats.append((False, material))
+
+                elif map.map_matid_data == 'MATERIALS':
+                    ln_color_mats += 1
+                    continue
+
+                mn = material.name
+                if not (mn.find("BM_CustomMaterial_") != -1
+                        and mn.find("COLOR") != -1):
+                    continue
+
+                if -1 != int(mn[mn.find("COLOR") + len("COLOR")::]):
+                    ln_color_mats += 1
+
+        if ln_color_mats == 0:
+            return
+
+        colors = ID_getColors(map, ln_color_mats)
+
+        clr_i = 0
+        for object in objects:
+            for material in object.data.materials:
+                if material is None:
                     continue
 
                 mn = material.name
                 mn_hastag = (mn.find("BM_CustomMaterial_") != -1
                              and mn.find("COLOR") != -1)
 
-                if not mn_hastag:
+                if not (map.map_matid_data == 'MATERIALS' or mn_hastag):
                     continue
 
-                mn_tag = int(mn[mn.find("COLOR") + len("COLOR")::])
-                has_negtag = -1 == mn_tag
-                color_mats.append((has_negtag, material))
-                if (has_negtag):
-                    k_neg_tags += 1
-
-            ln_color_mats = len(color_mats) - k_neg_tags
-            if ln_color_mats == 0:
-                continue
-
-            colors = ID_getColors(map, ln_color_mats)
-
-            # loop through needed materials
-            mat_index = 0
-            for has_negtag, material in color_mats:
                 material.use_nodes = True
                 nodes = material.node_tree.nodes
                 map_nodes = nodes_names_data[map_tag]
 
-                if has_negtag:
+                if mn_hastag and -1 == int(
+                        mn[mn.find("COLOR") + len("COLOR")::]):
                     color = (0, 0, 0, 1)
                 else:
-                    color = colors[mat_index]
-                    mat_index += 1
+                    color = colors[clr_i]
+                    clr_i += 1
 
                 nodes[map_nodes[0]].inputs[0].default_value = color
 
@@ -3572,18 +3576,31 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
                           nodes[map_nodes[4]].inputs[0])
 
             if map_tag == "MASK":
-                if material.name.find(
-                        map.map_mask_materials_name_contains) != -1:
-                    nodes[map_nodes[0]
-                          ].outputs[0].default_value = getattr(
-                              map, "map_mask_color1")
-                else:
-                    nodes[map_nodes[0]
-                          ].outputs[0].default_value = getattr(
-                              map, "map_mask_color2")
+                mn = material.name
+                mn_criteria = map.map_mask_materials_name_contains
 
-                nodes[map_nodes[1]
-                      ].inputs[0].default_value = map.map_mask_use_invert
+                clr_i = True
+                if map.map_mask_data == 'MATERIALS':
+                    clr_i = 2 - int(mn.find(mn_criteria) != -1)
+                elif map.map_mask_data == 'VERTEX_GROUPS':
+                    mn_hastag = (mn.find("BM_CustomMaterial_") != -1
+                                 and mn.find("COLOR") != -1)
+
+                    if not mn_hastag:
+                        continue
+
+                    mn_tag = int(mn[mn.find("COLOR") + len("COLOR")::])
+
+                    if mn_tag == -1:
+                        continue
+
+                    clr_i = mn_tag
+
+                clr = getattr(map, "map_mask_color%d" % clr_i)
+                nodes[map_nodes[0]].outputs[0].default_value = clr
+
+                use_invert = map.map_mask_use_invert
+                nodes[map_nodes[1]].inputs[0].default_value = use_invert
 
 
 def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
