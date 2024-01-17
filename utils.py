@@ -3123,7 +3123,7 @@ def ID_getColors(map, ln_color_mats: int):
             colors.append(tuple(rgb))
             color[2] -= step
             if color[2] < 0:
-                color[2] = 1.0 - step
+                color[2] += 1
 
     if map.map_matid_algorithm == 'HUE':
         color = [clr0, 1.0, 1.0]
@@ -3134,7 +3134,7 @@ def ID_getColors(map, ln_color_mats: int):
             colors.append(tuple(rgb))
             color[0] -= step
             if color[0] < 0:
-                color[0] = 1.0 - step
+                color[0] += 1
 
     if map.map_matid_algorithm == 'RANDOM':
         seed = 1 if not map.map_matid_seed else map.map_matid_seed
