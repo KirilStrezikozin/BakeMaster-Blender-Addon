@@ -335,11 +335,30 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                 else:
                     object_pointer = context.scene.objects[object.global_object_name]
                     objects_data.append(object_pointer.data)
-                
+
         # default add
         if scene.bm_props.global_use_name_matching is False:
             if context.object:
-                for object in context.selected_objects:
+
+                use_sort_alpha = False
+                for area in bpy.context.screen.areas:
+                    if area is None or area.type != 'OUTLINER':
+                        continue
+                    for spc in area.spaces:
+                        if spc is None or spc.type != 'OUTLINER':
+                            continue
+                        elif spc.display_mode not in {'VIEW_LAYER', 'SCENES'}:
+                            continue
+                        use_sort_alpha = spc.use_sort_alpha
+                        break
+
+                if use_sort_alpha:
+                    selected_objs = sorted(
+                        context.selected_objects, key=lambda x: x.name)
+                else:
+                    selected_objs = context.selected_objects
+
+                for object in selected_objs:
                     if object.type == 'MESH':
 
                         if object not in objects and object.data not in objects_data:
@@ -373,9 +392,28 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                 insert_data = []
                 new_data = []
                 all_objs = BM_Table_of_Objects_NameMatching_GetAllObjectNames(context)
+
+                use_sort_alpha = False
+                for area in bpy.context.screen.areas:
+                    if area is None or area.type != 'OUTLINER':
+                        continue
+                    for spc in area.spaces:
+                        if spc is None or spc.type != 'OUTLINER':
+                            continue
+                        elif spc.display_mode not in {'VIEW_LAYER', 'SCENES'}:
+                            continue
+                        use_sort_alpha = spc.use_sort_alpha
+                        break
+
+                if use_sort_alpha:
+                    selected_objs = sorted(
+                        context.selected_objects, key=lambda x: x.name)
+                else:
+                    selected_objs = context.selected_objects
+
                 # creating list of all objs to add
                 new_objs = []
-                for object in context.selected_objects:
+                for object in selected_objs:
                     # checks
                     if object.type != 'MESH':
                         is_mesh = False
