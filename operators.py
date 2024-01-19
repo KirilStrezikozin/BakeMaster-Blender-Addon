@@ -1760,13 +1760,13 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
         has_any_selected = False
         for object_item in bm_props.global_cauc_objects:
             if object_item.use_include:
-                lowpolies.append(object_item.object_name)
+                lowpolies.append(sc.objects[object_item.object_name].name)
                 has_any_selected = True
             elif object_item.is_highpoly:
-                highpolies.append(object_item.object_name)
+                highpolies.append(sc.objects[object_item.object_name].name)
                 has_any_selected = True
             elif object_item.is_cage:
-                cages.append(object_item.object_name)
+                cages.append(sc.objects[object_item.object_name].name)
                 has_any_selected = True
 
         if has_any_selected is False:
