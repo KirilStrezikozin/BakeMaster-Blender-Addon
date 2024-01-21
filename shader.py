@@ -44,23 +44,28 @@ bpy_t = bpy.types
 gpu_t = gpu.types
 
 
-def mesh_data(mesh: bpy_t.Mesh) -> Tuple[np.ndarray, np.ndarray]:
+def mesh_data(mesh: bpy_t.Mesh) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     mesh.calc_loop_triangles()
 
     coords = np.empty(len(mesh.vertices) * 3, dtype=np.float32)
     mesh.vertices.foreach_get('co', coords)
     coords.shape = (-1, 3)
 
+    normals = np.empty(len(mesh.vertices) * 3, dtype=np.float32)
+    mesh.vertices.foreach_get('normal', normals)
+    normals.shape = (-1, 3)
+
     indices = np.empty(len(mesh.loop_triangles) * 3, dtype=np.int32)
     mesh.loop_triangles.foreach_get('vertices', indices)
     indices.shape = (-1, 3)
 
-    return coords, indices
+    return coords, normals, indices
 
 
 def cage() -> gpu_t.GPUShader:
     vertex_source = """
     in vec3 position;
+    in vec3 normal;
 
     uniform mat4 viewProjectionMatrix;
     uniform float extrusion;
@@ -69,12 +74,8 @@ def cage() -> gpu_t.GPUShader:
     out vec4 fcolor;
 
     void main() {
-      float x2 = position[0] * position[0];
-      float y2 = position[1] * position[1];
-      float z2 = position[2] * position[2];
-
-      float k = extrusion * pow((x2 + y2 + z2), -0.5f) + 1;
-      gl_Position = viewProjectionMatrix * vec4(position * k, 1.0f);
+      gl_Position = viewProjectionMatrix * vec4(
+        position + normal * extrusion, 1.0f);
 
       fcolor = color;
     }
@@ -94,11 +95,11 @@ def cage() -> gpu_t.GPUShader:
 
 
 def cage_batch(shader: gpu_t.GPUShader, mesh: bpy_t.Mesh) -> gpu_t.GPUBatch:
-    coords, indices = mesh_data(mesh)
+    coords, normals, indices = mesh_data(mesh)
 
     batch = batch_for_shader(
         shader, 'TRIS',
-        {"position": coords},
+        {"position": coords, "normal": normals},
         indices=indices)
 
     return batch
