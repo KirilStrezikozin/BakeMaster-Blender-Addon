@@ -36,6 +36,7 @@
 import bpy
 from .operators import *
 from .operator_bake import BM_OT_ITEM_Bake
+from .shader import BM_OT_Shader_Cage
 from .utils import BM_Object_Get, BM_template_list_get_rows
 from .presets import *
 
@@ -762,23 +763,28 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                         hl_box_cage = hl_box.column(align=True)
                         # hl_box_cage.prop(object, 'hl_cage_type')
                         # if object.hl_cage_type == 'STANDARD':
-                        if object.hl_use_cage is False:
-                            label = "Extrusion"
-                            hl_box_cage.prop(object, 'hl_cage_extrusion', text=label)
-                            if bpy.app.version >= (2, 90, 0):
-                                hl_box_cage.prop(object, 'hl_max_ray_distance')
-                            hl_box_cage.prop(object, 'hl_use_cage')
-                        else:
-                            label = "Cage Extrusion"
-                            hl_box_cage.prop(object, 'hl_cage_extrusion', text=label)
-                            if hl_draw:
-                                hl_box_cage.prop(object, 'hl_use_cage')
-                                hl_box_cage.prop(object, 'hl_cage')
-                            else:
-                                hl_box_cage.prop(object, 'hl_use_cage', text="Use Cage Object (automatic)")
-                        # else:
-                            # hl_box_cage.prop(object, 'hl_cage_extrusion', text="Extrusion")
-        
+
+                        li = object.hl_use_cage and object.hl_cage != 'NONE'
+
+                        row = hl_box_cage.row()
+                        row.prop(
+                            object, 'hl_cage_extrusion',
+                            text=("Extrusion", "Cage Extrusion")[li])
+                        row.active = not li
+
+                        if bpy.app.version >= (2, 90, 0):
+                            hl_box_cage.prop(object, 'hl_max_ray_distance')
+
+                        hl_box_cage.prop(
+                            object, 'hl_use_cage',
+                            text=("Use Cage Object (auto)",
+                                  "Use Cage Object")[hl_draw])
+
+                        if object.hl_use_cage and hl_draw:
+                            row = hl_box_cage.row()
+                            row.prop(object, 'hl_cage')
+                            row.active = li
+
         # highs and cage are drawn for global uni_c objects
         # everything else not
         if draw_all is False:
@@ -1378,24 +1384,29 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                         if len(map.hl_highpoly_table) or hl_draw is False:
                             hl_box_cage = hl_box.column(align=True)
                             hl_box_cage.prop(map, 'hl_cage_type')
-                            if map.hl_cage_type == 'STANDARD':
-                                if map.hl_use_cage is False:
-                                    label = "Extrusion"
-                                    hl_box_cage.prop(map, 'hl_cage_extrusion', text=label)
-                                    if bpy.app.version >= (2, 90, 0):
-                                        hl_box_cage.prop(map, 'hl_max_ray_distance')
-                                    hl_box_cage.prop(map, 'hl_use_cage')
-                                else:
-                                    label = "Cage Extrusion"
-                                    hl_box_cage.prop(map, 'hl_cage_extrusion', text=label)
-                                    if hl_draw:
-                                        hl_box_cage.prop(map, 'hl_use_cage')
-                                        hl_box_cage.prop(map, 'hl_cage')
-                                    else:
-                                        hl_box_cage.prop(map, 'hl_use_cage', text="Use Cage Object (auto)")
-                            else:
-                                hl_box_cage.prop(map, 'hl_cage_extrusion', text="Extrusion")
-        
+                            # if map.hl_cage_type == 'STANDARD':
+
+                            li = map.hl_use_cage and map.hl_cage != 'NONE'
+
+                            row = hl_box_cage.row()
+                            row.prop(
+                                map, 'hl_cage_extrusion',
+                                text=("Extrusion", "Cage Extrusion")[li])
+                            row.active = not li
+
+                            if bpy.app.version >= (2, 90, 0):
+                                hl_box_cage.prop(map, 'hl_max_ray_distance')
+
+                            hl_box_cage.prop(
+                                map, 'hl_use_cage',
+                                text=("Use Cage Object (auto)",
+                                      "Use Cage Object")[hl_draw])
+
+                            if map.hl_use_cage and hl_draw:
+                                row = hl_box_cage.row()
+                                row.prop(map, 'hl_cage')
+                                row.active = li
+
             # uv
             if object.uv_use_unique_per_map:
                 uv_box = layout.box()
