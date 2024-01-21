@@ -68,13 +68,14 @@ def cage() -> gpu_t.GPUShader:
     in vec3 normal;
 
     uniform mat4 viewProjectionMatrix;
+    uniform mat4 objProjectionMatrix;
     uniform float extrusion;
     uniform vec4 color;
 
     out vec4 fcolor;
 
     void main() {
-      gl_Position = viewProjectionMatrix * vec4(
+      gl_Position = viewProjectionMatrix * objProjectionMatrix * vec4(
         position + normal * extrusion, 1.0f);
 
       fcolor = color;
@@ -107,6 +108,7 @@ def cage_batch(shader: gpu_t.GPUShader, mesh: bpy_t.Mesh) -> gpu_t.GPUBatch:
 
 def cage_draw(
         _: bpy_t.Context,
+        obj: bpy_t.Object,
         batch: gpu_t.GPUBatch,
         shader: gpu_t.GPUShader,
         color: Tuple[float, float, float, float],
@@ -116,8 +118,9 @@ def cage_draw(
 
     shader.bind()
     shader.uniform_float("viewProjectionMatrix", matrix)
-    shader.uniform_float("color", color)
+    shader.uniform_float("objProjectionMatrix", obj.matrix_world)
     shader.uniform_float("extrusion", extrusion)
+    shader.uniform_float("color", color)
 
     gpu.state.depth_test_set('LESS')
     gpu.state.blend_set('NONE')
@@ -168,6 +171,7 @@ class BM_OT_Cage_Shader(bpy_t.Operator):
 
         draw_args = (
             context,
+            self.__obj,
             self.__batch,
             self.__shader,
             color,
