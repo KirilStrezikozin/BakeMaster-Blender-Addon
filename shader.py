@@ -44,7 +44,15 @@ bpy_t = bpy.types
 gpu_t = gpu.types
 
 
-def mesh_data(mesh: bpy_t.Mesh) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def eval_mesh_data(context: bpy_t.Context, obj: bpy_t.Object
+                   ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+
+    assert obj.type == 'MESH', "Object is not MESH at shader.eval_mesh_data()"
+
+    dg = context.evaluated_depsgraph_get()
+    obj_eval = dg.objects.get(obj.name)
+    mesh = obj_eval.data
+
     mesh.calc_loop_triangles()
 
     coords = np.empty(len(mesh.vertices) * 3, dtype=np.float32)
@@ -95,8 +103,10 @@ def cage() -> gpu_t.GPUShader:
     return shader
 
 
-def cage_batch(shader: gpu_t.GPUShader, mesh: bpy_t.Mesh) -> gpu_t.GPUBatch:
-    coords, normals, indices = mesh_data(mesh)
+def cage_batch(shader: gpu_t.GPUShader, context: bpy_t.Context,
+               obj: bpy_t.Object) -> gpu_t.GPUBatch:
+
+    coords, normals, indices = eval_mesh_data(context, obj)
 
     batch = batch_for_shader(
         shader, 'TRIS',
@@ -163,7 +173,7 @@ class BM_OT_Cage_Shader(bpy_t.Operator):
 
         self.__obj = context.active_object
         self.__shader = cage()
-        self.__batch = cage_batch(self.__shader, self.__obj.data)
+        self.__batch = cage_batch(self.__shader, context, self.__obj)
 
         alpha = 0.1
         color = (1, 0.5, 0, alpha)
