@@ -185,8 +185,15 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
         color_wire = context.scene.bm_props.global_cage_color_wire
         return color_solid, color_wire
 
-    def draw_cancel(self, _: bpy_t.Context) -> None:
+    def redraw(self, context: bpy_t.Context) -> None:
+        for area in context.screen.areas:
+            if area.type == 'VIEW_3D':
+                area.tag_redraw()
+        return None
+
+    def draw_cancel(self, context: bpy_t.Context) -> None:
         bpy_t.SpaceView3D.draw_handler_remove(self.__draw_handle, 'WINDOW')
+        self.redraw(context)
         return None
 
     def modal(self, context: bpy_t.Context, event: bpy_t.Event) -> Set[str]:
@@ -229,6 +236,8 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
             draw_args,
             'WINDOW',
             'POST_VIEW')
+
+        self.redraw(context)
 
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
