@@ -53,12 +53,14 @@ if "bpy" in locals():
     from .properties import *
     from .operator_bake import *
     from .presets import *
+    from .shader import BM_OT_Shader_Cage
 
     from . import ui_panel
     from . import operators
     from . import properties
     from . import operator_bake
     from . import presets
+    from . import shader
 
     import importlib
     importlib.reload(ui_panel)
@@ -66,6 +68,7 @@ if "bpy" in locals():
     importlib.reload(properties)
     importlib.reload(operator_bake)
     importlib.reload(presets)
+    importlib.reload(shader)
 
 else:
     from .ui_panel import *
@@ -73,6 +76,7 @@ else:
     from .properties import *
     from .operator_bake import *
     from .presets import *
+    from .shader import BM_OT_Shader_Cage
     
 import bpy
 
@@ -176,6 +180,8 @@ classes = (
     BM_OT_CHNLP_Preset_Add,
     BM_OT_BAKE_Preset_Add,
     BM_OT_CM_Preset_Add,
+
+    BM_OT_Shader_Cage,
 
     BM_ALEP_Object,
     BM_ALEP_Map,

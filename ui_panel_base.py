@@ -61,6 +61,13 @@ class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
         layout = self.layout.column(align=True)
         layout.prop(bm_props, 'global_bake_match_maps_type')
 
+        layout = self.layout.column(align=True)
+        split = layout.split(factor=0.4)
+        split.row()
+        split.label(text="Cage Preview colors")
+        layout.prop(bm_props, 'global_cage_color_solid')
+        layout.prop(bm_props, 'global_cage_color_wire')
+
 class BM_ALEP_UL_Objects_Item(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, active_data, active_propname, index):
         source_object = [object for object in context.scene.bm_table_of_objects if object.global_object_name == item.object_name]
@@ -775,6 +782,17 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                         if bpy.app.version >= (2, 90, 0):
                             hl_box_cage.prop(object, 'hl_max_ray_distance')
 
+                        split = hl_box_cage.row().split(factor=0.4)
+                        split.row()
+                        ot = split.operator(
+                            BM_OT_Shader_Cage.bl_idname,
+                            icon='HIDE_OFF')
+                        obj_name = object.global_object_name
+                        ot.obj_name = object.hl_cage if li else obj_name
+                        ot.extrusion = object.hl_cage_extrusion
+
+                        hl_box_cage.separator(factor=0.4)
+
                         hl_box_cage.prop(
                             object, 'hl_use_cage',
                             text=("Use Cage Object (auto)",
@@ -1383,7 +1401,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                         # cage
                         if len(map.hl_highpoly_table) or hl_draw is False:
                             hl_box_cage = hl_box.column(align=True)
-                            hl_box_cage.prop(map, 'hl_cage_type')
+                            # hl_box_cage.prop(map, 'hl_cage_type')
                             # if map.hl_cage_type == 'STANDARD':
 
                             li = map.hl_use_cage and map.hl_cage != 'NONE'
@@ -1396,6 +1414,17 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
 
                             if bpy.app.version >= (2, 90, 0):
                                 hl_box_cage.prop(map, 'hl_max_ray_distance')
+
+                            split = hl_box_cage.row().split(factor=0.4)
+                            split.row()
+                            ot = split.operator(
+                                BM_OT_Shader_Cage.bl_idname,
+                                icon='HIDE_OFF')
+                            obj_name = object.global_object_name
+                            ot.obj_name = map.hl_cage if li else obj_name
+                            ot.extrusion = map.hl_cage_extrusion
+
+                            hl_box_cage.separator(factor=0.4)
 
                             hl_box_cage.prop(
                                 map, 'hl_use_cage',

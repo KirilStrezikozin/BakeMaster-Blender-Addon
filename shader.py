@@ -157,10 +157,19 @@ def cage_draw(
     return None
 
 
-class BM_OT_Cage_Shader(bpy_t.Operator):
-    bl_idname = 'bakemaster.shaders_cage'
-    bl_label = ""
+class BM_OT_Shader_Cage(bpy_t.Operator):
+    bl_idname = 'bakemaster.shader_cage'
+    bl_label = "Cage Preview"
+    bl_description = "Preview extruded cage in the viewport"
     bl_options = {'INTERNAL'}
+
+    obj_name: bpy.props.StringProperty(
+        default="",
+        options={'SKIP_SAVE'})  # noqa: F821
+
+    extrusion: bpy.props.FloatProperty(
+        default=0,
+        options={'SKIP_SAVE'})  # noqa: F821
 
     __obj = None
     __shader = None
@@ -168,31 +177,37 @@ class BM_OT_Cage_Shader(bpy_t.Operator):
     __batch_wire = None
     __draw_handle = None
 
-    def cancel(self, _: bpy_t.Context):
+    def get_colors(self, context: bpy_t.Context
+                   ) -> Tuple[Tuple[float, float, float, float],
+                              Tuple[float, float, float, float]]:
+        color_solid = context.scene.bm_props.global_cage_color_solid
+        color_wire = context.scene.bm_props.global_cage_color_wire
+        return color_solid, color_wire
+
+    def draw_cancel(self, _: bpy_t.Context) -> None:
         bpy_t.SpaceView3D.draw_handler_remove(self.__draw_handle, 'WINDOW')
-        print("ca")
-        return {'CANCELLED'}
+        return None
 
     def modal(self, context: bpy_t.Context, event: bpy_t.Event) -> Set[str]:
         if (event.type == 'ESC'):
-            return self.cancel(context)
+            self.draw_cancel(context)
+            return {'CANCELLED'}
 
         return {'PASS_THROUGH'}
 
     def invoke(self, context: bpy_t.Context, _: bpy_t.Event) -> Set[str]:
-        print("sa")
-        if (not context.active_object or context.active_object.type != 'MESH'):
+        self.__obj = context.scene.objects.get(self.obj_name, None)
+
+        if (self.__obj is None or self.__obj.type != 'MESH'):
+            self.report({'ERROR'}, "Expected Mesh object")
             return {'CANCELLED'}
 
-        self.__obj = context.active_object
         self.__shader = cage()
         co, nm, i, e = eval_mesh_data(context, self.__obj)
         self.__batch_solid = cage_batch(self.__shader, co, nm, i, 'TRIS')
         self.__batch_wire = cage_batch(self.__shader, co, nm, e, 'LINES')
 
-        color_solid = (1, 0.5, 0, 0.1)
-        color_wire = (0.95, 0.45, 0, 0.1)
-        extrusion = 0.1
+        color_solid, color_wire = self.get_colors(context)
 
         draw_args = (
             context,
@@ -202,7 +217,7 @@ class BM_OT_Cage_Shader(bpy_t.Operator):
             self.__shader,
             color_solid,
             color_wire,
-            extrusion)
+            self.extrusion)
 
         self.__draw_handle = bpy_t.SpaceView3D.draw_handler_add(
             cage_draw,
@@ -215,5 +230,8 @@ class BM_OT_Cage_Shader(bpy_t.Operator):
 
 
 if __name__ == "__main__":
-    bpy.utils.register_class(BM_OT_Cage_Shader)
-    bpy.ops.bakemaster.shaders_cage('INVOKE_DEFAULT')
+    bpy.utils.register_class(BM_OT_Shader_Cage)
+    bpy.ops.bakemaster.shader_cage(
+        'INVOKE_DEFAULT',
+        obj_name=bpy.context.active_object.name,
+        extrusion=0.1)

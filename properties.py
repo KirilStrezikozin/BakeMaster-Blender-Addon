@@ -567,6 +567,26 @@ class BM_SceneProps(bpy.types.PropertyGroup):
                ('MAP_TYPE', "Maps Types", "If Objects are in the texture set for ex., maps of identical types will be baked onto the same image file"),
                ('MAP_PREFIX_AND_TYPE', "Both Type and Prefix", "If Objects are in the texture set for ex., maps with identical prefixes will be baked onto the same image file.\nIf no identical prefixes found, BakeMaster will try to match maps of the same type")])
 
+    global_cage_color_solid: bpy.props.FloatVectorProperty(
+        name="Face",  # noqa: F405
+        description="Face color for real-time cage preview",
+        default=(1, 0.5, 0, 0.1),
+        size=4,
+        min=0,
+        max=1,
+        precision=3,
+        subtype='COLOR')  # noqa: F405
+
+    global_cage_color_wire: bpy.props.FloatVectorProperty(
+        name="Wireframe",  # noqa: F405
+        description="Wireframe color for real-time cage preview",
+        default=(0.95, 0.45, 0, 0.1),
+        size=4,
+        min=0,
+        max=1,
+        precision=3,
+        subtype='COLOR')  # noqa: F405
+
 ##################################################
 ### MAP PROPS ###
 ##################################################
