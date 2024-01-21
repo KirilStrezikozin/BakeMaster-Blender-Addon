@@ -36,16 +36,17 @@
 import bpy
 import gpu
 import numpy as np
-from typing import Tuple, Set
+from typing import Literal, Tuple, Set
 from gpu_extras.batch import batch_for_shader
 
 
 bpy_t = bpy.types
 gpu_t = gpu.types
+np_arr = np.ndarray
 
 
 def eval_mesh_data(context: bpy_t.Context, obj: bpy_t.Object
-                   ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+                   ) -> Tuple[np_arr, np_arr, np_arr, np_arr]:
 
     assert obj.type == 'MESH', "Object is not MESH at shader.eval_mesh_data()"
 
@@ -67,7 +68,11 @@ def eval_mesh_data(context: bpy_t.Context, obj: bpy_t.Object
     mesh.loop_triangles.foreach_get('vertices', indices)
     indices.shape = (-1, 3)
 
-    return coords, normals, indices
+    edges = np.empty(len(mesh.edges) * 2, dtype=np.int32)
+    mesh.edges.foreach_get("vertices", edges)
+    edges.shape = (-1, 2)
+
+    return coords, normals, indices, edges
 
 
 def cage() -> gpu_t.GPUShader:
@@ -103,13 +108,15 @@ def cage() -> gpu_t.GPUShader:
     return shader
 
 
-def cage_batch(shader: gpu_t.GPUShader, context: bpy_t.Context,
-               obj: bpy_t.Object) -> gpu_t.GPUBatch:
-
-    coords, normals, indices = eval_mesh_data(context, obj)
+def cage_batch(
+        shader: gpu_t.GPUShader,
+        coords: np_arr,
+        normals: np_arr,
+        indices: np_arr,
+        draw_type: Literal['TRIS', 'LINES']) -> gpu_t.GPUBatch:
 
     batch = batch_for_shader(
-        shader, 'TRIS',
+        shader, draw_type,
         {"position": coords, "normal": normals},
         indices=indices)
 
@@ -119,9 +126,11 @@ def cage_batch(shader: gpu_t.GPUShader, context: bpy_t.Context,
 def cage_draw(
         _: bpy_t.Context,
         obj: bpy_t.Object,
-        batch: gpu_t.GPUBatch,
+        batch_solid: gpu_t.GPUBatch,
+        batch_wire: gpu_t.GPUBatch,
         shader: gpu_t.GPUShader,
-        color: Tuple[float, float, float, float],
+        color_solid: Tuple[float, float, float, float],
+        color_wire: Tuple[float, float, float, float],
         extrusion: float) -> None:
 
     matrix = bpy.context.region_data.perspective_matrix
@@ -130,12 +139,17 @@ def cage_draw(
     shader.uniform_float("viewProjectionMatrix", matrix)
     shader.uniform_float("objProjectionMatrix", obj.matrix_world)
     shader.uniform_float("extrusion", extrusion)
-    shader.uniform_float("color", color)
 
     gpu.state.depth_test_set('LESS')
     gpu.state.blend_set('NONE')
 
-    batch.draw(shader)
+    shader.uniform_float("color", color_solid)
+    batch_solid.draw(shader)
+
+    gpu.state.line_width_set(2.0)
+    shader.uniform_float("color", color_wire)
+    batch_wire.draw(shader)
+    gpu.state.line_width_set(1.0)
 
     gpu.state.depth_test_set('NONE')
     gpu.state.blend_set('NONE')
@@ -150,41 +164,44 @@ class BM_OT_Cage_Shader(bpy_t.Operator):
 
     __obj = None
     __shader = None
-    __batch = None
+    __batch_solid = None
+    __batch_wire = None
     __draw_handle = None
 
     def cancel(self, _: bpy_t.Context):
         bpy_t.SpaceView3D.draw_handler_remove(self.__draw_handle, 'WINDOW')
-        print("cancelled")
+        print("ca")
         return {'CANCELLED'}
 
     def modal(self, context: bpy_t.Context, event: bpy_t.Event) -> Set[str]:
         if (event.type == 'ESC'):
-            print("should cancel")
             return self.cancel(context)
 
         return {'PASS_THROUGH'}
 
     def invoke(self, context: bpy_t.Context, _: bpy_t.Event) -> Set[str]:
+        print("sa")
         if (not context.active_object or context.active_object.type != 'MESH'):
             return {'CANCELLED'}
 
-        print("started")
-
         self.__obj = context.active_object
         self.__shader = cage()
-        self.__batch = cage_batch(self.__shader, context, self.__obj)
+        co, nm, i, e = eval_mesh_data(context, self.__obj)
+        self.__batch_solid = cage_batch(self.__shader, co, nm, i, 'TRIS')
+        self.__batch_wire = cage_batch(self.__shader, co, nm, e, 'LINES')
 
-        alpha = 0.1
-        color = (1, 0.5, 0, alpha)
+        color_solid = (1, 0.5, 0, 0.1)
+        color_wire = (0.95, 0.45, 0, 0.1)
         extrusion = 0.1
 
         draw_args = (
             context,
             self.__obj,
-            self.__batch,
+            self.__batch_solid,
+            self.__batch_wire,
             self.__shader,
-            color,
+            color_solid,
+            color_wire,
             extrusion)
 
         self.__draw_handle = bpy_t.SpaceView3D.draw_handler_add(
