@@ -176,6 +176,7 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
     __batch_solid = None
     __batch_wire = None
     __draw_handle = None
+    __obj_is_visible = False
 
     def get_colors(self, context: bpy_t.Context
                    ) -> Tuple[Tuple[float, float, float, float],
@@ -202,10 +203,14 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
             self.report({'ERROR'}, "Expected Mesh object")
             return {'CANCELLED'}
 
+        self.__obj_is_visible = self.__obj.visible_get()
+        self.__obj.hide_set(False)
+
         self.__shader = cage()
         co, nm, i, e = eval_mesh_data(context, self.__obj)
         self.__batch_solid = cage_batch(self.__shader, co, nm, i, 'TRIS')
         self.__batch_wire = cage_batch(self.__shader, co, nm, e, 'LINES')
+        self.__obj.hide_set(not self.__obj_is_visible)
 
         color_solid, color_wire = self.get_colors(context)
 
