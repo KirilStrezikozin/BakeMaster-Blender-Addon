@@ -210,6 +210,7 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
     __obj_is_visible = False
 
     __draw_handler = None
+    __debug = False  # internal constant
 
     @classmethod
     def is_running(cls) -> bool:
@@ -220,6 +221,12 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
     def is_running_for(cls, obj_name: str) -> bool:
         global _cage_shaders
         return obj_name in _cage_shaders
+
+    def debug(self, *args, **kwargs) -> None:
+        if not self.__debug:
+            return None
+        print(*args, **kwargs)
+        return None
 
     def cancel(self, context: bpy_t.Context) -> None:
         cls = self.__class__
@@ -266,13 +273,15 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
 
     def draw_cancel(self, context: bpy_t.Context) -> None:
         cls = self.__class__
-        print("handler is", cls.__draw_handler)
+
+        self.debug("Cage Preview handler is", cls.__draw_handler)
+
         if cls.__draw_handler is not None:
-            print("handler freed")
             bpy_t.SpaceView3D.draw_handler_remove(cls.__draw_handler, 'WINDOW')
             cls.__draw_handler = None
+            self.debug("Cage Preview handler freed")
         else:
-            print("handler was already freed")
+            self.debug("Cage Preview handler was already freed")
 
         self.redraw(context)
 
@@ -312,7 +321,7 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
         if (cls.__draw_handler is None
                 or not cls.is_running_for(self.__obj.name)):
             # self.draw_cancel(context)
-            print("cancelled")
+            self.debug("Cage Preview cancelled")
             return {'CANCELLED'}
 
         status = self.update_cage(context)
@@ -331,7 +340,7 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
             self.report({'ERROR'}, "Expected Mesh object")
             return {'CANCELLED'}
 
-        print("started")
+        self.debug("Cage Preview started")
 
         self.__bm_struct = self.get_bm_struct(context)
 
@@ -375,7 +384,7 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
         if not shader_free:
             self.draw_cancel(context)
             if not self.allow_switch:
-                print("turn off")
+                self.debug("Cage Preview turned off")
                 return {'FINISHED'}
 
         status = self.execute(context)
