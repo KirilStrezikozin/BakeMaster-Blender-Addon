@@ -282,8 +282,31 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
 
         return None
 
+    def update_cage(self, context: bpy_t.Context) -> Set[str]:
+        if self.__bm_struct is None:
+            return {'PASS_THROUGH'}
+
+        bm_struct = self.__bm_struct
+        has_cage = bm_struct.hl_use_cage and bm_struct.hl_cage != 'NONE'
+
+        bm_obj = context.scene.bm_table_of_objects[self.bm_obj_i]
+        obj_name = bm_obj.global_object_name
+        req_name = bm_struct.hl_cage if has_cage else obj_name
+
+        if req_name == self.__obj.name:
+            return {'PASS_THROUGH'}
+
+        self.draw_cancel(context)
+        self.obj_name = req_name
+
+        status = self.execute(context)
+
+        if status == {'RUNNING_MODAL'}:
+            status = {'PASS_THROUGH'}
+
+        return status
+
     def modal(self, context: bpy_t.Context, _: bpy_t.Event) -> Set[str]:
-        _ = context
         cls = self.__class__
 
         if (cls.__draw_handler is None
@@ -292,21 +315,15 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
             print("cancelled")
             return {'CANCELLED'}
 
-        return {'PASS_THROUGH'}
+        status = self.update_cage(context)
 
-    def execute(self, _: bpy_t.Context) -> Set[str]:
-        return {'CANCELLED'}
+        global _cage_shaders
+        assert len(_cage_shaders) == 1
 
-    def invoke(self, context: bpy_t.Context, _: bpy_t.Event) -> Set[str]:
+        return status
+
+    def execute(self, context: bpy_t.Context) -> Set[str]:
         cls = self.__class__
-        shader_free = self.draw_poll()
-
-        if not shader_free:
-            self.draw_cancel(context)
-            if not self.allow_switch:
-                print("turn off")
-                return {'FINISHED'}
-
         assert cls.__draw_handler is None
 
         self.__obj = context.scene.objects.get(self.obj_name, None)
@@ -348,11 +365,25 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
 
         self.redraw(context)
 
-        context.window_manager.modal_handler_add(self)
-
         global _cage_shaders
         _cage_shaders.add(self.__obj.name)
         return {'RUNNING_MODAL'}
+
+    def invoke(self, context: bpy_t.Context, _: bpy_t.Event) -> Set[str]:
+        shader_free = self.draw_poll()
+
+        if not shader_free:
+            self.draw_cancel(context)
+            if not self.allow_switch:
+                print("turn off")
+                return {'FINISHED'}
+
+        status = self.execute(context)
+
+        if status == {'RUNNING_MODAL'}:
+            context.window_manager.modal_handler_add(self)
+
+        return status
 
 
 if __name__ == "__main__":
