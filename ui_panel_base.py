@@ -792,7 +792,9 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                             icon=('HIDE_ON', 'HIDE_OFF')[oti],
                             depress=oti)
                         ot.obj_name = otn
-                        ot.extrusion = object.hl_cage_extrusion
+                        ot.bm_map_i = object.global_maps_active_index
+                        ot.bm_obj_i = scene.bm_props.global_active_index
+                        ot.default_extrusion = object.hl_cage_extrusion
                         ot.allow_switch = not oti
                         split.active = oti
 
@@ -1430,7 +1432,9 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                                 icon=('HIDE_ON', 'HIDE_OFF')[oti],
                                 depress=oti)
                             ot.obj_name = otn
-                            ot.extrusion = map.hl_cage_extrusion
+                            ot.bm_map_i = object.global_maps_active_index
+                            ot.bm_obj_i = scene.bm_props.global_active_index
+                            ot.default_extrusion = map.hl_cage_extrusion
                             ot.allow_switch = not oti
                             split.active = oti
 

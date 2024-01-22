@@ -36,9 +36,12 @@
 import bpy
 import gpu
 import numpy as np
+from math import inf
 from typing import Literal, Tuple, Set
 from gpu_extras.batch import batch_for_shader
 
+
+Infinity = inf
 
 bpy_t = bpy.types
 gpu_t = gpu.types
@@ -128,18 +131,29 @@ def cage_batch(
 def cage_draw(
         _: bpy_t.Context,
         obj: bpy_t.Object,
+        bm_struct: bpy_t.PropertyGroup | None,
         batch_solid: gpu_t.GPUBatch,
         batch_wire: gpu_t.GPUBatch,
         shader: gpu_t.GPUShader,
         color_solid: Tuple[float, float, float, float],
         color_wire: Tuple[float, float, float, float],
-        extrusion: float) -> None:
+        dflt_extr: float) -> None:
 
     matrix = bpy.context.region_data.perspective_matrix
 
     shader.bind()
     shader.uniform_float("viewProjectionMatrix", matrix)
     shader.uniform_float("objProjectionMatrix", obj.matrix_world)
+
+    extrusion = dflt_extr
+    if bm_struct is not None:
+        if bpy.app.version >= (2, 90, 0):
+            extrusion = min(
+                bm_struct.hl_cage_extrusion,
+                bm_struct.hl_max_ray_distance or Infinity)
+        else:
+            extrusion = bm_struct.hl_cage_extrusion
+
     shader.uniform_float("extrusion", extrusion)
 
     gpu.state.depth_test_set('LESS')
@@ -172,18 +186,27 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
         default="",
         options={'SKIP_SAVE'})  # noqa: F821
 
-    extrusion: bpy.props.FloatProperty(
-        default=0,
+    default_extrusion: bpy.props.FloatProperty(
+        default=0.1,
         options={'SKIP_SAVE'})  # noqa: F821
 
     allow_switch: bpy.props.BoolProperty(
         default=False,
         options={'SKIP_SAVE'})  # noqa: F821
 
+    bm_obj_i: bpy.props.IntProperty(
+        default=-1,
+        options={'SKIP_SAVE'})  # noqa: F821
+
+    bm_map_i: bpy.props.IntProperty(
+        default=-1,
+        options={'SKIP_SAVE'})  # noqa: F821
+
     __obj = None
     __shader = None
-    __batch_solid = None
+    __bm_struct = None
     __batch_wire = None
+    __batch_solid = None
     __obj_is_visible = False
 
     __draw_handler = None
@@ -204,6 +227,25 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
         color_solid = context.scene.bm_props.global_cage_color_solid
         color_wire = context.scene.bm_props.global_cage_color_wire
         return color_solid, color_wire
+
+    def get_bm_struct(self, context: bpy_t.Context
+                      ) -> bpy_t.PropertyGroup | None:
+        if self.bm_obj_i == -1:
+            self.report(
+                {'WARNING'},
+                (f"Cage Shader ({self}) expected bm_obj_i, extrusion value "
+                 "will not update"))
+            return None
+
+        bm_objs = context.scene.bm_table_of_objects
+        bm_obj = bm_objs[self.bm_obj_i]
+
+        if not bm_obj.hl_use_unique_per_map:
+            return bm_obj
+
+        assert self.bm_map_i != -1, "Cage Shader expected bm_map_i"
+        bm_map = bm_obj.global_maps[self.bm_map_i]
+        return bm_map
 
     def draw_poll(self) -> bool:
         cls = self.__class__
@@ -258,16 +300,17 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
             if not self.allow_switch:
                 print("turn off")
                 return {'FINISHED'}
-        else:
-            assert cls.__draw_handler is None
+
+        assert cls.__draw_handler is None
 
         self.__obj = context.scene.objects.get(self.obj_name, None)
-
         if (self.__obj is None or self.__obj.type != 'MESH'):
             self.report({'ERROR'}, "Expected Mesh object")
             return {'CANCELLED'}
 
         print("started")
+
+        self.__bm_struct = self.get_bm_struct(context)
 
         self.__obj_is_visible = self.__obj.visible_get()
         self.__obj.hide_set(False)
@@ -283,12 +326,13 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
         draw_args = (
             context,
             self.__obj,
+            self.__bm_struct,
             self.__batch_solid,
             self.__batch_wire,
             self.__shader,
             color_solid,
             color_wire,
-            self.extrusion)
+            self.default_extrusion)
 
         cls.__draw_handler = bpy_t.SpaceView3D.draw_handler_add(
             cage_draw,
@@ -310,4 +354,4 @@ if __name__ == "__main__":
     bpy.ops.bakemaster.shader_cage(
         'INVOKE_DEFAULT',
         obj_name=bpy.context.active_object.name,
-        extrusion=0.1)
+        default_extrusion=0.1)
