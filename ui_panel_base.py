@@ -780,7 +780,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                         row.prop(
                             object, 'hl_cage_extrusion',
                             text=("Extrusion", "Cage Extrusion")[li])
-                        row.active = not li
+                        # row.active = not li
 
                         if bpy.app.version >= (2, 90, 0):
                             hl_box_cage.prop(object, 'hl_max_ray_distance')
@@ -1420,7 +1420,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                             row.prop(
                                 map, 'hl_cage_extrusion',
                                 text=("Extrusion", "Cage Extrusion")[li])
-                            row.active = not li
+                            # row.active = not li
 
                             if bpy.app.version >= (2, 90, 0):
                                 hl_box_cage.prop(map, 'hl_max_ray_distance')
