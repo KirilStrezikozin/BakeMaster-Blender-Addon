@@ -44,8 +44,6 @@ bpy_t = bpy.types
 gpu_t = gpu.types
 np_arr = np.ndarray
 
-_cage_shaders = set()
-
 
 def eval_mesh_data(context: bpy_t.Context, obj: bpy_t.Object
                    ) -> Tuple[np_arr, np_arr, np_arr, np_arr]:
@@ -156,10 +154,10 @@ def cage_draw(
     gpu.state.depth_test_set('NONE')
     gpu.state.blend_set('NONE')
 
-    global _cage_shaders
-    assert len(_cage_shaders) == 1
-
     return None
+
+
+_cage_shaders = set()
 
 
 class BM_OT_Shader_Cage(bpy_t.Operator):
@@ -211,37 +209,24 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
 
     def redraw(self, context: bpy_t.Context) -> None:
         for area in context.screen.areas:
-            if area.type != 'VIEW_3D':
-                continue
-            area.tag_redraw()
+            if area.type == 'VIEW_3D':
+                area.tag_redraw()
         return None
 
     def draw_cancel(self, context: bpy_t.Context) -> None:
         cls = self.__class__
-        print("handler is", cls.__draw_handler)
-        if cls.__draw_handler is not None:
-            print("handler freed")
-            bpy_t.SpaceView3D.draw_handler_remove(cls.__draw_handler, 'WINDOW')
-            cls.__draw_handler = None
-        else:
-            print("handler was already freed")
+        bpy_t.SpaceView3D.draw_handler_remove(cls.__draw_handler, 'WINDOW')
 
         self.redraw(context)
 
         global _cage_shaders
-        if len(_cage_shaders):
-            _ = _cage_shaders.pop()
+        _ = _cage_shaders.pop()
 
         return None
 
-    def modal(self, context: bpy_t.Context, _: bpy_t.Event) -> Set[str]:
-        _ = context
-        cls = self.__class__
-
-        if (cls.__draw_handler is None
-                or not cls.is_running_for(self.__obj.name)):
-            # self.draw_cancel(context)
-            print("cancelled")
+    def modal(self, context: bpy_t.Context, event: bpy_t.Event) -> Set[str]:
+        if (event.type == 'ESC'):
+            self.draw_cancel(context)
             return {'CANCELLED'}
 
         return {'PASS_THROUGH'}
@@ -250,24 +235,18 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
         return {'CANCELLED'}
 
     def invoke(self, context: bpy_t.Context, _: bpy_t.Event) -> Set[str]:
-        cls = self.__class__
         shader_free = self.draw_poll()
 
         if not shader_free:
             self.draw_cancel(context)
-            if not self.allow_switch:
-                print("turn off")
-                return {'FINISHED'}
-        else:
-            assert cls.__draw_handler is None
+        if not self.allow_switch:
+            return {'FINISHED'}
 
         self.__obj = context.scene.objects.get(self.obj_name, None)
 
         if (self.__obj is None or self.__obj.type != 'MESH'):
             self.report({'ERROR'}, "Expected Mesh object")
             return {'CANCELLED'}
-
-        print("started")
 
         self.__obj_is_visible = self.__obj.visible_get()
         self.__obj.hide_set(False)
@@ -290,6 +269,7 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
             color_wire,
             self.extrusion)
 
+        cls = self.__class__
         cls.__draw_handler = bpy_t.SpaceView3D.draw_handler_add(
             cage_draw,
             draw_args,

@@ -64,7 +64,7 @@ class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
         layout = self.layout.column(align=True)
         split = layout.split(factor=0.4)
         split.row()
-        split.label(text="Cage Preview colors")
+        kplit.label(text="Cage Preview colors")
         layout.prop(bm_props, 'global_cage_color_solid')
         layout.prop(bm_props, 'global_cage_color_wire')
 
@@ -771,7 +771,10 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                         # hl_box_cage.prop(object, 'hl_cage_type')
                         # if object.hl_cage_type == 'STANDARD':
 
+                        obj_name = object.global_object_name
                         li = object.hl_use_cage and object.hl_cage != 'NONE'
+                        otn = object.hl_cage if li else obj_name
+                        oti = BM_OT_Shader_Cage.is_running_for(otn)
 
                         row = hl_box_cage.row()
                         row.prop(
@@ -786,10 +789,12 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                         split.row()
                         ot = split.operator(
                             BM_OT_Shader_Cage.bl_idname,
-                            icon='HIDE_OFF')
-                        obj_name = object.global_object_name
-                        ot.obj_name = object.hl_cage if li else obj_name
+                            icon=('HIDE_ON', 'HIDE_OFF')[oti],
+                            depress=oti)
+                        ot.obj_name = otn
                         ot.extrusion = object.hl_cage_extrusion
+                        ot.allow_switch = not oti
+                        split.active = oti
 
                         hl_box_cage.separator(factor=0.4)
 
@@ -1404,7 +1409,10 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                             # hl_box_cage.prop(map, 'hl_cage_type')
                             # if map.hl_cage_type == 'STANDARD':
 
+                            obj_name = object.global_object_name
                             li = map.hl_use_cage and map.hl_cage != 'NONE'
+                            otn = map.hl_cage if li else obj_name
+                            oti = BM_OT_Shader_Cage.is_running_for(otn)
 
                             row = hl_box_cage.row()
                             row.prop(
@@ -1419,10 +1427,12 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                             split.row()
                             ot = split.operator(
                                 BM_OT_Shader_Cage.bl_idname,
-                                icon='HIDE_OFF')
-                            obj_name = object.global_object_name
-                            ot.obj_name = map.hl_cage if li else obj_name
+                                icon=('HIDE_ON', 'HIDE_OFF')[oti],
+                                depress=oti)
+                            ot.obj_name = otn
                             ot.extrusion = map.hl_cage_extrusion
+                            ot.allow_switch = not oti
+                            split.active = oti
 
                             hl_box_cage.separator(factor=0.4)
 
