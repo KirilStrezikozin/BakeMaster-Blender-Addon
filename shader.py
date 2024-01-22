@@ -221,6 +221,12 @@ class BM_OT_Shader_Cage(bpy_t.Operator):
         global _cage_shaders
         return obj_name in _cage_shaders
 
+    def cancel(self, context: bpy_t.Context) -> None:
+        cls = self.__class__
+        if cls.is_running():
+            self.draw_cancel(context)
+        return None
+
     def get_colors(self, context: bpy_t.Context
                    ) -> Tuple[Tuple[float, float, float, float],
                               Tuple[float, float, float, float]]:
