@@ -64,7 +64,7 @@ class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
         layout = self.layout.column(align=True)
         split = layout.split(factor=0.4)
         split.row()
-        kplit.label(text="Cage Preview colors")
+        split.label(text="Cage Preview colors")
         layout.prop(bm_props, 'global_cage_color_solid')
         layout.prop(bm_props, 'global_cage_color_wire')
 
