@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
-# Copyright (C) 2022-2023 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.0a3)
+# Copyright (C) 2022-2024 Kiril Strezikozin
+# BakeMaster Blender Add-on (version 2.6.0a4)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.

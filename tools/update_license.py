@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
-# Copyright (C) 2022-2023 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.0a3)
+# Copyright (C) 2022-2024 Kiril Strezikozin
+# BakeMaster Blender Add-on (version 2.6.0a4)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -125,8 +125,8 @@ def main() -> None:
         LICENSE = PACKAGE.joinpath(sys.argv[1])
     else:
         LICENSE = PACKAGE.joinpath(
-            input("Enter path to license file (LICENSE.txt): ")
-            or "LICENSE.txt")
+            input("Enter path to license file (LICENSE): ")
+            or "LICENSE")
 
     if not LICENSE.exists():
         print("%s does not exist. Aborting." % LICENSE.name)

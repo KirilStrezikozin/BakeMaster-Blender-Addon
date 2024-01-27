@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
-# Copyright (C) 2022-2023 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.0a3)
+# Copyright (C) 2022-2024 Kiril Strezikozin
+# BakeMaster Blender Add-on (version 2.6.0a4)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -139,7 +139,7 @@ def make_zips() -> None:
     VERSION = get_addon_version()
 
     PACKAGE = pathlib.Path(__file__).parent.parent.parent
-    LICENSE = PACKAGE.joinpath("LICENSE.txt")
+    LICENSE = PACKAGE.joinpath("LICENSE")
     INSTALL_DIR = PACKAGE.joinpath("install")
     ARCHIVE_DIR = INSTALL_DIR.joinpath("BakeMaster")
 
@@ -155,7 +155,8 @@ def make_zips() -> None:
     )
 
     files = [
-        "LICENSE.txt",
+        "LICENSE",
+        "GNU.txt",
         "README.txt",
         "__init__.py",
         "labels.py",
