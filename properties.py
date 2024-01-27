@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
-# Copyright (C) 2022-2023 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.0a3)
+# Copyright (C) 2022-2024 Kiril Strezikozin
+# BakeMaster Blender Add-on (version 2.6.0a4)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -204,6 +204,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Color Space of baked color textures containing color data (e.g. Diffuse, Albedo, Base Color, ColorIDs maps etc.)",
         items=BM_SCENE_PROPS_cm_texture_color_space_Items)
 
+    cm_aces_texture_color_space_custom: bpy.props.StringProperty(
+        name="Custom Color",
+        description="Enter custom Color Space for baked color textures",
+        default="")
+
     cm_aces_texture_file_format : bpy.props.EnumProperty(
         name="File Format",
         description="Default image file format for color textures",
@@ -219,6 +224,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Data",
         description="Color Space of baked data textures containing non-color data (e.g. Normal, Metalness, Roughness, Displacement, AO maps etc.)",
         items=BM_SCENE_PROPS_cm_data_color_space_Items)
+
+    cm_aces_data_color_space_custom: bpy.props.StringProperty(
+        name="Custom Data",
+        description="Enter custom Color Space for baked data textures",
+        default="")
 
     cm_aces_data_file_format : bpy.props.EnumProperty(
         name="File Format",
@@ -236,6 +246,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Color Space of baked data textures containing linear color data. Used for EXR file formats if Linear EXR is ticked below",
         items=BM_SCENE_PROPS_cm_linear_color_space_Items)
 
+    cm_aces_linear_color_space_custom: bpy.props.StringProperty(
+        name="Custom Linear",
+        description="Enter custom Color Space for baked linear textures",
+        default="")
+
     cm_aces_linear_file_format : bpy.props.EnumProperty(
         name="File Format",
         description="Default image file format for linear textures",
@@ -251,6 +266,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Color",
         description="Color Space of baked color textures containing color data (e.g. Diffuse, Albedo, Base Color, ColorIDs maps etc.)",
         items=BM_SCENE_PROPS_cm_texture_color_space_Items)
+
+    cm_srgb_texture_color_space_custom: bpy.props.StringProperty(
+        name="Custom Color",
+        description="Enter custom Color Space for baked color textures",
+        default="")
 
     cm_srgb_texture_file_format : bpy.props.EnumProperty(
         name="File Format",
@@ -268,6 +288,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Color Space of baked data textures containing non-color data (e.g. Normal, Metalness, Roughness, Displacement, AO maps etc.)",
         items=BM_SCENE_PROPS_cm_data_color_space_Items)
 
+    cm_srgb_data_color_space_custom: bpy.props.StringProperty(
+        name="Custom Data",
+        description="Enter custom Color Space for baked data textures",
+        default="")
+
     cm_srgb_data_file_format : bpy.props.EnumProperty(
         name="File Format",
         description="Default image file format for data textures",
@@ -283,6 +308,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Linear",
         description="Color Space of baked data textures containing linear color data. Used for EXR file formats if Linear EXR is ticked below",
         items=BM_SCENE_PROPS_cm_linear_color_space_Items)
+
+    cm_srgb_linear_color_space_custom: bpy.props.StringProperty(
+        name="Custom Linear",
+        description="Enter custom Color Space for baked linear textures",
+        default="")
 
     cm_srgb_linear_file_format : bpy.props.EnumProperty(
         name="File Format",
@@ -300,6 +330,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Color Space of baked color textures containing color data (e.g. Diffuse, Albedo, Base Color, ColorIDs maps etc.)",
         items=BM_SCENE_PROPS_cm_texture_color_space_Items)
 
+    cm_xyz_texture_color_space_custom: bpy.props.StringProperty(
+        name="Custom Color",
+        description="Enter custom Color Space for baked color textures",
+        default="")
+
     cm_xyz_texture_file_format : bpy.props.EnumProperty(
         name="File Format",
         description="Default image file format for color textures",
@@ -315,6 +350,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Data",
         description="Color Space of baked data textures containing non-color data (e.g. Normal, Metalness, Roughness, Displacement, AO maps etc.)",
         items=BM_SCENE_PROPS_cm_data_color_space_Items)
+
+    cm_xyz_data_color_space_custom: bpy.props.StringProperty(
+        name="Custom Data",
+        description="Enter custom Color Space for baked data textures",
+        default="")
 
     cm_xyz_data_file_format : bpy.props.EnumProperty(
         name="File Format",
@@ -332,6 +372,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Color Space of baked data textures containing linear color data. Used for EXR file formats if Linear EXR is ticked below",
         items=BM_SCENE_PROPS_cm_linear_color_space_Items)
 
+    cm_xyz_linear_color_space_custom: bpy.props.StringProperty(
+        name="Custom Linear",
+        description="Enter custom Color Space for baked linear textures",
+        default="")
+
     cm_xyz_linear_file_format : bpy.props.EnumProperty(
         name="File Format",
         description="Default image file format for linear textures",
@@ -347,6 +392,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Color",
         description="Color Space of baked color textures containing color data (e.g. Diffuse, Albedo, Base Color, ColorIDs maps etc.)",
         items=BM_SCENE_PROPS_cm_texture_color_space_Items)
+
+    cm_default_texture_color_space_custom: bpy.props.StringProperty(
+        name="Custom Color",
+        description="Enter custom Color Space for baked color textures",
+        default="")
 
     cm_default_texture_file_format : bpy.props.EnumProperty(
         name="File Format",
@@ -364,6 +414,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Color Space of baked data textures containing non-color data (e.g. Normal, Metalness, Roughness, Displacement, AO maps etc.)",
         items=BM_SCENE_PROPS_cm_data_color_space_Items)
 
+    cm_default_data_color_space_custom: bpy.props.StringProperty(
+        name="Custom Data",
+        description="Enter custom Color Space for baked data textures",
+        default="")
+
     cm_default_data_file_format : bpy.props.EnumProperty(
         name="File Format",
         description="Default image file format for data textures",
@@ -379,6 +434,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Linear",
         description="Color Space of baked data textures containing linear color data. Used for EXR file formats if Linear EXR is ticked below",
         items=BM_SCENE_PROPS_cm_linear_color_space_Items)
+
+    cm_default_linear_color_space_custom: bpy.props.StringProperty(
+        name="Custom Linear",
+        description="Enter custom Color Space for baked linear textures",
+        default="")
 
     cm_default_linear_file_format : bpy.props.EnumProperty(
         name="File Format",
