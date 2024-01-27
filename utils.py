@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
-# Copyright (C) 2022-2023 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.0a3)
+# Copyright (C) 2022-2024 Kiril Strezikozin
+# BakeMaster Blender Add-on (version 2.6.0a4)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -1457,6 +1457,8 @@ def map_image_getDefaults(context, map=None, out_container=None,
     colorspace = ''
     if hasattr(bm_props, cs_attr):
         colorspace = getattr(bm_props, cs_attr)
+        if colorspace == "BakeMaster Custom Color Space":
+            colorspace = getattr(bm_props, cs_attr + "_custom")
 
     file_format = ''
     if hasattr(bm_props, ff_attr):
@@ -1767,6 +1769,9 @@ def texture_color_space_Items(self, _, default=0):
         if index == default:
             continue
         items.append(item)
+
+    items.append(("BakeMaster Custom Color Space", "Custom",
+                  "Set custom color space for baked textures"))
 
     return items
 

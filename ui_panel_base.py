@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
-# Copyright (C) 2022-2023 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.0a3)
+# Copyright (C) 2022-2024 Kiril Strezikozin
+# BakeMaster Blender Add-on (version 2.6.0a4)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -507,7 +507,7 @@ class BM_UL_Table_of_Objects_Item_BatchNamingTable_Item(bpy.types.UIList):
         pass
 
 class BM_PT_MainBase(bpy.types.Panel):
-    bl_label = "BakeMaster v2.6.0a3"
+    bl_label = "BakeMaster v2.6.0a4"
     bl_idname = 'BM_PT_Main'
 
     def draw(self, context):
@@ -1561,6 +1561,13 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
             cm_tex_column.use_property_split = False
             cm_tex_column.prop(
                 bm_props, f'cm_{cs_id}_texture_color_space', text="")
+            cs_use_custom = getattr(
+                bm_props, f'cm_{cs_id}_texture_color_space'
+                ) == "BakeMaster Custom Color Space"
+            if cs_use_custom:
+                cm_tex_column.prop(
+                    bm_props, f'cm_{cs_id}_texture_color_space_custom',
+                    text="")
             cm_tex_column.prop(
                 bm_props, f'cm_{cs_id}_texture_file_format', text="")
             cm_tex_column.row().prop(
@@ -1577,6 +1584,13 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
             cm_tex_column.use_property_split = False
             cm_tex_column.prop(
                 bm_props, f'cm_{cs_id}_data_color_space', text="")
+            cs_use_custom = getattr(
+                bm_props, f'cm_{cs_id}_data_color_space'
+                ) == "BakeMaster Custom Color Space"
+            if cs_use_custom:
+                cm_tex_column.prop(
+                    bm_props, f'cm_{cs_id}_data_color_space_custom',
+                    text="")
             cm_tex_column.prop(
                 bm_props, f'cm_{cs_id}_data_file_format', text="")
             cm_tex_column.row().prop(
@@ -1593,6 +1607,13 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
             cm_tex_column.use_property_split = False
             cm_tex_column.prop(
                 bm_props, f'cm_{cs_id}_linear_color_space', text="")
+            cs_use_custom = getattr(
+                bm_props, f'cm_{cs_id}_linear_color_space'
+                ) == "BakeMaster Custom Color Space"
+            if cs_use_custom:
+                cm_tex_column.prop(
+                    bm_props, f'cm_{cs_id}_linear_color_space_custom',
+                    text="")
             cm_tex_column.prop(
                 bm_props, f'cm_{cs_id}_linear_file_format', text="")
             cm_tex_column.row().prop(
