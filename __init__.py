@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.0a4)
+# BakeMaster Blender Add-on (version 2.6.0)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -54,6 +54,7 @@ if "bpy" in locals():
     from .operator_bake import *
     from .presets import *
     from .shader import BM_OT_Shader_Cage
+    from .decal import BM_OT_DECAL_Enable, BM_OT_DECAL_View
 
     from . import ui_panel
     from . import operators
@@ -61,6 +62,7 @@ if "bpy" in locals():
     from . import operator_bake
     from . import presets
     from . import shader
+    from . import decal
 
     import importlib
     importlib.reload(ui_panel)
@@ -69,6 +71,7 @@ if "bpy" in locals():
     importlib.reload(operator_bake)
     importlib.reload(presets)
     importlib.reload(shader)
+    importlib.reload(decal)
 
 else:
     from .ui_panel import *
@@ -77,7 +80,8 @@ else:
     from .operator_bake import *
     from .presets import *
     from .shader import BM_OT_Shader_Cage
-    
+    from .decal import BM_OT_DECAL_Enable, BM_OT_DECAL_View
+
 import bpy
 
 classes = (
@@ -182,6 +186,9 @@ classes = (
     BM_OT_CM_Preset_Add,
 
     BM_OT_Shader_Cage,
+
+    BM_OT_DECAL_Enable,
+    BM_OT_DECAL_View,
 
     BM_ALEP_Object,
     BM_ALEP_Map,

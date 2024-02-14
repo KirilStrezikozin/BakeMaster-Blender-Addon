@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.0a4)
+# BakeMaster Blender Add-on (version 2.6.0)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -636,6 +636,11 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.decal_use_custom_camera",
         # "bm_item.decal_custom_camera",
         "bm_item.decal_upper_coordinate",
+        "bm_item.decal_rotation",
+        "bm_item.decal_use_flip_vertical",
+        "bm_item.decal_use_flip_horizontal",
+        "bm_item.decal_use_adapt_res",
+        "bm_item.decal_use_precise_bounds",
         "bm_item.decal_boundary_offset",
 
         # "bm_item.hl_highpoly_table",
@@ -728,6 +733,11 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.decal_use_custom_camera",
         # "bm_item.decal_custom_camera",
         "bm_item.decal_upper_coordinate",
+        "bm_item.decal_rotation",
+        "bm_item.decal_use_flip_vertical",
+        "bm_item.decal_use_flip_horizontal",
+        "bm_item.decal_use_adapt_res",
+        "bm_item.decal_use_precise_bounds",
         "bm_item.decal_boundary_offset",
 
         # "bm_item.hl_highpoly_table",
@@ -781,6 +791,11 @@ class BM_OT_DECAL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.decal_use_custom_camera",
         # "bm_item.decal_custom_camera",
         "bm_item.decal_upper_coordinate",
+        "bm_item.decal_rotation",
+        "bm_item.decal_use_flip_vertical",
+        "bm_item.decal_use_flip_horizontal",
+        "bm_item.decal_use_adapt_res",
+        "bm_item.decal_use_precise_bounds",
         "bm_item.decal_boundary_offset",
     ]
 

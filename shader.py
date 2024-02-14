@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.0a4)
+# BakeMaster Blender Add-on (version 2.6.0)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -57,8 +57,10 @@ def eval_mesh_data(context: bpy_t.Context, obj: bpy_t.Object
 
     dg = context.evaluated_depsgraph_get()
     obj_eval = dg.objects.get(obj.name)
-    mesh = obj_eval.data
 
+    assert isinstance(obj_eval, bpy.types.Object)
+
+    mesh = obj_eval.data
     mesh.calc_loop_triangles()
 
     coords = np.empty(len(mesh.vertices) * 3, dtype=np.float32)

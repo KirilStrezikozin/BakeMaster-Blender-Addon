@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.0a4)
+# BakeMaster Blender Add-on (version 2.6.0)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -37,6 +37,7 @@ import bpy
 import webbrowser
 from .utils import *
 from .labels import BM_Labels
+
 
 class BM_OT_Table_of_Objects(bpy.types.Operator):
     bl_idname = 'bakemaster.table_of_objects'
@@ -2021,6 +2022,7 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
             new_item.image_height = tuple(image.size)[1]
 
         return wm.invoke_props_dialog(self, width=400)
+
 
 class BM_OT_CM_ApplyRules(bpy.types.Operator):
     bl_label = "Quick Apply"

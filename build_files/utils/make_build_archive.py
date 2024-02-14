@@ -2,7 +2,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.0a4)
+# BakeMaster Blender Add-on (version 2.6.0)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -41,7 +41,7 @@ import os
 import sys
 import shutil
 import pathlib
-from typing import List, Tuple, Union
+from typing import List, Tuple
 
 bool_DIR = True
 bool_NOTDIR = False
@@ -52,8 +52,7 @@ def print_msg(text: str, verbose: bool = True) -> None:
         print(text)
 
 
-def mk_build_dirs(*paths: Tuple[List[Union[bool, pathlib.PurePath]]],
-                  verbose=True) -> bool:
+def mk_build_dirs(*paths: list[bool | pathlib.Path], verbose=True) -> None:
     for is_dir, path in list(paths):
         if not path.exists():
             if not is_dir:
@@ -159,11 +158,13 @@ def make_zips() -> None:
         "GNU.txt",
         "README.txt",
         "__init__.py",
+        "decal.py",
         "labels.py",
         "operator_bake.py",
         "operators.py",
         "presets.py",
         "properties.py",
+        "shader.py",
         "ui_panel.py",
         "ui_panel_base.py",
         "utils.py",

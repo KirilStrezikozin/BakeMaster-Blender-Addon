@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.0a4)
+# BakeMaster Blender Add-on (version 2.6.0)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -709,7 +709,7 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Inflate by the specified distance to create cage",
         default=0,
         min=0,
-        max=1,
+        soft_max=1,
         precision=2,
         subtype='DISTANCE',
         update=BM_MAP_PROPS_hl_cage_extrusion_Update)
@@ -719,7 +719,7 @@ class BM_Map(bpy.types.PropertyGroup):
         description="The maximum ray distance for matching points between the high and lowpoly. If zero, there is no limit",
         default=0,
         min=0,
-        max=1,
+        soft_max=1,
         precision=2,
         subtype='DISTANCE',
         update=BM_MAP_PROPS_hl_max_ray_distance_Update)
@@ -869,6 +869,10 @@ class BM_Map(bpy.types.PropertyGroup):
         subtype='PERCENTAGE',
         update=BM_MAP_PROPS_out_quality_Update)
 
+    decal_aspect_res_attr: bpy.props.StringProperty(
+        name="Last updated res attr, for internal usage",
+        default='height')
+
     out_res : bpy.props.EnumProperty(
         name="Map Texture Resolution",
         description="Choose map resolution in pixels from the common ones or set custom",
@@ -887,7 +891,6 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Custom height resolution",
         default=1000,
         min=1,
-        max=65536,
         subtype='PIXEL',
         update=BM_MAP_PROPS_out_res_height_Update)
 
@@ -896,7 +899,6 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Custom height resolution",
         default=1000,
         min=1,
-        max=65536,
         subtype='PIXEL',
         update=BM_MAP_PROPS_out_res_width_Update)
 
@@ -919,7 +921,8 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Padding. Extend bake result by specified number of pixels as a post-process filter.\nImproves baking quality by reducing hard edges visibility",
         default=16,
         min=0,
-        max=64,
+        soft_max=64,
+        max=32767,
         subtype='PIXEL',
         update=BM_MAP_PROPS_out_margin_Update)
     
@@ -1641,15 +1644,15 @@ class BM_Map(bpy.types.PropertyGroup):
     map_ao_brightness : bpy.props.FloatProperty(
         name="Brightness",
         default=0,
-        min=-100.0,
-        max=100.0,
+        soft_min=-100.0,
+        soft_max=100.0,
         update=BM_MAP_PROPS_map_ao_brightness_Update)
 
     map_ao_contrast : bpy.props.FloatProperty(
         name="Contrast", 
         default=0,
-        min=-100.0,
-        max=100.0,
+        soft_min=-100.0,
+        soft_max=100.0,
         update=BM_MAP_PROPS_map_ao_contrast_Update)
 
     map_ao_opacity : bpy.props.FloatProperty(
@@ -1790,8 +1793,9 @@ class BM_Map(bpy.types.PropertyGroup):
     map_curv_body_gamma : bpy.props.FloatProperty(
         name="Gamma",
         default=2.2,
-        min=0.001,
-        max=10,
+        soft_min=0.001,
+        min=0,
+        soft_max=10,
         precision=3,
         update=BM_MAP_PROPS_map_curv_body_gamma_Update)
 
@@ -2457,41 +2461,76 @@ class BM_Object(bpy.types.PropertyGroup):
         update=BM_ITEM_PROPS_nm_uni_container_is_global_Update)
 
 # Item Decal Props:
-    decal_is_decal : bpy.props.BoolProperty(
+    decal_is_decal: bpy.props.BoolProperty(
         name="Decal Object",
-        description="Set the current Object to be Decal Object",
+        description="Transform the current object into Decal object. Maps will be baked using the custom projection view",
         default=False,
         update=BM_ITEM_PROPS_decal_is_decal_Update)
 
-    decal_use_custom_camera : bpy.props.BoolProperty(
-        name="Use Custom Camera",
-        description="Use Custom Camera Object for capturing and baking decal maps",
+    decal_use_custom_camera: bpy.props.BoolProperty(
+        name="Custom View",
+        description="Use custom camera object as a projection view to capture and bake this decal object",
         default=False,
         update=BM_ITEM_PROPS_decal_use_custom_camera_Update)
-    
-    decal_custom_camera : bpy.props.PointerProperty(
+
+    decal_custom_camera: bpy.props.PointerProperty(
         name="Camera",
-        description="Choose Camera Object",
-        type=bpy.types.Camera,
+        description="Choose a camera object for the custom view",
+        type=bpy.types.Object,
+        poll=BM_ITEM_PROPS_decal_custom_camera_Poll,
         update=BM_ITEM_PROPS_decal_custom_camera_Update)
 
-    decal_upper_coordinate : bpy.props.EnumProperty(
-        name="Upper Coordinate",
-        description="Choose coordinate specifying where the decal's top is",
+    decal_upper_coordinate: bpy.props.EnumProperty(
+        name="Front",
+        description="Choose a coordinate specifying the decal's front orientation. This is similar to orienting view using the viewport navigation gizmo. Use Custom View for custom orientation",
         default='+Z',
-        items=[('+X', "+X", ""),
-               ('+Y', "+Y", ""),
-               ('+Z', "+Z", ""),
-               ('-X', "-X", ""),
-               ('-Y', "-Y", ""),
-               ('-Z', "-Z", "")],
+        items=[('+X', "Global +X", ""),
+               ('+Y', "Global +Y", ""),
+               ('+Z', "Global +Z", ""),
+               ('-X', "Global -X", ""),
+               ('-Y', "Global -Y", ""),
+               ('-Z', "Global -Z", "")],
         update=BM_ITEM_PROPS_decal_upper_coordinate_Update)
 
-    decal_boundary_offset : bpy.props.FloatProperty(
+    decal_rotation: bpy.props.FloatProperty(
+        name="Rotation",
+        description="Rotate decal capture view. Decal's bounding box is not recalculated",
+        default=0,
+        subtype='ANGLE',
+        update=BM_ITEM_PROPS_decal_rotation_Update)
+
+    decal_use_flip_vertical: bpy.props.BoolProperty(
+        name="Vertically",
+        description="Flip decal capture view vertically",
+        default=False,
+        update=BM_ITEM_PROPS_decal_use_flip_vertical_Update)
+
+    decal_use_flip_horizontal: bpy.props.BoolProperty(
+        name="Horizontally",
+        description="Flip decal capture view horizontally",
+        default=False,
+        update=BM_ITEM_PROPS_decal_use_flip_horizontal_Update)
+
+    decal_use_precise_bounds: bpy.props.BoolProperty(
+        name="Precise",
+        description="Calculate decal's bounding box precisely (slow). Results in more accurate view boundary and aspect ratio for objects that use local transforms and modifiers",
+        default=False,
+        update=BM_ITEM_PROPS_decal_use_precise_bounds_Update)
+
+    decal_use_adapt_res: bpy.props.BoolProperty(
+        name="Adapt aspect ratio",
+        description="Adapt output map resolution to match the aspect ration of decal's dimensions",
+        default=False,
+        update=BM_ITEM_PROPS_decal_use_adapt_res_Update)
+
+    decal_boundary_offset: bpy.props.FloatProperty(
         name="Boundary Offset",
-        description="Distance to use between decal object's bounds and captured image area bounds",
+        description="Scale coefficient by which to expand view's capturing boundaries. Based of decal's dimensions. For example, an offset of 0.5 expands the capturing area by half the decal's dimension for each direction. Negative values will shrink the capturing area",
         default=0.01,
         min=-0.999,
+        soft_min=0.0,
+        soft_max=1.0,
+        step=1,
         update=BM_ITEM_PROPS_decal_boundary_offset_Update)
 
 # Item High to Lowpoly props:
@@ -2546,7 +2585,7 @@ class BM_Object(bpy.types.PropertyGroup):
         description="Inflate by the specified distance to create cage",
         default=0,
         min=0,
-        max=1,
+        soft_max=1,
         precision=2,
         subtype='DISTANCE',
         update=BM_ITEM_PROPS_hl_cage_extrusion_Update)
@@ -2556,7 +2595,7 @@ class BM_Object(bpy.types.PropertyGroup):
         description="The maximum ray distance for matching points between the high and lowpoly. If zero, there is no limit",
         default=0,
         min=0,
-        max=1,
+        soft_max=1,
         precision=2,
         subtype='DISTANCE',
         update=BM_ITEM_PROPS_hl_max_ray_distance)
@@ -2620,7 +2659,8 @@ class BM_Object(bpy.types.PropertyGroup):
         description="The angle at which to place seam on the mesh for unwrapping",
         default=66,
         min=0,
-        max=89,
+        soft_max=89,
+        max=90,
         subtype='ANGLE',
         update=BM_ITEM_PROPS_uv_auto_unwrap_angle_limit_Update)
 
@@ -2719,6 +2759,10 @@ class BM_Object(bpy.types.PropertyGroup):
         subtype='PERCENTAGE',
         update=BM_ITEM_PROPS_out_quality_Update)
 
+    decal_aspect_res_attr: bpy.props.StringProperty(
+        name="Last updated res attr, for internal usage",
+        default='height')
+
     out_res : bpy.props.EnumProperty(
         name="Map Texture Resolution",
         description="Choose map resolution in pixels from the common ones or set custom",
@@ -2737,7 +2781,6 @@ class BM_Object(bpy.types.PropertyGroup):
         description="Custom height resolution",
         default=1000,
         min=1,
-        max=65536,
         subtype='PIXEL',
         update=BM_ITEM_PROPS_out_res_height_Update)
 
@@ -2746,7 +2789,6 @@ class BM_Object(bpy.types.PropertyGroup):
         description="Custom height resolution",
         default=1000,
         min=1,
-        max=65536,
         subtype='PIXEL',
         update=BM_ITEM_PROPS_out_res_width_Update)
 
@@ -2769,7 +2811,8 @@ class BM_Object(bpy.types.PropertyGroup):
         description="Padding. Extend bake result by specified number of pixels as a post-process filter.\nImproves baking quality by reducing hard edges visibility",
         default=16,
         min=0,
-        max=64,
+        soft_max=64,
+        max=32767,
         subtype='PIXEL',
         update=BM_ITEM_PROPS_out_margin_Update)
     

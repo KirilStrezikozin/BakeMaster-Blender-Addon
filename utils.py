@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.0a4)
+# BakeMaster Blender Add-on (version 2.6.0)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -661,6 +661,11 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'decal_use_custom_camera': self.decal_use_custom_camera,
             'decal_custom_camera': self.decal_custom_camera,
             'decal_upper_coordinate': self.decal_upper_coordinate,
+            'decal_rotation': self.decal_rotation,
+            'decal_use_flip_vertical': self.decal_use_flip_vertical,
+            'decal_use_flip_horizontal': self.decal_use_flip_horizontal,
+            'decal_use_adapt_res': self.decal_use_adapt_res,
+            'decal_use_precise_bounds': self.decal_use_precise_bounds,
             'decal_boundary_offset': self.decal_boundary_offset,
             'hl_decals_use_separate_texset': self.hl_decals_use_separate_texset,
             'hl_decals_separate_texset_prefix': self.hl_decals_separate_texset_prefix,
@@ -2953,9 +2958,9 @@ def BM_MAP_PROPS_map_normal_data_Items(self, context):
         items = [('MATERIAL', "Object/Materials", "Bake normals from object data"),
                  ('HIGHPOLY', "Highpoly", "Bake normals from highpoly object data to lowpoly"),
                  ('MULTIRES', "Multires Modifier", "Bake normals from existing Multires modifier")]
-    if object.decal_is_decal:
-        items = [('MATERIAL', "Object/Materials",
-                  "Bake normals from object data")]
+    # if object.decal_is_decal:
+    #     items = [('MATERIAL', "Object/Materials",
+    #               "Bake normals from object data")]
 
     # uncomment below to overwrite items unused
     # items = [('HIGHPOLY', "Highpoly", "Bake normals from highpoly object data to lowpoly"),
@@ -2984,9 +2989,9 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
         items = [('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket"),
                  ('HIGHPOLY', "Highpoly", "Bake displacement from highpoly object data to lowpoly"),
                  ('MULTIRES', "Multires Modifier", "Bake displacement from existing Multires modifier")]
-    if object.decal_is_decal:
-        items = [('MATERIAL', "Material Displacement",
-                  "Bake displacement from object materials displacement socket")]
+    # if object.decal_is_decal:
+    #     items = [('MATERIAL', "Material Displacement",
+    #               "Bake displacement from object materials displacement socket")]
 
     # uncomment below to overwrite items unused
     # items = [('HIGHPOLY', "Highpoly", "Bake displacement from highpoly object data to lowpoly"),
@@ -5021,18 +5026,21 @@ def BM_MAP_PROPS_out_quality_Update(self, context):
 
 
 def BM_MAP_PROPS_out_res_Update(self, context):
+    self.decal_aspect_res_attr = 'height'
     name = "Map Format: Resolution"
     BM_LastEditedProp_Write(context, name, "out_res",
                             getattr(self, "out_res"), True)
 
 
 def BM_MAP_PROPS_out_res_height_Update(self, context):
+    self.decal_aspect_res_attr = 'height'
     name = "Map Format: Custom Height"
     BM_LastEditedProp_Write(context, name, "out_res_height",
                             getattr(self, "out_res_height"), True)
 
 
 def BM_MAP_PROPS_out_res_width_Update(self, context):
+    self.decal_aspect_res_attr = 'width'
     name = "Map Format: Custom Width"
     BM_LastEditedProp_Write(context, name, "out_res_width",
                             getattr(self, "out_res_width"), True)
@@ -6074,6 +6082,13 @@ def BM_ITEM_PROPS_decal_use_custom_camera_Update(self, context):
         self, "decal_use_custom_camera"), False)
 
 
+def BM_ITEM_PROPS_decal_custom_camera_Poll(
+        _, value: bpy.types.Object | None) -> bool:
+    if value is None:
+        return True
+    return value.type == 'CAMERA'
+
+
 def BM_ITEM_PROPS_decal_custom_camera_Update(self, context):
     name = "Object Decal: Custom camera"
     BM_LastEditedProp_Write(context, name, "decal_custom_camera", getattr(
@@ -6084,6 +6099,36 @@ def BM_ITEM_PROPS_decal_upper_coordinate_Update(self, context):
     name = "Object Decal: Upper coordinate"
     BM_LastEditedProp_Write(context, name, "decal_upper_coordinate", getattr(
         self, "decal_upper_coordinate"), False)
+
+
+def BM_ITEM_PROPS_decal_rotation_Update(self, context):
+    name = "Object Decal: Rotation"
+    BM_LastEditedProp_Write(context, name, "decal_rotation", getattr(
+        self, "decal_rotation"), False)
+
+
+def BM_ITEM_PROPS_decal_use_flip_vertical_Update(self, context):
+    name = "Object Decal: Flip vertical"
+    BM_LastEditedProp_Write(context, name, "decal_use_flip_vertical", getattr(
+        self, "decal_use_flip_vertical"), False)
+
+
+def BM_ITEM_PROPS_decal_use_flip_horizontal_Update(self, context):
+    name = "Object Decal: Flip horizontal"
+    BM_LastEditedProp_Write(context, name, "decal_use_flip_horizontal",
+                            getattr(self, "decal_use_flip_horizontal"), False)
+
+
+def BM_ITEM_PROPS_decal_use_adapt_res_Update(self, context):
+    name = "Object Decal: Adapt resolution"
+    BM_LastEditedProp_Write(context, name, "decal_use_adapt_res", getattr(
+        self, "decal_use_adapt_res"), False)
+
+
+def BM_ITEM_PROPS_decal_use_precise_bounds_Update(self, context):
+    name = "Object Decal: Adapt resolution"
+    BM_LastEditedProp_Write(context, name, "decal_use_precise_bounds", getattr(
+        self, "decal_use_precise_bounds"), False)
 
 
 def BM_ITEM_PROPS_decal_boundary_offset_Update(self, context):
@@ -6221,18 +6266,21 @@ def BM_ITEM_PROPS_out_quality_Update(self, context):
 
 
 def BM_ITEM_PROPS_out_res_Update(self, context):
+    self.decal_aspect_res_attr = 'height'
     name = "Object Format: Resolution"
     BM_LastEditedProp_Write(context, name, "out_res",
                             getattr(self, "out_res"), False)
 
 
 def BM_ITEM_PROPS_out_res_height_Update(self, context):
+    self.decal_aspect_res_attr = 'height'
     name = "Object Format: Custom height"
     BM_LastEditedProp_Write(context, name, "out_res_height",
                             getattr(self, "out_res_height"), False)
 
 
 def BM_ITEM_PROPS_out_res_width_Update(self, context):
+    self.decal_aspect_res_attr = 'width'
     name = "Object Format: Custom width"
     BM_LastEditedProp_Write(context, name, "out_res_width",
                             getattr(self, "out_res_width"), False)
