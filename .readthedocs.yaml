@@ -17,9 +17,6 @@ sphinx:
   # Fail on all warnings to avoid broken references
   fail_on_warning: true
 
-formats:
-  - html
-
 # Set the OS, Python version and other tools you might need
 build:
   os: ubuntu-22.04
