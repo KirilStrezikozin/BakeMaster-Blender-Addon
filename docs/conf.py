@@ -10,21 +10,21 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
+# import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
 # -- Local Varibles ----------------------------------------------------------
 
-bakemaster_version = '2.5.2'
+bakemaster_version = '2.6.0'
 
 # -- Project information -----------------------------------------------------
 
 project = 'BakeMaster %s Documentation' % bakemaster_version
-copyright = ': 2023, Kiril Strezikozin'
+copyright = ': 2022-2024, Kiril Strezikozin'
 author = 'kemplerart'
 version = bakemaster_version
-branch = "release-2.5.2"
+branch = "release-2.6.0"
 
 # The full version, including alpha/beta/rc tags
 release = bakemaster_version
@@ -216,7 +216,7 @@ html_favicon = "_static/images/icons/bakemaster_logo_64x64.png"
 # every page bottom, using the given strftime() format.
 # The empty string is equivalent to '%b %d, %Y'
 # (or a locale-dependent equivalent).
-html_last_updated_fmt = '8/18/2023'
+html_last_updated_fmt = '15/02/2024'
 
 # If true, the reST sources are included in the HTML build as _sources/name.
 html_copy_source = True

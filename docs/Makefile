@@ -31,6 +31,5 @@ html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
 # Clean BUILDIR and build html pages
-chtml:
-	-rm -rf $(BUILDDIR)/*
+chtml: clean
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
