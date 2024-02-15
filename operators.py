@@ -1,36 +1,43 @@
-# ##### BEGIN LICENSE BLOCK #####
+# BEGIN LICENSE & COPYRIGHT BLOCK.
 #
-# "BakeMaster" Blender Add-on (version 2.5.2)
-# Copyright (C) 2023 Kiril Strezikozin aka kemplerart
+# Copyright (C) 2022-2024 Kiril Strezikozin
+# BakeMaster Blender Add-on (version 2.6.0)
 #
-# This License permits you to use this software for any purpose including
-# personal, educational, and commercial; You are allowed to modify it to suit
-# your needs, and to redistribute the software or any modifications you make
-# to it, as long as you follow the terms of this License and the
-# GNU General Public License as published by the Free Software Foundation,
-# either version 3 of the License, or (at your option) any later version.
+# This file is a part of BakeMaster Blender Add-on, a plugin for texture
+# baking in open-source Blender 3d modelling software.
+# The author can be contacted at <kirilstrezikozin@gmail.com>.
 #
-# This License grants permission to redistribute this software to
-# UNLIMITED END USER SEATS (OPEN SOURCE VARIANT) defined by the
-# acquired License type. A redistributed copy of this software
-# must follow and share similar rights of free software and usage
-# specifications determined by the GNU General Public License.
+# Redistribution and use for any purpose including personal, educational, and
+# commercial, with or without modification, are permitted provided
+# that the following conditions are met:
+#
+# 1. The current acquired License allows copies/redistributions of this
+#    software be made to UNLIMITED END USER SEATS (OPEN SOURCE LICENSE).
+# 2. Redistributions of this source code or partial usage of this source code
+#    must follow the terms of this license and retain the above copyright
+#    notice, and the following disclaimer.
+# 3. The name of the author may be used to endorse or promote products derived
+#    from this software. In such a case, a prior written permission from the
+#    author is required.
 #
 # This program is free software and is distributed in the hope that it will be
 # useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License in
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE
+# AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# You should have received a copy of the GNU General Public License in the
 # GNU.txt file along with this program. If not,
 # see <http://www.gnu.org/licenses/>.
 #
-# ##### END LICENSE BLOCK #####
+# END LICENSE & COPYRIGHT BLOCK.
 
 import bpy
 import webbrowser
 from .utils import *
 from .labels import BM_Labels
+
 
 class BM_OT_Table_of_Objects(bpy.types.Operator):
     bl_idname = 'bakemaster.table_of_objects'
@@ -329,11 +336,30 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                 else:
                     object_pointer = context.scene.objects[object.global_object_name]
                     objects_data.append(object_pointer.data)
-                
+
         # default add
         if scene.bm_props.global_use_name_matching is False:
             if context.object:
-                for object in context.selected_objects:
+
+                use_sort_alpha = False
+                for area in bpy.context.screen.areas:
+                    if area is None or area.type != 'OUTLINER':
+                        continue
+                    for spc in area.spaces:
+                        if spc is None or spc.type != 'OUTLINER':
+                            continue
+                        elif spc.display_mode not in {'VIEW_LAYER', 'SCENES'}:
+                            continue
+                        use_sort_alpha = spc.use_sort_alpha
+                        break
+
+                if use_sort_alpha:
+                    selected_objs = sorted(
+                        context.selected_objects, key=lambda x: x.name)
+                else:
+                    selected_objs = context.selected_objects
+
+                for object in selected_objs:
                     if object.type == 'MESH':
 
                         if object not in objects and object.data not in objects_data:
@@ -367,9 +393,28 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                 insert_data = []
                 new_data = []
                 all_objs = BM_Table_of_Objects_NameMatching_GetAllObjectNames(context)
+
+                use_sort_alpha = False
+                for area in bpy.context.screen.areas:
+                    if area is None or area.type != 'OUTLINER':
+                        continue
+                    for spc in area.spaces:
+                        if spc is None or spc.type != 'OUTLINER':
+                            continue
+                        elif spc.display_mode not in {'VIEW_LAYER', 'SCENES'}:
+                            continue
+                        use_sort_alpha = spc.use_sort_alpha
+                        break
+
+                if use_sort_alpha:
+                    selected_objs = sorted(
+                        context.selected_objects, key=lambda x: x.name)
+                else:
+                    selected_objs = context.selected_objects
+
                 # creating list of all objs to add
                 new_objs = []
-                for object in context.selected_objects:
+                for object in selected_objs:
                     # checks
                     if object.type != 'MESH':
                         is_mesh = False
@@ -1244,7 +1289,7 @@ class BM_OT_SCENE_TextureSets_Objects_Table_Add(bpy.types.Operator):
                 if subitem.nm_item_uni_container_master_index == item.nm_master_index and subitem.nm_item_local_container_master_index == local_c_master_index:
                     new_subitem = new_item.global_object_name_subitems.add()
                     new_subitem.global_object_name = subitem.global_object_name
-                    new_subitem.global_object_index = len(new_item.global_object_name_subitems)
+                    new_subitem.global_object_index = len(new_item.global_object_name_subitems) - 1
                     new_subitem.global_source_object_index = index
 
         bm_props.global_texturesets_table[bm_props.global_texturesets_active_index].global_textureset_table_of_objects_active_index = len(table) - 1
@@ -1716,13 +1761,13 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
         has_any_selected = False
         for object_item in bm_props.global_cauc_objects:
             if object_item.use_include:
-                lowpolies.append(object_item.object_name)
+                lowpolies.append(sc.objects[object_item.object_name].name)
                 has_any_selected = True
             elif object_item.is_highpoly:
-                highpolies.append(object_item.object_name)
+                highpolies.append(sc.objects[object_item.object_name].name)
                 has_any_selected = True
             elif object_item.is_cage:
-                cages.append(object_item.object_name)
+                cages.append(sc.objects[object_item.object_name].name)
                 has_any_selected = True
 
         if has_any_selected is False:
@@ -1977,6 +2022,7 @@ class BM_OT_ITEM_and_MAP_Format_MatchResolution(bpy.types.Operator):
             new_item.image_height = tuple(image.size)[1]
 
         return wm.invoke_props_dialog(self, width=400)
+
 
 class BM_OT_CM_ApplyRules(bpy.types.Operator):
     bl_label = "Quick Apply"

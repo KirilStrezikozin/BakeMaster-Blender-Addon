@@ -1,31 +1,37 @@
-# ##### BEGIN LICENSE BLOCK #####
+# BEGIN LICENSE & COPYRIGHT BLOCK.
 #
-# "BakeMaster" Blender Add-on (version 2.5.2)
-# Copyright (C) 2023 Kiril Strezikozin aka kemplerart
+# Copyright (C) 2022-2024 Kiril Strezikozin
+# BakeMaster Blender Add-on (version 2.6.0)
 #
-# This License permits you to use this software for any purpose including
-# personal, educational, and commercial; You are allowed to modify it to suit
-# your needs, and to redistribute the software or any modifications you make
-# to it, as long as you follow the terms of this License and the
-# GNU General Public License as published by the Free Software Foundation,
-# either version 3 of the License, or (at your option) any later version.
+# This file is a part of BakeMaster Blender Add-on, a plugin for texture
+# baking in open-source Blender 3d modelling software.
+# The author can be contacted at <kirilstrezikozin@gmail.com>.
 #
-# This License grants permission to redistribute this software to
-# UNLIMITED END USER SEATS (OPEN SOURCE VARIANT) defined by the
-# acquired License type. A redistributed copy of this software
-# must follow and share similar rights of free software and usage
-# specifications determined by the GNU General Public License.
+# Redistribution and use for any purpose including personal, educational, and
+# commercial, with or without modification, are permitted provided
+# that the following conditions are met:
+#
+# 1. The current acquired License allows copies/redistributions of this
+#    software be made to UNLIMITED END USER SEATS (OPEN SOURCE LICENSE).
+# 2. Redistributions of this source code or partial usage of this source code
+#    must follow the terms of this license and retain the above copyright
+#    notice, and the following disclaimer.
+# 3. The name of the author may be used to endorse or promote products derived
+#    from this software. In such a case, a prior written permission from the
+#    author is required.
 #
 # This program is free software and is distributed in the hope that it will be
 # useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License in
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE
+# AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# You should have received a copy of the GNU General Public License in the
 # GNU.txt file along with this program. If not,
 # see <http://www.gnu.org/licenses/>.
 #
-# ##### END LICENSE BLOCK #####
+# END LICENSE & COPYRIGHT BLOCK.
 
 import bpy
 from .ui_panel_base import *

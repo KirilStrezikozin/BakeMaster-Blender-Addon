@@ -1,8 +1,54 @@
+.. |preview_cage_extrusion| image:: ../../_static/images/pages/more/releases/preview_cage_extrusion.gif
+    :alt: Preview Cage Extrusion
+
 ========
 Releases
 ========
 
 All BakeMaster Releases and Changelogs are listed on this page. Each new release comes with new features, improvements, or fixes. For clarity, each section has a ``tag`` to identify the changes.
+
+2.6.0 Release
+=============
+
+.. admonition:: Tag
+    :class: important
+
+    `2.6.0 - February 14th, 2024 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/releases>`__
+
+**Fixes:**
+
+#. **ID & Mask maps have errors** (a lot actually) (`issue37 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/37>`__).
+#. Hang when creating a Bake Job Group (on MacOS) (`issue46 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/46>`__).
+#. **VG Indexes didn't work properly** (`issue50 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/50>`__).
+#. BakeMaster to see objects in isolation mode (`issue52 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/52>`__).
+#. ``$texsetname`` in batch name didn't work properly (`issue56 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/56>`__).
+#. Error when using "triangulate lowpoly" and a cage (`issue59 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/59>`__).
+#. Can't set extrusion higher than 1 (hard limits issue) (`issue65 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/65>`__).
+#. **"Bake this" disables rendering of the rest of objects in BakeMaster** (`issue66 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/66>`__).
+#. Bake result was not saved in Blender 4.0.
+#. Bakes in Blender 4.0 are darker than the colors on highpolies.
+#. With each next highpoly being baked, its result in an image gets darker and darker (EXR file format).
+
+**New Features:**
+
+#. **Texture channel packing for vertex color maps** (`issue49 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/49>`__).
+#. **Map preview for objects inside containers** (`issue55 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/55>`__).
+#. **Rename objects that are already added to BakeMaster** (`issue57 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/57>`__).
+#. Objects are added to BakeMaster following their order in Outliner (`issue58 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/58>`__).
+#. **Cage preview. View cage in real time when changing extrusion** (`issue60 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/60>`__).
+#. **Custom texture colorspace workaround** (`issue63 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/63>`__).
+#. **Make Decal baking more universal. Preview decal capture frame** (`issue67 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/67>`__).
+#. **If overwrite is on, remove old baked materials**.
+#. Update AO map default values to be more neutral.
+#. Decal map bakes can have transparent background.
+
+**Changes and additions:**
+
+#. Support for updated Blender 4.0 display devices and image color spaces.
+
+|preview_cage_extrusion|
+
+`Features <https://bakemaster-blender-addon.readthedocs.io/en/2.6.0/pages/about.html#key-features>`__.
 
 2.5.2 Release
 =============

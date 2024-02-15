@@ -1,31 +1,37 @@
-# ##### BEGIN LICENSE BLOCK #####
+# BEGIN LICENSE & COPYRIGHT BLOCK.
 #
-# "BakeMaster" Blender Add-on (version 2.5.2)
-# Copyright (C) 2023 Kiril Strezikozin aka kemplerart
+# Copyright (C) 2022-2024 Kiril Strezikozin
+# BakeMaster Blender Add-on (version 2.6.0)
 #
-# This License permits you to use this software for any purpose including
-# personal, educational, and commercial; You are allowed to modify it to suit
-# your needs, and to redistribute the software or any modifications you make
-# to it, as long as you follow the terms of this License and the
-# GNU General Public License as published by the Free Software Foundation,
-# either version 3 of the License, or (at your option) any later version.
+# This file is a part of BakeMaster Blender Add-on, a plugin for texture
+# baking in open-source Blender 3d modelling software.
+# The author can be contacted at <kirilstrezikozin@gmail.com>.
 #
-# This License grants permission to redistribute this software to
-# UNLIMITED END USER SEATS (OPEN SOURCE VARIANT) defined by the
-# acquired License type. A redistributed copy of this software
-# must follow and share similar rights of free software and usage
-# specifications determined by the GNU General Public License.
+# Redistribution and use for any purpose including personal, educational, and
+# commercial, with or without modification, are permitted provided
+# that the following conditions are met:
+#
+# 1. The current acquired License allows copies/redistributions of this
+#    software be made to UNLIMITED END USER SEATS (OPEN SOURCE LICENSE).
+# 2. Redistributions of this source code or partial usage of this source code
+#    must follow the terms of this license and retain the above copyright
+#    notice, and the following disclaimer.
+# 3. The name of the author may be used to endorse or promote products derived
+#    from this software. In such a case, a prior written permission from the
+#    author is required.
 #
 # This program is free software and is distributed in the hope that it will be
 # useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License in
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE
+# AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# You should have received a copy of the GNU General Public License in the
 # GNU.txt file along with this program. If not,
 # see <http://www.gnu.org/licenses/>.
 #
-# ##### END LICENSE BLOCK #####
+# END LICENSE & COPYRIGHT BLOCK.
 
 import bpy
 from .utils import *
@@ -198,6 +204,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Color Space of baked color textures containing color data (e.g. Diffuse, Albedo, Base Color, ColorIDs maps etc.)",
         items=BM_SCENE_PROPS_cm_texture_color_space_Items)
 
+    cm_aces_texture_color_space_custom: bpy.props.StringProperty(
+        name="Custom Color",
+        description="Enter custom Color Space for baked color textures",
+        default="")
+
     cm_aces_texture_file_format : bpy.props.EnumProperty(
         name="File Format",
         description="Default image file format for color textures",
@@ -213,6 +224,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Data",
         description="Color Space of baked data textures containing non-color data (e.g. Normal, Metalness, Roughness, Displacement, AO maps etc.)",
         items=BM_SCENE_PROPS_cm_data_color_space_Items)
+
+    cm_aces_data_color_space_custom: bpy.props.StringProperty(
+        name="Custom Data",
+        description="Enter custom Color Space for baked data textures",
+        default="")
 
     cm_aces_data_file_format : bpy.props.EnumProperty(
         name="File Format",
@@ -230,6 +246,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Color Space of baked data textures containing linear color data. Used for EXR file formats if Linear EXR is ticked below",
         items=BM_SCENE_PROPS_cm_linear_color_space_Items)
 
+    cm_aces_linear_color_space_custom: bpy.props.StringProperty(
+        name="Custom Linear",
+        description="Enter custom Color Space for baked linear textures",
+        default="")
+
     cm_aces_linear_file_format : bpy.props.EnumProperty(
         name="File Format",
         description="Default image file format for linear textures",
@@ -245,6 +266,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Color",
         description="Color Space of baked color textures containing color data (e.g. Diffuse, Albedo, Base Color, ColorIDs maps etc.)",
         items=BM_SCENE_PROPS_cm_texture_color_space_Items)
+
+    cm_srgb_texture_color_space_custom: bpy.props.StringProperty(
+        name="Custom Color",
+        description="Enter custom Color Space for baked color textures",
+        default="")
 
     cm_srgb_texture_file_format : bpy.props.EnumProperty(
         name="File Format",
@@ -262,6 +288,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Color Space of baked data textures containing non-color data (e.g. Normal, Metalness, Roughness, Displacement, AO maps etc.)",
         items=BM_SCENE_PROPS_cm_data_color_space_Items)
 
+    cm_srgb_data_color_space_custom: bpy.props.StringProperty(
+        name="Custom Data",
+        description="Enter custom Color Space for baked data textures",
+        default="")
+
     cm_srgb_data_file_format : bpy.props.EnumProperty(
         name="File Format",
         description="Default image file format for data textures",
@@ -277,6 +308,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Linear",
         description="Color Space of baked data textures containing linear color data. Used for EXR file formats if Linear EXR is ticked below",
         items=BM_SCENE_PROPS_cm_linear_color_space_Items)
+
+    cm_srgb_linear_color_space_custom: bpy.props.StringProperty(
+        name="Custom Linear",
+        description="Enter custom Color Space for baked linear textures",
+        default="")
 
     cm_srgb_linear_file_format : bpy.props.EnumProperty(
         name="File Format",
@@ -294,6 +330,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Color Space of baked color textures containing color data (e.g. Diffuse, Albedo, Base Color, ColorIDs maps etc.)",
         items=BM_SCENE_PROPS_cm_texture_color_space_Items)
 
+    cm_xyz_texture_color_space_custom: bpy.props.StringProperty(
+        name="Custom Color",
+        description="Enter custom Color Space for baked color textures",
+        default="")
+
     cm_xyz_texture_file_format : bpy.props.EnumProperty(
         name="File Format",
         description="Default image file format for color textures",
@@ -309,6 +350,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Data",
         description="Color Space of baked data textures containing non-color data (e.g. Normal, Metalness, Roughness, Displacement, AO maps etc.)",
         items=BM_SCENE_PROPS_cm_data_color_space_Items)
+
+    cm_xyz_data_color_space_custom: bpy.props.StringProperty(
+        name="Custom Data",
+        description="Enter custom Color Space for baked data textures",
+        default="")
 
     cm_xyz_data_file_format : bpy.props.EnumProperty(
         name="File Format",
@@ -326,6 +372,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Color Space of baked data textures containing linear color data. Used for EXR file formats if Linear EXR is ticked below",
         items=BM_SCENE_PROPS_cm_linear_color_space_Items)
 
+    cm_xyz_linear_color_space_custom: bpy.props.StringProperty(
+        name="Custom Linear",
+        description="Enter custom Color Space for baked linear textures",
+        default="")
+
     cm_xyz_linear_file_format : bpy.props.EnumProperty(
         name="File Format",
         description="Default image file format for linear textures",
@@ -341,6 +392,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Color",
         description="Color Space of baked color textures containing color data (e.g. Diffuse, Albedo, Base Color, ColorIDs maps etc.)",
         items=BM_SCENE_PROPS_cm_texture_color_space_Items)
+
+    cm_default_texture_color_space_custom: bpy.props.StringProperty(
+        name="Custom Color",
+        description="Enter custom Color Space for baked color textures",
+        default="")
 
     cm_default_texture_file_format : bpy.props.EnumProperty(
         name="File Format",
@@ -358,6 +414,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Color Space of baked data textures containing non-color data (e.g. Normal, Metalness, Roughness, Displacement, AO maps etc.)",
         items=BM_SCENE_PROPS_cm_data_color_space_Items)
 
+    cm_default_data_color_space_custom: bpy.props.StringProperty(
+        name="Custom Data",
+        description="Enter custom Color Space for baked data textures",
+        default="")
+
     cm_default_data_file_format : bpy.props.EnumProperty(
         name="File Format",
         description="Default image file format for data textures",
@@ -373,6 +434,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Linear",
         description="Color Space of baked data textures containing linear color data. Used for EXR file formats if Linear EXR is ticked below",
         items=BM_SCENE_PROPS_cm_linear_color_space_Items)
+
+    cm_default_linear_color_space_custom: bpy.props.StringProperty(
+        name="Custom Linear",
+        description="Enter custom Color Space for baked linear textures",
+        default="")
 
     cm_default_linear_file_format : bpy.props.EnumProperty(
         name="File Format",
@@ -390,7 +456,7 @@ class BM_SceneProps(bpy.types.PropertyGroup):
     cm_use_linear_exr : bpy.props.BoolProperty(
         name="Linear EXR",
         description="Save OpenEXR images in a Linear color space",
-        default=False)
+        default=True)
 
     cm_use_linear_srgb : bpy.props.BoolProperty(
         name="Linear sRGB",
@@ -561,6 +627,26 @@ class BM_SceneProps(bpy.types.PropertyGroup):
                ('MAP_TYPE', "Maps Types", "If Objects are in the texture set for ex., maps of identical types will be baked onto the same image file"),
                ('MAP_PREFIX_AND_TYPE', "Both Type and Prefix", "If Objects are in the texture set for ex., maps with identical prefixes will be baked onto the same image file.\nIf no identical prefixes found, BakeMaster will try to match maps of the same type")])
 
+    global_cage_color_solid: bpy.props.FloatVectorProperty(
+        name="Face",  # noqa: F405
+        description="Face color for real-time cage preview",
+        default=(1, 0.5, 0, 0.1),
+        size=4,
+        min=0,
+        max=1,
+        precision=3,
+        subtype='COLOR')  # noqa: F405
+
+    global_cage_color_wire: bpy.props.FloatVectorProperty(
+        name="Wireframe",  # noqa: F405
+        description="Wireframe color for real-time cage preview",
+        default=(0.95, 0.45, 0, 0.1),
+        size=4,
+        min=0,
+        max=1,
+        precision=3,
+        subtype='COLOR')  # noqa: F405
+
 ##################################################
 ### MAP PROPS ###
 ##################################################
@@ -596,12 +682,6 @@ class BM_Map(bpy.types.PropertyGroup):
     
     global_map_index : bpy.props.IntProperty()
 
-    global_affect_by_hl : bpy.props.BoolProperty(
-        name="Affect by High to Lowpoly Settings",
-        description="Use High to Lowpoly Settigns for baking this map. If checked, bake will be performed from highpoly to lowpoly, otherwise just bake lowpoly",
-        default=True,
-        update=BM_MAP_PROPS_global_affect_by_hl_Update)
-
     global_map_object_index : bpy.props.IntProperty(default=-1)
     
 # Map High to Lowpoly props:
@@ -629,7 +709,7 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Inflate by the specified distance to create cage",
         default=0,
         min=0,
-        max=1,
+        soft_max=1,
         precision=2,
         subtype='DISTANCE',
         update=BM_MAP_PROPS_hl_cage_extrusion_Update)
@@ -639,7 +719,7 @@ class BM_Map(bpy.types.PropertyGroup):
         description="The maximum ray distance for matching points between the high and lowpoly. If zero, there is no limit",
         default=0,
         min=0,
-        max=1,
+        soft_max=1,
         precision=2,
         subtype='DISTANCE',
         update=BM_MAP_PROPS_hl_max_ray_distance_Update)
@@ -789,6 +869,10 @@ class BM_Map(bpy.types.PropertyGroup):
         subtype='PERCENTAGE',
         update=BM_MAP_PROPS_out_quality_Update)
 
+    decal_aspect_res_attr: bpy.props.StringProperty(
+        name="Last updated res attr, for internal usage",
+        default='height')
+
     out_res : bpy.props.EnumProperty(
         name="Map Texture Resolution",
         description="Choose map resolution in pixels from the common ones or set custom",
@@ -807,7 +891,6 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Custom height resolution",
         default=1000,
         min=1,
-        max=65536,
         subtype='PIXEL',
         update=BM_MAP_PROPS_out_res_height_Update)
 
@@ -816,7 +899,6 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Custom height resolution",
         default=1000,
         min=1,
-        max=65536,
         subtype='PIXEL',
         update=BM_MAP_PROPS_out_res_width_Update)
 
@@ -839,7 +921,8 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Padding. Extend bake result by specified number of pixels as a post-process filter.\nImproves baking quality by reducing hard edges visibility",
         default=16,
         min=0,
-        max=64,
+        soft_max=64,
+        max=32767,
         subtype='PIXEL',
         update=BM_MAP_PROPS_out_margin_Update)
     
@@ -1060,20 +1143,8 @@ class BM_Map(bpy.types.PropertyGroup):
     map_pass_type : bpy.props.EnumProperty(
         name="Pass",
         description="Choose BSDF node pass to bake to image texture",
-        default='BASE_COLOR',
-        items=[('BASE_COLOR', "Base Color", ""),
-               ('SS_COLOR', "Subsurface Color", ""),
-               ('METALLIC', "Metallic", ""),
-               ('SPECULAR', "Specular", ""),
-               ('ROUGHNESS', "Roughness", ""),
-               ('ANISOTROPIC', "Anisotropic", ""),
-               ('SHEEN', "Sheen", ""),
-               ('CLEARCOAT', "Clearcoat", ""),
-               ('IOR', "IOR", ""),
-               ('TRANSMISSION', "Transmission", ""),
-               ('EMISSION', "Emission", ""),
-               ('ALPHA', "Alpha", ""),
-               ('NORMAL', "Normal", "")],
+        default=0,
+        items=BM_MAP_PROPS_map_pass_type_Items,
         update=BM_MAP_PROPS_map_pass_type_Update)
 
 # Decal Pass Map Props
@@ -1536,7 +1607,7 @@ class BM_Map(bpy.types.PropertyGroup):
         description="Bake texture map using default settings",
         default=True,
         update=BM_MAP_PROPS_map_AO_use_default_Update)
-    
+
     map_ao_samples: bpy.props.IntProperty(
         name="Samples",
         description="Tracing samples count. Affects the quality.\nKeep as low as possible for optimal performance",
@@ -1564,7 +1635,7 @@ class BM_Map(bpy.types.PropertyGroup):
     map_ao_white_point : bpy.props.FloatProperty(
         name="Whites",
         description="Highlight point location on the map color gradient spectrum",
-        default=0.8,
+        default=1.0,
         min=0,
         max=1,
         precision=3,
@@ -1572,21 +1643,21 @@ class BM_Map(bpy.types.PropertyGroup):
 
     map_ao_brightness : bpy.props.FloatProperty(
         name="Brightness",
-        default=-0.3,
-        min=-100.0,
-        max=100.0,
+        default=0,
+        soft_min=-100.0,
+        soft_max=100.0,
         update=BM_MAP_PROPS_map_ao_brightness_Update)
 
     map_ao_contrast : bpy.props.FloatProperty(
         name="Contrast", 
-        default=0.3,
-        min=-100.0,
-        max=100.0,
+        default=0,
+        soft_min=-100.0,
+        soft_max=100.0,
         update=BM_MAP_PROPS_map_ao_contrast_Update)
 
     map_ao_opacity : bpy.props.FloatProperty(
         name="Opacity", 
-        default=0.67,
+        default=1.0,
         min=0.0,
         max=1.0,
         update=BM_MAP_PROPS_map_ao_opacity_Update)
@@ -1722,8 +1793,9 @@ class BM_Map(bpy.types.PropertyGroup):
     map_curv_body_gamma : bpy.props.FloatProperty(
         name="Gamma",
         default=2.2,
-        min=0.001,
-        max=10,
+        soft_min=0.001,
+        min=0,
+        soft_max=10,
         precision=3,
         update=BM_MAP_PROPS_map_curv_body_gamma_Update)
 
@@ -1836,11 +1908,11 @@ class BM_Map(bpy.types.PropertyGroup):
                ('GRAYSCALE', "Grayscale", "Color each group by unique Grayscale Color")],
         update=BM_MAP_PROPS_map_matid_algorithm_Update)
     
-    map_matid_jilter : bpy.props.IntProperty(
-        name="Jilter",
-        description="Shuffle the order of colors. Leave 0 for no shuffle",
+    map_matid_seed : bpy.props.IntProperty(
+        name="Seed",
+        description="Shuffle the order of colors. Identical order is guaranteed for the same seed. Leave 0 for no shuffle",
         default=0,
-        update=BM_MAP_PROPS_map_matid_jilter_Update)
+        update=BM_MAP_PROPS_map_matid_seed_Update)
 
 # Mask Map Props
     map_MASK_prefix : bpy.props.StringProperty(
@@ -1857,11 +1929,10 @@ class BM_Map(bpy.types.PropertyGroup):
 
     map_mask_data : bpy.props.EnumProperty(
         name="Data",
-        description="Data type for detecting mask black and white parts",
-        default='SELECTION',
-        items=[('SELECTION', "Selection", "Color selected mesh faces in one color, unselected in another"),
-               ('VERTEX_GROUPS', "Vertex Groups", "Color specified vertex groups in one color, other in another"),
-               ('MATERIALS', "Materials", "Color specified object materials in one color, other in another")],
+        description="Data type for detecting mask's black and white parts",
+        default='MATERIALS',
+        items=[('VERTEX_GROUPS', "Vertex Groups", "Color specified vertex groups in one color, others in another"),
+               ('MATERIALS', "Materials", "Color specified object materials in one color, others in another")],
         update=BM_MAP_PROPS_map_mask_data_Update)
     
     map_mask_vertex_groups_name_contains : bpy.props.StringProperty(
@@ -1879,7 +1950,7 @@ class BM_Map(bpy.types.PropertyGroup):
     map_mask_color1 : bpy.props.FloatVectorProperty(
         name="Color1",
         description="What color to use as Color1 for masking",
-        default=(0, 0, 0, 1),
+        default=(1, 1, 1, 1),
         size=4,
         min=0,
         max=1,
@@ -1890,7 +1961,7 @@ class BM_Map(bpy.types.PropertyGroup):
     map_mask_color2 : bpy.props.FloatVectorProperty(
         name="Color2",
         description="What color to use as Color2 for masking",
-        default=(1, 1, 1, 1),
+        default=(0, 0, 0, 1),
         size=4,
         min=0,
         max=1,
@@ -2390,41 +2461,76 @@ class BM_Object(bpy.types.PropertyGroup):
         update=BM_ITEM_PROPS_nm_uni_container_is_global_Update)
 
 # Item Decal Props:
-    decal_is_decal : bpy.props.BoolProperty(
+    decal_is_decal: bpy.props.BoolProperty(
         name="Decal Object",
-        description="Set the current Object to be Decal Object",
+        description="Transform the current object into Decal object. Maps will be baked using the custom projection view",
         default=False,
         update=BM_ITEM_PROPS_decal_is_decal_Update)
 
-    decal_use_custom_camera : bpy.props.BoolProperty(
-        name="Use Custom Camera",
-        description="Use Custom Camera Object for capturing and baking decal maps",
+    decal_use_custom_camera: bpy.props.BoolProperty(
+        name="Custom View",
+        description="Use custom camera object as a projection view to capture and bake this decal object",
         default=False,
         update=BM_ITEM_PROPS_decal_use_custom_camera_Update)
-    
-    decal_custom_camera : bpy.props.PointerProperty(
+
+    decal_custom_camera: bpy.props.PointerProperty(
         name="Camera",
-        description="Choose Camera Object",
-        type=bpy.types.Camera,
+        description="Choose a camera object for the custom view",
+        type=bpy.types.Object,
+        poll=BM_ITEM_PROPS_decal_custom_camera_Poll,
         update=BM_ITEM_PROPS_decal_custom_camera_Update)
 
-    decal_upper_coordinate : bpy.props.EnumProperty(
-        name="Upper Coordinate",
-        description="Choose coordinate specifying where the decal's top is",
+    decal_upper_coordinate: bpy.props.EnumProperty(
+        name="Front",
+        description="Choose a coordinate specifying the decal's front orientation. This is similar to orienting view using the viewport navigation gizmo. Use Custom View for custom orientation",
         default='+Z',
-        items=[('+X', "+X", ""),
-               ('+Y', "+Y", ""),
-               ('+Z', "+Z", ""),
-               ('-X', "-X", ""),
-               ('-Y', "-Y", ""),
-               ('-Z', "-Z", "")],
+        items=[('+X', "Global +X", ""),
+               ('+Y', "Global +Y", ""),
+               ('+Z', "Global +Z", ""),
+               ('-X', "Global -X", ""),
+               ('-Y', "Global -Y", ""),
+               ('-Z', "Global -Z", "")],
         update=BM_ITEM_PROPS_decal_upper_coordinate_Update)
 
-    decal_boundary_offset : bpy.props.FloatProperty(
+    decal_rotation: bpy.props.FloatProperty(
+        name="Rotation",
+        description="Rotate decal capture view. Decal's bounding box is not recalculated",
+        default=0,
+        subtype='ANGLE',
+        update=BM_ITEM_PROPS_decal_rotation_Update)
+
+    decal_use_flip_vertical: bpy.props.BoolProperty(
+        name="Vertically",
+        description="Flip decal capture view vertically",
+        default=False,
+        update=BM_ITEM_PROPS_decal_use_flip_vertical_Update)
+
+    decal_use_flip_horizontal: bpy.props.BoolProperty(
+        name="Horizontally",
+        description="Flip decal capture view horizontally",
+        default=False,
+        update=BM_ITEM_PROPS_decal_use_flip_horizontal_Update)
+
+    decal_use_precise_bounds: bpy.props.BoolProperty(
+        name="Precise",
+        description="Calculate decal's bounding box precisely (slow). Results in more accurate view boundary and aspect ratio for objects that use local transforms and modifiers",
+        default=False,
+        update=BM_ITEM_PROPS_decal_use_precise_bounds_Update)
+
+    decal_use_adapt_res: bpy.props.BoolProperty(
+        name="Adapt aspect ratio",
+        description="Adapt output map resolution to match the aspect ration of decal's dimensions",
+        default=False,
+        update=BM_ITEM_PROPS_decal_use_adapt_res_Update)
+
+    decal_boundary_offset: bpy.props.FloatProperty(
         name="Boundary Offset",
-        description="Distance to use between decal object's bounds and captured image area bounds",
+        description="Scale coefficient by which to expand view's capturing boundaries. Based of decal's dimensions. For example, an offset of 0.5 expands the capturing area by half the decal's dimension for each direction. Negative values will shrink the capturing area",
         default=0.01,
         min=-0.999,
+        soft_min=0.0,
+        soft_max=1.0,
+        step=1,
         update=BM_ITEM_PROPS_decal_boundary_offset_Update)
 
 # Item High to Lowpoly props:
@@ -2479,7 +2585,7 @@ class BM_Object(bpy.types.PropertyGroup):
         description="Inflate by the specified distance to create cage",
         default=0,
         min=0,
-        max=1,
+        soft_max=1,
         precision=2,
         subtype='DISTANCE',
         update=BM_ITEM_PROPS_hl_cage_extrusion_Update)
@@ -2489,7 +2595,7 @@ class BM_Object(bpy.types.PropertyGroup):
         description="The maximum ray distance for matching points between the high and lowpoly. If zero, there is no limit",
         default=0,
         min=0,
-        max=1,
+        soft_max=1,
         precision=2,
         subtype='DISTANCE',
         update=BM_ITEM_PROPS_hl_max_ray_distance)
@@ -2553,7 +2659,8 @@ class BM_Object(bpy.types.PropertyGroup):
         description="The angle at which to place seam on the mesh for unwrapping",
         default=66,
         min=0,
-        max=89,
+        soft_max=89,
+        max=90,
         subtype='ANGLE',
         update=BM_ITEM_PROPS_uv_auto_unwrap_angle_limit_Update)
 
@@ -2652,6 +2759,10 @@ class BM_Object(bpy.types.PropertyGroup):
         subtype='PERCENTAGE',
         update=BM_ITEM_PROPS_out_quality_Update)
 
+    decal_aspect_res_attr: bpy.props.StringProperty(
+        name="Last updated res attr, for internal usage",
+        default='height')
+
     out_res : bpy.props.EnumProperty(
         name="Map Texture Resolution",
         description="Choose map resolution in pixels from the common ones or set custom",
@@ -2670,7 +2781,6 @@ class BM_Object(bpy.types.PropertyGroup):
         description="Custom height resolution",
         default=1000,
         min=1,
-        max=65536,
         subtype='PIXEL',
         update=BM_ITEM_PROPS_out_res_height_Update)
 
@@ -2679,7 +2789,6 @@ class BM_Object(bpy.types.PropertyGroup):
         description="Custom height resolution",
         default=1000,
         min=1,
-        max=65536,
         subtype='PIXEL',
         update=BM_ITEM_PROPS_out_res_width_Update)
 
@@ -2702,7 +2811,8 @@ class BM_Object(bpy.types.PropertyGroup):
         description="Padding. Extend bake result by specified number of pixels as a post-process filter.\nImproves baking quality by reducing hard edges visibility",
         default=16,
         min=0,
-        max=64,
+        soft_max=64,
+        max=32767,
         subtype='PIXEL',
         update=BM_ITEM_PROPS_out_margin_Update)
     

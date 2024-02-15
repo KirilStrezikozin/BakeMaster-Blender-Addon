@@ -1,34 +1,43 @@
-# ##### BEGIN LICENSE BLOCK #####
+# BEGIN LICENSE & COPYRIGHT BLOCK.
 #
-# "BakeMaster" Blender Add-on (version 2.5.2)
-# Copyright (C) 2023 Kiril Strezikozin aka kemplerart
+# Copyright (C) 2022-2024 Kiril Strezikozin
+# BakeMaster Blender Add-on (version 2.6.0)
 #
-# This License permits you to use this software for any purpose including
-# personal, educational, and commercial; You are allowed to modify it to suit
-# your needs, and to redistribute the software or any modifications you make
-# to it, as long as you follow the terms of this License and the
-# GNU General Public License as published by the Free Software Foundation,
-# either version 3 of the License, or (at your option) any later version.
+# This file is a part of BakeMaster Blender Add-on, a plugin for texture
+# baking in open-source Blender 3d modelling software.
+# The author can be contacted at <kirilstrezikozin@gmail.com>.
 #
-# This License grants permission to redistribute this software to
-# UNLIMITED END USER SEATS (OPEN SOURCE VARIANT) defined by the
-# acquired License type. A redistributed copy of this software
-# must follow and share similar rights of free software and usage
-# specifications determined by the GNU General Public License.
+# Redistribution and use for any purpose including personal, educational, and
+# commercial, with or without modification, are permitted provided
+# that the following conditions are met:
+#
+# 1. The current acquired License allows copies/redistributions of this
+#    software be made to UNLIMITED END USER SEATS (OPEN SOURCE LICENSE).
+# 2. Redistributions of this source code or partial usage of this source code
+#    must follow the terms of this license and retain the above copyright
+#    notice, and the following disclaimer.
+# 3. The name of the author may be used to endorse or promote products derived
+#    from this software. In such a case, a prior written permission from the
+#    author is required.
 #
 # This program is free software and is distributed in the hope that it will be
 # useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License in
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE
+# AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# You should have received a copy of the GNU General Public License in the
 # GNU.txt file along with this program. If not,
 # see <http://www.gnu.org/licenses/>.
 #
-# ##### END LICENSE BLOCK #####
+# END LICENSE & COPYRIGHT BLOCK.
 
 import bpy
+import math
+import colorsys
 from .labels import BM_Labels
+
 
 ###############################################################
 ### BM Gets Funcs ###
@@ -61,7 +70,6 @@ def BM_Map_Get(self, object):
 ###############################################################
 ### Name Matching Funcs ###
 ###############################################################
-
 
 def BM_Table_of_Objects_NameMatching_GetAllObjectNames(context):
     names = []
@@ -653,6 +661,11 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'decal_use_custom_camera': self.decal_use_custom_camera,
             'decal_custom_camera': self.decal_custom_camera,
             'decal_upper_coordinate': self.decal_upper_coordinate,
+            'decal_rotation': self.decal_rotation,
+            'decal_use_flip_vertical': self.decal_use_flip_vertical,
+            'decal_use_flip_horizontal': self.decal_use_flip_horizontal,
+            'decal_use_adapt_res': self.decal_use_adapt_res,
+            'decal_use_precise_bounds': self.decal_use_precise_bounds,
             'decal_boundary_offset': self.decal_boundary_offset,
             'hl_decals_use_separate_texset': self.hl_decals_use_separate_texset,
             'hl_decals_separate_texset_prefix': self.hl_decals_separate_texset_prefix,
@@ -752,7 +765,6 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                         'global_map_index': map_index + 1,
                         'global_use_bake': map.global_use_bake,
                         'global_map_type': map.global_map_type,
-                        'global_affect_by_hl': map.global_affect_by_hl,
 
                         # 'hl_use_cage' : map.hl_use_cage,
                         'hl_cage_type': map.hl_cage_type,
@@ -932,7 +944,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                         'map_matid_data': map.map_matid_data,
                         'map_matid_vertex_groups_name_contains': map.map_matid_vertex_groups_name_contains,
                         'map_matid_algorithm': map.map_matid_algorithm,
-                        'map_matid_jilter': map.map_matid_jilter,
+                        'map_matid_seed': map.map_matid_seed,
 
                         'map_MASK_prefix': map.map_MASK_prefix,
                         # 'map_MASK_use_preview' : map.map_MASK_use_preview,
@@ -1109,7 +1121,7 @@ def BM_TEXSET_OBJECT_PROPS_global_object_name_Update(self, context):
                     new_subitem = self.global_object_name_subitems.add()
                     new_subitem.global_object_name = subitem.global_object_name
                     new_subitem.global_object_index = len(
-                        self.global_object_name_subitems)
+                        self.global_object_name_subitems) - 1
                     new_subitem.global_source_object_index = index
 
         BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
@@ -1174,7 +1186,7 @@ def BM_TEXSET_OBJECT_PROPS_global_object_SyncedRemoval(context, index):
                         new_subitem = object.global_object_name_subitems.add()
                         new_subitem.global_object_name = subitem.global_object_name
                         new_subitem.global_object_index = len(
-                            object.global_object_name_subitems)
+                            object.global_object_name_subitems) - 1
                         new_subitem.global_source_object_index = index
 
             BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
@@ -1393,8 +1405,7 @@ def map_get_container(map, context):
 
 
 def map_image_getDefaults(context, map=None, out_container=None,
-                          ignore_exr=False, tex_type='',
-                          ommit_linear_srgb=False):
+                          ignore_exr=False, tex_type=''):
     # Get default image color space, file format, bit depth.
     # Parameters:
     # tex_type - give texture type directly in {'color', 'data', 'linear'}.
@@ -1451,6 +1462,8 @@ def map_image_getDefaults(context, map=None, out_container=None,
     colorspace = ''
     if hasattr(bm_props, cs_attr):
         colorspace = getattr(bm_props, cs_attr)
+        if colorspace == "BakeMaster Custom Color Space":
+            colorspace = getattr(bm_props, cs_attr + "_custom")
 
     file_format = ''
     if hasattr(bm_props, ff_attr):
@@ -1459,11 +1472,6 @@ def map_image_getDefaults(context, map=None, out_container=None,
     bit_depth = ''
     if hasattr(bm_props, bit_attr):
         bit_depth = getattr(bm_props, bit_attr)
-
-    if (bm_props.cm_use_linear_srgb and bm_props.cm_color_space != 'ACES'
-        and colorspace.lower().find("linear") != -1
-            and not ommit_linear_srgb):
-        tex_type = 'texture_linear'
 
     return tex_type.upper(), colorspace, file_format, bit_depth
 
@@ -1647,6 +1655,7 @@ def BM_SCENE_PROPS_cm_color_space_Items(_, context):
     cm_srgb = ('sRGB', "sRGB",
                "RGB display space using Rec. 709 chromaticities and a D65 white point. Used by most displays")
     cm_xyz = ('XYZ', "XYZ", "XYZ Linear space commonly used by digital projectors")
+    cm_displayp3 = ('sRGB', "Display P3", "Apple's Display P3 with sRGB compound (piece-wise) encoding transfer function, common on Mac devices")
     cm_default = ('DEFAULT', scene_color_space, "Default scene color space")
 
     if scene_color_space == 'sRGB':
@@ -1655,6 +1664,8 @@ def BM_SCENE_PROPS_cm_color_space_Items(_, context):
         items = [cm_aces]
     elif scene_color_space == 'XYZ':
         items = [cm_xyz]
+    elif scene_color_space == 'Display P3':
+        items = [cm_displayp3]
     else:
         items = [cm_default]
 
@@ -1664,21 +1675,45 @@ def BM_SCENE_PROPS_cm_color_space_Items(_, context):
 def texture_color_space_Items(self, _, default=0):
     color_space = self.cm_color_space
 
-    if color_space == "sRGB":
-        items_lookup = [
-            ("sRGB", "sRGB", "sRGB display space"),
-            ("Non-Color", "Non-Color",
-             "Color space used for images which contains non-color data (i.e. normal maps)"),
-            ("Linear", "Linear", "Rec. 709 (Full Range), Blender native linear space"),
-            ("Linear ACES", "Linear ACES", "ACES2065-1 linear space"),
-            ("Linear ACEScg", "Linear ACEScg", "ACEScg linear space"),
-            ("Filmic Log", "Filmic Log",
-             "Log based filmic shaper with 16.5 stops of latitude, and 25 stops of dynamic range"),
-            ("Filmic sRGB", "Filmic sRGB",
-             "sRGB display space with Filmic view transform"),
-            ("XYZ", "XYZ", "Linear XYZ space"),
-            ("Raw", "Raw", "Does not automatically convert to linear, same as Non-Color")
-        ]
+    if color_space == "sRGB" or color_space == "Display P3":
+        if bpy.app.version >= (4, 0, 0):
+            items_lookup = [
+                ("sRGB", "sRGB", "sRGB IEC 61966-2-1 compound (piece-wise) encoding"),
+                ("Non-Color", "Non-Color", "Generic data that is not color, will not apply any color transform (e.g. normal maps)"),
+                ("Linear Rec.709", "Linear Rec.709", "Linear BT.709 with illuminant D65 white point"),
+                ("Rec.2020", "Rec.2020", "BT.2020 2.4 Exponent EOTF Display"),
+                ("Rec.1886", "Rec.1886", "BT.1886 2.4 Exponent EOTF Display, commonly used for TVs"),
+                ("Linear Rec.2020", "Linear Rec.2020", "Linear BT.2020 with illuminant D65 white point"),
+                ("Linear FilmLight E-Gamut", "Linear FilmLight E-Gamut", "Linear E-Gamut with illuminant D65 white point"),
+                ("Linear DCI-P3 D65", "Linear DCI-P3 D65", "Linear DCI-P3 with illuminant D65 white point"),
+                ("Linear CIE-XYZ E", "Linear CIE-XYZ E", "1931 CIE XYZ standard with assumed illuminant E white point"),
+                ("Linear CIE-XYZ D65", "Linear CIE-XYZ D65", "1931 CIE XYZ with adapted illuminant D65 white point"),
+                ("Filmic sRGB", "Filmic sRGB", "sRGB display space with Filmic view transform"),
+                ("Filmic Log", "Filmic Log", "Log based Filmic sharper with 16.5 stops of latitude, and 25 stops of dynamic range"),
+                ("Display P3", "Display P3", "Apple's Display P3 with sRGB compound (piece-wise) encoding transfer function, common on Mac devices"),
+                ("AgX Log", "AgX Log", "Log Encoding with Chroma inset and rotation, and with 25 stops of Dynamic Range"),
+                ("AgX Base sRGB", "AgX Base sRGB", "AgX Base Image Encoding for sRGB Display"),
+                ("AgX Base Rec.2020", "AgX Base Rec.2020", "AgX Base Image Encoding for BT.2020 Display"),
+                ("AgX Base Rec.1886", "AgX Base Rec.1886", "AgX Base Image Encoding for Rec.1886 Display"),
+                ("AgX Base Display P3", "AgX Base Display P3", "AgX Base Image Encoding for Display P3"),
+                ("ACEScg", "ACEScg", "Linear AP1 with ACES white point"),
+                ("ACES2065-1", "ACES2065-1", "Linear AP0 with ACES white point"),
+            ]
+        else:
+            items_lookup = [
+                ("sRGB", "sRGB", "sRGB display space"),
+                ("Non-Color", "Non-Color",
+                "Color space used for images which contains non-color data (i.e. normal maps)"),
+                ("Linear", "Linear", "Rec. 709 (Full Range), Blender native linear space"),
+                ("Linear ACES", "Linear ACES", "ACES2065-1 linear space"),
+                ("Linear ACEScg", "Linear ACEScg", "ACEScg linear space"),
+                ("Filmic Log", "Filmic Log",
+                "Log based filmic shaper with 16.5 stops of latitude, and 25 stops of dynamic range"),
+                ("Filmic sRGB", "Filmic sRGB",
+                "sRGB display space with Filmic view transform"),
+                ("XYZ", "XYZ", "Linear XYZ space"),
+                ("Raw", "Raw", "Does not automatically convert to linear, same as Non-Color")
+            ]
     elif color_space == "ACES":
         items_lookup = [
             ("Utility - sRGB - Texture", "Utility - sRGB - Texture",
@@ -1740,6 +1775,9 @@ def texture_color_space_Items(self, _, default=0):
             continue
         items.append(item)
 
+    items.append(("BakeMaster Custom Color Space", "Custom",
+                  "Set custom color space for baked textures"))
+
     return items
 
 
@@ -1793,7 +1831,8 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(container, context, object=None, map
         return None
 
     def get_texsetname(container):
-        if not any([container.nm_is_universal_container, container.nm_is_local_container]):
+        if not any([container.nm_is_universal_container,
+                    container.nm_is_local_container]):
             container_name = container.global_object_name
         else:
             container_name = container.nm_container_name
@@ -1831,7 +1870,7 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(container, context, object=None, map
                                 else:
                                     return_name += "%s_" % obj1.global_object_name
                             return return_name[:-1]
-            return None
+        return None
 
     def get_mapres(map_pass):
         if map_pass.out_res == 'CUSTOM':
@@ -2851,6 +2890,36 @@ def BM_MAP_PROPS_map_type_Items(self, context):
     return items
 
 
+def BM_MAP_PROPS_map_pass_type_Items(self, context):
+    if bpy.app.version >= (4, 0, 0):
+        return [('BASE_COLOR', "Base Color", ""),
+                ('METALLIC', "Metallic", ""),
+                ('SPECULAR', "Specular Tint", ""),
+                ('ROUGHNESS', "Roughness", ""),
+                ('ANISOTROPIC', "Anisotropic", ""),
+                ('SHEEN', "Sheen Weight", ""),
+                ('CLEARCOAT', "Coat Weight", ""),
+                ('IOR', "IOR", ""),
+                ('TRANSMISSION', "Transmission Weight", ""),
+                ('EMISSION', "Emission Color", ""),
+                ('ALPHA', "Alpha", ""),
+                ('NORMAL', "Normal", "")]
+    else:
+        return [('BASE_COLOR', "Base Color", ""),
+                ('SS_COLOR', "Subsurface Color", ""),
+                ('METALLIC', "Metallic", ""),
+                ('SPECULAR', "Specular", ""),
+                ('ROUGHNESS', "Roughness", ""),
+                ('ANISOTROPIC', "Anisotropic", ""),
+                ('SHEEN', "Sheen", ""),
+                ('CLEARCOAT', "Clearcoat", ""),
+                ('IOR', "IOR", ""),
+                ('TRANSMISSION', "Transmission", ""),
+                ('EMISSION', "Emission", ""),
+                ('ALPHA', "Alpha", ""),
+                ('NORMAL', "Normal", "")]
+
+
 def BM_MAP_PROPS_map_vertexcolor_layer_Items(self, context):
     object = BM_Object_Get(self, context)
     if object[1] is False:
@@ -2889,9 +2958,9 @@ def BM_MAP_PROPS_map_normal_data_Items(self, context):
         items = [('MATERIAL', "Object/Materials", "Bake normals from object data"),
                  ('HIGHPOLY', "Highpoly", "Bake normals from highpoly object data to lowpoly"),
                  ('MULTIRES', "Multires Modifier", "Bake normals from existing Multires modifier")]
-    if object.decal_is_decal:
-        items = [('MATERIAL', "Object/Materials",
-                  "Bake normals from object data")]
+    # if object.decal_is_decal:
+    #     items = [('MATERIAL', "Object/Materials",
+    #               "Bake normals from object data")]
 
     # uncomment below to overwrite items unused
     # items = [('HIGHPOLY', "Highpoly", "Bake normals from highpoly object data to lowpoly"),
@@ -2920,9 +2989,9 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
         items = [('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket"),
                  ('HIGHPOLY', "Highpoly", "Bake displacement from highpoly object data to lowpoly"),
                  ('MULTIRES', "Multires Modifier", "Bake displacement from existing Multires modifier")]
-    if object.decal_is_decal:
-        items = [('MATERIAL', "Material Displacement",
-                  "Bake displacement from object materials displacement socket")]
+    # if object.decal_is_decal:
+    #     items = [('MATERIAL', "Material Displacement",
+    #               "Bake displacement from object materials displacement socket")]
 
     # uncomment below to overwrite items unused
     # items = [('HIGHPOLY', "Highpoly", "Bake displacement from highpoly object data to lowpoly"),
@@ -2934,34 +3003,176 @@ def BM_MAP_PROPS_map_displacement_data_Items(self, context):
 # Map Preview Funcs
 
 
-def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
-    object_item_full = BM_Object_Get(self, context)
-    if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
-        return
-    object_item = object_item_full[0]
-    if len(object_item.global_maps) == 0:
-        return
-    if getattr(BM_Map_Get(self, object_item), "map_%s_use_preview" % map_tag) is False:
-        return
-    map = BM_Map_Get(self, object_item)
+def BM_MAP_PROPS_MapPreview_Data_getHighpolies(sc, bm_obj):
+    highpolies = set()
 
-    # collecting objects for which update bm_nodes
-    source_object = [
-        object for object in context.scene.objects if object.name == object_item.global_object_name]
-    if len(source_object) == 0:
-        return
-
-    if map.global_affect_by_hl:
-        highpolies = map.hl_highpoly_table if object_item.hl_use_unique_per_map else object_item.hl_highpoly_table
+    if bm_obj.hl_use_unique_per_map:
+        for bm_map in bm_obj.global_maps:
+            for highpoly in bm_map.hl_highpoly_table:
+                try:
+                    highpolies.add(sc.objects[highpoly.global_object_name])
+                except KeyError:
+                    pass
     else:
-        highpolies = []
-    objects = [source_object[0]] if len(highpolies) == 0 else []
-    for highpoly in highpolies:
-        source_highpoly = [
-            object for object in context.scene.objects if object.name == highpoly.global_object_name]
-        if len(source_highpoly) == 0:
-            continue
-        objects.append(source_highpoly[0])
+        for highpoly in bm_obj.hl_highpoly_table:
+            try:
+                highpolies.add(sc.objects[highpoly.global_object_name])
+            except KeyError:
+                pass
+
+    return highpolies
+
+
+def BM_MAP_PROPS_MapPreview_getData(self, context, map_tag="",
+                                    check_maps_with_data=False):
+    sc = context.scene
+    bm_obj_wrp = BM_Object_Get(self, context)
+
+    if any([not bm_obj_wrp[1] and not bm_obj_wrp[0].nm_is_universal_container,
+            bm_obj_wrp[0].nm_is_local_container]):
+        return None
+
+    bm_obj = bm_obj_wrp[0]
+
+    if len(bm_obj.global_maps) == 0:
+        return None
+    elif map_tag != "" and getattr(
+            BM_Map_Get(self, bm_obj), "map_%s_use_preview" % map_tag) is False:
+        return None
+
+    highpolies = set()
+    lowpolies = set()
+
+    if bm_obj.nm_is_universal_container:
+        for bm_obj1 in sc.bm_table_of_objects:
+            if all([bm_obj1.nm_item_uni_container_master_index == bm_obj.nm_master_index,
+                    bm_obj1.nm_is_local_container is False]):
+                if not any([bm_obj1.hl_is_lowpoly, bm_obj1.hl_is_cage,
+                            bm_obj1.hl_is_decal]):
+                    try:
+                        highpolies.add(sc.objects[bm_obj1.global_object_name])
+                    except KeyError:
+                        pass
+                if not any([bm_obj1.hl_is_cage, bm_obj1.hl_is_decal,
+                            bm_obj1.hl_is_highpoly]):
+                    try:
+                        lowpolies.add(sc.objects[bm_obj1.global_object_name])
+                    except KeyError:
+                        pass
+    else:
+        highpolies_temp = BM_MAP_PROPS_MapPreview_Data_getHighpolies(
+            sc, bm_obj)
+        if len(highpolies_temp):
+            highpolies.update(highpolies_temp)
+        else:
+            try:
+                lowpolies.add(sc.objects[bm_obj.global_object_name])
+            except KeyError:
+                pass
+
+    bm_map = BM_Map_Get(self, bm_obj)
+
+    select_highpoly = False
+    if len(highpolies) != 0:
+        select_highpoly = True
+    if bm_map.global_map_type == 'DISPLACEMENT':
+        if bm_map.map_displacement_data == 'HIGHPOLY':
+            select_highpoly = False
+        elif bm_map.map_displacement_data == 'MULTIRES':
+            select_highpoly = False
+    elif bm_map.global_map_type == 'NORMAL':
+        if bm_map.map_normal_data == 'MULTIRES':
+            select_highpoly = False
+        elif bm_map.map_normal_data == 'MATERIAL':
+            select_highpoly = False
+
+    if check_maps_with_data and select_highpoly:
+        preview_objs = highpolies
+    else:
+        preview_objs = lowpolies if len(highpolies) == 0 else highpolies
+
+    return bm_map, preview_objs
+
+
+def clr__rd(seed: int):
+    x = math.sin(seed) * 10000
+    return x - math.floor(x)
+
+
+def clr__arr_shuffle(arr: list, seed: int):
+    if seed == 0:
+        return arr
+
+    i = len(arr)
+    while 0 != i:
+        i_new = math.floor(clr__rd(seed) * i)
+        seed += 1
+        i -= 1
+
+        c = arr[i]
+        arr[i] = arr[i_new]
+        arr[i_new] = c
+
+    return arr
+
+
+def ID_getColors(map, ln_color_mats: int):
+    if ln_color_mats == 1:
+        step = 1
+    else:
+        step = round(1 / ln_color_mats, 3)
+
+    clr0 = clr__rd(map.map_matid_seed)
+
+    colors = []
+    if map.map_matid_algorithm == 'GRAYSCALE':
+        color = [0.0, 0.0, clr0]
+        for _ in range(ln_color_mats):
+            rgb = list(colorsys.hsv_to_rgb(
+                color[0], color[1], color[2]))
+            rgb.append(1.0)
+            colors.append(tuple(rgb))
+            color[2] -= step
+            if color[2] < 0:
+                color[2] += 1
+
+    if map.map_matid_algorithm == 'HUE':
+        color = [clr0, 1.0, 1.0]
+        for _ in range(ln_color_mats):
+            rgb = list(colorsys.hsv_to_rgb(
+                color[0], color[1], color[2]))
+            rgb.append(1.0)
+            colors.append(tuple(rgb))
+            color[0] -= step
+            if color[0] < 0:
+                color[0] += 1
+
+    if map.map_matid_algorithm == 'RANDOM':
+        seed = 1 if not map.map_matid_seed else map.map_matid_seed
+        i = ln_color_mats
+        while 0 != i:
+            rd_hex = hex(abs(math.floor(
+                math.sin(seed) * 16777215)))[2::]
+            rd_hex += "0" * max(0, 6 - len(rd_hex))
+
+            # hex to rgb
+            colors.append((*tuple(
+                int(rd_hex[c:c + 2], 16) / 255 for c in (0, 2, 4)),
+                1))
+
+            seed += 1
+            i -= 1
+
+    colors = clr__arr_shuffle(colors, map.map_matid_seed)
+    return colors
+
+
+def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
+    data = BM_MAP_PROPS_MapPreview_getData(self, context, map_tag)
+    if data is None:
+        return
+
+    map, objects = data
 
     # which bm_nodes' values will change
     nodes_names_data = {
@@ -3039,155 +3250,79 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
         ],
     }
 
-    map = BM_Map_Get(self, object_item)
-
     # for id, loop over materials with COLORI in the name
     # because need to calculate size of color stepping
     if map_tag == "ID":
-        import colorsys
 
+        if map.map_matid_data == 'OBJECTS':
+            ln_color_mats = len(objects)
+
+            colors = ID_getColors(map, ln_color_mats)
+
+            clr_index = 0
+            for object in objects:
+                for material in object.data.materials:
+                    if material is None:
+                        continue
+                    material.use_nodes = True
+                    nodes = material.node_tree.nodes
+                    map_nodes = nodes_names_data[map_tag]
+
+                    color = colors[clr_index]
+                    nodes[map_nodes[0]].inputs[0].default_value = color
+
+                clr_index += 1
+
+            return
+
+        ln_color_mats = 0
         for object in objects:
-            color_mats = []
             for material in object.data.materials:
                 if material is None:
                     continue
-                if map.map_matid_data in ['MATERIALS', 'OBJECTS']:
-                    color_mats.append(material)
-                else:
-                    if material.name.find("BM_CustomMaterial_") != -1 and material.name.find("COLOR") != -1:
-                        color_mats.append(material)
 
-            if len(color_mats) == 0:
-                continue
+                elif map.map_matid_data == 'MATERIALS':
+                    ln_color_mats += 1
+                    continue
 
-            elif len(color_mats) == 1:
-                step = 1
-            else:
-                step = round(1 / (len(color_mats) - 1), 3)
+                mn = material.name
+                if not (mn.find("BM_CustomMaterial_") != -1
+                        and mn.find("COLOR") != -1):
+                    continue
 
-            # getting colors
-            colors = []
-            if map.map_matid_algorithm == 'GRAYSCALE':
-                color = [0.0, 0.0, 1.0]
-                for i in range(len(color_mats)):
-                    rgb = list(colorsys.hsv_to_rgb(
-                        color[0], color[1], color[2]))
-                    rgb.append(1.0)
-                    colors.append(tuple(rgb))
-                    color[2] -= step
+                if -1 != int(mn[mn.find("COLOR") + len("COLOR")::]):
+                    ln_color_mats += 1
 
-            if map.map_matid_algorithm == 'HUE':
-                color = [1.0, 1.0, 1.0]
-                for i in range(len(color_mats)):
-                    rgb = list(colorsys.hsv_to_rgb(
-                        color[0], color[1], color[2]))
-                    rgb.append(1.0)
-                    colors.append(tuple(rgb))
-                    color[0] -= step
+        if ln_color_mats == 0:
+            return
 
-            if map.map_matid_algorithm == 'RANDOM':
-                # (dev) debug .prefs/rgb_color_scatter.py to see how this works
-                # given variables
-                # number of points to scatter aka colors to get, > 0
-                Points = len(color_mats)
-                SOrbit = 4  # value indicating at what number of scattered points the first Saturation orbit should end, > 0
-                VOrbit = 24  # value indicating at what number of scattered points the first Value orbit should end, > 0
-                MinOrbit = 2  # minimum on SOrbit = SOrbit / MinOrbit, same for minimum on VOrbit, float > 0
+        colors = ID_getColors(map, ln_color_mats)
 
-                def get_orbit_size(orbit_capacity, points):
-                    n = 1
-                    new_points = [1]
-                    points_cache = 1
-                    while points_cache < points:
-                        # minimum n of points on the current V orbit
-                        minimum = int(orbit_capacity / MinOrbit)
-                        # how many points left in total
-                        points_left = points - points_cache
-                        can_contain = points_left - \
-                            ((points_left - orbit_capacity) + minimum)
-                        # if left more than orbit can contain, add orbit_capacity
-                        if points_left - orbit_capacity >= orbit_capacity:
-                            points_cache += orbit_capacity
-                            new_points.append(orbit_capacity)
-                        elif can_contain >= minimum and can_contain <= points_left:
-                            points_cache += can_contain
-                            new_points.append(can_contain)
-                        else:
-                            points_cache += points_left
-                            new_points.append(points_left)
-                        orbit_capacity *= 2
-                        n += 1
-                    return n, sorted(new_points)
+        clr_i = 0
+        for object in objects:
+            for material in object.data.materials:
+                if material is None:
+                    continue
 
-                n_v, v_points = get_orbit_size(VOrbit, Points)
+                mn = material.name
+                mn_hastag = (mn.find("BM_CustomMaterial_") != -1
+                             and mn.find("COLOR") != -1)
 
-                if n_v - 1 == 0:
-                    v_step = 0
-                else:
-                    v_step = round(1 / (n_v - 1), 3)
+                if not (map.map_matid_data == 'MATERIALS' or mn_hastag):
+                    continue
 
-                color = [1.0, 0.0, 0.0]
-                for v_orbit_size in v_points:
-                    color[1] = 0.0
-                    n_s, s_points = get_orbit_size(SOrbit, v_orbit_size)
-
-                    if n_s - 1 == 0:
-                        s_step = 0
-                    else:
-                        s_step = round(1 / (n_s - 1), 3)
-
-                    for s_orbit_size in s_points:
-                        color[0] = 1.0
-                        if s_orbit_size - 1 == 0:
-                            h_step = 0
-                        else:
-                            h_step = round(1 / s_orbit_size, 3)
-
-                        for i in range(s_orbit_size):
-                            rgb = list(colorsys.hsv_to_rgb(
-                                color[0], color[1], color[2]))
-                            rgb.append(1.0)
-                            colors.append(tuple(rgb))
-                            color[0] -= h_step
-
-                        color[1] += s_step
-
-                    color[2] += v_step
-
-            # jiltering colors
-            # (dev) debug and read .prefs/lazy_array_shuffle to see how that works
-            # this array_jilter is not very good and results in loads of repitive patterns
-            def lazy_array_jilter(array, jilter):
-                # time complexity is O(n)
-                # in this case jilter will not affect array, so return
-                if jilter == 0:
-                    return array
-                length = len(array)
-                if length % jilter == 0:
-                    return array
-
-                for i in range(len(array)):
-                    new_pos = i + jilter
-                    if new_pos >= length:
-                        new_pos %= length
-
-                    c = array[i]
-                    array[i] = array[new_pos]
-                    array[new_pos] = c
-
-                return array
-
-            colors = lazy_array_jilter(colors, map.map_matid_jilter)
-            # if map.map_matid_jilter != 0:
-            # import numpy
-            # numpy.random.shuffle(colors)
-
-            # loop through needed materials
-            for mat_index, material in enumerate(color_mats):
                 material.use_nodes = True
                 nodes = material.node_tree.nodes
                 map_nodes = nodes_names_data[map_tag]
-                nodes[map_nodes[0]].inputs[0].default_value = colors[mat_index]
+
+                if mn_hastag and -1 == int(
+                        mn[mn.find("COLOR") + len("COLOR")::]):
+                    color = (0, 0, 0, 1)
+                else:
+                    color = colors[clr_i]
+                    clr_i += 1
+
+                nodes[map_nodes[0]].inputs[0].default_value = color
 
         return
 
@@ -3209,14 +3344,15 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
             if map_tag == "AO":
                 use_default = getattr(map, "map_%s_use_default" % map_tag)
                 if use_default:
+                    # commented values are legacy
                     samples = 16
                     distance = 1
                     only_local = False
                     black_point = 0
-                    white_point = 0.8
-                    opacity = 0.67
-                    brightness = -0.3
-                    contrast = 0.3
+                    white_point = 1.0  # 0.8
+                    opacity = 1.0  # 0.67
+                    brightness = 0  # -0.3
+                    contrast = 0  # 0.3
                     invert = 0
                 else:
                     samples = map.map_ao_samples
@@ -3451,41 +3587,39 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
                           nodes[map_nodes[4]].inputs[0])
 
             if map_tag == "MASK":
-                for i in range(1, 3):
-                    if material.name.find("BM_CustomMaterial_") != -1 and material.name.find("COLOR%d" % i) != -1:
-                        nodes[map_nodes[0]].outputs[0].default_value = getattr(
-                            map, "map_mask_color%d" % i)
-                        nodes[map_nodes[1]
-                              ].inputs[0].default_value = map.map_mask_use_invert
+                mn = material.name
+                mn_criteria = map.map_mask_materials_name_contains
+
+                clr_i = True
+                if map.map_mask_data == 'MATERIALS':
+                    clr_i = 2 - int(mn.find(mn_criteria) != -1)
+                elif map.map_mask_data == 'VERTEX_GROUPS':
+                    mn_hastag = (mn.find("BM_CustomMaterial_") != -1
+                                 and mn.find("COLOR") != -1)
+
+                    if not mn_hastag:
+                        continue
+
+                    mn_tag = int(mn[mn.find("COLOR") + len("COLOR")::])
+
+                    if mn_tag == -1:
+                        continue
+
+                    clr_i = mn_tag
+
+                clr = getattr(map, "map_mask_color%d" % clr_i)
+                nodes[map_nodes[0]].outputs[0].default_value = clr
+
+                use_invert = map.map_mask_use_invert
+                nodes[map_nodes[1]].inputs[0].default_value = use_invert
 
 
 def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
-    object_item_full = BM_Object_Get(self, context)
-    if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
+    data = BM_MAP_PROPS_MapPreview_getData(self, context, map_tag)
+    if data is None:
         return
-    object_item = object_item_full[0]
-    if len(object_item.global_maps) == 0:
-        return
-    if getattr(BM_Map_Get(self, object_item), "map_%s_use_preview" % map_tag) is False:
-        return
-    map = BM_Map_Get(self, object_item)
 
-    # collecting objects for which add bm_nodes
-    source_object = [
-        object for object in context.scene.objects if object.name == object_item.global_object_name]
-    if len(source_object) == 0:
-        return
-    if map.global_affect_by_hl:
-        highpolies = map.hl_highpoly_table if object_item.hl_use_unique_per_map else object_item.hl_highpoly_table
-    else:
-        highpolies = []
-    objects = [source_object[0]] if len(highpolies) == 0 else []
-    for highpoly in highpolies:
-        source_highpoly = [
-            object for object in context.scene.objects if object.name == highpoly.global_object_name]
-        if len(source_highpoly) == 0:
-            continue
-        objects.append(source_highpoly[0])
+    _, objects = data
 
     # nodes data
     nodes_data = {
@@ -3997,8 +4131,9 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
                 material.node_tree.links.new(out_socket, in_socket)
 
             if context.scene.render.engine != 'CYCLES':
-                bpy.ops.bakemaster.report_message.report_message(
-                    'INFO', BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
+                bpy.ops.bakemaster.report_message(
+                    message_type='INFO',
+                    message=BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
 
             material.node_tree.nodes['BM_OutputMaterial'].select = True
             material.node_tree.nodes.active = nodes['BM_OutputMaterial']
@@ -4011,54 +4146,12 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
 
 
 def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
-    object_item_full = BM_Object_Get(self, context)
-    if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
-        return
-    object_item = object_item_full[0]
-    if len(object_item.global_maps) == 0:
-        return
-    map = BM_Map_Get(self, object_item)
-    if getattr(map, "map_%s_use_preview" % map_tag) is False:
+    data = BM_MAP_PROPS_MapPreview_getData(
+        self, context, map_tag, check_maps_with_data=True)
+    if data is None:
         return
 
-    # collecting objects for which add bm_nodes
-    source_object = [
-        object for object in context.scene.objects if object.name == object_item.global_object_name]
-    if len(source_object) == 0:
-        return
-    if map.global_affect_by_hl:
-        highpolies = map.hl_highpoly_table if object_item.hl_use_unique_per_map else object_item.hl_highpoly_table
-    else:
-        highpolies = []
-    objects = [source_object[0]] if len(highpolies) == 0 else []
-
-    select_highpoly = False
-    if len(highpolies) != 0 and map.global_affect_by_hl:
-        select_highpoly = True
-    if map.global_map_type == 'DISPLACEMENT':
-        if map.map_displacement_data == 'HIGHPOLY':
-            select_highpoly = False
-        if map.map_displacement_data == 'MULTIRES':
-            select_highpoly = False
-        elif len(highpolies) != 0:
-            select_highpoly = True
-    if map.global_map_type == 'NORMAL':
-        if map.map_normal_data == 'MULTIRES':
-            select_highpoly = False
-        if map.map_normal_data == 'MATERIAL':
-            select_highpoly = False
-        elif len(highpolies) != 0:
-            select_highpoly = True
-
-    if select_highpoly:
-        for highpoly in highpolies:
-            source_highpoly = [
-                object for object in context.scene.objects if object.name == highpoly.global_object_name]
-            if len(source_highpoly) == 0:
-                continue
-            objects.append(source_highpoly[0])
-    elif source_object[0] not in objects:
-        objects.append(source_object[0])
+    map, objects = data
 
     map_type_origin = map_tag
     if map_tag == 'PASS':
@@ -4072,18 +4165,18 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
         'METALNESS': ['Metallic'],
         'ROUGHNESS': ['Roughness'],
         'DIFFUSE': ['Color', 'Base Color'],
-        'SPECULAR': ['Specular'],
+        'SPECULAR': ['Specular', 'Specular Tint'],
         'GLOSSINESS': ['Roughness'],
         'OPACITY': ['Alpha', 'Opacity'],
         'BASE_COLOR': ['Base Color'],
         'SS_COLOR': ['Subsurface Color', 'Color'],
         'METALLIC': ['Metallic'],
         'ANISOTROPIC': ['Anisotropic'],
-        'SHEEN': ['Sheen'],
-        'CLEARCOAT': ['Clearcoat'],
+        'SHEEN': ['Sheen', 'Sheen Weight'],
+        'CLEARCOAT': ['Clearcoat', 'Coat Weight'],
         'IOR': ['IOR'],
-        'TRANSMISSION': ['Transmission'],
-        'EMISSION': ['Emission'],
+        'TRANSMISSION': ['Transmission', 'Transmission Weight'],
+        'EMISSION': ['Emission', 'Emission Color'],
         'ALPHA': ['Alpha'],
         'NORMAL': ['Normal'],
         'DISPLACEMENT': ['Displacement'],
@@ -4096,14 +4189,19 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
             'Metallic': [getattr(socket, "default_value")] * 3,
             'Roughness': [getattr(socket, "default_value")] * 3,
             'Specular': [getattr(socket, "default_value")] * 3,
+            'Specular Tint': getattr(socket, "default_value"),
             'Alpha': [getattr(socket, "default_value")] * 3,
             'Subsurface Color': getattr(socket, "default_value"),
             'Anisotropic': [getattr(socket, "default_value")] * 3,
             'Sheen': [getattr(socket, "default_value")] * 3,
+            'Sheen Weight': [getattr(socket, "default_value")] * 3,
             'Clearcoat': [getattr(socket, "default_value")] * 3,
+            'Coat Weight': [getattr(socket, "default_value")] * 3,
             'IOR': [getattr(socket, "default_value")] * 3,
             'Transmission': [getattr(socket, "default_value")] * 3,
+            'Transmission Weight': [getattr(socket, "default_value")] * 3,
             'Emission': getattr(socket, "default_value"),
+            'Emission Color': getattr(socket, "default_value"),
             'Normal': [0.5, 0.5, 1],
             'Displacement': [0.0] * 3,
         }
@@ -4299,195 +4397,107 @@ def BM_IterableData_GetNewUniqueName_Simple(data, name_starter):
 
 
 def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
-    object_item_full = BM_Object_Get(self, context)
-    if any([object_item_full[1] is False, object_item_full[0].nm_is_universal_container, object_item_full[0].nm_is_local_container]):
-        return
-    object_item = object_item_full[0]
-    if len(object_item.global_maps) == 0:
-        return
-    map = BM_Map_Get(self, object_item)
-    if getattr(map, "map_%s_use_preview" % map_tag) is False:
+    data = BM_MAP_PROPS_MapPreview_getData(self, context, map_tag)
+    if data is None:
         return
 
-    # collecting objects for which add bm_nodes
-    source_object = [
-        object for object in context.scene.objects if object.name == object_item.global_object_name]
-    if len(source_object) == 0:
-        return
-    if map.global_affect_by_hl:
-        highpolies = map.hl_highpoly_table if object_item.hl_use_unique_per_map else object_item.hl_highpoly_table
-    else:
-        highpolies = []
-    objects = [source_object[0]] if len(highpolies) == 0 else []
-    for highpoly in highpolies:
-        source_highpoly = [
-            object for object in context.scene.objects if object.name == highpoly.global_object_name]
-        if len(source_highpoly) == 0:
-            continue
-        objects.append(source_highpoly[0])
+    map, objects = data
 
-    if len(objects) == 0:
-        return
-
-    # deselect all objects
-    for ob in context.scene.objects:
-        ob.select_set(False)
     bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.select_all(action='DESELECT')
 
     for object in objects:
-        # set object as active in the scene
         object.select_set(True)
         context.view_layer.objects.active = object
 
-        # for mask add vertex group containing selection
-        map_mask_selection_color1_vrtx_group_index = 0
-        if map_tag == 'MASK':
+        # save materials
+        if ((map_tag == 'ID' and map.map_matid_data not in [
+            'OBJECTS', 'MATERIALS']) or (
+                map_tag == 'MASK' and map.map_mask_data != 'MATERIALS')):
             bpy.ops.object.mode_set(mode='EDIT')
-            bpy.ops.mesh.select_mode(type='VERT')
 
-            vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(
-                object.vertex_groups, "bm_material_backup_COLOR1")
-            object.vertex_groups.new(name=vrtx_group_name)
-            map_mask_selection_color1_vrtx_group_index = len(
-                object.vertex_groups) - 1
-
-            if map.map_mask_data == 'VERTEX_GROUPS':
-                bpy.ops.mesh.select_all(action='DESELECT')
-                for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
-                    object.vertex_groups.active_index = vrtx_group_index
-                    if vrtx_group.name.lower().find(map.map_mask_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_") == -1:
-                        bpy.ops.object.vertex_group_select()
-
-            if map.map_mask_data == 'MATERIALS':
-                bpy.ops.mesh.select_all(action='DESELECT')
-                for mat_index, material in enumerate(object.data.materials):
-                    if material is None:
-                        continue
-                    if material.name.lower().find(map.map_mask_materials_name_contains) != -1 and material.name.lower().find("bm_") == -1:
-                        object.active_material_index = mat_index
-                        bpy.ops.object.material_slot_select()
-
-            bpy.ops.object.vertex_group_assign()
-
-        # enter edit mode
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_mode(type='VERT')
-
-        if map_tag == 'ID' and map.map_matid_data in ['MATERIALS']:
-            pass
-        else:
             for mat_index, material in enumerate(object.data.materials):
-                # set current material as active
                 object.active_material_index = mat_index
 
                 if material is None:
                     continue
 
-                # add vertex group, deselect mesh, select current material mesh selection, assign it to created vertex group
                 vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(
-                    object.vertex_groups, "bm_material_backup_%s" % material.name)
+                    object.vertex_groups,
+                    "bm_material_backup_%s" % material.name)
                 object.vertex_groups.new(name=vrtx_group_name)
-
                 bpy.ops.mesh.select_all(action='DESELECT')
                 bpy.ops.object.material_slot_select()
                 bpy.ops.object.vertex_group_assign()
 
+        if map_tag == 'MASK' and map.map_mask_data == 'VERTEX_GROUPS':
+            # for mask add vertex group containing selection
+            msk_clr1_vg_index = 0
+
+            bpy.ops.object.mode_set(mode='EDIT')
+            bpy.ops.mesh.select_mode(type='VERT')
             bpy.ops.mesh.select_all(action='DESELECT')
 
-        bpy.ops.mesh.select_all(action='DESELECT')
-        # for mask assign saved selection vertex group to color1 material
-        if map_tag == 'MASK':
-            # assign mat for color1
-            new_mat = bpy.data.materials.new(
-                "BM_CustomMaterial_%s_%s_COLOR1" % (object.name, map_tag))
-            object.data.materials.append(new_mat)
-            object.active_material_index = len(object.data.materials) - 1
-            object.vertex_groups.active_index = map_mask_selection_color1_vrtx_group_index
-            bpy.ops.object.vertex_group_select()
-            bpy.ops.object.material_slot_assign()
+            vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(
+                object.vertex_groups, "bm_material_backup_COLOR1")
+            object.vertex_groups.new(name=vrtx_group_name)
+            msk_clr1_vg_index = len(
+                object.vertex_groups) - 1
 
-            # assign mat for color2
+            for i, vrtx_group in enumerate(object.vertex_groups):
+                object.vertex_groups.active_index = i
+                if (vrtx_group.name.lower().find(
+                    map.map_mask_vertex_groups_name_contains) != -1
+                        and vrtx_group.name.lower().find(
+                            "bm_material_backup") == -1):
+                    bpy.ops.object.vertex_group_select()
+
+            bpy.ops.object.vertex_group_assign()
+
+            # assign mat for color1
             new_mat = bpy.data.materials.new(
                 "BM_CustomMaterial_%s_%s_COLOR2" % (object.name, map_tag))
             object.data.materials.append(new_mat)
             object.active_material_index = len(object.data.materials) - 1
-            bpy.ops.mesh.select_all(action='INVERT')
+            object.vertex_groups.active_index = msk_clr1_vg_index
+            bpy.ops.mesh.select_all(action='SELECT')
             bpy.ops.object.material_slot_assign()
 
-        # for id
-        if map_tag == 'ID':
-            # vertex groups - add materials for vertex groups
-            if map.map_matid_data == 'VERTEX_GROUPS':
-                vrtx_group_for_inverted_selection_index = 0
-                vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(
-                    object.vertex_groups, "bm_material_backup_COLOR")
-                vrtx_group_for_inverted_selection_index = len(
-                    object.vertex_groups) - 1
-                object.vertex_groups.new(name=vrtx_group_name)
+            # assign mat for color2
+            new_mat = bpy.data.materials.new(
+                "BM_CustomMaterial_%s_%s_COLOR1" % (object.name, map_tag))
+            object.data.materials.append(new_mat)
+            object.active_material_index = len(object.data.materials) - 1
+            bpy.ops.mesh.select_all(action='DESELECT')
+            bpy.ops.object.vertex_group_select()
+            bpy.ops.object.material_slot_assign()
 
-                for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
-                    object.vertex_groups.active_index = vrtx_group_index
-                    if vrtx_group.name.lower().find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_") == -1:
-                        bpy.ops.object.vertex_group_select()
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_mode(type='VERT')
 
-                bpy.ops.mesh.select_all(action='INVERT')
-                bpy.ops.object.vertex_group_assign()
+        bpy.ops.mesh.select_all(action='DESELECT')
 
-                tag_index = 0
-                for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
-                    object.vertex_groups.active_index = vrtx_group_index
-                    if vrtx_group.name.lower().find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_") == -1:
-                        bpy.ops.mesh.select_all(action='DESELECT')
-                        bpy.ops.object.vertex_group_select()
+        if map_tag != 'ID':
+            bpy.ops.object.mode_set(mode='OBJECT')
+            continue
 
-                        new_mat = bpy.data.materials.new(
-                            "BM_CustomMaterial_%s_%s_COLOR%d" % (object.name, map_tag, tag_index))
-                        object.data.materials.append(new_mat)
-                        object.active_material_index = len(
-                            object.data.materials) - 1
-                        bpy.ops.object.material_slot_assign()
-                        tag_index += 1
+        # vertex groups - add materials for vertex groups
+        if map.map_matid_data == 'VERTEX_GROUPS':
+            tag_index = -1
+            bpy.ops.mesh.select_all(action='SELECT')
+            new_mat = bpy.data.materials.new(
+                "BM_CustomMaterial_%s_%s_COLOR%d" % (object.name, map_tag, tag_index))
+            object.data.materials.append(new_mat)
+            object.active_material_index = len(object.data.materials) - 1
+            bpy.ops.object.material_slot_assign()
+            tag_index += 1
 
-                bpy.ops.mesh.select_all(action='DESELECT')
-                object.vertex_groups.active_index = vrtx_group_for_inverted_selection_index
-                bpy.ops.object.vertex_group_select()
-                new_mat = bpy.data.materials.new(
-                    "BM_CustomMaterial_%s_%s_COLOR%d" % (object.name, map_tag, tag_index))
-                object.data.materials.append(new_mat)
-                object.active_material_index = len(object.data.materials) - 1
-                bpy.ops.object.material_slot_assign()
-                tag_index += 1
-
-            # materials - no mats to add, current will be used
-            if map.map_matid_data == 'MATERIALS':
-                pass
-
-            # mesh islands - assign material for each saved mesh island
-            if map.map_matid_data == 'MESH_ISLANDS':
-                # Add all vertices to "unprocessed" list.
-                # While (unprocessed verts remain):
-                # Deselect all vertices
-                # Select any one unprocessed vert
-                # Call select_linked
-                # assign new material to selection
-                # Remove all selected verts from unprocessed list
-                tag_index = 0
-                vertices_processed = [False] * len(object.data.vertices)
-                while True:
+            for vrtx_group_index, vrtx_group in enumerate(object.vertex_groups):
+                object.vertex_groups.active_index = vrtx_group_index
+                if vrtx_group.name.lower().find(map.map_matid_vertex_groups_name_contains) != -1 and vrtx_group.name.lower().find("bm_material_backup") == -1:
                     bpy.ops.mesh.select_all(action='DESELECT')
-                    bpy.ops.object.mode_set(mode='OBJECT')
-                    v_u = -1
-                    for index in range(len(vertices_processed)):
-                        if vertices_processed[index] is False:
-                            v_u = index
-                            break
-                    if v_u == -1:
-                        break
-                    object.data.vertices[v_u].select = True
-                    bpy.ops.object.mode_set(mode='EDIT')
-                    bpy.ops.mesh.select_linked()
+                    bpy.ops.object.vertex_group_select()
 
-                    # add material
                     new_mat = bpy.data.materials.new(
                         "BM_CustomMaterial_%s_%s_COLOR%d" % (object.name, map_tag, tag_index))
                     object.data.materials.append(new_mat)
@@ -4496,61 +4506,66 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Prepare(self, context, map_tag):
                     bpy.ops.object.material_slot_assign()
                     tag_index += 1
 
-                    # vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(object.vertex_groups, "bm_material_backup_COLOR%d" % tag_index)
-                    # object.vertex_groups.new(name=vrtx_group_name)
-                    # bpy.ops.object.vertex_group_assign()
-                    # tag_index += 1
+        # materials - no mats to add, current will be used
+        if map.map_matid_data == 'MATERIALS':
+            pass
 
-                    for index, v in enumerate(object.data.vertices):
-                        if v.select:
-                            vertices_processed[index] = True
-
-                bpy.ops.object.mode_set(mode='EDIT')
-
-            # highpolies - add material and assign in to the whole object
-            if map.map_matid_data == 'OBJECTS':
+        # mesh islands - assign material for each saved mesh island
+        elif map.map_matid_data == 'MESH_ISLANDS':
+            # Add all vertices to "unprocessed" list.
+            # While (unprocessed verts remain):
+            # Deselect all vertices
+            # Select any one unprocessed vert
+            # Call select_linked
+            # assign new material to selection
+            # Remove all selected verts from unprocessed list
+            tag_index = 0
+            vertices_processed = [False] * len(object.data.vertices)
+            while True:
                 bpy.ops.mesh.select_all(action='DESELECT')
-                bpy.ops.mesh.select_all(action='SELECT')
+                bpy.ops.object.mode_set(mode='OBJECT')
+                v_u = -1
+                for index in range(len(vertices_processed)):
+                    if vertices_processed[index] is False:
+                        v_u = index
+                        break
+                if v_u == -1:
+                    break
+                object.data.vertices[v_u].select = True
+                bpy.ops.object.mode_set(mode='EDIT')
+                bpy.ops.mesh.select_linked()
 
                 # add material
                 new_mat = bpy.data.materials.new(
-                    "BM_CustomMaterial_%s_%s_COLOR" % (object.name, map_tag))
+                    "BM_CustomMaterial_%s_%s_COLOR%d" % (object.name, map_tag, tag_index))
                 object.data.materials.append(new_mat)
-                object.active_material_index = len(object.data.materials) - 1
+                object.active_material_index = len(
+                    object.data.materials) - 1
                 bpy.ops.object.material_slot_assign()
+                tag_index += 1
 
-        # exit edit mode
-        bpy.ops.object.mode_set(mode='EDIT', toggle=True)
+                # vrtx_group_name = BM_IterableData_GetNewUniqueName_Simple(object.vertex_groups, "bm_material_backup_COLOR%d" % tag_index)
+                # object.vertex_groups.new(name=vrtx_group_name)
+                # bpy.ops.object.vertex_group_assign()
+                # tag_index += 1
+
+                for index, v in enumerate(object.data.vertices):
+                    if v.select:
+                        vertices_processed[index] = True
+
+            bpy.ops.object.mode_set(mode='EDIT')
+
+            # nothing to do for OBJECTS data
+
+        bpy.ops.object.mode_set(mode='OBJECT')
 
 
 def BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(self, context):
-    object_item = BM_Object_Get(self, context)
-    if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
+    data = BM_MAP_PROPS_MapPreview_getData(self, context)
+    if data is None:
         return
 
-    # collecting objects from which remove bm_nodes
-    source_object = [object for object in context.scene.objects if object.name
-                     == object_item[0].global_object_name]
-    if len(source_object) == 0:
-        return
-    objects = [source_object[0]]
-    highpolies = object_item[0].hl_highpoly_table
-    for highpoly in highpolies:
-        source_highpoly = [
-            object for object in context.scene.objects if object.name == highpoly.global_object_name]
-        if len(source_highpoly) == 0:
-            continue
-        objects.append(source_highpoly[0])
-    for map in object_item[0].global_maps:
-        for highpoly in map.hl_highpoly_table:
-            source_highpoly = [
-                object for object in context.scene.objects if object.name == highpoly.global_object_name]
-            if len(source_highpoly) == 0:
-                continue
-            objects.append(source_highpoly[0])
-
-    if len(objects) == 0:
-        return
+    _, objects = data
 
     # deselect all objects
     for ob in context.scene.objects:
@@ -4594,59 +4609,48 @@ def BM_MAP_PROPS_MapPreview_ReassignMaterials_Restore(self, context):
 
 
 def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context):
-    object_item = BM_Object_Get(self, context)
-    if any([object_item[1] is False, object_item[0].nm_is_universal_container, object_item[0].nm_is_local_container]):
+    data = BM_MAP_PROPS_MapPreview_getData(self, context)
+    if data is None:
         return
 
-    # collecting objects from which remove bm_nodes
-    source_object = [object for object in context.scene.objects if object.name
-                     == object_item[0].global_object_name]
-    if len(source_object) == 0:
-        return
-    objects = [source_object[0]]
-    highpolies = object_item[0].hl_highpoly_table
-    for highpoly in highpolies:
-        source_highpoly = [
-            object for object in context.scene.objects if object.name == highpoly.global_object_name]
-        if len(source_highpoly) == 0:
-            continue
-        objects.append(source_highpoly[0])
-    for map in object_item[0].global_maps:
-        for highpoly in map.hl_highpoly_table:
-            source_highpoly = [
-                object for object in context.scene.objects if object.name == highpoly.global_object_name]
-            if len(source_highpoly) == 0:
-                continue
-            objects.append(source_highpoly[0])
+    _, objects = data
 
     # removing bm_nodes
-    remove_mats = []
+    remove_mats = set()
     for object in objects:
-        mats_to_remove = []
-        for mat_index, material in enumerate(object.data.materials):
-            if material is None:
-                continue
-            if material.name.find('BM_CustomMaterial') != -1:
-                remove_mats.append(material)
-                mats_to_remove.append(mat_index)
+
+        o_remove_mats = []
+        o_mats = object.data.materials
+
+        for i in range(len(o_mats) - 1, -1, -1):
+            mat = o_mats[i]
+
+            if mat is None:
                 continue
 
-            material.use_nodes = True
-            to_remove = []
-            for index, node in enumerate(material.node_tree.nodes):
+            if mat.name.find('BM_CustomMaterial') != -1:
+                remove_mats.add(mat)
+                o_remove_mats.append(i)
+                continue
+
+            mat.use_nodes = True
+            ns = mat.node_tree.nodes
+            ns_to_remove = []
+
+            for node in ns:
                 if node.name.find('BM_') != -1:
-                    to_remove.append(index)
-            for index in sorted(to_remove, reverse=True):
-                material.node_tree.nodes.remove(
-                    material.node_tree.nodes[index])
+                    ns_to_remove.append(node)
+
+            for n in reversed(ns_to_remove):
+                ns.remove(n)
 
         # removing custom bm_materials
-        for mat_index in sorted(mats_to_remove, reverse=True):
-            object.data.materials.pop(index=mat_index)
+        for i in o_remove_mats:
+            o_mats.pop(index=i)
 
     # remove custom mats from data too
-    for material in remove_mats:
-        bpy.data.materials.remove(material)
+    for mat in remove_mats:
+        bpy.data.materials.remove(mat)
 
 
 # the same, no attention to bm mats removal, because they are not added anyway
@@ -4929,12 +4933,6 @@ def BM_MAP_PROPS_global_map_type_Update(self, context):
                             getattr(self, "global_map_type"), True)
 
 
-def BM_MAP_PROPS_global_affect_by_hl_Update(self, context):
-    name = "Map: Affect by Highpoly"
-    BM_LastEditedProp_Write(context, name, "global_affect_by_hl", getattr(
-        self, "global_affect_by_hl"), True)
-
-
 def BM_MAP_PROPS_hl_cage_type_Update(self, context):
     name = "Map High to Lowpoly: Cage type"
     BM_LastEditedProp_Write(context, name, "hl_cage_type",
@@ -5028,18 +5026,21 @@ def BM_MAP_PROPS_out_quality_Update(self, context):
 
 
 def BM_MAP_PROPS_out_res_Update(self, context):
+    self.decal_aspect_res_attr = 'height'
     name = "Map Format: Resolution"
     BM_LastEditedProp_Write(context, name, "out_res",
                             getattr(self, "out_res"), True)
 
 
 def BM_MAP_PROPS_out_res_height_Update(self, context):
+    self.decal_aspect_res_attr = 'height'
     name = "Map Format: Custom Height"
     BM_LastEditedProp_Write(context, name, "out_res_height",
                             getattr(self, "out_res_height"), True)
 
 
 def BM_MAP_PROPS_out_res_width_Update(self, context):
+    self.decal_aspect_res_attr = 'width'
     name = "Map Format: Custom Width"
     BM_LastEditedProp_Write(context, name, "out_res_width",
                             getattr(self, "out_res_width"), True)
@@ -5760,10 +5761,10 @@ def BM_MAP_PROPS_map_matid_algorithm_Update(self, context):
         self.map_ID_use_preview = True
 
 
-def BM_MAP_PROPS_map_matid_jilter_Update(self, context):
-    name = "Map: ID algorithm"
-    BM_LastEditedProp_Write(context, name, "map_matid_algorithm", getattr(
-        self, "map_matid_algorithm"), True)
+def BM_MAP_PROPS_map_matid_seed_Update(self, context):
+    name = "Map: ID seed"
+    BM_LastEditedProp_Write(context, name, "map_matid_seed", getattr(
+        self, "map_matid_seed"), True)
     BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, 'ID')
 
 
@@ -6081,6 +6082,13 @@ def BM_ITEM_PROPS_decal_use_custom_camera_Update(self, context):
         self, "decal_use_custom_camera"), False)
 
 
+def BM_ITEM_PROPS_decal_custom_camera_Poll(
+        _, value: bpy.types.Object | None) -> bool:
+    if value is None:
+        return True
+    return value.type == 'CAMERA'
+
+
 def BM_ITEM_PROPS_decal_custom_camera_Update(self, context):
     name = "Object Decal: Custom camera"
     BM_LastEditedProp_Write(context, name, "decal_custom_camera", getattr(
@@ -6091,6 +6099,36 @@ def BM_ITEM_PROPS_decal_upper_coordinate_Update(self, context):
     name = "Object Decal: Upper coordinate"
     BM_LastEditedProp_Write(context, name, "decal_upper_coordinate", getattr(
         self, "decal_upper_coordinate"), False)
+
+
+def BM_ITEM_PROPS_decal_rotation_Update(self, context):
+    name = "Object Decal: Rotation"
+    BM_LastEditedProp_Write(context, name, "decal_rotation", getattr(
+        self, "decal_rotation"), False)
+
+
+def BM_ITEM_PROPS_decal_use_flip_vertical_Update(self, context):
+    name = "Object Decal: Flip vertical"
+    BM_LastEditedProp_Write(context, name, "decal_use_flip_vertical", getattr(
+        self, "decal_use_flip_vertical"), False)
+
+
+def BM_ITEM_PROPS_decal_use_flip_horizontal_Update(self, context):
+    name = "Object Decal: Flip horizontal"
+    BM_LastEditedProp_Write(context, name, "decal_use_flip_horizontal",
+                            getattr(self, "decal_use_flip_horizontal"), False)
+
+
+def BM_ITEM_PROPS_decal_use_adapt_res_Update(self, context):
+    name = "Object Decal: Adapt resolution"
+    BM_LastEditedProp_Write(context, name, "decal_use_adapt_res", getattr(
+        self, "decal_use_adapt_res"), False)
+
+
+def BM_ITEM_PROPS_decal_use_precise_bounds_Update(self, context):
+    name = "Object Decal: Adapt resolution"
+    BM_LastEditedProp_Write(context, name, "decal_use_precise_bounds", getattr(
+        self, "decal_use_precise_bounds"), False)
 
 
 def BM_ITEM_PROPS_decal_boundary_offset_Update(self, context):
@@ -6228,18 +6266,21 @@ def BM_ITEM_PROPS_out_quality_Update(self, context):
 
 
 def BM_ITEM_PROPS_out_res_Update(self, context):
+    self.decal_aspect_res_attr = 'height'
     name = "Object Format: Resolution"
     BM_LastEditedProp_Write(context, name, "out_res",
                             getattr(self, "out_res"), False)
 
 
 def BM_ITEM_PROPS_out_res_height_Update(self, context):
+    self.decal_aspect_res_attr = 'height'
     name = "Object Format: Custom height"
     BM_LastEditedProp_Write(context, name, "out_res_height",
                             getattr(self, "out_res_height"), False)
 
 
 def BM_ITEM_PROPS_out_res_width_Update(self, context):
+    self.decal_aspect_res_attr = 'width'
     name = "Object Format: Custom width"
     BM_LastEditedProp_Write(context, name, "out_res_width",
                             getattr(self, "out_res_width"), False)
