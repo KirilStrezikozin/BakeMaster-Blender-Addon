@@ -1,3 +1,6 @@
+.. |preview_cage_extrusion| image:: ../../_static/images/pages/more/releases/preview_cage_extrusion.gif
+    :alt: Preview Cage Extrusion
+
 ========
 Releases
 ========
@@ -28,7 +31,7 @@ All BakeMaster Releases and Changelogs are listed on this page. Each new release
 
 **New Features:**
 
-#. **Texture channel packing for vertex color maps** (`issue49 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/49>)`__).
+#. **Texture channel packing for vertex color maps** (`issue49 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/49>`__).
 #. **Map preview for objects inside containers** (`issue55 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/55>`__).
 #. **Rename objects that are already added to BakeMaster** (`issue57 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/57>`__).
 #. Objects are added to BakeMaster following their order in Outliner (`issue58 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/58>`__).
@@ -42,6 +45,8 @@ All BakeMaster Releases and Changelogs are listed on this page. Each new release
 **Changes and additions:**
 
 #. Support for updated Blender 4.0 display devices and image color spaces.
+
+|preview_cage_extrusion|
 
 `Features <https://bakemaster-blender-addon.readthedocs.io/en/2.6.0/pages/about.html#key-features>`__.
 

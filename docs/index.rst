@@ -7,7 +7,7 @@
     :alt: Teaser
 
 ==============================
-BakeMaster 2.5.2 Documentation
+BakeMaster 2.6.0 Documentation
 ==============================
 
 |teaser|
