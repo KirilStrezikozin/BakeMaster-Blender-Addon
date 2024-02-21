@@ -16,7 +16,7 @@
 
 # -- Local Varibles ----------------------------------------------------------
 
-bakemaster_version = '2.6.0'
+bakemaster_version = '2.6.1'
 
 # -- Project information -----------------------------------------------------
 
@@ -24,7 +24,7 @@ project = 'BakeMaster %s Documentation' % bakemaster_version
 copyright = ': 2022-2024, Kiril Strezikozin'
 author = 'kemplerart'
 version = bakemaster_version
-branch = "release-2.6.0"
+branch = "release-2.6.1"
 
 # The full version, including alpha/beta/rc tags
 release = bakemaster_version
