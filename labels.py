@@ -72,7 +72,7 @@ class BM_Labels:
 
     # URLs
     # different documentation versions may have different pages setup
-    __addon_version__ = "2.6.0"
+    __addon_version__ = "2.6.1"
     URL_HELP_MAIN = "https://bakemaster-blender-addon.readthedocs.io/en/%s/" % __addon_version__
     URL_HELP_OBJS = "https://bakemaster-blender-addon.readthedocs.io/en/%s/pages/start/objects.html" % __addon_version__
     URL_HELP_MAPS = "https://bakemaster-blender-addon.readthedocs.io/en/%s/pages/start/maps.html" % __addon_version__

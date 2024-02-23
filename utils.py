@@ -666,6 +666,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'decal_use_flip_horizontal': self.decal_use_flip_horizontal,
             'decal_use_adapt_res': self.decal_use_adapt_res,
             'decal_use_precise_bounds': self.decal_use_precise_bounds,
+            'decal_use_scene_lights': self.decal_use_scene_lights,
             'decal_boundary_offset': self.decal_boundary_offset,
             'hl_decals_use_separate_texset': self.hl_decals_use_separate_texset,
             'hl_decals_separate_texset_prefix': self.hl_decals_separate_texset_prefix,
@@ -6126,9 +6127,15 @@ def BM_ITEM_PROPS_decal_use_adapt_res_Update(self, context):
 
 
 def BM_ITEM_PROPS_decal_use_precise_bounds_Update(self, context):
-    name = "Object Decal: Adapt resolution"
+    name = "Object Decal: Precise bounds"
     BM_LastEditedProp_Write(context, name, "decal_use_precise_bounds", getattr(
         self, "decal_use_precise_bounds"), False)
+
+
+def BM_ITEM_PROPS_decal_use_scene_lights_Update(self, context):
+    name = "Object Decal: Scene lights"
+    BM_LastEditedProp_Write(context, name, "decal_use_scene_lights", getattr(
+        self, "decal_use_scene_lights"), False)
 
 
 def BM_ITEM_PROPS_decal_boundary_offset_Update(self, context):

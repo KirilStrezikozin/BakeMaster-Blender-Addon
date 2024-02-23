@@ -2517,6 +2517,12 @@ class BM_Object(bpy.types.PropertyGroup):
         default=False,
         update=BM_ITEM_PROPS_decal_use_precise_bounds_Update)
 
+    decal_use_scene_lights: bpy.props.BoolProperty(
+        name="Scene Lights",
+        description="Use scene lighting and world lighting configured in world surface shading to bake this decal object",
+        default=False,
+        update=BM_ITEM_PROPS_decal_use_scene_lights_Update)
+
     decal_use_adapt_res: bpy.props.BoolProperty(
         name="Adapt aspect ratio",
         description="Adapt output map resolution to match the aspect ration of decal's dimensions",
