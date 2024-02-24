@@ -7,6 +7,22 @@ Releases
 
 All BakeMaster Releases and Changelogs are listed on this page. Each new release comes with new features, improvements, or fixes. For clarity, each section has a ``tag`` to identify the changes.
 
+2.6.1 Release
+=============
+
+.. admonition:: Tag
+    :class: important
+
+    `2.6.1 - February 24th, 2024 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/releases>`__
+
+**Fixes:**
+
+#. Create Bake Job Group could not proceed.
+
+**New Features:**
+
+#. **A toggle to use Scene & World lighting to bake Decal objects** (`issue75 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/75>`__).
+
 2.6.0 Release
 =============
 

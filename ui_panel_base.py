@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.0)
+# BakeMaster Blender Add-on (version 2.6.1)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -541,7 +541,7 @@ class BM_UL_Table_of_Objects_Item_BatchNamingTable_Item(bpy.types.UIList):
 
 
 class BM_PT_MainBase(bpy.types.Panel):
-    bl_label = "BakeMaster v2.6.0"
+    bl_label = "BakeMaster v2.6.1"
     bl_idname = 'BM_PT_Main'
 
     def draw(self, context):
@@ -785,6 +785,9 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                 col.enabled = (not BM_OT_DECAL_View.is_running_for_ctnr(
                     scene.bm_props.global_active_index)
                     or object.decal_use_precise_bounds)
+
+                col = d_col.column()
+                col.prop(object, 'decal_use_scene_lights')
 
             if object.nm_uni_container_is_global is False or not draw_all:
                 oti = BM_OT_DECAL_View.is_running_for(

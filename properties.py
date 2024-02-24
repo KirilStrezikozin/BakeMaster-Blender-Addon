@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.0)
+# BakeMaster Blender Add-on (version 2.6.1)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -2516,6 +2516,12 @@ class BM_Object(bpy.types.PropertyGroup):
         description="Calculate decal's bounding box precisely (slow). Results in more accurate view boundary and aspect ratio for objects that use local transforms and modifiers",
         default=False,
         update=BM_ITEM_PROPS_decal_use_precise_bounds_Update)
+
+    decal_use_scene_lights: bpy.props.BoolProperty(
+        name="Scene Lights",
+        description="Use scene lighting and world lighting configured in world surface shading to bake this decal object",
+        default=False,
+        update=BM_ITEM_PROPS_decal_use_scene_lights_Update)
 
     decal_use_adapt_res: bpy.props.BoolProperty(
         name="Adapt aspect ratio",
