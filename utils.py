@@ -4133,7 +4133,7 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
 
             if context.scene.render.engine != 'CYCLES':
                 bpy.ops.bakemaster.report_message(
-                    message_type='INFO',
+                    'INVOKE_DEFAULT', message_type='INFO',
                     message=BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
 
             material.node_tree.nodes['BM_OutputMaterial'].select = True
@@ -4220,7 +4220,8 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
     for object in objects:
         if len(object.data.materials) == 0:
             bpy.ops.bakemaster.report_message(
-                message_type='WARNING', message="%s: No Materials" % object.name)
+                'INVOKE_DEFAULT', message_type='WARNING',
+                message="%s: No Materials" % object.name)
             continue
 
         for material in object.data.materials:
@@ -4382,7 +4383,8 @@ def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
 
             if context.scene.render.engine != 'CYCLES':
                 bpy.ops.bakemaster.report_message(
-                    message_type='INFO', message=BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
+                    'INVOKE_DEFAULT', message_type='INFO',
+                    message=BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
 
             nodes['BM_OutputMaterial'].target = 'CYCLES'
             nodes['BM_OutputMaterial'].select = True
