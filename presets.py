@@ -641,6 +641,7 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.decal_use_flip_horizontal",
         "bm_item.decal_use_adapt_res",
         "bm_item.decal_use_precise_bounds",
+        "bm_item.decal_use_scene_lights",
         "bm_item.decal_boundary_offset",
 
         # "bm_item.hl_highpoly_table",
@@ -738,6 +739,7 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.decal_use_flip_horizontal",
         "bm_item.decal_use_adapt_res",
         "bm_item.decal_use_precise_bounds",
+        "bm_item.decal_use_scene_lights",
         "bm_item.decal_boundary_offset",
 
         # "bm_item.hl_highpoly_table",
@@ -796,6 +798,7 @@ class BM_OT_DECAL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.decal_use_flip_horizontal",
         "bm_item.decal_use_adapt_res",
         "bm_item.decal_use_precise_bounds",
+        "bm_item.decal_use_scene_lights",
         "bm_item.decal_boundary_offset",
     ]
 

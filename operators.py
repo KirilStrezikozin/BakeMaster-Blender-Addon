@@ -1748,6 +1748,7 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
     bl_options = {'UNDO'}
 
     def execute(self, context):
+        sc = context.scene
         bm_props = context.scene.bm_props
 
         if bm_props.global_use_name_matching is False:
@@ -2057,36 +2058,24 @@ class BM_OT_ReportMessage(bpy.types.Operator):
     bl_label = "BakeMaster Message"
     bl_idname = "bakemaster.report_message"
     bl_options = {'INTERNAL'}
-    
-    message_type : bpy.props.StringProperty(
+
+    message_type: bpy.props.StringProperty(
         name="Type",
         description="Type of the Report Message",
         default="INFO",
         options={'SKIP_SAVE'})
-    message : bpy.props.StringProperty(
+    message: bpy.props.StringProperty(
         name="Message",
         description="Text of the Report Message",
         default="Message not specified",
         options={'SKIP_SAVE'})
 
-    @classmethod
-    def report_message(cls, message_type, message):
-        cls.report({message_type}, message)
-    
     def execute(self, context):
         self.report({self.message_type}, self.message)
         return {'FINISHED'}
 
-    def draw(self, context):
-        self.layout.label(text=self.message_type.capitilize())
-        try:
-            self.layout.label(text=self.message, icon=self.message_type)
-        except TypeError:
-            self.layout.label(text=self.message)
-
     def invoke(self, context, event):
-        wm = context.window_manager
-        return wm.invoke_props_dialog(self, width=300)
+        return self.execute(context)
 
 class BM_OT_Help(bpy.types.Operator):
     bl_label = "BakeMaster Help Source"
