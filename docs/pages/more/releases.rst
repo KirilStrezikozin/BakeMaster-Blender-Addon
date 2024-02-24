@@ -13,7 +13,11 @@ All BakeMaster Releases and Changelogs are listed on this page. Each new release
 .. admonition:: Tag
     :class: important
 
-    `2.6.1 - February 23rd, 2024 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/releases>`__
+    `2.6.1 - February 24th, 2024 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/releases>`__
+
+**Fixes:**
+
+#. Create Bake Job Group could not proceed.
 
 **New Features:**
 
