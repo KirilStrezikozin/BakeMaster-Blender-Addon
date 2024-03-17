@@ -7,6 +7,28 @@ Releases
 
 All BakeMaster Releases and Changelogs are listed on this page. Each new release comes with new features, improvements, or fixes. For clarity, each section has a ``tag`` to identify the changes.
 
+2.6.2 Release
+=============
+
+.. admonition:: Tag
+    :class: important
+
+    `2.6.2 - March 17th, 2024 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/releases>`__
+
+**Fixes:**
+
+#. **Multires bakes accidentally read wrong bake settings** (`issue81 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/81>`__).
+#. Snap UV to pixels doesn't work (res_x undefined) (`issue83 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/83>`__).
+
+**New Features:**
+
+#. Toggle hide/not hide ShaderNodes in baked materials (`issue84 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/84>`__).
+#. **``$materialname`` keyword for batch name** (`issue86 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/86>`__).
+
+**Changes:**
+
+#. ``$mapname`` defaults to channel pack when map is in one (`issue87 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/87>`__).
+
 2.6.1 Release
 =============
 
