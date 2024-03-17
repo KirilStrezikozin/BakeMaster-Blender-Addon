@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.1)
+# BakeMaster Blender Add-on (version 2.6.2)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -1799,22 +1799,29 @@ def BM_SCENE_PROPS_cm_linear_color_space_Items(self, context):
 
 
 def BM_ITEM_PROPS_bake_batchname_GetPreview(container, context, object=None, map=None, global_active_index=None, decal_texset_tag=""):
-    # funcs for data get
-    def get_objectname(container):
-        if not any([container.nm_is_universal_container, container.nm_is_local_container]):
-            return container.global_object_name
-        for obj in context.scene.bm_table_of_objects:
-            if obj.nm_item_uni_container_master_index == container.nm_master_index and obj.nm_is_local_container is False:
-                return obj.global_object_name
+    def get_objectname(object):
+        if object is None:
+            return ""
+        return object.global_object_name
 
     def get_containername(container):
-        if context.scene.bm_props.global_use_name_matching is False:
-            return None
+        if (context.scene.bm_props.global_use_name_matching is False
+                or container is None):
+            return ""
         if container.nm_is_universal_container:
             return container.nm_container_name
-        for obj in context.scene.bm_table_of_objects:
-            if container.nm_item_uni_container_master_index == obj.nm_master_index and obj.nm_is_universal_container:
-                return obj.nm_container_name
+        else:
+            return ""
+
+    def get_materialname(source_object):
+        if source_object is None:
+            return ""
+        mats = source_object.data.materials
+        for mat in mats:
+            if mat is None:
+                continue
+            return mat.name
+        return ""
 
     def get_packname(container, map):
         for chnlpack in container.chnlp_channelpacking_table:
@@ -1830,6 +1837,12 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(container, context, object=None, map
             if str(map.global_map_index) in chosen_maps:
                 return chnlpack.global_channelpack_name
         return None
+
+    def get_mapname(container, map):
+        packname = get_packname(container, map)
+        if packname is None:
+            return getattr(map, 'map_{}_prefix'.format(map.global_map_type))
+        return packname
 
     def get_texsetname(container):
         if not any([container.nm_is_universal_container,
@@ -1889,14 +1902,16 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(container, context, object=None, map
 
     if container is None:
         container = BM_Object_Get(None, context)[0]
-        if len(container.global_maps) == 0:
-            # container.bake_batchname_preview = "*Object has no Maps*"
-            return "*Object has no Maps*"
-        map = container.global_maps[container.global_maps_active_index]
         global_active_index = context.scene.bm_props.global_active_index
 
+    if len(container.global_maps) == 0:
+        return "*Object has no Maps*"
+
     if object is None:
-        object = container
+        source_object = None
+    else:
+        source_object = context.scene.objects.get(object.global_object_name)
+
     if map is None:
         map = container.global_maps[container.global_maps_active_index]
 
@@ -1913,10 +1928,12 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(container, context, object=None, map
         "$objectindex": global_active_index,
         "$objectname": get_objectname(object),
         "$containername": get_containername(container),
+        "$materialname": get_materialname(source_object),
+        "$matname": get_materialname(source_object),
         "$packname": get_packname(container, map),
         "$texsetname": get_texsetname(container),
         "$mapindex": map.global_map_index,
-        "$mapname": getattr(map, 'map_{}_prefix'.format(map.global_map_type)),
+        "$mapname": get_mapname(container, map),
         "$mapres": get_mapres(out_container),
         "$mapbit": f"{out_container.out_bit_depth}bit",
         "$maptrans": "transbg" if out_container.out_use_transbg else "",
