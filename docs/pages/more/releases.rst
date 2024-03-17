@@ -23,7 +23,7 @@ All BakeMaster Releases and Changelogs are listed on this page. Each new release
 **New Features:**
 
 #. Toggle hide/not hide ShaderNodes in baked materials (`issue84 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/84>`__).
-#. **``$materialname`` keyword for batch name** (`issue86 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/86>`__).
+#. ``$materialname`` **keyword for batch name** (`issue86 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/86>`__).
 
 **Changes:**
 
