@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.1)
+# BakeMaster Blender Add-on (version 2.6.2)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -1361,8 +1361,50 @@ class BM_OT_ITEM_BatchNaming_Preview(bpy.types.Operator):
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        object = BM_Object_Get(None, context)[0]
-        preview = BM_ITEM_PROPS_bake_batchname_GetPreview(object, context)
+        sc = context.scene
+        g_index = sc.bm_props.global_active_index
+        container = BM_Object_Get(None, context)[0]
+
+        if not sc.bm_props.global_use_name_matching:
+            preview = BM_ITEM_PROPS_bake_batchname_GetPreview(
+                container, context, container)
+            self.report({'INFO'}, preview)
+            return {'FINISHED'}
+
+        if container.nm_is_universal_container:
+            bm_obj = None
+            for bm_obj_i in range(g_index + 1, len(sc.bm_table_of_objects), 1):
+                object = sc.bm_table_of_objects[bm_obj_i]
+                if (object.nm_item_uni_container_master_index == container.nm_master_index
+                        and not object.nm_is_local_container):
+                    bm_obj = sc.bm_table_of_objects[bm_obj_i]
+                    break
+
+            preview = BM_ITEM_PROPS_bake_batchname_GetPreview(
+                container, context, bm_obj)
+            self.report({'INFO'}, preview)
+            return {'FINISHED'}
+
+        # Name Matching is used, and container is a detached object
+        if container.nm_item_uni_container_master_index == -1:
+            preview = BM_ITEM_PROPS_bake_batchname_GetPreview(
+                container, context, container)
+            self.report({'INFO'}, preview)
+            return {'FINISHED'}
+
+        # Name Matching is used, and container is a child object
+        parent = None
+        for bm_obj_i in range(g_index - 1, -1, -1):
+            object = sc.bm_table_of_objects[bm_obj_i]
+            if not object.nm_is_universal_container:
+                continue
+            if (container.nm_item_uni_container_master_index == object.nm_master_index
+                    and object.nm_is_local_container is False):
+                parent = object
+                break
+
+        preview = BM_ITEM_PROPS_bake_batchname_GetPreview(
+            parent, context, container)  # Container is a child object
         self.report({'INFO'}, preview)
         return {'FINISHED'}
 
