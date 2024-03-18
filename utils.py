@@ -2004,11 +2004,11 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(container, context, object=None, map
 
 
 def BM_ITEM_PROPS_bake_batchname_use_caps_Update(self, context):
+    # upper-case batch name if true else lower-case
+    if self.bake_batchname_use_caps and not self.bake_batchname.isupper():
+        self.bake_batchname = self.bake_batchname.upper()
     BM_LastEditedProp_Write(context, "Object Bake Output: Batch name use caps",
                             "bake_batchname_use_caps", getattr(self, "bake_batchname_use_caps"), False)
-    # upper-case batch name if true else lower-case
-    self.bake_batchname = self.bake_batchname.upper(
-    ) if self.bake_batchname_use_caps else self.bake_batchname.lower()
 
 ###############################################################
 ### UIList Fucns ###
@@ -6481,6 +6481,8 @@ def BM_ITEM_PROPS_bake_subfolder_name_Update(self, context):
 
 
 def BM_ITEM_PROPS_bake_batchname_Update(self, context):
+    self.bake_batchname_use_caps = self.bake_batchname.isupper()
+
     name = "Object Bake Output: Batch name"
     BM_LastEditedProp_Write(context, name, "bake_batchname",
                             getattr(self, "bake_batchname"), False)
