@@ -474,6 +474,70 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Apply Compositor color management to all baked textures",
         default=False)
 
+    ###
+
+    p_ln_fullobj: bpy.props.StringProperty(
+        name="Last used Full Object preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_obj: bpy.props.StringProperty(
+        name="Last used Object preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_decal: bpy.props.StringProperty(
+        name="Last used Decal preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_hl: bpy.props.StringProperty(
+        name="Last used High to Lowpoly preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_uv: bpy.props.StringProperty(
+        name="Last used UV preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_csh: bpy.props.StringProperty(
+        name="Last used Shading preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_out: bpy.props.StringProperty(
+        name="Last used Format preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_fullmap: bpy.props.StringProperty(
+        name="Last used Full Map preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_map: bpy.props.StringProperty(
+        name="Last used Map preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_chnlp: bpy.props.StringProperty(
+        name="Last used Channel Pack preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_bake: bpy.props.StringProperty(
+        name="Last used Bake Output preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_cm: bpy.props.StringProperty(
+        name="Last used Color Management preset name",
+        default="New Preset",
+        maxlen=64)
+
+    ###
+
     global_last_edited_prop : bpy.props.StringProperty(default="")
     global_last_edited_prop_name : bpy.props.StringProperty(default="")
     global_last_edited_prop_value : bpy.props.StringProperty(default="")
