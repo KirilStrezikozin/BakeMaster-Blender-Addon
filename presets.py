@@ -33,6 +33,7 @@
 #
 # END LICENSE & COPYRIGHT BLOCK.
 
+from typing import Literal
 import bpy
 import os
 import re
@@ -94,6 +95,11 @@ class BM_AddPresetBase():
         maxlen=64,
         options={'SKIP_SAVE'},
     )
+    prop_name: bpy.props.StringProperty(
+        name="Last used preset property name",
+        default="",
+        options={'SKIP_SAVE'},
+    )
     remove_name: bpy.props.BoolProperty(
         default=False,
         options={'HIDDEN', 'SKIP_SAVE'},
@@ -145,11 +151,6 @@ class BM_AddPresetBase():
         if is_preset_add:
             if not name:
                 return {'FINISHED'}
-
-            # Reset preset name
-            wm = bpy.data.window_managers[0]
-            if name == wm.preset_name:
-                wm.preset_name = 'New Preset'
 
             filename = self.as_filename(name)
 
@@ -568,6 +569,9 @@ class BM_AddPresetBase():
                     file_preset.close()
 
             preset_menu_class.bl_label = bpy.path.display_name(filename)
+
+            bm_props = context.scene.bm_props
+            setattr(bm_props, self.prop_name, self.name)
 
         # removing preset
         else:
@@ -1325,6 +1329,27 @@ class BM_PresetPanel:
         )
         return None
 
+    @staticmethod
+    def preset_action(action: Literal['REMOVE', 'UPDATE'], row,
+                      action_operator: str | None, name: str,
+                      prop_name: str) -> None:
+        if not action_operator:
+            return None
+
+        if action == 'REMOVE':
+            icon = 'REMOVE'
+            remove_name = True
+        else:
+            icon = 'FILE_REFRESH'
+            remove_name = False
+
+        props = row.operator(action_operator, text="", icon=icon)
+        props.name = name
+        props.prop_name = prop_name
+        props.remove_name = remove_name
+
+        return None
+
     def path_menu(self, context, searchpaths: list, operator: str, *,
                   props_default: dict | None = None,
                   prop_filepath: str = "filepath", filter_ext=None,
@@ -1392,14 +1417,13 @@ class BM_PresetPanel:
             row = col.row(align=True)
             name = display_name(
                 filepath) if display_name else bpy.path.display_name(f)
+
             props = row.operator(
                 operator,
                 text=iface_(name),
                 translate=False,
+                depress=name == entered_name
             )
-
-            if name == entered_name:
-                update_preset = True
 
             if props_default is not None:
                 for attr, value in props_default.items():
@@ -1409,18 +1433,20 @@ class BM_PresetPanel:
             props.preset_name = name
 
             setattr(props, prop_filepath, filepath)
-            if operator == "script.execute_preset":
-                props.menu_idname = self.bl_idname
 
-            if add_operator:
-                props = row.operator(add_operator, text="", icon='REMOVE')
-                props.name = name
-                props.remove_name = True
+            args = (row, add_operator, name, prop_name)
+            self.preset_action('REMOVE', *args)
+            self.preset_action('UPDATE', *args)
+
+            if name == entered_name:
+                update_preset = True
 
         if not add_operator:
             return None
 
         layout.separator()
+        layout.label(text="Updating:" if update_preset else "Creating new:")
+
         row = layout.row()
 
         sub = row.row()
@@ -1430,6 +1456,7 @@ class BM_PresetPanel:
         icon = 'FILE_REFRESH' if update_preset else 'ADD'
         props = row.operator(add_operator, text="", icon=icon)
         props.name = entered_name
+
 
 class BM_PT_FULL_OBJECT_Presets(BM_PresetPanel, bpy.types.Panel):
     bl_label = "Full Object Preset"
