@@ -618,7 +618,7 @@ class BM_AddPresetBase():
 class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.full_object_preset_add"
     bl_label = "Full Object Preset"
-    bl_description = "Add or Remove Full Object Preset"
+    bl_description = "Add, Remove, or Update Full Object Preset"
     bl_opetions = {'REGISTER', 'UNDO', 'INTERNAL'}
     preset_menu = 'BM_MT_FULL_OBJECT_Presets'
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_FULL_OBJECT_decal_hl_uv_csh_out_maps_chnlp_bake')
@@ -720,7 +720,7 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.object_preset_add"
     bl_label = "Object Preset"
-    bl_description = "Add or Remove Decal, High to Lowpoly, UVs & Layers, Shading Preset"
+    bl_description = "Add, Remove, or Update Decal, High to Lowpoly, UVs & Layers, Shading Preset"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     preset_menu = 'BM_MT_OBJECT_Presets'
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_OBJECT_decal_hl_uv_csh')
@@ -779,7 +779,7 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 class BM_OT_DECAL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.decal_preset_add"
     bl_label = "Decal Preset"
-    bl_description = "Add or Remove Decal Preset"
+    bl_description = "Add, Remove, or Update Decal Preset"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     preset_menu = 'BM_MT_DECAL_Presets'
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_DECAL_decal')
@@ -805,7 +805,7 @@ class BM_OT_DECAL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 class BM_OT_HL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.hl_preset_add"
     bl_label = "High to Lowpoly Preset"
-    bl_description = "Add or Remove High to Lowpoly Preset"
+    bl_description = "Add, Remove, or Update High to Lowpoly Preset"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     preset_menu = 'BM_MT_HL_Presets'
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_HL_hl')
@@ -831,7 +831,7 @@ class BM_OT_HL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 class BM_OT_UV_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.uv_preset_add"
     bl_label = "UVs & Layers Preset"
-    bl_description = "Add or Remove UVs & Layers Preset"
+    bl_description = "Add, Remove, or Update UVs & Layers Preset"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     preset_menu = 'BM_MT_UV_Presets'
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_UV_uv')
@@ -858,7 +858,7 @@ class BM_OT_UV_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 class BM_OT_CSH_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.csh_preset_add"
     bl_label = "Shading Preset"
-    bl_description = "Add or Remove Shading Preset"
+    bl_description = "Add, Remove, or Update Shading Preset"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     preset_menu = 'BM_MT_CSH_Presets'
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_CSH_csh')
@@ -884,7 +884,7 @@ class BM_OT_CSH_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 class BM_OT_OUT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.out_preset_add"
     bl_label = "Format Preset"
-    bl_description = "Add or Remove Format Preset"
+    bl_description = "Add, Remove, or Update Format Preset"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     preset_menu = 'BM_MT_OUT_Presets'
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_OUT_out')
@@ -925,7 +925,7 @@ class BM_OT_OUT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 class BM_OT_FULL_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.full_map_preset_add"
     bl_label = "Full Maps Preset"
-    bl_description = "Add or Remove Full Maps Preset"
+    bl_description = "Add, Remove, or Update Full Maps Preset"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     preset_menu = 'BM_MT_FULL_MAP_Presets'
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_FULL_MAP_maps_hl_uv_out')
@@ -943,7 +943,7 @@ class BM_OT_FULL_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.map_preset_add"
     bl_label = "Map Preset"
-    bl_description = "Add or Remove Map Preset"
+    bl_description = "Add, Remove, or Update Map Preset"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     preset_menu = 'BM_MT_MAP_Presets'
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_MAP_map')
@@ -1158,7 +1158,7 @@ class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 class BM_OT_CHNLP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.chnlp_preset_add"
     bl_label = "Channel Pack Preset"
-    bl_description = "Add or Remove Channel Pack Preset"
+    bl_description = "Add, Remove, or Update Channel Pack Preset"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     preset_menu = 'BM_MT_CHNLP_Presets'
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_CHNLP_chnlp')
@@ -1196,7 +1196,7 @@ class BM_OT_CHNLP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 class BM_OT_BAKE_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.bake_preset_add"
     bl_label = "Bake Output Preset"
-    bl_description = "Add or Remove Bake Output Preset"
+    bl_description = "Add, Remove, or Update Bake Output Preset"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     preset_menu = 'BM_MT_BAKE_Presets'
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_BAKE_bake')
@@ -1223,7 +1223,7 @@ class BM_OT_BAKE_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 class BM_OT_CM_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.cm_preset_add"
     bl_label = "Color Management Preset"
-    bl_description = "Add or Remove Color Management Preset"
+    bl_description = "Add, Remove, or Update Color Management Preset"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     preset_menu = 'BM_MT_CM_Presets'
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_CM_cm')
@@ -1361,6 +1361,8 @@ class BM_PresetPanel:
 
         bm_props = context.scene.bm_props
         prop_name = "p_ln_%s" % self.preset_tag
+        entered_name = getattr(bm_props, prop_name)
+        update_preset = False
 
         # collect paths
         files = []
@@ -1396,6 +1398,9 @@ class BM_PresetPanel:
                 translate=False,
             )
 
+            if name == entered_name:
+                update_preset = True
+
             if props_default is not None:
                 for attr, value in props_default.items():
                     setattr(props, attr, value)
@@ -1422,8 +1427,9 @@ class BM_PresetPanel:
         sub.emboss = 'NORMAL'
         sub.prop(bm_props, prop_name, text="")
 
-        props = row.operator(add_operator, text="", icon='ADD')
-        props.name = getattr(bm_props, prop_name)
+        icon = 'FILE_REFRESH' if update_preset else 'ADD'
+        props = row.operator(add_operator, text="", icon=icon)
+        props.name = entered_name
 
 class BM_PT_FULL_OBJECT_Presets(BM_PresetPanel, bpy.types.Panel):
     bl_label = "Full Object Preset"
