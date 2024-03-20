@@ -1356,6 +1356,12 @@ class BM_PresetPanel:
         if not searchpaths:
             layout.label(text="* Missing Paths *")
 
+        if not self.preset_tag:
+            layout.label(text="* Missing Preset Tag *")
+
+        bm_props = context.scene.bm_props
+        prop_name = "p_ln_%s" % self.preset_tag
+
         # collect paths
         files = []
         for directory in searchpaths:
@@ -1394,6 +1400,9 @@ class BM_PresetPanel:
                 for attr, value in props_default.items():
                     setattr(props, attr, value)
 
+            props.prop_name = prop_name
+            props.preset_name = name
+
             setattr(props, prop_filepath, filepath)
             if operator == "script.execute_preset":
                 props.menu_idname = self.bl_idname
@@ -1405,12 +1414,6 @@ class BM_PresetPanel:
 
         if not add_operator:
             return None
-
-        if not self.preset_tag:
-            layout.label(text="* Missing Preset Tag *")
-
-        bm_props = context.scene.bm_props
-        prop_name = "p_ln_%s" % self.preset_tag
 
         layout.separator()
         row = layout.row()
@@ -1651,6 +1654,18 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
         description="bl_label of the menu this was called from",
         options={'SKIP_SAVE'},
     )
+    prop_name: bpy.props.StringProperty(
+        name="Last used preset property name",
+        default="",
+        options={'SKIP_SAVE'},
+    )
+    preset_name: bpy.props.StringProperty(
+        name="Name",
+        description="Name of the preset, used to make the path name",
+        default="Preset Name",
+        maxlen=64,
+        options={'SKIP_SAVE'},
+    )
 
     def execute(self, context):
         from os.path import basename, splitext
@@ -1699,6 +1714,9 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
             # preset load failed
             except Exception as ex:
                 self.report({'ERROR'}, "Failed to execute the preset: " + repr(ex))
+
+            else:
+                setattr(bm_props, self.prop_name, self.preset_name)
 
         elif ext == ".xml":
             import rna_xml
