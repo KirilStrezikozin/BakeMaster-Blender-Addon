@@ -477,62 +477,62 @@ class BM_SceneProps(bpy.types.PropertyGroup):
     ###
 
     p_ln_fullobj: bpy.props.StringProperty(
-        name="Last used Full Object preset name",
+        name="Last used Full Object preset or new preset name",
         default="New Preset",
         maxlen=64)
 
     p_ln_obj: bpy.props.StringProperty(
-        name="Last used Object preset name",
+        name="Last used Object preset or new preset name",
         default="New Preset",
         maxlen=64)
 
     p_ln_decal: bpy.props.StringProperty(
-        name="Last used Decal preset name",
+        name="Last used Decal preset or new preset name",
         default="New Preset",
         maxlen=64)
 
     p_ln_hl: bpy.props.StringProperty(
-        name="Last used High to Lowpoly preset name",
+        name="Last used High to Lowpoly preset or new preset name",
         default="New Preset",
         maxlen=64)
 
     p_ln_uv: bpy.props.StringProperty(
-        name="Last used UV preset name",
+        name="Last used UV preset or new preset name",
         default="New Preset",
         maxlen=64)
 
     p_ln_csh: bpy.props.StringProperty(
-        name="Last used Shading preset name",
+        name="Last used Shading preset or new preset name",
         default="New Preset",
         maxlen=64)
 
     p_ln_out: bpy.props.StringProperty(
-        name="Last used Format preset name",
+        name="Last used Format preset or new preset name",
         default="New Preset",
         maxlen=64)
 
     p_ln_fullmap: bpy.props.StringProperty(
-        name="Last used Full Map preset name",
+        name="Last used Full Map preset or new preset name",
         default="New Preset",
         maxlen=64)
 
     p_ln_map: bpy.props.StringProperty(
-        name="Last used Map preset name",
+        name="Last used Map preset or new preset name",
         default="New Preset",
         maxlen=64)
 
     p_ln_chnlp: bpy.props.StringProperty(
-        name="Last used Channel Pack preset name",
+        name="Last used Channel Pack preset or new preset name",
         default="New Preset",
         maxlen=64)
 
     p_ln_bake: bpy.props.StringProperty(
-        name="Last used Bake Output preset name",
+        name="Last used Bake Output preset or new preset name",
         default="New Preset",
         maxlen=64)
 
     p_ln_cm: bpy.props.StringProperty(
-        name="Last used Color Management preset name",
+        name="Last used Color Management preset or new preset name",
         default="New Preset",
         maxlen=64)
 
