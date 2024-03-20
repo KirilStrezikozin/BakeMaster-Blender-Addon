@@ -716,6 +716,12 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Collapse added shader nodes in baked materials",
         default=False)
 
+    global_use_preset_more_options: bpy.props.BoolProperty(
+        name="More Options",
+        description="Enable Update buttons next to each preset and active preset visualization",
+        default=True)
+
+
 ##################################################
 ### MAP PROPS ###
 ##################################################

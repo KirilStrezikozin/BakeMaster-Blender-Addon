@@ -79,6 +79,16 @@ class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
             split.label(text="Baked Materials")
             layout.prop(bm_props, 'global_use_collapse_nodes')
 
+        if bpy.app.version >= (2, 90, 0):
+            col = self.layout.column(align=True, heading="Preset Menu")
+            col.prop(bm_props, 'global_use_preset_more_options')
+        else:
+            layout = self.layout.column(align=True)
+            split = layout.split(factor=0.4)
+            split.row()
+            split.label(text="Preset Menu")
+            layout.prop(bm_props, 'global_use_preset_more_options')
+
 
 class BM_ALEP_UL_Objects_Item(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, active_data, active_propname, index):

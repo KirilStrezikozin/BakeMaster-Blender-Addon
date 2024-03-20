@@ -1388,6 +1388,7 @@ class BM_PresetPanel:
         prop_name = "p_ln_%s" % self.preset_tag
         entered_name = getattr(bm_props, prop_name)
         update_preset = False
+        more_options = bm_props.global_use_preset_more_options
 
         # collect paths
         files = []
@@ -1422,7 +1423,7 @@ class BM_PresetPanel:
                 operator,
                 text=iface_(name),
                 translate=False,
-                depress=name == entered_name
+                depress=name == entered_name and more_options
             )
 
             if props_default is not None:
@@ -1436,7 +1437,8 @@ class BM_PresetPanel:
 
             args = (row, add_operator, name, prop_name)
             self.preset_action('REMOVE', *args)
-            self.preset_action('UPDATE', *args)
+            if more_options:
+                self.preset_action('UPDATE', *args)
 
             if name == entered_name:
                 update_preset = True
@@ -1445,7 +1447,9 @@ class BM_PresetPanel:
             return None
 
         layout.separator()
-        layout.label(text="Updating:" if update_preset else "Creating new:")
+        if more_options:
+            layout.label(
+                text="Updating:" if update_preset else "Creating new:")
 
         row = layout.row()
 
