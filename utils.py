@@ -4931,10 +4931,10 @@ def BM_MAP_PROPS_global_use_bake_Update(self, context):
 def BM_MAP_PROPS_global_map_type_Update(self, context):
     container = map_get_container(self, context)
 
-    if container.out_use_unique_per_map:
-        out_container = self
-    else:
-        out_container = container
+    if not container.out_use_unique_per_map:
+        return None
+
+    out_container = self
 
     _, _, file_format, bit_depth = map_image_getDefaults(
         context, self, out_container, ignore_exr=True)
