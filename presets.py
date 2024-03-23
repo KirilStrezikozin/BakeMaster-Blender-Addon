@@ -254,7 +254,7 @@ class BM_AddPresetBase():
                         # append each channel pack props to preset_values for full_object preset
                         if getattr(self, "preset_tag") == "full_object":
                             for channelpack_index, _ in enumerate(bm_item.chnlp_channelpacking_table):
-                                channelpack_data = {
+                                channelpack_data = [
                                     "global_channelpack_name",
                                     "global_channelpack_type",
                                     "R1G1B_use_R",
@@ -275,7 +275,7 @@ class BM_AddPresetBase():
                                     "R1G1B1A_map_B",
                                     "R1G1B1A_use_A",
                                     "R1G1B1A_map_A",
-                                }
+                                ]
                                 for key in channelpack_data:
                                     self.preset_values.append("bm_item.chnlp_channelpacking_table[%d].%s" % (channelpack_index, key))
 
@@ -303,7 +303,7 @@ class BM_AddPresetBase():
                             except_for.append("_data")
 
                             for map_index, _ in enumerate(bm_item.global_maps):
-                                map_data = {
+                                map_data = [
                                     "global_use_bake",
                                     "global_map_type",
 
@@ -538,7 +538,7 @@ class BM_AddPresetBase():
                                     "hl_cage_type",
                                     "hl_cage_extrusion",
                                     "hl_max_ray_distance",
-                                }
+                                ]
                                 for key in map_data:
                                     self.preset_values.append("bm_item.global_maps[%d].%s" % (map_index, key))
 
