@@ -19,6 +19,7 @@ All BakeMaster Releases and Changelogs are listed on this page. Each new release
 
 #. Global/Bake Output presets cannot store batch names with mixed caps (`issue90 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/90>`__).
 #. **Color Management rules overwrite saved preset settings** (`issue91 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/91>`__).
+#. **sRGB bakes had wrong colors (redundant color space transformation)** (`issue74 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/74>`__).
 
 **New Features:**
 
