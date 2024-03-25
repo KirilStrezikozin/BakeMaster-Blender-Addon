@@ -16,7 +16,7 @@
 
 # -- Local Varibles ----------------------------------------------------------
 
-bakemaster_version = '2.6.1'
+bakemaster_version = '2.6.3'
 
 # -- Project information -----------------------------------------------------
 
@@ -24,7 +24,7 @@ project = 'BakeMaster %s Documentation' % bakemaster_version
 copyright = ': 2022-2024, Kiril Strezikozin'
 author = 'kemplerart'
 version = bakemaster_version
-branch = "release-2.6.2"
+branch = "release-2.6.3"
 
 # The full version, including alpha/beta/rc tags
 release = bakemaster_version
@@ -216,7 +216,7 @@ html_favicon = "_static/images/icons/bakemaster_logo_64x64.png"
 # every page bottom, using the given strftime() format.
 # The empty string is equivalent to '%b %d, %Y'
 # (or a locale-dependent equivalent).
-html_last_updated_fmt = '17/03/2024'
+html_last_updated_fmt = '25/03/2024'
 
 # If true, the reST sources are included in the HTML build as _sources/name.
 html_copy_source = True

@@ -7,6 +7,23 @@ Releases
 
 All BakeMaster Releases and Changelogs are listed on this page. Each new release comes with new features, improvements, or fixes. For clarity, each section has a ``tag`` to identify the changes.
 
+2.6.3 Release
+=============
+
+.. admonition:: Tag
+    :class: important
+
+    `2.6.3 - March 25th, 2024 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/releases>`__
+
+**Fixes:**
+
+#. Global/Bake Output presets cannot store batch names with mixed caps (`issue90 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/90>`__).
+#. **Color Management rules overwrite saved preset settings** (`issue91 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/91>`__).
+
+**New Features:**
+
+#. Preset UI menu updated, displays 'Update preset' buttons and saves last used preset name (`issue88 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/88>`__).
+
 2.6.2 Release
 =============
 
