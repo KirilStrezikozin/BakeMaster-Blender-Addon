@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.2)
+# BakeMaster Blender Add-on (version 2.6.3)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -561,7 +561,7 @@ class BM_UL_Table_of_Objects_Item_BatchNamingTable_Item(bpy.types.UIList):
 
 
 class BM_PT_MainBase(bpy.types.Panel):
-    bl_label = "BakeMaster v2.6.2"
+    bl_label = "BakeMaster v2.6.3"
     bl_idname = 'BM_PT_Main'
 
     def draw(self, context):
