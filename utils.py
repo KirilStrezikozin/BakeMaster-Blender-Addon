@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.2)
+# BakeMaster Blender Add-on (version 2.6.3)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -2004,11 +2004,11 @@ def BM_ITEM_PROPS_bake_batchname_GetPreview(container, context, object=None, map
 
 
 def BM_ITEM_PROPS_bake_batchname_use_caps_Update(self, context):
+    # upper-case batch name if true else lower-case
+    if self.bake_batchname_use_caps and not self.bake_batchname.isupper():
+        self.bake_batchname = self.bake_batchname.upper()
     BM_LastEditedProp_Write(context, "Object Bake Output: Batch name use caps",
                             "bake_batchname_use_caps", getattr(self, "bake_batchname_use_caps"), False)
-    # upper-case batch name if true else lower-case
-    self.bake_batchname = self.bake_batchname.upper(
-    ) if self.bake_batchname_use_caps else self.bake_batchname.lower()
 
 ###############################################################
 ### UIList Fucns ###
@@ -4931,10 +4931,10 @@ def BM_MAP_PROPS_global_use_bake_Update(self, context):
 def BM_MAP_PROPS_global_map_type_Update(self, context):
     container = map_get_container(self, context)
 
-    if container.out_use_unique_per_map:
-        out_container = self
-    else:
-        out_container = container
+    if not container.out_use_unique_per_map:
+        return None
+
+    out_container = self
 
     _, _, file_format, bit_depth = map_image_getDefaults(
         context, self, out_container, ignore_exr=True)
@@ -6481,6 +6481,8 @@ def BM_ITEM_PROPS_bake_subfolder_name_Update(self, context):
 
 
 def BM_ITEM_PROPS_bake_batchname_Update(self, context):
+    self.bake_batchname_use_caps = self.bake_batchname.isupper()
+
     name = "Object Bake Output: Batch name"
     BM_LastEditedProp_Write(context, name, "bake_batchname",
                             getattr(self, "bake_batchname"), False)

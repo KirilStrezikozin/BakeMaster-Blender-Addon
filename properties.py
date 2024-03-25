@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.2)
+# BakeMaster Blender Add-on (version 2.6.3)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -474,6 +474,70 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         description="Apply Compositor color management to all baked textures",
         default=False)
 
+    ###
+
+    p_ln_fullobj: bpy.props.StringProperty(
+        name="Last used Full Object preset or new preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_obj: bpy.props.StringProperty(
+        name="Last used Object preset or new preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_decal: bpy.props.StringProperty(
+        name="Last used Decal preset or new preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_hl: bpy.props.StringProperty(
+        name="Last used High to Lowpoly preset or new preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_uv: bpy.props.StringProperty(
+        name="Last used UV preset or new preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_csh: bpy.props.StringProperty(
+        name="Last used Shading preset or new preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_out: bpy.props.StringProperty(
+        name="Last used Format preset or new preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_fullmap: bpy.props.StringProperty(
+        name="Last used Full Map preset or new preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_map: bpy.props.StringProperty(
+        name="Last used Map preset or new preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_chnlp: bpy.props.StringProperty(
+        name="Last used Channel Pack preset or new preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_bake: bpy.props.StringProperty(
+        name="Last used Bake Output preset or new preset name",
+        default="New Preset",
+        maxlen=64)
+
+    p_ln_cm: bpy.props.StringProperty(
+        name="Last used Color Management preset or new preset name",
+        default="New Preset",
+        maxlen=64)
+
+    ###
+
     global_last_edited_prop : bpy.props.StringProperty(default="")
     global_last_edited_prop_name : bpy.props.StringProperty(default="")
     global_last_edited_prop_value : bpy.props.StringProperty(default="")
@@ -651,6 +715,12 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         name="Collapse Nodes",
         description="Collapse added shader nodes in baked materials",
         default=False)
+
+    global_use_preset_more_options: bpy.props.BoolProperty(
+        name="More Options",
+        description="Enable Update buttons next to each preset and active preset visualization",
+        default=True)
+
 
 ##################################################
 ### MAP PROPS ###

@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.2)
+# BakeMaster Blender Add-on (version 2.6.3)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -78,6 +78,16 @@ class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
             split.row()
             split.label(text="Baked Materials")
             layout.prop(bm_props, 'global_use_collapse_nodes')
+
+        if bpy.app.version >= (2, 90, 0):
+            col = self.layout.column(align=True, heading="Preset Menu")
+            col.prop(bm_props, 'global_use_preset_more_options')
+        else:
+            layout = self.layout.column(align=True)
+            split = layout.split(factor=0.4)
+            split.row()
+            split.label(text="Preset Menu")
+            layout.prop(bm_props, 'global_use_preset_more_options')
 
 
 class BM_ALEP_UL_Objects_Item(bpy.types.UIList):
@@ -551,7 +561,7 @@ class BM_UL_Table_of_Objects_Item_BatchNamingTable_Item(bpy.types.UIList):
 
 
 class BM_PT_MainBase(bpy.types.Panel):
-    bl_label = "BakeMaster v2.6.2"
+    bl_label = "BakeMaster v2.6.3"
     bl_idname = 'BM_PT_Main'
 
     def draw(self, context):
