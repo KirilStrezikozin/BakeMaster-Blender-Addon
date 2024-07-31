@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.1)
+# BakeMaster Blender Add-on (version 2.6.2)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -38,7 +38,7 @@ bl_info = {
     "description": "Bake various PBR, Masks, and Cycles maps with ease and "
                    "comfort",
     "author": "Kiril Strezikozin (aka kemplerart)",
-    "version": (2, 6, 1),
+    "version": (2, 6, 2),
     "blender": (2, 83, 0),
     "location": "View3D > Sidebar > BakeMaster",
     "warning": "",

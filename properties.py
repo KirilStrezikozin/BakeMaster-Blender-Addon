@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.1)
+# BakeMaster Blender Add-on (version 2.6.2)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -646,6 +646,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         max=1,
         precision=3,
         subtype='COLOR')  # noqa: F405
+
+    global_use_collapse_nodes: bpy.props.BoolProperty(
+        name="Collapse Nodes",
+        description="Collapse added shader nodes in baked materials",
+        default=False)
 
 ##################################################
 ### MAP PROPS ###

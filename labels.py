@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.1)
+# BakeMaster Blender Add-on (version 2.6.2)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -68,11 +68,11 @@ class BM_Labels:
     PROP_ITEM_MAP_USESTT_NAME = "Affect this map by source-target settings configured in the item settings above.\nThis option won't be shown unless source-target settings are configured, or when baking smooth normals"
     PROP_ITEM_MAP_USEPREVIEW_DESCRIPTION = "Preview texture map in the viewport (Cycles only).\nIf current item's mesh has got no materials, a new one will be added.\nFor each item's mesh materials, custom nodes will be added to preview the map in the Rendered View.\nAfter disabling the preview, all those nodes will be removed without affecting original material(s)"
 
-    PROP_ITEM_bake_batchname_custom_Description = "Write keywords starting with $, any additional text can be added:\n\n$objectindex - Object index\n$objectname - Object name\n$containername - Container name if Object is in it\n$packname - Channel Pack name if map is in Channel Pack\n$texsetname - Texture Set chosen name type if Object is in it\n$mapindex - Map index\n$mapname - Map prefix\n$mapres - Map Resolution\n$mapbit - _32bit_ if map uses 32bit Float, else _8bit_\n$maptrans - _trans_ if map uses transparent bg\n$mapssaa - SSAA value used for the map\n$mapsamples - Number of map bake samples, max samples if Adaptive is used\n$mapdenoise - _denoised_ if map was denoised\n$mapnormal - For Normal map, write preset type\n$mapuv - Write UV Layer name used for baking map\n$engine - Write Bake Engine used for baking\n$autouv - _autouv_ if object was auto uv unwrapped\n\ntestbake1$objectname_$mapname_$mapdenoise_Final -> testbake1monsterhead_NM_denoised_Final"
+    PROP_ITEM_bake_batchname_custom_Description = "Write keywords starting with $, any additional text can be added:\n\n$objectindex - Object index\n$objectname - Object name\n$containername - Container name if object is in one\n$materialname/$matname - Name of the first object's material\n$packname - Channel Pack name if map is in one (Legacy, use $mapname)\n$texsetname - Texture Set naming if object is in one\n$mapindex - Map index\n$mapname - Map prefix or Channel Pack name if map is in one\n$mapres - Map Resolution\n$mapbit - Image bit depth used for baking a map\n$maptrans - _trans_ if map uses transparent bg\n$mapssaa - SSAA value used for the map\n$mapsamples - Number of map bake samples, max samples if Adaptive is used\n$mapdenoise - _denoised_ if map was denoised\n$mapnormal - For Normal map, write preset type\n$mapuv - UV Layer name used for baking a map\n$engine - Bake Engine used for baking\n$autouv - _autouv_ if object was auto uv unwrapped\n\ntestbake1$objectname_$mapname_$mapdenoise_Final -> testbake1monsterhead_NM_denoised_Final"
 
     # URLs
     # different documentation versions may have different pages setup
-    __addon_version__ = "2.6.1"
+    __addon_version__ = "2.6.2"
     URL_HELP_MAIN = "https://bakemaster-blender-addon.readthedocs.io/en/%s/" % __addon_version__
     URL_HELP_OBJS = "https://bakemaster-blender-addon.readthedocs.io/en/%s/pages/start/objects.html" % __addon_version__
     URL_HELP_MAPS = "https://bakemaster-blender-addon.readthedocs.io/en/%s/pages/start/maps.html" % __addon_version__
