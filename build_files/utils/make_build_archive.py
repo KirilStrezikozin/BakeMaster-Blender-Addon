@@ -168,6 +168,7 @@ def make_zips() -> None:
         "ui_panel.py",
         "ui_panel_base.py",
         "utils.py",
+        "blender_manifest.toml",
     ]
 
     licenses = [
