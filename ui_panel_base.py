@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.3)
+# BakeMaster Blender Add-on (version 2.7.0)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -51,16 +51,14 @@ class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
         self.layout.use_property_decorate = False
 
         layout = self.layout.column(align=True)
-        layout.prop(bm_props, 'global_lowpoly_tag')
-        layout.prop(bm_props, 'global_highpoly_tag')
-        layout.prop(bm_props, 'global_cage_tag')
-        layout.prop(bm_props, 'global_decal_tag')
-        layout = self.layout.column(align=True)
-        layout.prop(bm_props, 'global_bake_uv_layer_tag')
-        layout = self.layout.column(align=True)
-        layout.prop(bm_props, 'global_use_hide_notbaked')
-        layout = self.layout.column(align=True)
-        layout.prop(bm_props, 'global_bake_match_maps_type')
+        split = layout.split(factor=0.4)
+        split.row()
+        split.label(text="Tags")
+        layout.prop(bm_props, 'global_lowpoly_tag', text="Lowpoly")
+        layout.prop(bm_props, 'global_highpoly_tag', text="Highpoly")
+        layout.prop(bm_props, 'global_cage_tag', text="Cage")
+        layout.prop(bm_props, 'global_decal_tag', text="Decal")
+        layout.prop(bm_props, 'global_bake_uv_layer_tag', text="UV Map")
 
         layout = self.layout.column(align=True)
         split = layout.split(factor=0.4)
@@ -69,25 +67,46 @@ class BM_PREFS_Addon_Preferences(bpy.types.AddonPreferences):
         layout.prop(bm_props, 'global_cage_color_solid')
         layout.prop(bm_props, 'global_cage_color_wire')
 
-        if bpy.app.version >= (2, 90, 0):
-            col = self.layout.column(align=True, heading="Baked Materials")
-            col.prop(bm_props, 'global_use_collapse_nodes')
-        else:
-            layout = self.layout.column(align=True)
-            split = layout.split(factor=0.4)
-            split.row()
-            split.label(text="Baked Materials")
-            layout.prop(bm_props, 'global_use_collapse_nodes')
+        layout = self.layout.column(align=True)
+        layout.prop(bm_props, 'global_bake_match_maps_type',
+                    text="Texture Set Matching")
 
-        if bpy.app.version >= (2, 90, 0):
-            col = self.layout.column(align=True, heading="Preset Menu")
-            col.prop(bm_props, 'global_use_preset_more_options')
-        else:
-            layout = self.layout.column(align=True)
-            split = layout.split(factor=0.4)
-            split.row()
-            split.label(text="Preset Menu")
-            layout.prop(bm_props, 'global_use_preset_more_options')
+        layout = self.layout.column(align=True)
+        split = layout.split(factor=0.4)
+        split.row()
+        split.label(text="Presets")
+        layout.prop(bm_props, 'global_use_preset_more_options')
+        layout.prop(bm_props, 'global_presets_use_default')
+
+        layout = self.layout.column(align=True)
+        split = layout.split(factor=0.4)
+        split.row()
+        split.label(text="Objects")
+        layout.prop(bm_props, 'global_use_hide_notbaked',
+                    text="Hide not Baked")
+
+        layout = self.layout.column(align=True)
+        split = layout.split(factor=0.4)
+        split.row()
+        split.label(text="Bake & Maps")
+        layout.prop(bm_props, 'global_bake_use_map_strength')
+
+        layout = self.layout.column(align=True)
+        split = layout.split(factor=0.4)
+        split.row()
+        split.label(text="Bake Named Node Outputs")
+        layout.prop(bm_props, 'global_bake_use_nno',
+                    text=("Disabled", "Enabled")[bm_props.global_bake_use_nno])
+        if bm_props.global_bake_use_nno:
+            layout.prop(bm_props, 'global_bake_nno_use_linked')
+            layout.prop(bm_props, 'global_bake_nno_use_all_nodes')
+            layout.prop(bm_props, 'global_bake_nno_use_named_bake')
+
+        layout = self.layout.column(align=True)
+        split = layout.split(factor=0.4)
+        split.row()
+        split.label(text="Baked Materials")
+        layout.prop(bm_props, 'global_use_collapse_nodes')
 
 
 class BM_ALEP_UL_Objects_Item(bpy.types.UIList):
@@ -561,7 +580,7 @@ class BM_UL_Table_of_Objects_Item_BatchNamingTable_Item(bpy.types.UIList):
 
 
 class BM_PT_MainBase(bpy.types.Panel):
-    bl_label = "BakeMaster v2.6.3"
+    bl_label = "BakeMaster v2.7.0"
     bl_idname = 'BM_PT_Main'
 
     def draw(self, context):
@@ -813,9 +832,6 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                     scene.bm_props.global_active_index)
                     or object.decal_use_precise_bounds)
 
-                col = d_col.column()
-                col.prop(object, 'decal_use_scene_lights')
-
             if object.nm_uni_container_is_global is False or not draw_all:
                 oti = BM_OT_DECAL_View.is_running_for(
                     object.global_object_name)
@@ -887,6 +903,7 @@ class BM_PT_Item_ObjectBase(bpy.types.Panel):
                         highpoly_object_index = object.hl_highpoly_table[
                             object.hl_highpoly_table_active_index].global_highpoly_object_index
                         hl_box_decal = hl_box.column(align=True)
+                        hl_box_decal.prop(object, 'hl_use_bake_individually')
                         if highpoly_object_index != -1:
                             source_object = scene.bm_table_of_objects[highpoly_object_index]
                             hl_box_decal.prop(source_object, 'hl_is_decal')
@@ -1610,6 +1627,7 @@ class BM_PT_Item_MapsBase(bpy.types.Panel):
                             highpoly_object_index = map.hl_highpoly_table[
                                 map.hl_highpoly_table_active_index].global_highpoly_object_index
                             hl_box_decal = hl_box.column(align=True)
+                            hl_box_decal.prop(object, 'hl_use_bake_individually')
                             if highpoly_object_index != -1:
                                 source_object = scene.bm_table_of_objects[highpoly_object_index]
                                 hl_box_decal.prop(source_object, 'hl_is_decal')
@@ -1906,8 +1924,11 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
                     BM_OT_ITEM_ChannelPack_Table_Remove.bl_idname, text="", icon='REMOVE')
                 chnlpack_box_column.separator(factor=1.0)
                 chnlpack_box_column.emboss = 'NONE'
-                BM_PT_CHNLP_Presets.draw_panel_header(chnlpack_box_column)
-                chnlpack_box_column.separator(factor=1.0)
+
+                if len(object.chnlp_channelpacking_table):
+                    BM_PT_CHNLP_Presets.draw_panel_header(chnlpack_box_column)
+                    chnlpack_box_column.separator(factor=1.0)
+
                 chnlpack_box_column.operator(
                     BM_OT_ITEM_ChannelPack_Table_Trash.bl_idname, text="", icon='TRASH')
 
@@ -1991,6 +2012,9 @@ class BM_PT_Item_OutputBase(bpy.types.Panel):
             if bpy.app.version >= (3, 4, 0):
                 bake_box_column = bake_box.column(align=True)
                 bake_box_column.prop(object, 'bake_view_from')
+
+            col = bake_box.column()
+            col.prop(object, 'bake_use_scene_lights')
 
             bake_box_column = bake_box.column(align=True)
             bake_box_column.prop(object, 'bake_create_material')

@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.3)
+# BakeMaster Blender Add-on (version 2.7.0)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -368,6 +368,9 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                             BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                             new_item = scene.bm_table_of_objects.add()
+                            # Default Preset
+                            scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+                            DefaultPreset_Apply.obj(context, new_item)
                             # update texsets objs source indexes
                             BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
                             # update highpolies and cages source indexes
@@ -509,6 +512,9 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                             BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                             new_container = scene.bm_table_of_objects.add()
+                            # Default Preset
+                            scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+                            DefaultPreset_Apply.obj(context, new_container)
                             # update texsets objs source indexes
                             BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
 
@@ -528,6 +534,9 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                             BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                             new_item = scene.bm_table_of_objects.add()
+                            # Default Preset
+                            scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+                            DefaultPreset_Apply.obj(context, new_item)
 
                             new_item.global_object_name = shell[0]
                             new_item.nm_this_indent = 2
@@ -556,6 +565,9 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                         # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                         BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                         new_item = scene.bm_table_of_objects.add()
+                        # Default Preset
+                        scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+                        DefaultPreset_Apply.obj(context, new_item)
                             
                         new_item.global_object_name = shell[0]
                         new_item.nm_this_indent = 2
@@ -597,6 +609,9 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                     # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                     BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                     universal_container = context.scene.bm_table_of_objects.add()
+                    # Default Preset
+                    scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+                    DefaultPreset_Apply.obj(context, universal_container)
                     # update texsets objs source indexes
                     BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
 
@@ -651,6 +666,9 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                             # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                             BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                             local_container = context.scene.bm_table_of_objects.add()
+                            # Default Preset
+                            scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+                            DefaultPreset_Apply.obj(context, local_container)
                             # update texsets objs source indexes
                             BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
 
@@ -675,6 +693,9 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                                 # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                                 BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                                 new_item = context.scene.bm_table_of_objects.add()
+                                # Default Preset
+                                scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+                                DefaultPreset_Apply.obj(context, new_item)
                                 # update texsets objs source indexes
                                 BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
 
@@ -698,6 +719,9 @@ class BM_OT_Table_of_Objects_Add(bpy.types.Operator):
                     # set hl_use_cage to False for data-classes with hl_use_cage True and None hl_cage
                     BM_ITEM_PROPS_hl_cage_UpdateOnAdd(context)
                     new_item = context.scene.bm_table_of_objects.add()
+                    # Default Preset
+                    scene.bm_props.global_active_index = len(scene.bm_table_of_objects) - 1
+                    DefaultPreset_Apply.obj(context, new_item)
                     # update texsets objs source indexes
                     BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
 
@@ -1147,11 +1171,15 @@ class BM_OT_ITEM_ChannelPack_Table_Add(bpy.types.Operator):
 
     def execute(self, context):
         object = BM_Object_Get(None, context)[0]
+
         new_item = object.chnlp_channelpacking_table.add()
         new_item.global_channelpack_index = len(object.chnlp_channelpacking_table)
         new_item.global_channelpack_name = "ChannelPack{}".format(len(object.chnlp_channelpacking_table))
         new_item.global_channelpack_object_index = context.scene.bm_props.global_active_index
         object.chnlp_channelpacking_table_active_index = len(object.chnlp_channelpacking_table) - 1
+
+        # Default Preset
+        DefaultPreset_Apply.channel_pack(context, new_item)
         return {'FINISHED'}
 
 class BM_OT_ITEM_ChannelPack_Table_Remove(bpy.types.Operator):
@@ -1486,6 +1514,9 @@ class BM_OT_ITEM_Maps(bpy.types.Operator):
             new_pass.global_map_index = len(object.global_maps)
             new_pass.global_map_object_index = context.scene.bm_props.global_active_index
             object.global_maps_active_index = len(object.global_maps) - 1
+
+            # Default Preset
+            DefaultPreset_Apply.map(context, object, new_pass)
 
         return {'FINISHED'}
 
@@ -1829,6 +1860,9 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
         last_uni_c_index = -1
         # adding universal container to the bm_table_of_objects
         universal_container = context.scene.bm_table_of_objects.add()
+        # Default Preset
+        context.scene.bm_props.global_active_index = len(context.scene.bm_table_of_objects) - 1
+        DefaultPreset_Apply.obj(context, universal_container)
         # update texsets objs source indexes
         BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
         # update highpolies and cages source indexes
@@ -1856,6 +1890,9 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
             if len(local_names):
                 local_containers_index += 1
                 local_container = context.scene.bm_table_of_objects.add()
+                # Default Preset
+                context.scene.bm_props.global_active_index = len(context.scene.bm_table_of_objects) - 1
+                DefaultPreset_Apply.obj(context, local_container)
                 # update texsets objs source indexes
                 BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
                 # update highpolies and cages source indexes
@@ -1873,6 +1910,9 @@ class BM_OT_CreateArtificialUniContainer(bpy.types.Operator):
 
                 for obj_index, object_name in enumerate(local_names):
                     new_item = context.scene.bm_table_of_objects.add()
+                    # Default Preset
+                    context.scene.bm_props.global_active_index = len(context.scene.bm_table_of_objects) - 1
+                    DefaultPreset_Apply.obj(context, new_item)
                     # update texsets objs source indexes
                     BM_TEXSET_OBJECT_PROPS_global_object_name_UpdateOrder(context)
                     # update highpolies and cages source indexes

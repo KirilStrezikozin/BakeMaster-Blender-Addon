@@ -2,7 +2,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.3)
+# BakeMaster Blender Add-on (version 2.7.0)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -168,6 +168,7 @@ def make_zips() -> None:
         "ui_panel.py",
         "ui_panel_base.py",
         "utils.py",
+        "blender_manifest.toml",
     ]
 
     licenses = [

@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.3)
+# BakeMaster Blender Add-on (version 2.7.0)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -108,6 +108,20 @@ class BM_AddPresetBase():
         default=False,
         options={'HIDDEN', 'SKIP_SAVE'},
     )
+    overwrite: bpy.props.BoolProperty(
+        default=False,
+        options={'HIDDEN', 'SKIP_SAVE'},
+    )
+
+    @classmethod
+    def description(cls, context: bpy.types.Context, properties) -> str:
+        #return cls.bl_description
+        if properties.remove_name:
+            return "Remove this preset from the list"
+        elif properties.overwrite:
+            return "Overwrite settings in the '{}' preset with the current ones".format(properties.name)
+        else:
+            return "Add new '{}' preset with the current settings".format(properties.name)
 
     @staticmethod
     def as_filename(name):  # could reuse for other presets
@@ -209,9 +223,7 @@ class BM_AddPresetBase():
                                 # XXX: stupid, probaly should write it better
                                 if "_map_" in except_for_in_rna_all:
                                     file_preset.write("\t%s = %r\n" % (rna_path_step, 'NONE'))
-                                elif "_data" in except_for_in_rna_all:
-                                    file_preset.write("\tpass\n")
-                                elif "out_bit_depth" in except_for_in_rna_all:
+                                else:
                                     file_preset.write("\tpass\n")
 
                             else:
@@ -220,6 +232,7 @@ class BM_AddPresetBase():
                     file_preset = open(filepath, 'w', encoding="utf-8")
                     file_preset.write("import bpy\n")
 
+                    bm_props = bpy.context.scene.bm_props
                     bm_item = bpy.context.scene.bm_table_of_objects[bpy.context.scene.bm_props.global_active_index]
                     # for hl, uv, out tags add check for if execute for map instead of object
                     if hasattr(self, "preset_tag"):
@@ -241,15 +254,272 @@ class BM_AddPresetBase():
                             file_preset.write("%s\n" % rna_path)
                         file_preset.write("\n")
 
-                    add_except = False
-                    except_type = ""
-                    except_for = ["out_bit_depth"]
-                    if hasattr(self, "preset_tag"):
-                        # add try except TypeError for channel pack maps for chnl preset
-                        if getattr(self, "preset_tag") in ["full_object", "chnlp"]:
-                            add_except = True
-                            except_type = "TypeError"
-                            except_for.append("_map_")
+                    add_except = True
+                    except_type = "TypeError"
+                    except_for = ["out_bit_depth", "uv_active_layer", "uv_type", "map_vertexcolor_layer", "decal_custom_camera", "cm"]
+                    # add try except TypeError for channel pack maps for chnl preset
+                    if getattr(self, "preset_tag", "other") in ["full_object", "full_map"]:
+                        except_for.append("_map_")
+                        except_for.append("_data")
+
+                        # append each map props to preset_values for full_object, full_map preset
+                        for map_index, _ in enumerate(bm_item.global_maps):
+                            map_data = [
+                                "global_use_bake",
+                                "global_map_type",
+
+                                "map_ALBEDO_prefix",
+
+                                "map_METALNESS_prefix",
+
+                                "map_ROUGHNESS_prefix",
+
+                                "map_DIFFUSE_prefix",
+
+                                "map_SPECULAR_prefix",
+
+                                "map_GLOSSINESS_prefix",
+
+                                "map_OPACITY_prefix",
+
+                                "map_EMISSION_prefix",
+
+                                "map_PASS_prefix",
+                                # "map_PASS_use_preview",
+                                "map_pass_type",
+
+                                "map_DECAL_prefix",
+                                # "map_DECAL_use_preview",
+                                "map_decal_pass_type",
+                                "map_decal_height_opacity_invert",
+                                "map_decal_normal_preset",
+                                "map_decal_normal_custom_preset",
+                                "map_decal_normal_r",
+                                "map_decal_normal_g",
+                                "map_decal_normal_b",
+
+                                "map_VERTEX_COLOR_LAYER_prefix",
+                                # "map_VERTEX_COLOR_LAYER_use_preview",
+                                "map_vertexcolor_layer",
+
+                                "map_C_COMBINED_prefix",
+
+                                "map_C_AO_prefix",
+
+                                "map_C_SHADOW_prefix",
+
+                                "map_C_POSITION_prefix",
+
+                                "map_C_NORMAL_prefix",
+
+                                "map_C_UV_prefix",
+
+                                "map_C_ROUGHNESS_prefix",
+
+                                "map_C_EMIT_prefix",
+
+                                "map_C_ENVIRONMENT_prefix",
+
+                                "map_C_DIFFUSE_prefix",
+
+                                "map_C_GLOSSY_prefix",
+
+                                "map_C_TRANSMISSION_prefix",
+
+                                "map_cycles_use_pass_direct",
+                                "map_cycles_use_pass_indirect",
+                                "map_cycles_use_pass_color",
+                                "map_cycles_use_pass_diffuse",
+                                "map_cycles_use_pass_glossy",
+                                "map_cycles_use_pass_transmission",
+                                "map_cycles_use_pass_ambient_occlusion",
+                                "map_cycles_use_pass_emit",
+
+                                "map_NORMAL_prefix",
+                                # "map_NORMAL_use_preview",
+                                "map_normal_data",
+                                "map_normal_space",
+                                "map_normal_multires_subdiv_levels",
+                                "map_normal_preset",
+                                "map_normal_custom_preset",
+                                "map_normal_r",
+                                "map_normal_g",
+                                "map_normal_b",
+
+                                "map_DISPLACEMENT_prefix",
+                                # "map_DISPLACEMENT_use_preview",
+                                "map_displacement_data",
+                                "map_displacement_result",
+                                "map_displacement_subdiv_levels",
+                                "map_displacement_multires_subdiv_levels",
+                                "map_displacement_use_lowres_mesh",
+
+                                "map_VECTOR_DISPLACEMENT_prefix",
+                                # "map_VECTOR_DISPLACEMENT_use_preview",
+                                "map_vector_displacement_use_negative",
+                                "map_vector_displacement_result",
+                                "map_vector_displacement_subdiv_levels",
+
+                                "map_POSITION_prefix",
+                                # "map_POSITION_use_preview",
+
+                                "map_AO_prefix",
+                                # "map_AO_use_preview",
+                                "map_AO_use_default",
+                                "map_ao_samples",
+                                "map_ao_distance",
+                                "map_ao_black_point",
+                                "map_ao_white_point",
+                                "map_ao_brightness",
+                                "map_ao_contrast",
+                                "map_ao_opacity",
+                                "map_ao_use_local",
+                                "map_ao_use_invert",
+
+                                "map_CAVITY_prefix",
+                                # "map_CAVITY_use_preview",
+                                "map_CAVITY_use_default",
+                                "map_cavity_black_point",
+                                "map_cavity_white_point",
+                                "map_cavity_power",
+                                "map_cavity_use_invert",
+
+                                "map_CURVATURE_prefix",
+                                # "map_CURVATURE_use_preview",
+                                "map_CURVATURE_use_default",
+                                "map_curv_samples",
+                                "map_curv_radius",
+                                "map_curv_black_point",
+                                "map_curv_mid_point",
+                                "map_curv_white_point",
+                                "map_curv_body_gamma",
+
+                                "map_THICKNESS_prefix",
+                                # "map_THICKNESS_use_preview",
+                                "map_THICKNESS_use_default",
+                                "map_thick_samples",
+                                "map_thick_distance",
+                                "map_thick_black_point",
+                                "map_thick_white_point",
+                                "map_thick_brightness",
+                                "map_thick_contrast",
+                                "map_thick_use_invert",
+
+                                "map_ID_prefix",
+                                # "map_ID_use_preview",
+                                "map_matid_data",
+                                "map_matid_vertex_groups_name_contains",
+                                "map_matid_algorithm",
+                                "map_matid_seed",
+
+                                "map_MASK_prefix",
+                                # "map_MASK_use_preview",
+                                "map_mask_data",
+                                "map_mask_vertex_groups_name_contains",
+                                "map_mask_materials_name_contains",
+                                "map_mask_color1",
+                                "map_mask_color2",
+                                "map_mask_use_invert",
+
+                                "map_XYZMASK_prefix",
+                                # "map_XYZMASK_use_preview",
+                                "map_XYZMASK_use_default",
+                                "map_xyzmask_use_x",
+                                "map_xyzmask_use_y",
+                                "map_xyzmask_use_z",
+                                "map_xyzmask_coverage",
+                                "map_xyzmask_saturation",
+                                "map_xyzmask_opacity",
+                                "map_xyzmask_use_invert",
+
+                                "map_GRADIENT_prefix",
+                                # "map_GRADIENT_use_preview",
+                                "map_GRADIENT_use_default",
+                                "map_gmask_type",
+                                "map_gmask_location_x",
+                                "map_gmask_location_y",
+                                "map_gmask_location_z",
+                                "map_gmask_rotation_x",
+                                "map_gmask_rotation_y",
+                                "map_gmask_rotation_z",
+                                "map_gmask_scale_x",
+                                "map_gmask_scale_y",
+                                "map_gmask_scale_z",
+                                "map_gmask_coverage",
+                                "map_gmask_contrast",
+                                "map_gmask_saturation",
+                                "map_gmask_opacity",
+                                "map_gmask_use_invert",
+
+                                "map_EDGE_prefix",
+                                # "map_EDGE_use_preview",
+                                "map_EDGE_use_default",
+                                "map_edgemask_samples",
+                                "map_edgemask_radius",
+                                "map_edgemask_edge_contrast",
+                                "map_edgemask_body_contrast",
+                                "map_edgemask_use_invert",
+
+                                "map_WIREFRAME_prefix",
+                                # "map_WIREFRAME_use_preview",
+                                "map_wireframemask_line_thickness",
+                                "map_wireframemask_use_invert",
+
+                                "out_use_denoise",
+                                "out_file_format",
+                                "out_tga_use_raw",
+                                "out_dpx_use_log",
+                                "out_tiff_compression",
+                                "out_exr_codec",
+                                "out_compression",
+                                "out_quality",
+                                "out_res",
+                                "out_res_height",
+                                "out_res_width",
+                                "out_margin",
+                                "out_margin_type",
+                                "out_bit_depth",
+                                "out_use_alpha",
+                                "out_use_transbg",
+                                "out_udim_start_tile",
+                                "out_udim_end_tile",
+                                "out_super_sampling_aa",
+                                "out_upscaling",
+                                "out_samples",
+                                "out_use_adaptive_sampling",
+                                "out_adaptive_threshold",
+                                "out_min_samples",
+
+                                "uv_bake_data",
+                                "uv_bake_target",
+                                "uv_active_layer",
+                                "uv_type",
+                                "uv_snap_islands_to_pixels",
+
+                                "hl_cage_type",
+                                "hl_cage_extrusion",
+                                "hl_max_ray_distance",
+                            ]
+                            for key in map_data:
+                                self.preset_values.append("bm_item.global_maps[%d].%s" % (map_index, key))
+
+                        # write trash, add maps for full_object, full_map preset
+                        ad_lines = [
+                            "to_remove = []",
+                            "for index, _ in enumerate(bm_item.global_maps):",
+                            "\tto_remove.append(index)",
+                            "bm_item.global_maps_active_index = 0",
+                            "for index in sorted(to_remove, reverse=True):",
+                            "\tbm_item.global_maps.remove(index)",
+                            "for i in range(%s):" % len(bm_item.global_maps),
+                            "\tnew_pass = bm_item.global_maps.add()",
+                            "\tnew_pass.global_map_type = 'ALBEDO'",
+                            "\tnew_pass.global_map_index = len(bm_item.global_maps)",
+                            "\tnew_pass.global_map_object_index = bpy.context.scene.bm_props.global_active_index",
+                            "\tbm_item.global_maps_active_index = len(bm_item.global_maps) - 1",
+                        ]
+                        for line in ad_lines:
+                            file_preset.write("%s\n" % line)
 
                         # append each channel pack props to preset_values for full_object preset
                         if getattr(self, "preset_tag") == "full_object":
@@ -292,270 +562,6 @@ class BM_AddPresetBase():
                                 "\tnew_item.global_channelpack_index = len(bm_item.chnlp_channelpacking_table)",
                                 "\tnew_item.global_channelpack_name = 'ChannelPack%d'" % len(bm_item.chnlp_channelpacking_table),
                                 "\tbm_item.chnlp_channelpacking_table_active_index = len(bm_item.chnlp_channelpacking_table) - 1",
-                            ]
-                            for line in ad_lines:
-                                file_preset.write("%s\n" % line)
-                        # append each map props to preset_values for full_object, full_map preset
-                        if getattr(self, "preset_tag") in ["full_object", "full_map"]:
-                            # for checking if can saved data type for ..._data props
-                            add_except = True
-                            except_type = "TypeError"
-                            except_for.append("_data")
-
-                            for map_index, _ in enumerate(bm_item.global_maps):
-                                map_data = [
-                                    "global_use_bake",
-                                    "global_map_type",
-
-                                    "map_ALBEDO_prefix",
-
-                                    "map_METALNESS_prefix",
-
-                                    "map_ROUGHNESS_prefix",
-
-                                    "map_DIFFUSE_prefix",
-
-                                    "map_SPECULAR_prefix",
-
-                                    "map_GLOSSINESS_prefix",
-
-                                    "map_OPACITY_prefix",
-
-                                    "map_EMISSION_prefix",
-
-                                    "map_PASS_prefix",
-                                    # "map_PASS_use_preview",
-                                    "map_pass_type",
-
-                                    "map_DECAL_prefix",
-                                    # "map_DECAL_use_preview",
-                                    "map_decal_pass_type",
-                                    "map_decal_height_opacity_invert",
-                                    "map_decal_normal_preset",
-                                    "map_decal_normal_custom_preset",
-                                    "map_decal_normal_r",
-                                    "map_decal_normal_g",
-                                    "map_decal_normal_b",
-
-                                    "map_VERTEX_COLOR_LAYER_prefix",
-                                    # "map_VERTEX_COLOR_LAYER_use_preview",
-                                    # "map_vertexcolor_layer",
-
-                                    "map_C_COMBINED_prefix",
-
-                                    "map_C_AO_prefix",
-
-                                    "map_C_SHADOW_prefix",
-
-                                    "map_C_POSITION_prefix",
-
-                                    "map_C_NORMAL_prefix",
-
-                                    "map_C_UV_prefix",
-
-                                    "map_C_ROUGHNESS_prefix",
-
-                                    "map_C_EMIT_prefix",
-
-                                    "map_C_ENVIRONMENT_prefix",
-
-                                    "map_C_DIFFUSE_prefix",
-
-                                    "map_C_GLOSSY_prefix",
-
-                                    "map_C_TRANSMISSION_prefix",
-
-                                    "map_cycles_use_pass_direct",
-                                    "map_cycles_use_pass_indirect",
-                                    "map_cycles_use_pass_color",
-                                    "map_cycles_use_pass_diffuse",
-                                    "map_cycles_use_pass_glossy",
-                                    "map_cycles_use_pass_transmission",
-                                    "map_cycles_use_pass_ambient_occlusion",
-                                    "map_cycles_use_pass_emit",
-
-                                    "map_NORMAL_prefix",
-                                    # "map_NORMAL_use_preview",
-                                    "map_normal_data",
-                                    "map_normal_space",
-                                    "map_normal_multires_subdiv_levels",
-                                    "map_normal_preset",
-                                    "map_normal_custom_preset",
-                                    "map_normal_r",
-                                    "map_normal_g",
-                                    "map_normal_b",
-
-                                    "map_DISPLACEMENT_prefix",
-                                    # "map_DISPLACEMENT_use_preview",
-                                    "map_displacement_data",
-                                    "map_displacement_result",
-                                    "map_displacement_subdiv_levels",
-                                    "map_displacement_multires_subdiv_levels",
-                                    "map_displacement_use_lowres_mesh",
-
-                                    "map_VECTOR_DISPLACEMENT_prefix",
-                                    # "map_VECTOR_DISPLACEMENT_use_preview",
-                                    "map_vector_displacement_use_negative",
-                                    "map_vector_displacement_result",
-                                    "map_vector_displacement_subdiv_levels",
-
-                                    "map_POSITION_prefix",
-                                    # "map_POSITION_use_preview",
-
-                                    "map_AO_prefix",
-                                    # "map_AO_use_preview",
-                                    "map_AO_use_default",
-                                    "map_ao_samples",
-                                    "map_ao_distance",
-                                    "map_ao_black_point",
-                                    "map_ao_white_point",
-                                    "map_ao_brightness",
-                                    "map_ao_contrast",
-                                    "map_ao_opacity",
-                                    "map_ao_use_local",
-                                    "map_ao_use_invert",
-
-                                    "map_CAVITY_prefix",
-                                    # "map_CAVITY_use_preview",
-                                    "map_CAVITY_use_default",
-                                    "map_cavity_black_point",
-                                    "map_cavity_white_point",
-                                    "map_cavity_power",
-                                    "map_cavity_use_invert",
-
-                                    "map_CURVATURE_prefix",
-                                    # "map_CURVATURE_use_preview",
-                                    "map_CURVATURE_use_default",
-                                    "map_curv_samples",
-                                    "map_curv_radius",
-                                    "map_curv_black_point",
-                                    "map_curv_mid_point",
-                                    "map_curv_white_point",
-                                    "map_curv_body_gamma",
-
-                                    "map_THICKNESS_prefix",
-                                    # "map_THICKNESS_use_preview",
-                                    "map_THICKNESS_use_default",
-                                    "map_thick_samples",
-                                    "map_thick_distance",
-                                    "map_thick_black_point",
-                                    "map_thick_white_point",
-                                    "map_thick_brightness",
-                                    "map_thick_contrast",
-                                    "map_thick_use_invert",
-
-                                    "map_ID_prefix",
-                                    # "map_ID_use_preview",
-                                    "map_matid_data",
-                                    "map_matid_vertex_groups_name_contains",
-                                    "map_matid_algorithm",
-                                    "map_matid_seed",
-
-                                    "map_MASK_prefix",
-                                    # "map_MASK_use_preview",
-                                    "map_mask_data",
-                                    "map_mask_vertex_groups_name_contains",
-                                    "map_mask_materials_name_contains",
-                                    "map_mask_color1",
-                                    "map_mask_color2",
-                                    "map_mask_use_invert",
-
-                                    "map_XYZMASK_prefix",
-                                    # "map_XYZMASK_use_preview",
-                                    "map_XYZMASK_use_default",
-                                    "map_xyzmask_use_x",
-                                    "map_xyzmask_use_y",
-                                    "map_xyzmask_use_z",
-                                    "map_xyzmask_coverage",
-                                    "map_xyzmask_saturation",
-                                    "map_xyzmask_opacity",
-                                    "map_xyzmask_use_invert",
-
-                                    "map_GRADIENT_prefix",
-                                    # "map_GRADIENT_use_preview",
-                                    "map_GRADIENT_use_default",
-                                    "map_gmask_type",
-                                    "map_gmask_location_x",
-                                    "map_gmask_location_y",
-                                    "map_gmask_location_z",
-                                    "map_gmask_rotation_x",
-                                    "map_gmask_rotation_y",
-                                    "map_gmask_rotation_z",
-                                    "map_gmask_scale_x",
-                                    "map_gmask_scale_y",
-                                    "map_gmask_scale_z",
-                                    "map_gmask_coverage",
-                                    "map_gmask_contrast",
-                                    "map_gmask_saturation",
-                                    "map_gmask_opacity",
-                                    "map_gmask_use_invert",
-
-                                    "map_EDGE_prefix",
-                                    # "map_EDGE_use_preview",
-                                    "map_EDGE_use_default",
-                                    "map_edgemask_samples",
-                                    "map_edgemask_radius",
-                                    "map_edgemask_edge_contrast",
-                                    "map_edgemask_body_contrast",
-                                    "map_edgemask_use_invert",
-
-                                    "map_WIREFRAME_prefix",
-                                    # "map_WIREFRAME_use_preview",
-                                    "map_wireframemask_line_thickness",
-                                    "map_wireframemask_use_invert",
-
-                                    "out_use_denoise",
-                                    "out_file_format",
-                                    "out_tga_use_raw",
-                                    "out_dpx_use_log",
-                                    "out_tiff_compression",
-                                    "out_exr_codec",
-                                    "out_compression",
-                                    "out_quality",
-                                    "out_res",
-                                    "out_res_height",
-                                    "out_res_width",
-                                    "out_margin",
-                                    "out_margin_type",
-                                    "out_bit_depth",
-                                    "out_use_alpha",
-                                    "out_use_transbg",
-                                    "out_udim_start_tile",
-                                    "out_udim_end_tile",
-                                    "out_super_sampling_aa",
-                                    "out_upscaling",
-                                    "out_samples",
-                                    "out_use_adaptive_sampling",
-                                    "out_adaptive_threshold",
-                                    "out_min_samples",
-
-                                    "uv_bake_data",
-                                    "uv_bake_target",
-                                    # "uv_active_layer",
-                                    "uv_type",
-                                    "uv_snap_islands_to_pixels",
-
-                                    "hl_cage_type",
-                                    "hl_cage_extrusion",
-                                    "hl_max_ray_distance",
-                                ]
-                                for key in map_data:
-                                    self.preset_values.append("bm_item.global_maps[%d].%s" % (map_index, key))
-
-                            # write trash, add maps for full_object, full_map preset
-                            ad_lines = [
-                                "to_remove = []",
-                                "for index, _ in enumerate(bm_item.global_maps):",
-                                "\tto_remove.append(index)",
-                                "bm_item.global_maps_active_index = 0",
-                                "for index in sorted(to_remove, reverse=True):",
-                                "\tbm_item.global_maps.remove(index)",
-                                "for i in range(%s):" % len(bm_item.global_maps),
-                                "\tnew_pass = bm_item.global_maps.add()",
-                                "\tnew_pass.global_map_type = 'ALBEDO'",
-                                "\tnew_pass.global_map_index = len(bm_item.global_maps)",
-                                "\tnew_pass.global_map_object_index = bpy.context.scene.bm_props.global_active_index",
-                                "\tbm_item.global_maps_active_index = len(bm_item.global_maps) - 1",
                             ]
                             for line in ad_lines:
                                 file_preset.write("%s\n" % line)
@@ -606,6 +612,11 @@ class BM_AddPresetBase():
             # XXX, stupid!
             preset_menu_class.bl_label = "Presets"
 
+            bm_props = context.scene.bm_props
+            default_p_prop = self.prop_name.replace("_ln_", "_master_")
+            if hasattr(bm_props, default_p_prop):
+                setattr(bm_props, default_p_prop, "")
+
         return {'FINISHED'}
 
     def check(self, _context):
@@ -638,17 +649,17 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     preset_values = [
         "bm_item.decal_is_decal",
         "bm_item.decal_use_custom_camera",
-        # "bm_item.decal_custom_camera",
+        "bm_item.decal_custom_camera",
         "bm_item.decal_upper_coordinate",
         "bm_item.decal_rotation",
         "bm_item.decal_use_flip_vertical",
         "bm_item.decal_use_flip_horizontal",
         "bm_item.decal_use_adapt_res",
         "bm_item.decal_use_precise_bounds",
-        "bm_item.decal_use_scene_lights",
         "bm_item.decal_boundary_offset",
 
         # "bm_item.hl_highpoly_table",
+        "bm_item.hl_use_bake_individually",
         "bm_item.hl_decals_use_separate_texset",
         "bm_item.hl_decals_separate_texset_prefix",
         # "bm_item.hl_use_cage",
@@ -660,8 +671,8 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 
         "bm_item.uv_bake_data",
         "bm_item.uv_bake_target",
-        # "bm_item.uv_active_layer",
-        # "bm_item.uv_type",
+        "bm_item.uv_active_layer",
+        "bm_item.uv_type",
         "bm_item.uv_snap_islands_to_pixels",
         "bm_item.uv_use_auto_unwrap",
         "bm_item.uv_auto_unwrap_angle_limit",
@@ -717,9 +728,19 @@ class BM_OT_FULL_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.bake_assign_modifiers",
         "bm_item.bake_device",
         "bm_item.bake_view_from",
+        "bm_item.bake_use_scene_lights",
         "bm_item.bake_hide_when_inactive",
         "bm_item.bake_vg_index",
     ]
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        sc = context.scene
+
+        if len(sc.bm_table_of_objects) == 0:
+            cls.poll_message_set("No objects added")
+            return False
+        return True
 
 class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.object_preset_add"
@@ -736,17 +757,17 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     preset_values = [
         "bm_item.decal_is_decal",
         "bm_item.decal_use_custom_camera",
-        # "bm_item.decal_custom_camera",
+        "bm_item.decal_custom_camera",
         "bm_item.decal_upper_coordinate",
         "bm_item.decal_rotation",
         "bm_item.decal_use_flip_vertical",
         "bm_item.decal_use_flip_horizontal",
         "bm_item.decal_use_adapt_res",
         "bm_item.decal_use_precise_bounds",
-        "bm_item.decal_use_scene_lights",
         "bm_item.decal_boundary_offset",
 
         # "bm_item.hl_highpoly_table",
+        "bm_item.hl_use_bake_individually",
         "bm_item.hl_decals_use_separate_texset",
         "bm_item.hl_decals_separate_texset_prefix",
         # "bm_item.hl_use_cage",
@@ -758,7 +779,7 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 
         "bm_item.uv_bake_data",
         "bm_item.uv_bake_target",
-        # "bm_item.uv_active_layer",
+        "bm_item.uv_active_layer",
         "bm_item.uv_type",
         "bm_item.uv_snap_islands_to_pixels",
         "bm_item.uv_use_auto_unwrap",
@@ -780,6 +801,15 @@ class BM_OT_OBJECT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.csh_highpoly_smoothing_groups_name_contains",
     ]
 
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        sc = context.scene
+
+        if len(sc.bm_table_of_objects) == 0:
+            cls.poll_message_set("No objects added")
+            return False
+        return True
+
 class BM_OT_DECAL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.decal_preset_add"
     bl_label = "Decal Preset"
@@ -795,16 +825,24 @@ class BM_OT_DECAL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     preset_values = [
         "bm_item.decal_is_decal",
         "bm_item.decal_use_custom_camera",
-        # "bm_item.decal_custom_camera",
+        "bm_item.decal_custom_camera",
         "bm_item.decal_upper_coordinate",
         "bm_item.decal_rotation",
         "bm_item.decal_use_flip_vertical",
         "bm_item.decal_use_flip_horizontal",
         "bm_item.decal_use_adapt_res",
         "bm_item.decal_use_precise_bounds",
-        "bm_item.decal_use_scene_lights",
         "bm_item.decal_boundary_offset",
     ]
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        sc = context.scene
+
+        if len(sc.bm_table_of_objects) == 0:
+            cls.poll_message_set("No objects added")
+            return False
+        return True
 
 class BM_OT_HL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.hl_preset_add"
@@ -823,6 +861,7 @@ class BM_OT_HL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     preset_values = [
         # "bm_item.hl_use_unique_per_map",
         # "bm_map.hl_highpoly_table",
+        "bm_item.hl_use_bake_individually",
         "bm_item.hl_decals_use_separate_texset",
         "bm_item.hl_decals_separate_texset_prefix",
         # "bm_map.hl_use_cage",
@@ -831,6 +870,21 @@ class BM_OT_HL_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_map.hl_max_ray_distance",
         # "bm_map.hl_cage",
     ]
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        sc = context.scene
+
+        if len(sc.bm_table_of_objects) == 0:
+            cls.poll_message_set("No objects added")
+            return False
+
+        bm_props = sc.bm_props
+        bm_item = sc.bm_table_of_objects[bm_props.global_active_index]
+        if bm_item.hl_use_unique_per_map and len(bm_item.global_maps) == 0:
+            cls.poll_message_set("No maps added")
+            return False
+        return True
 
 class BM_OT_UV_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.uv_preset_add"
@@ -849,7 +903,7 @@ class BM_OT_UV_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     preset_values = [
         "bm_map.uv_bake_data",
         "bm_map.uv_bake_target",
-        # "bm_map.uv_active_layer",
+        "bm_map.uv_active_layer",
         "bm_map.uv_type",
         "bm_map.uv_snap_islands_to_pixels",
         "bm_item.uv_use_auto_unwrap",
@@ -858,6 +912,21 @@ class BM_OT_UV_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.uv_auto_unwrap_use_scale_to_bounds",
         # "bm_item.uv_use_unique_per_map",
     ]
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        sc = context.scene
+
+        if len(sc.bm_table_of_objects) == 0:
+            cls.poll_message_set("No objects added")
+            return False
+
+        bm_props = sc.bm_props
+        bm_item = sc.bm_table_of_objects[bm_props.global_active_index]
+        if bm_item.uv_use_unique_per_map and len(bm_item.global_maps) == 0:
+            cls.poll_message_set("No maps added")
+            return False
+        return True
 
 class BM_OT_CSH_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.csh_preset_add"
@@ -884,6 +953,15 @@ class BM_OT_CSH_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.csh_highpoly_smoothing_groups_angle",
         "bm_item.csh_highpoly_smoothing_groups_name_contains",
     ]
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        sc = context.scene
+
+        if len(sc.bm_table_of_objects) == 0:
+            cls.poll_message_set("No objects added")
+            return False
+        return True
 
 class BM_OT_OUT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.out_preset_add"
@@ -926,6 +1004,21 @@ class BM_OT_OUT_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_map.out_min_samples",
     ]
 
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        sc = context.scene
+
+        if len(sc.bm_table_of_objects) == 0:
+            cls.poll_message_set("No objects added")
+            return False
+
+        bm_props = sc.bm_props
+        bm_item = sc.bm_table_of_objects[bm_props.global_active_index]
+        if bm_item.out_use_unique_per_map and len(bm_item.global_maps) == 0:
+            cls.poll_message_set("No maps added")
+            return False
+        return True
+
 class BM_OT_FULL_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.full_map_preset_add"
     bl_label = "Full Maps Preset"
@@ -943,6 +1036,21 @@ class BM_OT_FULL_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     # added in addpresetbase,
     # depends on bm_item maps
     preset_values = []
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        sc = context.scene
+
+        if len(sc.bm_table_of_objects) == 0:
+            cls.poll_message_set("No objects added")
+            return False
+
+        bm_props = sc.bm_props
+        bm_item = sc.bm_table_of_objects[bm_props.global_active_index]
+        if len(bm_item.global_maps) == 0:
+            cls.poll_message_set("No maps added")
+            return False
+        return True
 
 class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.map_preset_add"
@@ -993,7 +1101,7 @@ class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 
         "bm_map.map_VERTEX_COLOR_LAYER_prefix",
         #bm_map. "map_VERTEX_COLOR_LAYER_use_preview",
-        # "bm_map.map_vertexcolor_layer",
+        "bm_map.map_vertexcolor_layer",
 
         "bm_map.map_C_COMBINED_prefix",
 
@@ -1159,6 +1267,21 @@ class BM_OT_MAP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_map.map_wireframemask_use_invert",
     ]
 
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        sc = context.scene
+
+        if len(sc.bm_table_of_objects) == 0:
+            cls.poll_message_set("No objects added")
+            return False
+
+        bm_props = sc.bm_props
+        bm_item = sc.bm_table_of_objects[bm_props.global_active_index]
+        if len(bm_item.global_maps) == 0:
+            cls.poll_message_set("No maps added")
+            return False
+        return True
+
 class BM_OT_CHNLP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.chnlp_preset_add"
     bl_label = "Channel Pack Preset"
@@ -1197,6 +1320,17 @@ class BM_OT_CHNLP_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_chnlp_item.R1G1B1A_map_A",
     ]
 
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        sc = context.scene
+        bm_props = sc.bm_props
+        bm_item = sc.bm_table_of_objects[bm_props.global_active_index]
+
+        if len(bm_item.chnlp_channelpacking_table) == 0:
+            cls.poll_message_set("No channel packs added")
+            return False
+        return True
+
 class BM_OT_BAKE_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.bake_preset_add"
     bl_label = "Bake Output Preset"
@@ -1220,9 +1354,19 @@ class BM_OT_BAKE_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
         "bm_item.bake_assign_modifiers",
         "bm_item.bake_device",
         "bm_item.bake_view_from",
+        "bm_item.bake_use_scene_lights",
         "bm_item.bake_hide_when_inactive",
         "bm_item.bake_vg_index",
     ]
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        sc = context.scene
+
+        if len(sc.bm_table_of_objects) == 0:
+            cls.poll_message_set("No objects added")
+            return False
+        return True
 
 class BM_OT_CM_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
     bl_idname = "bakemaster.cm_preset_add"
@@ -1251,6 +1395,58 @@ class BM_OT_CM_Preset_Add(BM_AddPresetBase, bpy.types.Operator):
 ###########################################################
 ### UI Presets Panels and Menus ###
 ###########################################################
+class BM_OT_Preset_MarkDefault(bpy.types.Operator):
+    bl_idname = "bakemaster.preset_markdefault"
+    bl_label = "Mark as Default"
+    bl_options = {'INTERNAL'}
+
+    preset_name: bpy.props.StringProperty(
+        name="Preset Name",
+        description="Name of the preset to mark as default",
+        maxlen=64,
+        options={'HIDDEN', 'SKIP_SAVE'},
+    )
+
+    preset_tag: bpy.props.StringProperty(
+        name="Preset Tag",
+        maxlen=64,
+        options={'HIDDEN', 'SKIP_SAVE'},
+    )
+
+    item_tag: bpy.props.StringProperty(
+        name="Preset Tag",
+        maxlen=64,
+        options={'HIDDEN', 'SKIP_SAVE'},
+    )
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        bm_props = context.scene.bm_props
+        return bm_props.global_presets_use_default
+
+    @classmethod
+    def description(cls, context: bpy.types.Context, properties) -> str:
+        text = "Mark '{}' preset as default".format(properties.preset_name)
+        if properties.item_tag != "":
+            text += (
+                " to have it automatically executed every "
+                + "time a new {} is added".format(properties.item_tag))
+        return text
+
+    def execute(self, context: bpy.types.Context) -> set[str]:
+        bm_props = context.scene.bm_props
+        prop_name = "p_master_%s" % self.preset_tag
+        if not hasattr(bm_props, prop_name):
+            self.report({'ERROR'}, "Invalid preset tag: '{}'".format(self.preset_tag))
+            return {'CANCELLED'}
+
+        if getattr(bm_props, prop_name) == self.preset_name:
+            setattr(bm_props, prop_name, "")
+        else:
+            setattr(bm_props, prop_name, self.preset_name)
+        return {'FINISHED'}
+
+
 # Panel mix-in class (don't register).
 class BM_PresetPanel:
     bl_space_type = 'PROPERTIES'
@@ -1260,6 +1456,7 @@ class BM_PresetPanel:
     preset_operator = "bakemaster.execute_preset_bakemaster"
     preset_subdir = "bakemaster_presets"
     preset_tag = ""
+    item_tag = ""
 
     layout: bpy.types.UILayout
 
@@ -1339,14 +1536,17 @@ class BM_PresetPanel:
         if action == 'REMOVE':
             icon = 'REMOVE'
             remove_name = True
+            overwrite = False
         else:
             icon = 'FILE_REFRESH'
             remove_name = False
+            overwrite = True
 
         props = row.operator(action_operator, text="", icon=icon)
         props.name = name
         props.prop_name = prop_name
         props.remove_name = remove_name
+        props.overwrite = overwrite
 
         return None
 
@@ -1419,6 +1619,16 @@ class BM_PresetPanel:
             name = display_name(
                 filepath) if display_name else bpy.path.display_name(f)
 
+            if more_options and self.item_tag != "" and bm_props.global_presets_use_default:
+                default_p_prop = "p_master_%s" % self.preset_tag
+                default_p_name = getattr(bm_props, default_p_prop)
+                markdefault_op = row.operator(
+                    'bakemaster.preset_markdefault', text="",
+                    icon='SOLO_ON' if name == default_p_name else 'SOLO_OFF')
+                markdefault_op.preset_name = name
+                markdefault_op.preset_tag = self.preset_tag
+                markdefault_op.item_tag = self.item_tag
+
             props = row.operator(
                 operator,
                 text=iface_(name),
@@ -1457,9 +1667,15 @@ class BM_PresetPanel:
         sub.emboss = 'NORMAL'
         sub.prop(bm_props, prop_name, text="")
 
-        icon = 'FILE_REFRESH' if update_preset else 'ADD'
+        if update_preset:
+            icon = 'FILE_REFRESH'
+            overwrite = True
+        else:
+            icon = 'ADD'
+            overwrite = False
         props = row.operator(add_operator, text="", icon=icon)
         props.name = entered_name
+        props.overwrite = overwrite
 
 
 class BM_PT_FULL_OBJECT_Presets(BM_PresetPanel, bpy.types.Panel):
@@ -1472,6 +1688,7 @@ class BM_PT_FULL_OBJECT_Presets(BM_PresetPanel, bpy.types.Panel):
         "preset_label" : bl_label,
     }
     preset_tag = "fullobj"
+    item_tag = "object"
 class BM_MT_FULL_OBJECT_Presets(bpy.types.Menu):
     bl_label = "Full Object Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_FULL_OBJECT_decal_hl_uv_csh_out_maps_chnlp_bake')
@@ -1489,6 +1706,7 @@ class BM_PT_OBJECT_Presets(BM_PresetPanel, bpy.types.Panel):
         "preset_label" : bl_label,
     }
     preset_tag = "obj"
+    item_tag = "object"
 class BM_MT_OBJECT_Presets(bpy.types.Menu):
     bl_label = "Object Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_OBJECT_decal_hl_uv_csh')
@@ -1506,6 +1724,7 @@ class BM_PT_DECAL_Presets(BM_PresetPanel, bpy.types.Panel):
         "preset_label" : bl_label,
     }
     preset_tag = "decal"
+    item_tag = "object"
 class BM_MT_DECAL_Presets(bpy.types.Menu):
     bl_label = "Decal Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_DECAL_decal')
@@ -1523,6 +1742,7 @@ class BM_PT_HL_Presets(BM_PresetPanel, bpy.types.Panel):
         "preset_label" : bl_label,
     }
     preset_tag = "hl"
+    item_tag = "map/object"
 class BM_MT_HL_Presets(bpy.types.Menu):
     bl_label = "High to Lowpoly Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_HL_hl')
@@ -1540,6 +1760,7 @@ class BM_PT_UV_Presets(BM_PresetPanel, bpy.types.Panel):
         "preset_label" : bl_label,
     }
     preset_tag = "uv"
+    item_tag = "map/object"
 class BM_MT_UV_Presets(bpy.types.Menu):
     bl_label = "UVs & Layers Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_UV_uv')
@@ -1557,6 +1778,7 @@ class BM_PT_CSH_Presets(BM_PresetPanel, bpy.types.Panel):
         "preset_label" : bl_label,
     }
     preset_tag = "csh"
+    item_tag = "object"
 class BM_MT_CSH_Presets(bpy.types.Menu):
     bl_label = "Shading Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_CSH_csh')
@@ -1574,6 +1796,7 @@ class BM_PT_OUT_Presets(BM_PresetPanel, bpy.types.Panel):
         "preset_label" : bl_label,
     }
     preset_tag = "out"
+    item_tag = "map/object"
 class BM_MT_OUT_Presets(bpy.types.Menu):
     bl_label = "Format Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_OUT_out')
@@ -1591,6 +1814,7 @@ class BM_PT_FULL_MAP_Presets(BM_PresetPanel, bpy.types.Panel):
         "preset_label" : bl_label,
     }
     preset_tag = "fullmap"
+    item_tag = "map"
 class BM_MT_FULL_MAP_Presets(bpy.types.Menu):
     bl_label = "Full Maps Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_FULL_MAP_maps_hl_uv_out')
@@ -1608,6 +1832,7 @@ class BM_PT_MAP_Presets(BM_PresetPanel, bpy.types.Panel):
         "preset_label" : bl_label,
     }
     preset_tag = "map"
+    item_tag = "map"
 class BM_MT_MAP_Presets(bpy.types.Menu):
     bl_label = "Map Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_MAP_map')
@@ -1625,6 +1850,7 @@ class BM_PT_CHNLP_Presets(BM_PresetPanel, bpy.types.Panel):
         "preset_label" : bl_label,
     }
     preset_tag = "chnlp"
+    item_tag = "channel pack"
 class BM_MT_CHNLP_Presets(bpy.types.Menu):
     bl_label = "Channel Pack Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_CHNLP_chnlp')
@@ -1642,6 +1868,7 @@ class BM_PT_BAKE_Presets(BM_PresetPanel, bpy.types.Panel):
         "preset_label" : bl_label,
     }
     preset_tag = "bake"
+    item_tag = "object"
 class BM_MT_BAKE_Presets(bpy.types.Menu):
     bl_label = "Bake Preset"
     preset_subdir = os.path.join('bakemaster_presets', 'PRESETS_BAKE_bake')
@@ -1703,6 +1930,12 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
         maxlen=64,
         options={'SKIP_SAVE'},
     )
+    single_item: bpy.props.BoolProperty(
+        name="Execute for a single item",
+        description="Skip validation full object preset to collect items to apply the preset for. Apply only for the active one",
+        default=False,
+        options={'SKIP_SAVE'},
+    )
 
     def execute(self, context):
         from os.path import basename, splitext
@@ -1727,11 +1960,13 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
         if hasattr(preset_class, "reset_cb"):
             preset_class.reset_cb(context)
 
+        preset_executed = False
+
         if ext == ".py":
             try:
                 # load preset for chosen objects in bm_table_of_objects
                 # execute preset, change item index, execute again, ...
-                if self.menu_idname == "BM_MT_FULL_OBJECT_Presets":
+                if self.menu_idname == "BM_MT_FULL_OBJECT_Presets" and not self.single_item:
                     for index, bm_item in enumerate(context.scene.bm_table_of_objects):
                         if bm_item.nm_is_universal_container and bm_item.nm_uni_container_is_global:
                             items = [item for item in bm_props.global_alep_objects if item.object_name == "%s Container" % bm_item.nm_container_name]
@@ -1745,8 +1980,10 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
                         # load preset
                         context.scene.bm_props.global_active_index = index
                         bpy.utils.execfile(filepath)
+                        preset_executed = True
                 else:
                     bpy.utils.execfile(filepath)
+                    preset_executed = True
 
             # preset load failed
             except Exception as ex:
@@ -1760,10 +1997,13 @@ class BM_OT_ExecutePreset(bpy.types.Operator):
             rna_xml.xml_file_run(context,
                                  filepath,
                                  preset_class.preset_xml_map)
+            preset_executed = True
 
         if hasattr(preset_class, "post_cb"):
             preset_class.post_cb(context)
 
+        if preset_executed:
+            print("Preset executed successfully.")
         return {'FINISHED'}
 
     def draw(self, context):

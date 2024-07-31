@@ -7,6 +7,32 @@ Releases
 
 All BakeMaster Releases and Changelogs are listed on this page. Each new release comes with new features, improvements, or fixes. For clarity, each section has a ``tag`` to identify the changes.
 
+2.7.0 Release
+=============
+
+.. admonition:: Tag
+    :class: important
+
+    `2.7.0 - July 31st, 2024 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/releases>`__
+
+**Fixes:**
+
+#. Dithering noise appeared in composited bakes (`issue93 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/93>`__).
+#. The first object always had World Lighting influence (`issue85 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/85>`__).
+#. World Lighting was not muted properly when disabling ``Scene Lights`` (`issue82 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/82>`__).
+#. ``UVMap Type``, ``UVMap for Bake``, **and several other settings were not included in presets.**
+#. Full Map Preset, which populates maps list, did not work.
+#. **Mask maps, Albedo and other maps could not be baked with transparent background.**
+#. Partial support for baking cycles maps for Decal bakes.
+#. Minor Addon Preferences UI remarks.
+
+**New Features:**
+
+#. **Nested Node Groups support** (`issue73 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/73>`__).
+#. **Improved PBR Map Preview, supports node groups and shader mixing** (`issue73 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/73>`__).
+#. A toggle to bake highpolies individually or in batch.
+#. **Default presets that are automatically executed - change default settings** (`issue95 <https://github.com/KirilStrezikozin/BakeMaster-Blender-Addon/issues/95>`__).
+
 2.6.3 Release
 =============
 
