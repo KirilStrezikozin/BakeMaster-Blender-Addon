@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.3)
+# BakeMaster Blender Add-on (version 2.7.0)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -33,10 +33,317 @@
 #
 # END LICENSE & COPYRIGHT BLOCK.
 
+import os
+import sys
+import inspect
+import traceback
+import functools
+from types import ModuleType
+from typing import Any, Callable, Literal, Union, Optional
 import bpy
 import math
 import colorsys
+
+from mathutils import Vector
 from .labels import BM_Labels
+
+from .presets import (
+    BM_OT_FULL_OBJECT_Preset_Add,
+    BM_OT_OBJECT_Preset_Add,
+    BM_OT_DECAL_Preset_Add,
+    BM_OT_HL_Preset_Add,
+    BM_OT_UV_Preset_Add,
+    BM_OT_CSH_Preset_Add,
+    BM_OT_OUT_Preset_Add,
+    BM_OT_FULL_MAP_Preset_Add,
+    BM_OT_MAP_Preset_Add,
+    BM_OT_CHNLP_Preset_Add,
+    BM_OT_BAKE_Preset_Add,
+    BM_OT_CM_Preset_Add,
+)
+
+DEBUG: bool = False
+
+MAP_PREVIEW_MODE: Literal[0, 1] = 0  # 0 - User, 1 - Bake.
+"""
+Map preview mode. Set by Bake Operator:
+0 (User) mode: preview maps using Emmision nodes.
+1 (Bake) mode: preview maps using Diffuse BSDF nodes.
+
+Diffuse nodes are used during baking for the final map preview to support map
+transparency. Emission nodes output opaque black. Baked image data is confirmed
+to be identical.
+
+IMPORTANT: Implemented but not used, COMBINED + Emit pass preserves
+transparency for maps with default EMIT bake type.
+"""
+
+
+def debug(
+    *values: object,
+    sep: Optional[str] = ' ',
+    end: Optional[str] = '\n',
+    file=sys.stdout,
+    flush: bool = False,
+) -> None:
+    """
+    Prints the values to a stream, or to sys.stdout by default.
+    Optional keyword arguments:
+    file:  a file-like object (stream); defaults to the current sys.stdout.
+    sep:   string inserted between values, default a space.
+    end:   string appended after the last value, default a newline.
+    flush: whether to forcibly flush the stream.
+    """
+    return print(
+        *values,
+        sep=sep,
+        end=end,
+        file=file,
+        flush=flush
+    ) if DEBUG else None
+
+
+def _build_dynamic_type_constraints(
+    *t_prefixes: str,
+    module: Optional[ModuleType] = bpy.types,
+    t_parent: Optional[type] = bpy.types.NodeSocketStandard
+) -> tuple[type, ...]:
+    """
+    Returns a tuple with bpy.types.NodeSocketStandard types, names of which
+    start with any of the given prefix strings. Use to declare dynamic type
+    meta classes.
+    Optional keyword arguments:
+    module:     module to lookup types in. Default is bpy.types.
+    t_parent:   each type must be a subclass of this type. Pass None to skip.
+    """
+    constraints: tuple[type, ...] = ()
+
+    for _T_str in dir(module):
+        _T = getattr(module, _T_str)
+        if not isinstance(_T, type):
+            continue
+        elif t_parent is not None and not issubclass(_T, t_parent):
+            continue
+        if any(_T_str.startswith(prefix) for prefix in t_prefixes):
+            constraints += (_T,)
+    return constraints
+
+
+class _Dynamic_T_Meta():
+    __t_prefixes: tuple[str, ...]
+    __constraints__: tuple[type, ...]
+
+    @classmethod
+    def constraints(cls) -> tuple[type, ...]:
+        return cls.__constraints__
+
+    def __instancecheck__(self, instance: Any) -> bool:
+        """Implement isinstance(instance, cls). Time complexity is O(n)"""
+        return type(instance) in self.__constraints__
+
+    def __subclasscheck__(self, subclass: Any) -> bool:
+        """Implement issubclass(subclass, cls). Time complexity is O(n)"""
+        return subclass in self.__constraints__
+
+    def __repr__(self) -> str:
+        return "<class '" + self.__name__ + "'> TypeClass of: " + str(
+            self.__constraints__)
+
+
+class _Dynamic_NodeSocket_T():
+    @property
+    def default_value(self) -> Any:
+        """
+        Input value used for unconnected socket.
+
+        TypeClass has this property for clarity only. There are no type checks.
+        The actual value is set at runtime for a real NodeSocketStandard
+        instance.
+        """
+        return self.__default_value
+
+    @default_value.setter
+    def default_value(self, value: Any) -> None:
+        """
+        Input value used for unconnected socket.
+
+        TypeClass has this property for clarity only. There are no type checks.
+        The actual value is set at runtime for a real NodeSocketStandard
+        instance.
+        """
+        self.__default_value = value
+        return None
+
+    @property
+    def links(self) -> tuple:
+        """
+        List of node links from or to this socket.
+        Read-only. Takes O(len(nodetree.links)) time on runtime.
+
+        TypeClass has this property for clarity only. The actual value is
+        updated at runtime for a real NodeSocketStandard instance.
+        """
+        return ()
+
+
+class _NodeSocketBakeable_Meta(
+    _Dynamic_T_Meta,
+    type(bpy.types.NodeSocketStandard)
+):
+    __t_prefixes = (
+        'NodeSocketBool',
+        'NodeSocketFloat',
+        'NodeSocketVector',
+        'NodeSocketInt',
+        'NodeSocketColor'
+    )
+    __constraints__ = _build_dynamic_type_constraints(*__t_prefixes)
+
+
+class NodeSocketBakeable(
+    bpy.types.NodeSocketStandard,
+    metaclass=_NodeSocketBakeable_Meta
+):
+    """
+    TypeClass with bakeable NodeSocket types as constraints.
+    Use for type annotations and to check instancing, subclassing.
+    """
+    pass
+
+
+class _NodeSocketVectorLike_Meta(
+    _Dynamic_T_Meta,
+    type(bpy.types.NodeSocketStandard)
+):
+    __constraints__ = _build_dynamic_type_constraints('NodeSocketVector')
+
+
+class NodeSocketVectorLike(
+    bpy.types.NodeSocketStandard,
+    metaclass=_NodeSocketVectorLike_Meta
+):
+    """
+    TypeClass with Vector-like NodeSocket types as constraints.
+    Use for type annotations and to check instancing, subclassing.
+    """
+    pass
+
+
+class DefaultPreset_Apply:
+    """
+    Apply default preset to the new item.
+    """
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        bm_props = context.scene.bm_props
+        return bm_props.global_presets_use_default
+
+    @classmethod
+    def search_preset_path(cls, subdir: str, preset_name: str) -> str:
+        ext_valid = {".py", ".xml"}
+        filter_ext = lambda ext: ext.lower() in ext_valid
+        filter_path = None
+
+        display_name = lambda name: bpy.path.display_name(
+            name, title_case=False)
+
+        searchpaths = bpy.utils.preset_paths(subdir)
+
+        files = []
+        for directory in searchpaths:
+            files.extend([
+                (f, os.path.join(directory, f))
+                for f in os.listdir(directory)
+                if (not f.startswith("."))
+                if ((filter_ext is None)
+                    or (filter_ext(os.path.splitext(f)[1])))
+                if ((filter_path is None)
+                    or (filter_path(f)))
+            ])
+
+        for f, filepath in files:
+            name = display_name(
+                filepath) if display_name else bpy.path.display_name(f)
+            if name == preset_name:
+                return filepath
+        return ""
+
+    @classmethod
+    def execute(cls, context, ops: list[tuple[type, str, bool]]) -> None:
+        bm_props = context.scene.bm_props
+        if not cls.poll(context):
+            return None
+
+        for op, master_tag, verif in ops:
+            if not verif:
+                continue
+            prop_name = "p_master_" + master_tag
+            preset_name = getattr(bm_props, prop_name)
+            if preset_name == "":
+                continue
+            filepath = cls.search_preset_path(op.preset_subdir, preset_name)
+            if filepath == "":
+                continue
+
+            menu_idname = op.preset_menu
+            preset_label = op.bl_label
+
+            print("Executing default preset: '",
+                  preset_name, "' (filepath=", filepath, ")", sep="")
+            bpy.ops.bakemaster.execute_preset_bakemaster(
+                filepath=filepath,
+                # `prop_name` below is the master prop (storing the default
+                # preset), the recently used preset name won't update.
+                # To force it to update, use: `"p_ln_" + master_tag`, but this
+                # may be unwanted since the default preset is executed
+                # internally, thus the UI only keeps reflecting the user's
+                # actions.
+                prop_name=prop_name,
+                preset_name=preset_name,
+                menu_idname=menu_idname,
+                preset_label=preset_label,
+                single_item=True
+            )
+        return None
+
+    @classmethod
+    def obj(cls, context: bpy.types.Context, item) -> None:
+        ops: list[tuple[type, str, bool]] = [
+            (BM_OT_FULL_OBJECT_Preset_Add, "fullobj", True),
+            (BM_OT_OBJECT_Preset_Add, "obj", True),
+            (BM_OT_DECAL_Preset_Add, "decal", True),
+            (BM_OT_HL_Preset_Add, "hl", not item.hl_use_unique_per_map),
+            (BM_OT_UV_Preset_Add, "uv", not item.uv_use_unique_per_map),
+            (BM_OT_CSH_Preset_Add, "csh", True),
+            (BM_OT_OUT_Preset_Add, "out", not item.out_use_unique_per_map),
+            (BM_OT_FULL_MAP_Preset_Add, "fullmap", True),
+            (BM_OT_BAKE_Preset_Add, "bake", True),
+        ]
+
+        cls.execute(context, ops)
+        return None
+
+    @classmethod
+    def map(cls, context: bpy.types.Context, parent, _item) -> None:
+        ops: list[tuple[type, str, bool]] = [
+            (BM_OT_MAP_Preset_Add, "map", True),
+            (BM_OT_OUT_Preset_Add, "out", parent.out_use_unique_per_map),
+            (BM_OT_HL_Preset_Add, "hl", parent.hl_use_unique_per_map),
+            (BM_OT_UV_Preset_Add, "uv", parent.uv_use_unique_per_map),
+        ]
+
+        cls.execute(context, ops)
+        return None
+
+    @classmethod
+    def channel_pack(cls, context: bpy.types.Context, _item) -> None:
+        ops: list[tuple[type, str, bool]] = [
+            (BM_OT_CHNLP_Preset_Add, "chnlp", True),
+        ]
+
+        cls.execute(context, ops)
+        return None
 
 
 ###############################################################
@@ -404,6 +711,9 @@ def BM_SCENE_PROPS_global_use_name_matching_Update(self, context):
         for index, shell in enumerate(groups):
             # adding universal container to the bm_table_of_objects
             universal_container = context.scene.bm_table_of_objects.add()
+            # Default Preset
+            context.scene.bm_props.global_active_index = len(context.scene.bm_table_of_objects) - 1
+            DefaultPreset_Apply.obj(context, universal_container)
             universal_container.nm_master_index = index
             last_uni_c_index = index
             # name is set to the root_name of the first object in the shell
@@ -452,6 +762,9 @@ def BM_SCENE_PROPS_global_use_name_matching_Update(self, context):
                 if len(local_names):
                     local_containers_index += 1
                     local_container = context.scene.bm_table_of_objects.add()
+                    # Default Preset
+                    context.scene.bm_props.global_active_index = len(context.scene.bm_table_of_objects) - 1
+                    DefaultPreset_Apply.obj(context, local_container)
                     local_container.nm_master_index = local_containers_index
                     local_container.nm_container_name_old = names_starters[local_index]
                     local_container.nm_container_name = names_starters[local_index]
@@ -467,6 +780,9 @@ def BM_SCENE_PROPS_global_use_name_matching_Update(self, context):
                         if object_name in detached:
                             continue
                         new_item = context.scene.bm_table_of_objects.add()
+                        # Default Preset
+                        context.scene.bm_props.global_active_index = len(context.scene.bm_table_of_objects) - 1
+                        DefaultPreset_Apply.obj(context, new_item)
                         new_item.global_object_name = object_name
                         new_item.nm_master_index = obj_index
                         new_item.nm_this_indent = 2
@@ -482,6 +798,9 @@ def BM_SCENE_PROPS_global_use_name_matching_Update(self, context):
         last_uni_c_index += 1
         for index, object_name in enumerate(detached):
             new_item = context.scene.bm_table_of_objects.add()
+            # Default Preset
+            context.scene.bm_props.global_active_index = len(context.scene.bm_table_of_objects) - 1
+            DefaultPreset_Apply.obj(context, new_item)
             new_item.global_object_name = object_name
             new_item.nm_is_detached = True
             new_item.nm_master_index = index + last_uni_c_index
@@ -666,8 +985,8 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'decal_use_flip_horizontal': self.decal_use_flip_horizontal,
             'decal_use_adapt_res': self.decal_use_adapt_res,
             'decal_use_precise_bounds': self.decal_use_precise_bounds,
-            'decal_use_scene_lights': self.decal_use_scene_lights,
             'decal_boundary_offset': self.decal_boundary_offset,
+            'hl_use_bake_individually': self.hl_use_bake_individually,
             'hl_decals_use_separate_texset': self.hl_decals_use_separate_texset,
             'hl_decals_separate_texset_prefix': self.hl_decals_separate_texset_prefix,
             # 'hl_use_cage' : self.hl_use_cage,
@@ -730,6 +1049,7 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
             'bake_assign_modifiers': self.bake_assign_modifiers,
             'bake_device': self.bake_device,
             'bake_view_from': self.bake_view_from,
+            'bake_use_scene_lights': self.bake_use_scene_lights,
         }
 
         # apply props values to all container objects
@@ -762,6 +1082,8 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                     new_map = object.global_maps.add()
                     new_map.global_map_object_index = object_index
                     object.global_maps_active_index = map_index
+                    # Default Preset
+                    DefaultPreset_Apply.map(context, object, new_map)
                     map_data = {
                         'global_map_index': map_index + 1,
                         'global_use_bake': map.global_use_bake,
@@ -1047,6 +1369,9 @@ def BM_ITEM_PROPS_nm_uni_container_is_global_Update(self, context):
                     # set
                     new_channelpack = object.chnlp_channelpacking_table.add()
                     new_channelpack.global_channelpack_object_index = object_index
+                    object.chnlp_channelpacking_table_active_index = len(object.chnlp_channelpacking_table) - 1
+                    # Default Preset
+                    DefaultPreset_Apply.channel_pack(context, new_channelpack)
                     for chnlp_key in channelpack_data:
                         setattr(new_channelpack, chnlp_key,
                                 channelpack_data[chnlp_key])
@@ -2047,7 +2372,7 @@ def BM_ActiveIndexUpdate(self, context):
             context.view_layer.objects.active = source_object
 
 
-def BM_LastEditedProp_Write(context, name: str, prop: str, value: any, is_map: bool):
+def BM_LastEditedProp_Write(context, name: str, prop: str, value: Any, is_map: bool):
     context.scene.bm_props.global_last_edited_prop = prop
     context.scene.bm_props.global_last_edited_prop_name = name
     context.scene.bm_props.global_last_edited_prop_is_map = is_map
@@ -2912,7 +3237,7 @@ def BM_MAP_PROPS_map_pass_type_Items(self, context):
     if bpy.app.version >= (4, 0, 0):
         return [('BASE_COLOR', "Base Color", ""),
                 ('METALLIC', "Metallic", ""),
-                ('SPECULAR', "Specular Tint", ""),
+                ('SPECULAR', "Specular IOR Level", ""),
                 ('ROUGHNESS', "Roughness", ""),
                 ('ANISOTROPIC', "Anisotropic", ""),
                 ('SHEEN', "Sheen Weight", ""),
@@ -2958,64 +3283,34 @@ def BM_MAP_PROPS_map_vertexcolor_layer_Items(self, context):
 
 
 def BM_MAP_PROPS_map_normal_data_Items(self, context):
-    object = BM_Object_Get(self, context)[0]
-    if object.hl_use_unique_per_map:
-        has_highpolies = any(True for highpoly in BM_Map_Get(
-            self, object).hl_highpoly_table if highpoly.global_highpoly_object_index != -1)
-    else:
-        has_highpolies = any(
-            True for highpoly in object.hl_highpoly_table if highpoly.global_highpoly_object_index != -1)
-    if object.nm_is_universal_container and object.nm_uni_container_is_global:
-        has_highpolies = True
-    if has_highpolies:
-        items = [('HIGHPOLY', "Highpoly", "Bake normals from highpoly object data to lowpoly"),
-                 ('MULTIRES', "Multires Modifier",
-                  "Bake normals from existing Multires modifier"),
-                 ('MATERIAL', "Object/Materials", "Bake normals from object data")]
-    else:
-        items = [('MATERIAL', "Object/Materials", "Bake normals from object data"),
-                 ('HIGHPOLY', "Highpoly", "Bake normals from highpoly object data to lowpoly"),
-                 ('MULTIRES', "Multires Modifier", "Bake normals from existing Multires modifier")]
-    # if object.decal_is_decal:
-    #     items = [('MATERIAL', "Object/Materials",
-    #               "Bake normals from object data")]
-
-    # uncomment below to overwrite items unused
-    # items = [('HIGHPOLY', "Highpoly", "Bake normals from highpoly object data to lowpoly"),
-    #          ('MULTIRES', "Multires Modifier",
-    #           "Bake normals from existing Multires modifier"),
-    #          ('MATERIAL', "Object/Materials", "Bake normals from object data")]
+    # object = BM_Object_Get(self, context)[0]
+    # if object.hl_use_unique_per_map:
+    #     has_highpolies = any(True for highpoly in BM_Map_Get(
+    #         self, object).hl_highpoly_table if highpoly.global_highpoly_object_index != -1)
+    # else:
+    #     has_highpolies = any(
+    #         True for highpoly in object.hl_highpoly_table if highpoly.global_highpoly_object_index != -1)
+    # if object.nm_is_universal_container and object.nm_uni_container_is_global:
+    #     has_highpolies = True
+    items = [('MATERIAL', "Object/Materials", "Bake normals from object data"),
+             ('HIGHPOLY', "Highpoly", "Bake normals from highpoly object data to lowpoly"),
+             ('MULTIRES', "Multires Modifier", "Bake normals from existing Multires modifier")]
     return items
 
 
 def BM_MAP_PROPS_map_displacement_data_Items(self, context):
-    object = BM_Object_Get(self, context)[0]
-    if object.hl_use_unique_per_map:
-        has_highpolies = any(True for highpoly in BM_Map_Get(
-            self, object).hl_highpoly_table if highpoly.global_highpoly_object_index != -1)
-    else:
-        has_highpolies = any(
-            True for highpoly in object.hl_highpoly_table if highpoly.global_highpoly_object_index != -1)
-    if object.nm_is_universal_container and object.nm_uni_container_is_global:
-        has_highpolies = True
-    if has_highpolies:
-        items = [('HIGHPOLY', "Highpoly", "Bake displacement from highpoly object data to lowpoly"),
-                 ('MULTIRES', "Multires Modifier",
-                  "Bake displacement from existing Multires modifier"),
-                 ('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
-    else:
-        items = [('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket"),
-                 ('HIGHPOLY', "Highpoly", "Bake displacement from highpoly object data to lowpoly"),
-                 ('MULTIRES', "Multires Modifier", "Bake displacement from existing Multires modifier")]
-    # if object.decal_is_decal:
-    #     items = [('MATERIAL', "Material Displacement",
-    #               "Bake displacement from object materials displacement socket")]
-
-    # uncomment below to overwrite items unused
-    # items = [('HIGHPOLY', "Highpoly", "Bake displacement from highpoly object data to lowpoly"),
-    #          ('MULTIRES', "Multires Modifier",
-    #           "Bake displacement from existing Multires modifier"),
-    #          ('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket")]
+    # object = BM_Object_Get(self, context)[0]
+    # if object.hl_use_unique_per_map:
+    #     has_highpolies = any(True for highpoly in BM_Map_Get(
+    #         self, object).hl_highpoly_table if highpoly.global_highpoly_object_index != -1)
+    # else:
+    #     has_highpolies = any(
+    #         True for highpoly in object.hl_highpoly_table if highpoly.global_highpoly_object_index != -1)
+    # if object.nm_is_universal_container and object.nm_uni_container_is_global:
+    #     has_highpolies = True
+    items = [('MATERIAL', "Material Displacement", "Bake displacement from object materials displacement socket"),
+             ('HIGHPOLY', "Highpoly", "Bake displacement from highpoly object data to lowpoly"),
+             ('MULTIRES', "Multires Modifier", "Bake displacement from existing Multires modifier")]
     return items
 
 # Map Preview Funcs
@@ -3588,6 +3883,8 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag):
                         value = 0
                     elif map.map_decal_normal_preset.find('DIRECTX') != -1:
                         value = 1
+                    else:
+                        value = 0
                 nodes[map_nodes[1]].inputs[0].default_value = value
 
                 nodes[map_nodes[2]].inputs[0].default_value = bool(
@@ -3921,6 +4218,11 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
                 continue
 
             material.use_nodes = True
+
+            for node in material.node_tree.nodes:
+                if node.type == 'OUTPUT_MATERIAL':
+                    mark_active_outnode(context.scene.bm_props, node)
+
             location_x = 0
             for index, node_type in enumerate(nodes_data[map_tag]):
                 new_node = material.node_tree.nodes.new(node_type)
@@ -4163,249 +4465,1417 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Add(self, context, map_tag):
     BM_MAP_PROPS_MapPreview_CustomNodes_Update(self, context, map_tag)
 
 
-def BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, map_tag):
+def replug_get_default_l_value(map_name: str) -> tuple[
+        float, float, float, float]:
+    default_values = {
+        'ALBEDO': (0, 0, 0, 1),
+        'METALNESS': (0, 0, 0, 1),
+        'ROUGHNESS': (0.5, 0.5, 0.5, 1),
+        'DIFFUSE': (0, 0, 0, 1),
+        'SPECULAR': (1, 1, 1, 1),
+        'PASS_SPECULAR': (1, 1, 1, 1),
+        'GLOSSINESS': (0.5, 0.5, 0.5, 1),
+        'OPACITY': (1, 1, 1, 1),
+        'BASE_COLOR': (0, 0, 0, 1),
+        'SS_COLOR': (0, 0, 0, 1),
+        'METALLIC': (0, 0, 0, 1),
+        'ANISOTROPIC': (0, 0, 0, 1),
+        'SHEEN': (0, 0, 0, 1),
+        'CLEARCOAT': (0, 0, 0, 1),
+        'IOR': (1, 1, 1, 1),
+        'TRANSMISSION': (0, 0, 0, 1),
+        'EMISSION': (0, 0, 0, 1),
+        'ALPHA': (1, 1, 1, 1),
+        'NORMAL': (0.5, 0.5, 1, 1),
+        'NORMAL_POST': (0.5, 0.5, 1, 1),
+        'DISPLACEMENT': (0, 0, 0, 1),
+    }
+
+    return default_values[map_name]
+
+
+def node_get_map_socket(map_name: str, aggresive: bool = False) -> list[str]:
+    """
+    Returns ShaderNode socket names that correspond to the given map_name.
+    """
+
+    socket_names = {
+        'ALBEDO': [  # ALBEDO/DIFFUSE/BASE_COLOR/SPECULAR
+            'Color',
+            'Base Color',
+            'Albedo',
+            'Diffuse',
+            'Clr',
+        ],
+
+        'METALNESS': [  # METALNESS/METALLIC
+            'Metallic',
+            'Metal',
+            'Metalness',
+            'Mtl'
+        ],
+
+        'ROUGHNESS': [  # ROUGHNESS/GLOSSINESS/GLOSSY
+            'Roughness',
+            'Rough',
+            'Rgh'
+        ],
+
+        'PASS_SPECULAR': [
+            'Specular',
+            'Specular IOR Level',
+            'Specular Reflections'
+        ],
+
+        'OPACITY': [  # OPACITY/ALPHA
+            'Alpha',
+            'Opacity',
+            'Transparency',
+            'Transparent',
+            'Opac',
+        ],
+
+        'SS_COLOR': [  # +ALBEDO
+            'Subsurface Color',
+            'Subsurface',
+            'SSC',
+            'SS'
+        ],
+
+        'ANISOTROPIC': [
+            'Anisotropic',
+            'Anisotropy'
+        ],
+
+        'SHEEN': [
+            'Sheen',
+            'Sheen Weight'
+        ],
+
+        'CLEARCOAT': [
+            'Clearcoat',
+            'Coat Weight'
+        ],
+
+        'IOR': [
+            'IOR'
+        ],
+
+        'TRANSMISSION': [
+            'Transmission',
+            'Transmission Weight'
+        ],
+
+        'EMISSION': [
+            'Emission',
+            'Emission Color',
+            'Emit',
+            'Glow'
+        ],
+
+        'NORMAL': [
+            'Normal',
+            'Normal Map',
+            'NM'
+        ],
+
+        'DISPLACEMENT': [  # DISPLACEMENT/NORMAL_POST
+            'Height',
+            'Displacement',
+            'Vector Displacement'
+        ]
+    }
+
+    if not aggresive:
+        socket_names['DISPLACEMENT'] += [
+            'Vector',
+            'Color'
+        ]
+
+    socket_names['DIFFUSE'] = socket_names['ALBEDO']
+    socket_names['BASE_COLOR'] = socket_names['ALBEDO']
+    socket_names['SPECULAR'] = socket_names['ALBEDO']
+    socket_names['METALLIC'] = socket_names['METALNESS']
+    socket_names['GLOSSINESS'] = socket_names['ROUGHNESS']
+    socket_names['GLOSSY'] = socket_names['ROUGHNESS']
+    socket_names['ALPHA'] = socket_names['OPACITY']
+    socket_names['SS_COLOR'] += socket_names['ALBEDO']
+    socket_names['NORMAL_POST'] = socket_names['DISPLACEMENT']
+
+    return socket_names[map_name]
+
+
+def replug_make_node(
+        node_tree: bpy.types.ShaderNodeTree, node_type: str,
+        node_location: Vector | list[float] | tuple[
+            float, float] = Vector((0, 0))) -> tuple[
+                bpy.types.Node, str]:
+    """
+    Create and return a new ShaderNode with a string instruction to remove
+    it when restoring replug.
+    """
+
+    node = node_tree.nodes.new(node_type)
+    assert isinstance(node, getattr(bpy.types, node_type))
+    node.location = node_location
+    node.label = "BM_matRestore"
+
+    nt_path = repr(node_tree)
+    restore_path = (f"c!{nt_path}.nodes.remove({nt_path}."
+                    + f"{node.path_from_id()})\n")
+
+    return node, restore_path
+
+
+def replug_make_link(
+        node_tree: bpy.types.ShaderNodeTree,
+        l_socket: bpy.types.NodeSocket,
+        r_socket: bpy.types.NodeSocket) -> tuple[bpy.types.NodeLink, str]:
+    """
+    Create and return a new NodeLink between two given sockets with a
+    string instruction to change it when restoring replug.
+    """
+
+    assert l_socket.is_output
+    assert not r_socket.is_output
+
+    _old_sockets = socket_froms(r_socket, verify_valid=False)
+    restore_path = ""
+
+    if not len(_old_sockets):
+        link = node_tree.links.new(l_socket, r_socket)
+        return link, restore_path
+
+    # Check below since there is no need to restore link that is deleted on
+    # custom node delete.
+    old_socket = _old_sockets.pop()
+    if old_socket.node.label != "BM_matRestore":
+        old_l_socket_path = old_socket.path_from_id()
+        nt_path = repr(node_tree)
+        restore_path = (f"c!{nt_path}.links.new({nt_path}.{old_l_socket_path},"
+                        + f" {nt_path}.{r_socket.path_from_id()})\n")
+
+    link = node_tree.links.new(l_socket, r_socket)
+    return link, restore_path
+
+
+def replug_make_nodes(
+        node_tree: bpy.types.ShaderNodeTree,
+        mk_nodes_i: dict[str, Any]) -> tuple[bpy.types.Node | None, str]:
+    """
+    Create a socket replug schema using the mk_nodes_i (make nodes
+    instruction), assign restore instruction to restore this replug, return
+    them and a ShaderNode specified in mk_nodes_i.
+
+    Below is an example of mk_nodes_i instruction:
+
+    mk_nodes_i = {
+        "nodes": [
+            "ShaderNodeEmission"
+        ],
+        "defaults": [
+            (0, "inputs[0]", "default_value", l_value),
+            (0, "inputs[1]", "default_value", ems_value),
+            (0, "", "location", node_location)
+        ],
+        "links": [
+            (-1, l_socket, 0, "inputs[0]")
+        ],
+        "return": 0
+    }
+
+    "nodes" key describes the list of ShaderNode types to add.
+
+    "defaults" key describes default values for the added nodes. It is a
+    list of tuples, where each has a node index, optional path to resolve,
+    a property name to access and a value to put.
+
+    "links" key describes new links to make. It is a list of tuples, where
+    each has a node index (-1 when external socket is used), a path to
+    evaluate an output socket or a direct socket reference (use -1 for node
+    index in such case), and two similar values for a different input
+    socket accordingly.
+
+    "return" specifies an index of created ShaderNode in "nodes" to return.
+    This should match the index of ShaderNodeEmission in "nodes". The node
+    of this index will store replug restore instruction. Set to -1 for NoneType
+    return.
+
+    If any instruction key is unused, it is still required to pass it with
+    a value as an empty list for nodes, defaults, links; -1 for return; and
+    dict() for macros.
+    """
+
+    mk_nodes = mk_nodes_i["nodes"]
+    assert type(mk_nodes) is list
+    mk_defaults = mk_nodes_i["defaults"]
+    assert type(mk_defaults) is list
+    mk_links = mk_nodes_i["links"]
+    assert type(mk_links) is list
+    return_node_i = mk_nodes_i["return"]
+    assert type(return_node_i) is int
+
+    restore_ii = ""
+
+    md_nodes = []
+    for node_type in mk_nodes:
+        assert type(node_type) is str
+
+        node, node_ii = replug_make_node(node_tree, node_type)
+        md_nodes.append(node)
+        restore_ii += node_ii
+
+    for node_i, path, attr, val in mk_defaults:
+        assert type(node_i) is int
+        assert type(path) is str
+        assert type(attr) is str
+
+        node = md_nodes[node_i]
+        assert isinstance(node, bpy.types.Node)
+
+        if path != "":
+            prop = node.path_resolve(path)
+        else:
+            prop = node
+
+        setattr(prop, attr, val)
+
+    for out_i, out_path, in_i, in_path in mk_links:
+        assert type(out_i) is int
+        assert type(in_i) is int
+
+        store_link_ii = False
+
+        if out_i == -1:
+            out_socket = out_path
+        else:
+            out_socket = md_nodes[out_i].path_resolve(out_path)
+
+        if in_i == -1:
+            in_socket = in_path
+            store_link_ii = True
+        else:
+            in_socket = md_nodes[in_i].path_resolve(in_path)
+
+        if (out_socket is None or in_socket is None
+                or out_socket.id_data != in_socket.id_data):
+            continue
+
+        assert isinstance(out_socket, bpy.types.NodeSocket)
+        assert out_socket.is_output
+        assert isinstance(in_socket, bpy.types.NodeSocket)
+        assert not in_socket.is_output
+
+        # Link to external socket (in_i == -1) has to be restored.
+        # By contrast, link to internal socket (in_i != -1) is deleted on
+        # associate node delete.
+        debug("replug link", repr(out_socket), repr(in_socket))
+        _, link_ii = replug_make_link(node_tree, out_socket, in_socket)
+        if store_link_ii:
+            restore_ii += link_ii
+
+    em_node = None if return_node_i == -1 else md_nodes[return_node_i]
+    if em_node is not None:
+        assert isinstance(em_node, bpy.types.Node)
+        em_node.label = "BM_matRestore"
+    return em_node, restore_ii
+
+
+def socket_replug(
+        bm_props,
+        node_tree: bpy.types.ShaderNodeTree,
+        map_name: str,
+        l_socket: None | bpy.types.NodeSocket,
+        la_socket: None | bpy.types.NodeSocket,
+        l_value: tuple[float, float, float, float],
+        la_value: tuple[float, float, float, float],
+        r_socket: bpy.types.NodeSocket,
+        node_location: Vector | list[float] | tuple[
+            float, float] = Vector((0, 0)),
+        ems_socket: None | bpy.types.NodeSocket = None,
+        ems_value: float | Vector = 1.0) -> None:
+
+    if type(ems_value) is float:
+        ems_value_c = (ems_value,) * 3 + (1,)
+    else:
+        ems_value_c = tuple(ems_value)  # pyright: ignore [reportArgumentType]
+
+        if len(ems_value_c) == 3:
+            ems_value_c += (1,)
+
+    assert len(ems_value_c) == 4
+
+    strength_baked_in = bm_props.global_bake_use_map_strength
+
+    # Normal map bakes in strength only on NORMAL_POST target.
+    if not strength_baked_in or map_name == 'NORMAL':
+        ems_socket = None
+        ems_value_c = (1, 1, 1, 1)
+
+    mkniis_user = {  # target-dependant instructions to create nodes.
+        'DIFFUSE': {
+            "nodes": [
+                "ShaderNodeRGB",
+                "ShaderNodeMixRGB",
+                "ShaderNodeEmission",
+                "ShaderNodeRGB"
+            ],
+            "defaults": [
+                (0, "", "location", node_location),
+                (0, "outputs[0]", "default_value", la_value),
+
+                (1, "inputs[1]", "default_value", l_value),
+                (1, "inputs[2]", "default_value", (0, 0, 0, 1)),
+                (1, "", "blend_type", 'MIX'),
+                (1, "", "location", node_location),
+
+                (2, "", "location", node_location),
+
+                (3, "outputs[0]", "default_value", ems_value_c),
+                (3, "", "location", node_location)
+            ],
+            "links": [
+                (0, "outputs[0]", 1, "inputs[0]"),
+                (-1, la_socket, 1, "inputs[0]"),
+                (-1, l_socket, 1, "inputs[1]"),
+                (1, "outputs[0]", 2, "inputs[0]"),
+                (3, "outputs[0]", 2, "inputs[1]"),
+                (-1, ems_socket, 2, "inputs[1]")
+            ],
+            "return": 2
+        },
+
+        'SPECULAR': {
+            "nodes": [
+                "ShaderNodeRGB",
+                "ShaderNodeMixRGB",
+                "ShaderNodeEmission",
+                "ShaderNodeRGB"
+            ],
+            "defaults": [
+                (0, "outputs[0]", "default_value", la_value),
+                (0, "", "location", node_location),
+
+                (1, "inputs[1]", "default_value", (0.04, 0.04, 0.04, 1)),
+                (1, "inputs[2]", "default_value", l_value),
+                (1, "", "blend_type", 'MIX'),
+                (1, "", "location", node_location),
+
+                (2, "", "location", node_location),
+
+                (3, "outputs[0]", "default_value", ems_value_c),
+                (3, "", "location", node_location)
+            ],
+            "links": [
+                (0, "outputs[0]", 1, "inputs[0]"),
+                (-1, la_socket, 1, "inputs[0]"),
+                (-1, l_socket, 1, "inputs[2]"),
+                (1, "outputs[0]", 2, "inputs[0]"),
+                (3, "outputs[0]", 2, "inputs[1]"),
+                (-1, ems_socket, 2, "inputs[1]")
+            ],
+            "return": 2
+        },
+
+        'GLOSSINESS': {
+            "nodes": [
+                "ShaderNodeInvert",
+                "ShaderNodeEmission",
+                "ShaderNodeRGB"
+            ],
+            "defaults": [
+                (0, "inputs[0]", "default_value", 1.0),
+                (0, "inputs[1]", "default_value", l_value),
+                (0, "", "location", node_location),
+
+                (1, "", "location", node_location),
+
+                (2, "outputs[0]", "default_value", ems_value_c),
+                (2, "", "location", node_location)
+            ],
+            "links": [
+                (-1, l_socket, 0, "inputs[1]"),
+                (0, "outputs[0]", 1, "inputs[0]"),
+                (2, "outputs[0]", 1, "inputs[1]"),
+                (-1, ems_socket, 1, "inputs[1]")
+            ],
+            "return": 1
+        },
+
+        'LINK_OR_VALUE': {
+            "nodes": [
+                "ShaderNodeRGB",
+                "NodeReroute"
+            ],
+            "defaults": [
+                (0, "outputs[0]", "default_value", l_value),
+                (0, "", "location", node_location),
+
+                (1, "", "location", node_location)
+            ],
+            "links": [
+                (0, "outputs[0]", 1, "inputs[0]"),
+                (-1, l_socket, 1, "inputs[0]")
+            ],
+            "return": 1
+        },
+
+        'LINK_OR_VALUE_STRENGTH': {
+            "nodes": [
+                "ShaderNodeMixRGB"
+            ],
+            "defaults": [
+                (0, "inputs[0]", "default_value", 1.0),
+                (0, "inputs[1]", "default_value", l_value),
+                (0, "inputs[2]", "default_value", ems_value_c),
+                (0, "", "blend_type", 'MULTIPLY'),
+                (0, "", "location", node_location)
+            ],
+            "links": [
+                (-1, l_socket, 0, "inputs[1]"),
+                (-1, ems_socket, 0, "inputs[2]")
+            ],
+            "return": 0
+        },
+
+        'DEFAULT': {
+            "nodes": [
+                "ShaderNodeEmission",
+                "ShaderNodeRGB"
+            ],
+            "defaults": [
+                (0, "inputs[0]", "default_value", l_value),
+                (0, "", "location", node_location),
+
+                (1, "outputs[0]", "default_value", ems_value_c),
+                (1, "", "location", node_location)
+            ],
+            "links": [
+                (-1, l_socket, 0, "inputs[0]"),
+                (1, "outputs[0]", 0, "inputs[1]"),
+                (-1, ems_socket, 0, "inputs[1]")
+            ],
+            "return": 0
+        }
+    }
+
+    debug('socket_replug: target=', map_name, '; l_socket=', l_socket,
+          '; l_value=', l_value, '; r_socket=', r_socket, '; ems_socket=',
+          ems_socket, '; ems_value=', ems_value, sep='')
+
+    if map_name in {'DISPLACEMENT', 'NORMAL_POST'}:
+        map_name = ('LINK_OR_VALUE', 'LINK_OR_VALUE_STRENGTH')[
+            strength_baked_in and (
+                ems_socket is not None or ems_value_c != (1, 1, 1, 1))]
+
+    mk_nodes_i = mkniis_user.get(map_name, mkniis_user['DEFAULT'])
+    em_node, iis = replug_make_nodes(node_tree, mk_nodes_i)
+
+    assert not (mk_nodes_i['return'] != -1 and em_node is None)
+    if em_node is None:  # when mk_nodes_i['return'] is -1.
+        mout_node_i = ""
+        old_link_i = ""
+
+    elif em_node.id_data == r_socket.id_data:
+        _, old_link_i = replug_make_link(
+            node_tree, em_node.outputs[0], r_socket)
+        mout_node_i = ""
+
+    # Avoid reaching the condition below. To do so, provide a correct r_socket,
+    # id_data of which matches with em_node.id_data.
+    else:
+        mout_node, mout_node_i = replug_make_node(
+            node_tree, "ShaderNodeOutputMaterial", node_location)
+        mout_node.select = True
+        node_tree.nodes.active = mout_node
+
+        _ = node_tree.links.new(em_node.outputs[0], mout_node.inputs[0])
+        old_link_i = ""
+
+    assert True if em_node is None else "BM_matRestore" == em_node.label
+    bm_props.global_matrestore_instruction += iis + mout_node_i + old_link_i
+    return None
+
+
+def socket_get_values(
+        socket: NodeSocketBakeable) -> tuple[
+            None | bpy.types.NodeSocket, tuple]:
+    _l_sockets = socket_froms(socket)
+
+    l_value = socket.default_value
+    l_socket = None if len(_l_sockets) == 0 else _l_sockets.pop()
+
+    if l_value is None:
+        l_value = (0, 0, 0, 1)
+    elif not isinstance(l_value, bpy.types.bpy_prop_array):
+        l_value = (l_value,) * 3 + (1,)
+    else:
+        l_value = tuple(l_value)
+
+        if len(l_value) == 3:
+            l_value += (1,)
+
+    assert len(l_value) == 4
+    return l_socket, l_value
+
+
+def node_group_get_output(bm_props, node_group: bpy.types.ShaderNodeGroup
+                          ) -> None | bpy.types.NodeGroupOutput:
+    for node in node_group.node_tree.nodes:
+        if not isinstance(node, bpy.types.NodeGroupOutput):
+            continue
+        elif not node.is_active_output:
+            continue
+
+        mark_active_outnode(bm_props, node)
+        return node
+
+    return None
+
+
+def socket_get_by_id(sockets: bpy.types.NodeInputs | bpy.types.NodeOutputs,
+                     identifier: str) -> None | bpy.types.NodeSocket:
+    for socket in sockets:
+        if socket.identifier == identifier:
+            return socket
+    return None
+
+
+def is_valid_link(link: bpy.types.NodeLink) -> bool:
+    """
+    Returns True if link is valid e.g. valid and not muted.
+    """
+
+    if not link.is_valid:
+        return False
+
+    assert type(bpy.app.version) is tuple
+    if bpy.app.version >= (2, 93, 0):
+        return not link.is_muted
+
+    return True
+
+
+def socket_froms(socket: bpy.types.NodeSocket, verify_valid: bool = True
+                 ) -> list[bpy.types.NodeSocket]:
+    """
+    Return a list of sockets linked to the passed socket.
+    """
+
+    froms = []
+    assert type(socket.links) is tuple
+    for link in tuple(socket.links):
+        assert isinstance(link, bpy.types.NodeLink)
+        if not verify_valid:
+            froms.append(link.from_socket)
+            continue
+        elif is_valid_link(link):
+            froms.append(link.from_socket)
+
+    return froms
+
+
+def socket_tos(socket: bpy.types.NodeSocket, verify_valid: bool = True
+               ) -> list[bpy.types.NodeSocket]:
+    """
+    Return a list of outgoing sockets from the passed socket.
+    """
+
+    tos = []
+    assert type(socket.links) is tuple
+    for link in tuple(socket.links):
+        assert isinstance(link, bpy.types.NodeLink)
+        if not verify_valid:
+            tos.append(link.to_socket)
+            continue
+        elif is_valid_link(link):
+            tos.append(link.to_socket)
+
+    return tos
+
+
+def node_named_socket(node: bpy.types.ShaderNode, map_name: str
+                      ) -> bpy.types.NodeSocket | None:
+    """
+    Returns a node's NodeSocket that corresponds to the given map_name. The
+    returned socket is the first found named socket that has a name
+    corresponding to the socket names for the given map_name.
+    """
+
+    socket_names = node_get_map_socket(map_name)
+    if map_name == 'EMISSION' and isinstance(
+            node, bpy.types.ShaderNodeEmission):
+        socket_names += ['Color']
+
+    assert len(socket_names)
+    for name in socket_names:
+        socket = node.inputs.get(name, None)
+        if isinstance(socket, bpy.types.NodeSocket):
+            return socket
+
+    return None
+
+
+def node_inputs_callback(
+        bm_props,
+        node: bpy.types.ShaderNode | bpy.types.NodeReroute,
+        map_name: str, parents: tuple[bpy.types.ShaderNode, ...]) -> bool:
+    """
+    Run node_replug_recursive(...) for each valid and verified input of the
+    given node. Replug valid inputs with no links directly in place, and
+    accumulate local had_replug as the final return.
+    """
+
+    had_replug = False
+    assert isinstance(node.id_data, bpy.types.ShaderNodeTree)
+
+    for in_socket in node.inputs:
+        if (map_name not in {'DISPLACEMENT', 'NORMAL_POST'}
+                and not isinstance(in_socket, bpy.types.NodeSocketShader)):
+            continue
+
+        assert type(in_socket.links) is tuple
+        links_tuple = tuple(in_socket.links)
+
+        if len(links_tuple) == 0:
+            socket_replug(
+                bm_props,
+                node.id_data,
+                map_name,
+                None,
+                None,
+                replug_get_default_l_value(map_name),
+                replug_get_default_l_value('METALNESS'),
+                in_socket,
+                node_location=node.location)
+
+            node_replug_post(bm_props, True, map_name, parents)
+
+            had_replug |= True
+            continue
+
+        for link in links_tuple:
+            assert isinstance(link, bpy.types.NodeLink)
+            if not is_valid_link(link):
+                continue
+
+            from_node = link.from_node
+            from_socket = link.from_socket
+            if "BM_matRestore" in from_node.label:
+                had_replug |= True  # path may have been already replugged.
+                continue
+
+            _callback_ret = node_replug_recursive(
+                bm_props, from_socket, map_name, in_socket, parents)
+
+            if isinstance(node, bpy.types.ShaderNode) and not _callback_ret:
+                l_socket = from_socket if isinstance(
+                    from_socket, NodeSocketBakeable) and map_name in {
+                        'ALBEDO', 'DIFFUSE', 'SPECULAR', 'BASE_COLOR',
+                        'SS_COLOR', 'EMISSION'} else None
+
+                socket_replug(
+                    bm_props,
+                    node.id_data,
+                    map_name,
+                    l_socket,
+                    None,
+                    replug_get_default_l_value(map_name),
+                    replug_get_default_l_value('METALNESS'),
+                    in_socket,
+                    node_location=node.location)
+
+                node_replug_post(bm_props, True, map_name, parents)
+                _callback_ret = True
+
+            had_replug |= _callback_ret
+
+    return had_replug
+
+
+def node_replug(bm_props, node: bpy.types.ShaderNode, map_name: str,
+                r_socket: bpy.types.NodeSocket,
+                parents: tuple[bpy.types.ShaderNode, ...],
+                socket_expl: bpy.types.NodeSocket | None = None,
+                returns: tuple[Literal[0, 1, 2], str | Any] = (0, None)
+                ) -> tuple[bool, Any]:
+    """
+    Replugs a socket for node's input that corresponds to map_name. For
+    Displacement map, pass explicit output socket of a valid node to replug.
+
+    Returns a pair containing a bool specifying a successful replug of the node
+    and an additional return expression defined by returns (default is None) of
+    namespace specifier (0 for external, 1 for local, 2 for eval) and direct
+    value, variable name, or a statement to evaluate correspondingly.
+    """
+
+    ems_value = 1.0
+    ems_socket = None
+
+    if map_name in {'DISPLACEMENT', 'NORMAL_POST'}:
+        if node.type in {'NORMAL_MAP', 'BUMP', 'DISPLACEMENT',
+                         'VECTOR_DISPLACEMENT'}:
+            socket_expl = None
+
+    socket = node_named_socket(
+        node, map_name) if socket_expl is None else socket_expl
+
+    debug('node_replug: socket is ', socket)
+
+    if not isinstance(socket, NodeSocketBakeable):
+        return False, eval(returns[1]) if returns[0] else returns[1]
+
+    _nm_sockets = socket_froms(socket)
+    if map_name == 'NORMAL' and len(_nm_sockets) == 0:
+        l_socket, l_value = None, replug_get_default_l_value('NORMAL')
+
+    elif map_name == 'NORMAL' and len(_nm_sockets):
+        _nm_socket = _nm_sockets.pop()
+
+        _nm_had_replug = node_replug_recursive(
+            bm_props,
+            _nm_socket,
+            'NORMAL_POST',
+            socket,
+            parents)
+
+        if _nm_had_replug:
+            l_socket, l_value = socket_get_values(socket)
+        else:
+            l_socket, l_value = None, replug_get_default_l_value('NORMAL')
+
+    else:
+        l_socket, l_value = socket_get_values(socket)
+
+    _a_socket = node_named_socket(node, 'METALNESS')
+    if map_name in {'DIFFUSE', 'SPECULAR'} and isinstance(
+            _a_socket, NodeSocketBakeable):
+        la_socket, la_value = socket_get_values(_a_socket)
+    else:
+        la_socket, la_value = None, replug_get_default_l_value('METALNESS')
+
+    if isinstance(node, bpy.types.ShaderNodeEmission):
+        _ems_src_socket = node.inputs[1]
+    elif map_name in {'DISPLACEMENT', 'NORMAL_POST'}:
+        _ems_src_socket = node.inputs.get("Strength", node.inputs.get("Scale"))
+    else:
+        _ems_src_socket = node.inputs.get("Emission Strength")
+
+    debug("ems_src_socket is:", _ems_src_socket)
+
+    if isinstance(_ems_src_socket, NodeSocketBakeable) and (
+            map_name in {'EMISSION', 'NORMAL_POST', 'DISPLACEMENT'}
+            or node.type == 'EMISSION'):
+
+        _ems_sockets = socket_froms(_ems_src_socket)
+        if len(_ems_sockets) != 0:
+            ems_socket = _ems_sockets.pop()
+        else:
+            ems_value = _ems_src_socket.default_value
+
+    assert isinstance(node.id_data, bpy.types.ShaderNodeTree)
+    socket_replug(
+        bm_props,
+        node.id_data,
+        map_name,
+        l_socket,
+        la_socket,
+        l_value,
+        la_value,
+        r_socket,
+        node_location=node.location,
+        ems_socket=ems_socket,
+        ems_value=ems_value)
+
+    return True, eval(returns[1]) if returns[0] else returns[1]
+
+
+def node_replug_post(
+        bm_props,
+        had_replug: bool,
+        map_name: str,
+        parents: tuple[bpy.types.ShaderNode, ...],
+        _ems_socket: bpy.types.NodeSocket | None = None,
+        _ems_value: float | Vector = 1.0) -> None:
+    if not had_replug:
+        return None
+
+    if map_name != 'DISPLACEMENT':
+        return None
+
+    mat_out = parents[0] if len(parents) else None
+    if not isinstance(mat_out, bpy.types.ShaderNodeOutputMaterial):
+        return None
+
+    l_socket = None
+    _sockets = socket_froms(mat_out.inputs[2])
+    assert isinstance(mat_out.id_data, bpy.types.ShaderNodeTree)
+
+    if len(_sockets):
+        disp_from = _sockets.pop()
+        if disp_from.node.label == "BM_matRestore":  # path already replugged.
+            return None
+
+        # Add a Reroute Node marked with BM_matRestore to avoid redundant
+        # replugs of this Displacement socket:
+        mki = {
+            "nodes": [
+                "NodeReroute"
+            ],
+            "defaults": [
+                (0, "", "location", mat_out.location)
+            ],
+            "links": [
+                # Disconnect initial displacement input for viewport clarity:
+                # (-1, disp_from, 0, "inputs[0]"),
+                (0, "outputs[0]", -1, mat_out.inputs[2])
+            ],
+            "return": -1
+        }
+        _, i = replug_make_nodes(mat_out.id_data, mki)
+        bm_props.global_matrestore_instruction += i
+
+        assert isinstance(
+            disp_from.node, (bpy.types.ShaderNode, bpy.types.NodeReroute))
+
+        # Correct socket if nno (Named Node Outputs Retrieval) is enabled.
+        l_socket = _nno_get_socket(
+            bm_props, disp_from.node, disp_from, _map_name_expl=map_name
+        ) or disp_from
+
+    node_location = l_socket.node.location if l_socket else Vector((0, 0))
+
+    socket_replug(
+        bm_props,
+        mat_out.id_data,
+        'DEFAULT',
+        l_socket,
+        None,
+        replug_get_default_l_value('DISPLACEMENT'),
+        replug_get_default_l_value('METALNESS'),
+        mat_out.inputs[0],
+        node_location=node_location,
+        # ems_socket and ems_value are applied in socket_replug(...).
+        ems_socket=None,
+        ems_value=1.0)
+
+    return None
+
+
+def _nno_get_socket(
+    bm_props,
+    node: Union[
+        bpy.types.ShaderNode,
+        bpy.types.NodeReroute,
+        bpy.types.NodeGroupInput],
+    socket: bpy.types.NodeSocket,
+    _map_name_expl: str,
+    priority: bool = True,
+    override_prefs: bool = False
+) -> bpy.types.NodeSocket | None:
+    """
+    Return an output socket that corresponds to the map_name.
+
+    If priority is True, prioritize sockets with word "Bake", then the
+    given socket itself (only if its name satisfies map_name), lastly the
+    rest.
+    """
+
+    if _map_name_expl == 'NORMAL_POST' or (
+            not bm_props.global_bake_nno_use_all_nodes and not isinstance(
+                node, bpy.types.ShaderNodeGroup)):
+        return None
+    elif not bm_props.global_bake_use_nno and not override_prefs:
+        debug("_nno_get_socket: skipped by bm_props, expect None")
+        return None
+
+    _socket_names = list(map(
+        str.lower, node_get_map_socket(_map_name_expl, aggresive=True)))
+
+    _res: NodeSocketBakeable | None = None
+
+    def _output_priority(
+            _output: bpy.types.NodeSocket
+    ) -> Literal[0, 1, 2]:
+        assert _output.is_output
+        _self_socket = _output.identifier == socket.identifier
+
+        if not isinstance(_output, NodeSocketBakeable) or (
+                not bm_props.global_bake_nno_use_linked and len(
+                socket_tos(_output)) and not _self_socket):
+            return 0
+
+        _nlow = _output.name.lower()
+        if any(True for _name in _socket_names if _name in _nlow):
+            if not priority or "bake" in _nlow:
+                return 2
+            return 1
+        return 0
+
+    _self_priority = _output_priority(socket)
+    if _self_priority == 2:
+        return socket
+
+    for _output in node.outputs:
+        if _output.identifier == socket.identifier:
+            continue
+
+        _p = _output_priority(_output)
+        if _p == 0:
+            continue
+        elif _p == 2:
+            return _output
+        elif _p == 1 and _res is None:
+            _res = _output
+
+    if bm_props.global_bake_nno_use_named_bake:
+        return None
+    return socket if _self_priority == 1 and priority else _res
+
+
+def node_replug_used_output(
+        bm_props,
+        socket: bpy.types.NodeSocket,
+        node: Union[
+            bpy.types.ShaderNode,
+            bpy.types.NodeReroute,
+            bpy.types.NodeGroupInput],
+        map_name: str, r_socket: bpy.types.NodeSocket,
+        parents: tuple[bpy.types.ShaderNode, ...],
+        override_prefs: bool = False) -> bool:
+    """
+    Iterate over node's outputs. Perform a socket replug if an output's name
+    represents bakeable data, e.g. output's name is 'Albedo', 'Bake Albedo',
+    'Diffuse' etc. and map_name is 'ALBEDO', then this output socket is
+    replugged.
+
+    This functionality depends on bm_props.global_bake_use_nno.
+    Pass override_prefs=True to run explicitly.
+
+    Returns True if any output socket was fully replugged, otherwise False.
+    """
+
+    l_socket = _nno_get_socket(
+        bm_props, node, socket,
+        _map_name_expl=map_name,
+        override_prefs=override_prefs)
+    la_socket = None
+
+    debug('l_socket in node_replug_used_output: ', l_socket)
+
+    if l_socket is None:
+        return False
+
+    if map_name in {'DIFFUSE', 'SPECULAR'}:
+        la_socket = _nno_get_socket(
+            bm_props, node, socket,
+            _map_name_expl='METALNESS',
+            override_prefs=override_prefs)
+        if la_socket is None:
+            return False
+
+    if (map_name not in {'NORMAL', 'DISPLACEMENT'}
+            or not isinstance(l_socket, NodeSocketVectorLike)):
+        assert isinstance(node.id_data, bpy.types.ShaderNodeTree)
+        socket_replug(
+            bm_props,
+            node.id_data,
+            map_name,
+            l_socket,
+            la_socket,
+            replug_get_default_l_value(map_name),
+            replug_get_default_l_value('METALNESS'),
+            r_socket,
+            node_location=node.location)
+
+        node_replug_post(bm_props, True, map_name, parents)
+        return True
+
+    def _defer_disp(return_value: Any) -> Any:
+        """
+        Plug found named l_socket into r_socket. This ensures that the
+        node_tree up the hierarchy receives corrected named output socket.
+        This is only suitable for DISPLACEMENT target, since its replug schema
+        traverses through Reroute Nodes and performs a post-replug on a new
+        location.
+
+        Real example: mat_out and node_group is separated by a node_reroute,
+        'Displacement Bake' socket is found in node_group, but on
+        DISPLACEMENT post procedure, the retrieved socket from the mat_out's
+        Displacement input is the node_reroute, not node_group -> replugged
+        'Displacement Bake' is lost here. This fixes it.
+        """
+
+        nonlocal map_name, l_socket, r_socket, node, bm_props
+        if map_name != 'DISPLACEMENT':
+            return return_value
+
+        mki = {
+            "nodes": [],
+            "defaults": [],
+            "links": [(-1, l_socket, -1, r_socket)],
+            "return": -1
+        }
+
+        assert isinstance(node.id_data, bpy.types.ShaderNodeTree)
+        _, i = replug_make_nodes(node.id_data, mki)
+        bm_props.global_matrestore_instruction += i
+        return return_value
+
+    _defer_disp(None)
+
+    # If traversing a Vector-like socket, switch NORMAL to NORMAL_POST target.
+    # See next comment below.
+    _vs_had_replug = node_replug_recursive(
+        bm_props, l_socket,
+        'NORMAL_POST' if map_name == 'NORMAL' else map_name,
+        r_socket, parents, no_nno=True)
+
+    if not _vs_had_replug or map_name != 'NORMAL':
+        return _vs_had_replug
+
+    # Below is executed for NORMAL map only.
+    # Vector-like socket traversed, finish NORMAL target - add Emission node.
+    assert isinstance(node.id_data, bpy.types.ShaderNodeTree)
+    socket_replug(
+        bm_props,
+        node.id_data,
+        map_name,
+        l_socket,
+        la_socket,
+        replug_get_default_l_value(map_name),
+        replug_get_default_l_value('METALNESS'),
+        r_socket,
+        node_location=node.location)
+
+    node_replug_post(bm_props, True, map_name, parents)
+    return True
+
+
+def node_replug_recursive(
+        bm_props, socket: bpy.types.NodeSocket,
+        map_name: str, r_socket: bpy.types.NodeSocket,
+        parents: tuple[bpy.types.ShaderNode, ...],
+        no_nno: bool = False) -> bool:
+    """
+    Recursively iterate through socket's Node input sockets. On valid
+    NodeSocket found, perform a node replug.
+
+    Node Groups are expected down, after Node Group Input node inspection goes
+    one level up to the parent Node Tree.
+
+    Replug is performed between the input socket or value of a found socket for
+    the given map_name and r_socket. r_socket is where new Emission ShaderNode
+    (mostly but not guaranteed) should be plugged into. For Displacement,
+    r_socket is a Surface ShaderSocket of a Material Output node. For other
+    maps, r_socket is where the ShaderNode of a found socket is plugged into.
+    """
+
+    node = socket.node
+    assert isinstance(node.id_data, bpy.types.ShaderNodeTree)
+
+    debug('\nround node: ', node, node.type, '; stack depth: ',
+          len(inspect.stack(0)))
+
+    if node.label == "BM_matRestore":
+        # Since we may have a different parent path to this node that had been
+        # already replugged, we need to ensure node_replug_post(...) is called
+        # on this path as well.
+        node_replug_post(bm_props, True, map_name, parents)
+        return True
+
+    elif (isinstance(node, bpy.types.ShaderNodeOutputMaterial)
+            or isinstance(node, bpy.types.NodeGroupOutput)):
+        return False
+
+    elif node.mute:
+        debug(node, 'is muted:', end=' ')
+        socket_replug(
+            bm_props,
+            node.id_data,
+            map_name,
+            None,
+            None,
+            replug_get_default_l_value(map_name),
+            replug_get_default_l_value('METALNESS'),
+            r_socket,
+            node_location=node.location)
+
+        node_replug_post(bm_props, True, map_name, parents)
+        return True
+
+    elif isinstance(node, bpy.types.NodeGroupInput):
+        if len(parents) == 0:
+            return False
+
+        rp_socket = socket_get_by_id(parents[-1].inputs, socket.identifier)
+        debug('rp_socket: ', rp_socket)
+        if not isinstance(rp_socket, bpy.types.NodeSocket):
+            return False
+
+        _sockets = socket_froms(rp_socket)
+        debug('_sockets: ', _sockets)
+
+        used_output = False if no_nno else node_replug_used_output(
+            bm_props, socket, node, map_name, r_socket, parents)
+
+        if len(_sockets) == 0 and not used_output:
+            assert isinstance(parents[-1].id_data, bpy.types.ShaderNodeTree)
+            socket_replug(
+                bm_props,
+                parents[-1].id_data,
+                map_name,
+                None,
+                None,
+                replug_get_default_l_value(map_name),
+                replug_get_default_l_value('METALNESS'),
+                rp_socket,
+                node_location=parents[-1].location)
+
+            node_replug_post(bm_props, True, map_name, parents)
+            return True
+
+        return used_output or node_replug_recursive(
+            bm_props, _sockets.pop(), map_name, rp_socket, parents[:-1])
+
+    elif isinstance(node, bpy.types.ShaderNodeGroup):
+        node_group_output = node_group_get_output(bm_props, node)
+        if node_group_output is None:
+            return False
+
+        rp_socket = socket_get_by_id(
+            node_group_output.inputs,
+            socket.identifier)
+
+        debug('rp_socket: ', rp_socket)
+        if not isinstance(rp_socket, bpy.types.NodeSocket):
+            return False
+
+        _sockets = socket_froms(rp_socket)
+        debug('_sockets: ', _sockets)
+
+        return (
+            (False if no_nno else node_replug_used_output(
+                bm_props, socket, node, map_name, r_socket, parents))
+            or (False if len(_sockets) == 0 else node_replug_recursive(
+                bm_props, _sockets.pop(), map_name, rp_socket,
+                parents + (node, )))
+        )
+
+    assert isinstance(node, (bpy.types.ShaderNode, bpy.types.NodeReroute))
+
+    if not no_nno and node_replug_used_output(
+            bm_props, socket, node, map_name, r_socket, parents):
+        debug("node_replug_used_output for shadernode:", end='\t')
+        return True
+
+    had_replug = False
+    if isinstance(node, bpy.types.ShaderNode):
+        had_replug, (ems_socket, ems_value) = node_replug(
+            bm_props,
+            node,
+            map_name,
+            r_socket,
+            parents,
+            socket_expl=socket if map_name in {
+                'DISPLACEMENT', 'NORMAL_POST'} else None,
+            returns=(1, "(ems_socket, ems_value)"))
+
+        debug('node_replug result for ShaderNode: ', had_replug)
+
+        assert type(ems_value) in {float, Vector} and (
+            ems_socket is None or isinstance(ems_socket, bpy.types.NodeSocket))
+
+        node_replug_post(bm_props, had_replug, map_name,
+                         parents, ems_socket, ems_value)
+
+        if map_name in {'DISPLACEMENT', 'NORMAL_POST'}:
+            return had_replug
+
+    had_replug |= node_inputs_callback(bm_props, node, map_name, parents)
+    return had_replug
+
+
+def mark_active_outnode(
+        bm_props,
+        node: Union[bpy.types.ShaderNodeOutputMaterial,
+                    bpy.types.NodeGroupOutput]) -> None:
+    if not node.is_active_output:
+        return None
+
+    nt_path = repr(node.id_data)
+    restore_path = (f"p!{nt_path}.{node.path_from_id()}!is_active_output!"
+                    + f"{node.is_active_output}\n")
+
+    bm_props.global_matrestore_instruction += restore_path
+    return None
+
+
+def node_tree_replug(bm_props, node_tree: bpy.types.ShaderNodeTree,
+                     map_name: str) -> None:
+    for node in node_tree.nodes:
+        if (isinstance(node, bpy.types.ShaderNodeGroup)
+                and not any(output.is_linked for output in node.outputs)):
+
+            assert isinstance(node.node_tree, bpy.types.ShaderNodeTree)
+            node_tree_replug(bm_props, node.node_tree, map_name)
+            continue
+
+        elif not isinstance(node, bpy.types.ShaderNodeOutputMaterial):
+            continue
+        elif not node.is_active_output:
+            continue
+        mark_active_outnode(bm_props, node)
+
+        _src_socket = (node.inputs[0], node.inputs[2]
+                       )[map_name == 'DISPLACEMENT']
+        _sockets = socket_froms(_src_socket)
+
+        l_socket = _sockets.pop() if len(_sockets) else None
+        had_replug = False
+
+        if l_socket is not None:
+            had_replug = node_replug_recursive(
+                bm_props,
+                l_socket,
+                map_name,
+                _src_socket,
+                parents=(node,))
+
+        if had_replug:
+            continue
+
+        elif isinstance(l_socket, NodeSocketBakeable) and map_name in {
+                'ALBEDO', 'DIFFUSE', 'SPECULAR', 'BASE_COLOR',
+                'SS_COLOR', 'EMISSION'}:
+            socket_replug(
+                bm_props,
+                node_tree,
+                map_name,
+                l_socket,
+                None,
+                replug_get_default_l_value(map_name),
+                replug_get_default_l_value('METALNESS'),
+                node.inputs[0],
+                node_location=node.location)
+
+        else:
+            socket_replug(
+                bm_props,
+                node_tree,
+                map_name,
+                None,
+                None,
+                replug_get_default_l_value(map_name),
+                replug_get_default_l_value('METALNESS'),
+                node.inputs[0],
+                node_location=node.location)
+
+        _post_sockets = socket_froms(node.inputs[0])
+        if map_name == 'DISPLACEMENT' and len(_post_sockets):
+            socket_replug(
+                bm_props,
+                node_tree,
+                map_name,
+                _post_sockets.pop(),
+                None,
+                replug_get_default_l_value(map_name),
+                replug_get_default_l_value('METALNESS'),
+                node.inputs[2],
+                node_location=node.location)
+
+        node_replug_post(bm_props, True, map_name, (node,))
+
+    return None
+
+
+def mat_replug(bm_props, mat: bpy.types.Material, map_name: str) -> None:
+    mat.use_nodes = True
+    node_tree = mat.node_tree
+
+    assert isinstance(node_tree, bpy.types.ShaderNodeTree)
+    node_tree_replug(bm_props, node_tree, map_name)
+    return None
+
+
+def bake_object_mats_restore_replug(bm_props) -> None:
+    for restore_path in bm_props.global_matrestore_instruction.split('\n'):
+        if not restore_path:
+            continue
+
+        args = restore_path.split('!')
+        assert len(args) >= 2
+
+        call_type = args[0]
+
+        if call_type == 'c':
+            assert len(args) == 2
+            try:
+                _ = eval(args[1])
+            except Exception as exc:
+                print("BakeMaster Code Execution Error: %s" % str(exc))
+                print("Args are: ", args)
+                print(("\nBakeMaster Code Error Traceback:\n "
+                       + "%s\n" % traceback.format_exc()))
+
+        elif call_type == 'p':
+            assert len(args) == 4
+
+            obj = eval(args[1])
+            attr = args[2]
+            val = eval(args[3])
+
+            setattr(obj, attr, val)
+
+        else:
+            raise ValueError("Invalid call_type argument %s" % call_type)
+
+    bm_props.global_matrestore_instruction = ""
+    return None
+
+
+def bake_object_mats_replug(bm_props, mat_source: bpy.types.Object, map,
+                            map_name: str) -> None:
+    if map_name == 'PASS':
+        if map.map_pass_type == 'SPECULAR':
+            map_name = "PASS_%s" % map.map_pass_type
+        else:
+            map_name = map.map_pass_type
+
+    for mat in mat_source:
+        if mat is None:
+            continue
+
+        mat_replug(bm_props, mat, map_name)
+
+
+def BM_MAP_PROPS_MapPreview_ReplugMaterials_Add(
+        map, context: bpy.types.Context, map_name: str = "") -> None:
+    map_name = map.global_map_type if not map_name else map_name
     data = BM_MAP_PROPS_MapPreview_getData(
-        self, context, map_tag, check_maps_with_data=True)
+        map,
+        context,
+        map_name,
+        check_maps_with_data=True)
+
     if data is None:
         return
 
     map, objects = data
 
-    map_type_origin = map_tag
-    if map_tag == 'PASS':
-        map_tag = map.map_pass_type
-
-    # each shaders supports grabbing specified passes,
-    # passes keys' values are sockets names
-    # passes names and grabbing algo may differ for each map type
-    node_getable_data = {
-        'ALBEDO': ['Color', 'Base Color'],
-        'METALNESS': ['Metallic'],
-        'ROUGHNESS': ['Roughness'],
-        'DIFFUSE': ['Color', 'Base Color'],
-        'SPECULAR': ['Specular', 'Specular Tint'],
-        'GLOSSINESS': ['Roughness'],
-        'OPACITY': ['Alpha', 'Opacity'],
-        'BASE_COLOR': ['Base Color'],
-        'SS_COLOR': ['Subsurface Color', 'Color'],
-        'METALLIC': ['Metallic'],
-        'ANISOTROPIC': ['Anisotropic'],
-        'SHEEN': ['Sheen', 'Sheen Weight'],
-        'CLEARCOAT': ['Clearcoat', 'Coat Weight'],
-        'IOR': ['IOR'],
-        'TRANSMISSION': ['Transmission', 'Transmission Weight'],
-        'EMISSION': ['Emission', 'Emission Color'],
-        'ALPHA': ['Alpha'],
-        'NORMAL': ['Normal'],
-        'DISPLACEMENT': ['Displacement'],
-    }
-
-    def get_socket_default_color_value(socket, socket_name):
-        default_color_data = {
-            'Color': getattr(socket, "default_value"),
-            'Base Color': getattr(socket, "default_value"),
-            'Metallic': [getattr(socket, "default_value")] * 3,
-            'Roughness': [getattr(socket, "default_value")] * 3,
-            'Specular': [getattr(socket, "default_value")] * 3,
-            'Specular Tint': getattr(socket, "default_value"),
-            'Alpha': [getattr(socket, "default_value")] * 3,
-            'Subsurface Color': getattr(socket, "default_value"),
-            'Anisotropic': [getattr(socket, "default_value")] * 3,
-            'Sheen': [getattr(socket, "default_value")] * 3,
-            'Sheen Weight': [getattr(socket, "default_value")] * 3,
-            'Clearcoat': [getattr(socket, "default_value")] * 3,
-            'Coat Weight': [getattr(socket, "default_value")] * 3,
-            'IOR': [getattr(socket, "default_value")] * 3,
-            'Transmission': [getattr(socket, "default_value")] * 3,
-            'Transmission Weight': [getattr(socket, "default_value")] * 3,
-            'Emission': getattr(socket, "default_value"),
-            'Emission Color': getattr(socket, "default_value"),
-            'Normal': [0.5, 0.5, 1],
-            'Displacement': [0.0] * 3,
-        }
-        data = list(default_color_data[socket_name])
-        if len(data) != 4:
-            data.append(1)
-        return tuple(data)
-
-    ad_map_tag = ""
-    map_tag_origin = map_tag
-    if map_tag in ['DIFFUSE', 'SPECULAR'] and map_type_origin != 'PASS':
-        ad_map_tag = 'METALNESS'
-        map_tag = 'DIFFUSE'
-
-    for object in objects:
-        if len(object.data.materials) == 0:
-            bpy.ops.bakemaster.report_message(
-                'INVOKE_DEFAULT', message_type='WARNING',
-                message="%s: No Materials" % object.name)
+    for obj in objects:
+        if len(obj.data.materials) == 0:
+            print(f"BakeMaster Map Preview Warning: {obj.name} ",
+                  "has no materials", sep='')
             continue
 
-        for material in object.data.materials:
-            if material is None:
-                continue
+        bake_object_mats_replug(
+            context.scene.bm_props, obj.data.materials, map, map_name)
 
-            material.use_nodes = True
-            grab_socket = None
-            default_value = None
-            grab_ad_socket = None
-            default_ad_value = None
-            nodes = material.node_tree.nodes
-            links = material.node_tree.links
 
-            # grabbing socket to preview
-            for node in nodes:
-                if node.type != 'OUTPUT_MATERIAL':
-                    continue
-
-                if map_tag == 'DISPLACEMENT':
-                    if len(node.inputs[2].links) == 0:
-                        continue
-                    grab_socket = node.inputs[2].links[0].from_socket
-                    input_node = node.inputs[2].links[0].from_node
-                    if input_node.type in ['DISPLACEMENT', 'VECTOR_DISPLACEMENT']:
-                        if len(input_node.inputs[0].links) == 0:
-                            default_value = tuple(
-                                [input_node.inputs[0].default_value, input_node.inputs[0].default_value, input_node.inputs[0].default_value, 1])
-                            grab_socket = None
-                            break
-                        grab_socket = input_node.inputs[0].links[0].from_socket
-                    break
-
-                if len(node.inputs[0].links) == 0:
-                    continue
-
-                # find socket value to grab
-                for input_socket in node.inputs[0].links[0].from_node.inputs:
-                    if input_socket.name in node_getable_data[map_tag]:
-                        if len(input_socket.links) == 0:
-                            default_value = get_socket_default_color_value(
-                                input_socket, input_socket.name)
-                            break
-                        grab_socket = input_socket.links[0].from_socket
-                        if input_socket.links[0].from_node.type == 'NORMAL_MAP':
-                            if len(input_socket.links[0].from_node.inputs[1].links) == 0:
-                                default_value = tuple(
-                                    input_socket.links[0].from_node.inputs[1].default_value)
-                                grab_socket = None
-                                break
-                            grab_socket = input_socket.links[0].from_node.inputs[1].links[0].from_socket
-                        break
-
-                if any([grab_socket is not None, default_value is not None]):
-                    if ad_map_tag == "":
-                        break
-
-                if ad_map_tag == "":
-                    continue
-
-                # find additional socket value for pbrs previews
-                for input_socket in node.inputs[0].links[0].from_node.inputs:
-                    if input_socket.name in node_getable_data[ad_map_tag]:
-                        if len(input_socket.links) == 0:
-                            default_ad_value = get_socket_default_color_value(
-                                input_socket, input_socket.name)
-                            break
-                        grab_ad_socket = input_socket.links[0].from_socket
-                        break
-
-                if any([grab_ad_socket is not None, default_ad_value is not None]):
-                    break
-
-            # add out, emission nodes
-            new_nodes = ['ShaderNodeEmission', 'ShaderNodeOutputMaterial']
-            rgb_node_name_end = ""
-            if grab_socket is None:
-                new_nodes.append('ShaderNodeRGB')
-            if grab_ad_socket is None and map_tag_origin in ['DIFFUSE', 'SPECULAR'] and map_type_origin != 'PASS':
-                new_nodes.append('ShaderNodeRGB')
-                rgb_node_name_end = ".001" if grab_socket is None else ""
-
-            # pbr specular nodes
-            if map_tag_origin in ['GLOSSINESS', 'DIFFUSE', 'SPECULAR'] and map_type_origin != 'PASS':
-                new_nodes.append('ShaderNodeInvert')
-            if map_tag_origin in ['DIFFUSE', 'SPECULAR'] and map_type_origin != 'PASS':
-                new_nodes.append('ShaderNodeMixRGB')
-            if map_tag_origin == 'SPECULAR' and map_type_origin != 'PASS':
-                new_nodes.append('ShaderNodeValue')
-                new_nodes.append('ShaderNodeMixRGB')
-
-            location_x = 0
-            for node_type in new_nodes:
-                new_node = nodes.new(node_type)
-                new_node.name = 'BM_%s' % node_type[10:]
-                new_node.location = (location_x, 0)
-                location_x += 300
-
-            # nodes values
-            default_value = (
-                0, 0, 0, 1) if default_value is None else default_value
-            if grab_socket is None:
-                nodes['BM_RGB'].outputs[0].default_value = default_value
-                value = nodes['BM_RGB'].outputs[0]
-            else:
-                value = grab_socket
-
-            # additional node values
-            default_ad_value = (
-                0, 0, 0, 1) if default_ad_value is None else default_ad_value
-            if grab_ad_socket is None and map_tag_origin in ['DIFFUSE', 'SPECULAR'] and map_type_origin != 'PASS':
-                nodes['BM_RGB%s' %
-                      rgb_node_name_end].outputs[0].default_value = default_ad_value
-                ad_value = nodes['BM_RGB%s' % rgb_node_name_end].outputs[0]
-            elif map_type_origin != 'PASS':
-                ad_value = grab_ad_socket
-
-            # link added nodes and link with grabbed socket
-            if map_tag_origin == 'GLOSSINESS':
-                nodes['BM_Invert'].inputs[0].default_value = 1.0
-                links.new(value, nodes['BM_Invert'].inputs[1])
-                links.new(nodes['BM_Invert'].outputs[0],
-                          nodes['BM_Emission'].inputs[0])
-            elif map_tag_origin == 'DIFFUSE':
-                nodes['BM_Invert'].inputs[0].default_value = 1.0
-                nodes['BM_MixRGB'].inputs[0].default_value = 1.0
-                nodes['BM_MixRGB'].blend_type = 'MULTIPLY'
-                links.new(ad_value, nodes['BM_Invert'].inputs[1])
-                links.new(nodes['BM_Invert'].outputs[0],
-                          nodes['BM_MixRGB'].inputs[2])
-                links.new(value, nodes['BM_MixRGB'].inputs[1])
-                links.new(nodes['BM_MixRGB'].outputs[0],
-                          nodes['BM_Emission'].inputs[0])
-            elif map_tag_origin == 'SPECULAR' and map_type_origin != 'PASS':
-                nodes['BM_Invert'].inputs[0].default_value = 1.0
-                nodes['BM_MixRGB'].inputs[0].default_value = 1.0
-                nodes['BM_MixRGB'].blend_type = 'MULTIPLY'
-                nodes['BM_MixRGB.001'].blend_type = 'ADD'
-                nodes['BM_Value'].outputs[0].default_value = 0.04
-                links.new(ad_value, nodes['BM_Invert'].inputs[1])
-                links.new(ad_value, nodes['BM_MixRGB'].inputs[2])
-                links.new(nodes['BM_Invert'].outputs[0],
-                          nodes['BM_MixRGB.001'].inputs[0])
-                links.new(value, nodes['BM_MixRGB'].inputs[1])
-                links.new(nodes['BM_MixRGB'].outputs[0],
-                          nodes['BM_MixRGB.001'].inputs[1])
-                links.new(nodes['BM_Value'].outputs[0],
-                          nodes['BM_MixRGB.001'].inputs[2])
-                links.new(nodes['BM_MixRGB.001'].outputs[0],
-                          nodes['BM_Emission'].inputs[0])
-            else:
-                if grab_socket is None:
-                    links.new(nodes['BM_RGB'].outputs[0],
-                              nodes['BM_Emission'].inputs[0])
-                else:
-                    links.new(grab_socket, nodes['BM_Emission'].inputs[0])
-            links.new(nodes['BM_Emission'].outputs[0],
-                      nodes['BM_OutputMaterial'].inputs[0])
-
-            if context.scene.render.engine != 'CYCLES':
-                bpy.ops.bakemaster.report_message(
-                    'INVOKE_DEFAULT', message_type='INFO',
-                    message=BM_Labels.INFO_MAP_PREVIEWNOTCYCLES)
-
-            nodes['BM_OutputMaterial'].target = 'CYCLES'
-            nodes['BM_OutputMaterial'].select = True
-            nodes.active = nodes['BM_OutputMaterial']
+def BM_MAP_PROPS_MapPreview_ReplugMaterials_Remove(
+        _, context: bpy.types.Context) -> None:
+    bake_object_mats_restore_replug(context.scene.bm_props)
 
 
 def BM_IterableData_GetNewUniqueName_Simple(data, name_starter):
@@ -4635,6 +6105,8 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context):
 
     _, objects = data
 
+    bake_object_mats_restore_replug(context.scene.bm_props)
+
     # removing bm_nodes
     remove_mats = set()
     for object in objects:
@@ -4671,10 +6143,6 @@ def BM_MAP_PROPS_MapPreview_CustomNodes_Remove(self, context):
     # remove custom mats from data too
     for mat in remove_mats:
         bpy.data.materials.remove(mat)
-
-
-# the same, no attention to bm mats removal, because they are not added anyway
-BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove = BM_MAP_PROPS_MapPreview_CustomNodes_Remove
 
 
 def BM_MAP_PROPS_MapPreview_Unset(self, context):
@@ -4819,81 +6287,82 @@ def BM_MAP_PROPS_map_DECAL_use_preview_Update(self, context):
 
 
 def BM_MAP_PROPS_map_ALBEDO_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
+    BM_MAP_PROPS_MapPreview_ReplugMaterials_Remove(self, context)
     if self.map_ALBEDO_use_preview:
         BM_MAP_PROPS_MapPreview_Unset(self, context)
-        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'ALBEDO')
+        BM_MAP_PROPS_MapPreview_ReplugMaterials_Add(self, context, 'ALBEDO')
 
 
 def BM_MAP_PROPS_map_METALNESS_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
+    BM_MAP_PROPS_MapPreview_ReplugMaterials_Remove(self, context)
     if self.map_METALNESS_use_preview:
         BM_MAP_PROPS_MapPreview_Unset(self, context)
-        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'METALNESS')
+        BM_MAP_PROPS_MapPreview_ReplugMaterials_Add(self, context, 'METALNESS')
 
 
 def BM_MAP_PROPS_map_ROUGHNESS_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
+    BM_MAP_PROPS_MapPreview_ReplugMaterials_Remove(self, context)
     if self.map_ROUGHNESS_use_preview:
         BM_MAP_PROPS_MapPreview_Unset(self, context)
-        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'ROUGHNESS')
+        BM_MAP_PROPS_MapPreview_ReplugMaterials_Add(self, context, 'ROUGHNESS')
 
 
 def BM_MAP_PROPS_map_DIFFUSE_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
+    BM_MAP_PROPS_MapPreview_ReplugMaterials_Remove(self, context)
     if self.map_DIFFUSE_use_preview:
         BM_MAP_PROPS_MapPreview_Unset(self, context)
-        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'DIFFUSE')
+        BM_MAP_PROPS_MapPreview_ReplugMaterials_Add(self, context, 'DIFFUSE')
 
 
 def BM_MAP_PROPS_map_SPECULAR_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
+    BM_MAP_PROPS_MapPreview_ReplugMaterials_Remove(self, context)
     if self.map_SPECULAR_use_preview:
         BM_MAP_PROPS_MapPreview_Unset(self, context)
-        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'SPECULAR')
+        BM_MAP_PROPS_MapPreview_ReplugMaterials_Add(self, context, 'SPECULAR')
 
 
 def BM_MAP_PROPS_map_GLOSSINESS_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
+    BM_MAP_PROPS_MapPreview_ReplugMaterials_Remove(self, context)
     if self.map_GLOSSINESS_use_preview:
         BM_MAP_PROPS_MapPreview_Unset(self, context)
-        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(
+        BM_MAP_PROPS_MapPreview_ReplugMaterials_Add(
             self, context, 'GLOSSINESS')
 
 
 def BM_MAP_PROPS_map_OPACITY_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
+    BM_MAP_PROPS_MapPreview_ReplugMaterials_Remove(self, context)
     if self.map_OPACITY_use_preview:
         BM_MAP_PROPS_MapPreview_Unset(self, context)
-        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'OPACITY')
+        BM_MAP_PROPS_MapPreview_ReplugMaterials_Add(self, context, 'OPACITY')
 
 
 def BM_MAP_PROPS_map_EMISSION_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
+    BM_MAP_PROPS_MapPreview_ReplugMaterials_Remove(self, context)
     if self.map_EMISSION_use_preview:
         BM_MAP_PROPS_MapPreview_Unset(self, context)
-        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'EMISSION')
+        BM_MAP_PROPS_MapPreview_ReplugMaterials_Add(self, context, 'EMISSION')
 
 
 def BM_MAP_PROPS_map_PASS_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
+    BM_MAP_PROPS_MapPreview_ReplugMaterials_Remove(self, context)
     if self.map_PASS_use_preview:
         BM_MAP_PROPS_MapPreview_Unset(self, context)
-        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'PASS')
+        BM_MAP_PROPS_MapPreview_ReplugMaterials_Add(self, context, 'PASS')
 
 
 def BM_MAP_PROPS_map_NORMAL_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
+    BM_MAP_PROPS_MapPreview_ReplugMaterials_Remove(self, context)
     if self.map_NORMAL_use_preview and self.map_normal_data == 'MATERIAL':
         BM_MAP_PROPS_MapPreview_Unset(self, context)
-        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(self, context, 'NORMAL')
+        BM_MAP_PROPS_MapPreview_ReplugMaterials_Add(self, context, 'NORMAL')
 
 
 def BM_MAP_PROPS_map_DISPLACEMENT_use_preview_Update(self, context):
-    BM_MAP_PROPS_MapPreview_RelinkMaterials_Remove(self, context)
-    if self.map_DISPLACEMENT_use_preview and self.map_displacement_data == 'MATERIAL':
+    BM_MAP_PROPS_MapPreview_ReplugMaterials_Remove(self, context)
+    if (self.map_DISPLACEMENT_use_preview
+            and self.map_displacement_data == 'MATERIAL'):
         BM_MAP_PROPS_MapPreview_Unset(self, context)
-        BM_MAP_PROPS_MapPreview_RelinkMaterials_Add(
+        BM_MAP_PROPS_MapPreview_ReplugMaterials_Add(
             self, context, 'DISPLACEMENT')
 
 # Map Previews with Material Reassign
@@ -6151,16 +7620,16 @@ def BM_ITEM_PROPS_decal_use_precise_bounds_Update(self, context):
         self, "decal_use_precise_bounds"), False)
 
 
-def BM_ITEM_PROPS_decal_use_scene_lights_Update(self, context):
-    name = "Object Decal: Scene lights"
-    BM_LastEditedProp_Write(context, name, "decal_use_scene_lights", getattr(
-        self, "decal_use_scene_lights"), False)
-
-
 def BM_ITEM_PROPS_decal_boundary_offset_Update(self, context):
     name = "Object Decal: Boundary offset"
     BM_LastEditedProp_Write(context, name, "decal_boundary_offset", getattr(
         self, "decal_boundary_offset"), False)
+
+
+def BM_ITEM_PROPS_hl_use_bake_individually_Update(self, context):
+    name = "Object High to Lowpoly: Bake Highpolies individually"
+    BM_LastEditedProp_Write(context, name, "hl_use_bake_individually", getattr(
+        self, "hl_use_bake_individually"), False)
 
 
 def BM_ITEM_PROPS_hl_decals_use_separate_texset_Update(self, context):
@@ -6510,6 +7979,12 @@ def BM_ITEM_PROPS_bake_view_from_Update(self, context):
     name = "Object Bake Output: View From"
     BM_LastEditedProp_Write(context, name, "bake_view_from",
                             getattr(self, "bake_view_from"), False)
+
+
+def BM_ITEM_PROPS_bake_use_scene_lights_Update(self, context):
+    name = "Object Bake Output: Scene lights"
+    BM_LastEditedProp_Write(context, name, "bake_use_scene_lights", getattr(
+        self, "bake_use_scene_lights"), False)
 
 
 def BM_ITEM_PROPS_bake_hide_when_inactive_Update(self, context):

@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.3)
+# BakeMaster Blender Add-on (version 2.7.0)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -481,9 +481,21 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         default="New Preset",
         maxlen=64)
 
+    p_master_fullobj: bpy.props.StringProperty(
+        name="Mark as Default",
+        description="Default preset is automatically executed every time a new item is added",
+        default="",
+        maxlen=64)
+
     p_ln_obj: bpy.props.StringProperty(
         name="Last used Object preset or new preset name",
         default="New Preset",
+        maxlen=64)
+
+    p_master_obj: bpy.props.StringProperty(
+        name="Mark as Default",
+        description="Default preset is automatically executed every time a new item is added",
+        default="",
         maxlen=64)
 
     p_ln_decal: bpy.props.StringProperty(
@@ -491,9 +503,21 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         default="New Preset",
         maxlen=64)
 
+    p_master_decal: bpy.props.StringProperty(
+        name="Mark as Default",
+        description="Default preset is automatically executed every time a new item is added",
+        default="",
+        maxlen=64)
+
     p_ln_hl: bpy.props.StringProperty(
         name="Last used High to Lowpoly preset or new preset name",
         default="New Preset",
+        maxlen=64)
+
+    p_master_hl: bpy.props.StringProperty(
+        name="Mark as Default",
+        description="Default preset is automatically executed every time a new item is added",
+        default="",
         maxlen=64)
 
     p_ln_uv: bpy.props.StringProperty(
@@ -501,9 +525,21 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         default="New Preset",
         maxlen=64)
 
+    p_master_uv: bpy.props.StringProperty(
+        name="Mark as Default",
+        description="Default preset is automatically executed every time a new item is added",
+        default="",
+        maxlen=64)
+
     p_ln_csh: bpy.props.StringProperty(
         name="Last used Shading preset or new preset name",
         default="New Preset",
+        maxlen=64)
+
+    p_master_csh: bpy.props.StringProperty(
+        name="Mark as Default",
+        description="Default preset is automatically executed every time a new item is added",
+        default="",
         maxlen=64)
 
     p_ln_out: bpy.props.StringProperty(
@@ -511,9 +547,21 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         default="New Preset",
         maxlen=64)
 
+    p_master_out: bpy.props.StringProperty(
+        name="Mark as Default",
+        description="Default preset is automatically executed every time a new item is added",
+        default="",
+        maxlen=64)
+
     p_ln_fullmap: bpy.props.StringProperty(
         name="Last used Full Map preset or new preset name",
         default="New Preset",
+        maxlen=64)
+
+    p_master_fullmap: bpy.props.StringProperty(
+        name="Mark as Default",
+        description="Default preset is automatically executed every time a new item is added",
+        default="",
         maxlen=64)
 
     p_ln_map: bpy.props.StringProperty(
@@ -521,9 +569,21 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         default="New Preset",
         maxlen=64)
 
+    p_master_map: bpy.props.StringProperty(
+        name="Mark as Default",
+        description="Default preset is automatically executed every time a new item is added",
+        default="",
+        maxlen=64)
+
     p_ln_chnlp: bpy.props.StringProperty(
         name="Last used Channel Pack preset or new preset name",
         default="New Preset",
+        maxlen=64)
+
+    p_master_chnlp: bpy.props.StringProperty(
+        name="Mark as Default",
+        description="Default preset is automatically executed every time a new item is added",
+        default="",
         maxlen=64)
 
     p_ln_bake: bpy.props.StringProperty(
@@ -531,9 +591,21 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         default="New Preset",
         maxlen=64)
 
+    p_master_bake: bpy.props.StringProperty(
+        name="Mark as Default",
+        description="Default preset is automatically executed every time a new item is added",
+        default="",
+        maxlen=64)
+
     p_ln_cm: bpy.props.StringProperty(
         name="Last used Color Management preset or new preset name",
         default="New Preset",
+        maxlen=64)
+
+    p_master_cm: bpy.props.StringProperty(
+        name="Mark as Default",
+        description="Default preset is automatically executed every time a new item is added",
+        default="",
         maxlen=64)
 
     ###
@@ -543,6 +615,8 @@ class BM_SceneProps(bpy.types.PropertyGroup):
     global_last_edited_prop_value : bpy.props.StringProperty(default="")
     global_last_edited_prop_type : bpy.props.StringProperty(default="")
     global_last_edited_prop_is_map : bpy.props.BoolProperty(default=False)
+
+    global_matrestore_instruction: bpy.props.StringProperty(default="")
 
 # Apply Lastly Edited Prop Props
     global_alep_objects : bpy.props.CollectionProperty(type=BM_ALEP_Object)
@@ -711,6 +785,50 @@ class BM_SceneProps(bpy.types.PropertyGroup):
         precision=3,
         subtype='COLOR')  # noqa: F405
 
+    global_bake_use_map_strength: bpy.props.BoolProperty(
+        name="Map Strength Baked in",
+        description=(
+            "Emission Strength, Strength and Scale socket values will be baked"
+            " into texture maps like Emission, Normal, Displacement. Texture "
+            "map's data will be multiplied by the values of these sockets"
+        ),
+        default=True)
+
+    global_bake_use_nno: bpy.props.BoolProperty(
+        name="Bake Named Node Ouputs",
+        description=(
+            "Inspect and use Node outputs that represent bakeable data. For "
+            "example, if Node Group has output named 'Albedo', 'Bake Albedo' "
+            " etc. and map to bake is Albedo, BakeMaster will stop searching "
+            "node tree further and will bake this named output immidieately "
+            "even if it is not used in the current shader node tree setup"),
+        default=True)
+
+    global_bake_nno_use_linked: bpy.props.BoolProperty(
+        name="Linked",  # noqa: F405
+        description=(
+            "Use both linked and unlinked named outputs. If disabled, only "
+            "unlinked are used"
+        ),
+        default=False)
+
+    global_bake_nno_use_all_nodes: bpy.props.BoolProperty(
+        name="All Node Types",
+        description=(
+            "Search all node types for baking named outputs. "
+            "If disabled, only final Node Group outputs are searched"
+        ),
+        default=False)
+
+    global_bake_nno_use_named_bake: bpy.props.BoolProperty(
+        name="Named for Bake only",
+        description=(
+            "Use only those named outputs, names of which include the word "
+            "'Bake'. If disabled, all named outputs matching the map name to "
+            "bake are used"
+        ),
+        default=True)
+
     global_use_collapse_nodes: bpy.props.BoolProperty(
         name="Collapse Nodes",
         description="Collapse added shader nodes in baked materials",
@@ -719,6 +837,11 @@ class BM_SceneProps(bpy.types.PropertyGroup):
     global_use_preset_more_options: bpy.props.BoolProperty(
         name="More Options",
         description="Enable Update buttons next to each preset and active preset visualization",
+        default=True)
+
+    global_presets_use_default: bpy.props.BoolProperty(
+        name="Default Presets",
+        description="Enable the ability to mark default presets that will be automatically executed every time a new item is added",
         default=True)
 
 
@@ -2592,12 +2715,6 @@ class BM_Object(bpy.types.PropertyGroup):
         default=False,
         update=BM_ITEM_PROPS_decal_use_precise_bounds_Update)
 
-    decal_use_scene_lights: bpy.props.BoolProperty(
-        name="Scene Lights",
-        description="Use scene lighting and world lighting configured in world surface shading to bake this decal object",
-        default=False,
-        update=BM_ITEM_PROPS_decal_use_scene_lights_Update)
-
     decal_use_adapt_res: bpy.props.BoolProperty(
         name="Adapt aspect ratio",
         description="Adapt output map resolution to match the aspect ration of decal's dimensions",
@@ -2624,6 +2741,12 @@ class BM_Object(bpy.types.PropertyGroup):
     hl_is_highpoly : bpy.props.BoolProperty(default=False)
     hl_is_lowpoly : bpy.props.BoolProperty(default=False)
     hl_is_cage : bpy.props.BoolProperty(default=False)
+
+    hl_use_bake_individually: bpy.props.BoolProperty(
+        name="Bake Individually",
+        description="Bake highpolies one by one. If unchecked, highpolies are baked together at once",
+        default=True,
+        update=BM_ITEM_PROPS_hl_use_bake_individually_Update)
 
     hl_is_decal : bpy.props.BoolProperty(
         name="Decal",
@@ -3166,6 +3289,12 @@ class BM_Object(bpy.types.PropertyGroup):
         items=[('ABOVE_SURFACE', "Above Surface", "Cast rays from above the surface"),
                ('ACTIVE_CAMERA', "Active Camera", "Use the active camera’s position to cast rays")],
         update=BM_ITEM_PROPS_bake_view_from_Update)
+
+    bake_use_scene_lights: bpy.props.BoolProperty(
+        name="Scene Lights",
+        description="Use scene lighting and world lighting configured in world surface shading to bake this object",
+        default=False,
+        update=BM_ITEM_PROPS_bake_use_scene_lights_Update)
 
     bake_hide_when_inactive : bpy.props.BoolProperty(
         name="Hide when Inactive",

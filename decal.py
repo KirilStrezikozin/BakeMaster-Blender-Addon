@@ -1,7 +1,7 @@
 # BEGIN LICENSE & COPYRIGHT BLOCK.
 #
 # Copyright (C) 2022-2024 Kiril Strezikozin
-# BakeMaster Blender Add-on (version 2.6.3)
+# BakeMaster Blender Add-on (version 2.7.0)
 #
 # This file is a part of BakeMaster Blender Add-on, a plugin for texture
 # baking in open-source Blender 3d modelling software.
@@ -586,10 +586,13 @@ class BM_LOT_DECAL_View():
         return self.__update_view(ctx)
 
     def invoke(self, modal_self: bpy.types.Operator | None,
-               ctx: bpy.types.Context, event: Optional[bpy.types.Event] = None
-               ) -> LOT_Status:
+               ctx: bpy.types.Context, event: Optional[bpy.types.Event] = None,
+               cancel_running: bool = False) -> LOT_Status:
         self.__unused(event)
         global _decal_view
+
+        if cancel_running:
+            _decal_view.clear()  # will take effect on the next modal call.
 
         if not self.__view_poll():
             self.__view_cancel(ctx, no_delete=True)
@@ -627,7 +630,12 @@ class BM_OT_DECAL_View(bpy.types.Operator):
     @classmethod
     def is_running(cls) -> bool:
         global _decal_view
-        return len(_decal_view) != 0
+        return len(_decal_view) != 0 and cls.__has_lot()
+
+    @classmethod
+    def __has_lot(cls) -> bool:
+        __lot_attr = '_%s__lot' % cls.__name__
+        return hasattr(cls, __lot_attr)
 
     @classmethod
     def is_running_for(cls, obj_name: int) -> bool:
@@ -653,6 +661,14 @@ class BM_OT_DECAL_View(bpy.types.Operator):
             _ = _decal_view.pop()
         return None
 
+    @classmethod
+    def __lot_private_cancel(cls, ctx: bpy.types.Context) -> None:
+        __lot__view_cancel = getattr(
+            cls.__lot,
+            '_%s__view_cancel' % BM_LOT_DECAL_View.__name__)
+        __lot__view_cancel(ctx)
+        return None
+
     def cancel(self, context: bpy.types.Context) -> None:
         cls = self.__class__
         if cls.is_running():
@@ -662,6 +678,11 @@ class BM_OT_DECAL_View(bpy.types.Operator):
     def modal(self, context: bpy.types.Context, event: bpy.types.Event
               ) -> Set[str] | Set[int]:
         cls = self.__class__
+
+        if not cls.is_running():
+            if cls.__has_lot():
+                cls.__lot_private_cancel(context)
+            return {'CANCELLED'}
 
         status = cls.__lot.modal(context, event)
         if status[0] == {'PASS_THROUGH'}:
@@ -673,6 +694,11 @@ class BM_OT_DECAL_View(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context) -> Set[str] | Set[int]:
         cls = self.__class__
+
+        if not cls.is_running():
+            if cls.__has_lot():
+                cls.__lot_private_cancel(context)
+            return {'CANCELLED'}
 
         status = cls.__lot.execute(context)
 
