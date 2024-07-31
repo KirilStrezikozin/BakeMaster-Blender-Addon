@@ -9,6 +9,9 @@
 .. |install| image:: ../../_static/images/pages/setup/installation/install_350x320.gif
     :alt: Install
 
+.. |install_42| image:: ../../_static/images/pages/setup/installation/install_blender42_350x279.gif
+    :alt: Install for Blender 4.2 and higher
+
 ============
 Installation
 ============
@@ -22,6 +25,10 @@ Download BakeMaster
 ===================
 
 Download the latest BakeMaster addon version from the `Blender Market <https://blendermarket.com/products/bakemaster>`__ or `Gumroad <https://kemplerart.gumroad.com/l/bakemaster>`__.
+
+If you use Blender 4.2 and higher, you can now drag the downloaded zip into an opened Blender window and follow the instructions in a popover. That is it for the installation process for Blender 4.2 onward.
+
+|install_42|
 
 Go to your Blender Preferences and install the downloaded zipped folder.
 
